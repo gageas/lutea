@@ -12,7 +12,7 @@ namespace Gageas.Lutea.Core
     /// Coreの設定を保持するためのダミーComponent
     /// </summary>
     [GuidAttribute("2A21DCC8-B023-4989-A663-061319D25E26")]
-    [LuteaComponentInfo("Core","Gageas",0.06, "アプリケーションのコア")]
+    [LuteaComponentInfo("Core","Gageas",0.07, "アプリケーションのコア")]
     public class CoreComponent : LuteaComponentInterface
     {
         public class Preference
