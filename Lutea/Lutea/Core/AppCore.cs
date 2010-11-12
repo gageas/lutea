@@ -149,7 +149,7 @@ namespace Gageas.Lutea.Core
                 else
                 {
                     //                    currentStream.stream.play();
-                    AppCore.outputChannel.Start();
+                    AppCore.outputChannel.Resume();
                 }
             }
         }
@@ -901,7 +901,7 @@ namespace Gageas.Lutea.Core
 
         #region メディアファイルの再生に関する処理郡
         private static object prepareMutex = new object();
-        internal static Boolean PlayPlaylistItem(int index)
+        internal static Boolean PlayPlaylistItem(int index, bool stopCurrent = true)
         {
             Logger.Debug("Enter PlayPlaylistItem");
             CoreEnqueue((Controller.VOIDVOID)(() =>
@@ -916,12 +916,16 @@ namespace Gageas.Lutea.Core
                     if (outputChannel != null)
                     {
                         currentStream.ready = false;
-                        //                        var _current = currentStream;
-                        //                        currentStream = null;
-                        //                        outputChannel.SetVolume(0);
-                        //                    outputChannel.Stop();
+                        if (stopCurrent)
+                        {
+                            outputChannel.SetVolume(0F);
+                        }
                     }
                     prepareNextStream(index);
+                    if (outputChannel != null && stopCurrent)
+                    {
+                        outputChannel.Stop();
+                    }
                     PlayQueuedStream();
                 }
             }));
@@ -1009,7 +1013,7 @@ namespace Gageas.Lutea.Core
                 //                preparedStream.stream.play();
                 currentStream = preparedStream;
                 SetVolumeGained();
-                outputChannel.Start();
+                outputChannel.Resume();
                 preparedStream = null;
                 _pause = false;
                 isPlaying = true;
@@ -1206,7 +1210,7 @@ namespace Gageas.Lutea.Core
             }
             if (preparedStream == null)
             {
-                Controller.NextTrack();
+                Controller.NextTrack(false);
             }
             else
             {
