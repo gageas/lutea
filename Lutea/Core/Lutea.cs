@@ -233,7 +233,7 @@ namespace Gageas.Lutea.Core
         }
 
 
-        public static void NextTrack()
+        public static void NextTrack(bool stopCurrent = true)
         {
             Logger.Log("next Track");
             //            KillOutputChannel();
@@ -260,7 +260,7 @@ namespace Gageas.Lutea.Core
                     }
                 }
                 icache = id;
-                AppCore.PlayPlaylistItem(id);
+                AppCore.PlayPlaylistItem(id, stopCurrent);
             }));
         }
         /// <summary>
