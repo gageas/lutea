@@ -150,6 +150,7 @@ namespace Gageas.Wrapper.BASS
             try
             {
                 BASS.available = BASS.BASS_Init(device, freq, 0, (IntPtr)0, (IntPtr)0);
+                BASS.BASS_SetConfig(BASS.BASS_CONFIG.BASS_CONFIG_BUFFER, 1500);
             }
             catch { }
 
@@ -414,6 +415,7 @@ namespace Gageas.Wrapper.BASS
                 BASS_DATA_FFT_NOWINDOW = 0x20, // FFT flag: no Hanning window
             };
             public abstract bool Start();
+            public abstract bool Resume();
             public abstract bool Stop();
             public abstract bool Pause();
             public abstract bool SetVolume(float vol);
@@ -521,6 +523,12 @@ namespace Gageas.Wrapper.BASS
                 return BASS_WASAPI_Stop(true);
             }
 
+            public override bool Resume()
+            {
+                if (disposed) return false;
+                return BASS_WASAPI_Start();
+            }
+
             public override bool Pause()
             {
                 if (disposed) return false;
@@ -619,6 +627,10 @@ namespace Gageas.Wrapper.BASS
                 this.Dispose();
             }
             public override bool Start()
+            {
+                return Start(true);
+            }
+            public override bool Resume()
             {
                 return Start(false);
             }
