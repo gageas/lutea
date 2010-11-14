@@ -158,6 +158,11 @@ namespace Gageas.Lutea.DefaultUI
 
         private void XTrackBar_MouseDown(object sender, MouseEventArgs e)
         {
+            if (e.Button != System.Windows.Forms.MouseButtons.Left)
+            {
+                Capture = false;
+                return;
+            }
             if ((e.X > thumbX) && (e.X < (thumbX + thumbwidth))
                 && (e.Y > thumby) && (e.Y < (thumby + thumbheight)))
             {
