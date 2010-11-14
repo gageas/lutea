@@ -957,16 +957,21 @@ namespace Gageas.Lutea.Core
                 // Output Streamを再構築
                 if (OutputStreamRebuildRequired(preparedStream.stream))
                 {
+                    var fname = preparedStream.file_name;
+                    var freq = preparedStream.stream.GetFreq();
+                    var isFloat = (preparedStream.stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) > 0;
                     try
                     {
                         KillOutputChannel();
                     }
                     catch (Exception e) { Logger.Log(e.ToString()); }
-                    var fname = preparedStream.file_name;
-                    var freq = preparedStream.stream.GetFreq();
-                    var isFloat = (preparedStream.stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT)>0;
                     preparedStream.stream.Dispose();
                     preparedStream = null;
+                    if (currentStream != null && currentStream.stream != null)
+                    {
+                        currentStream.stream.Dispose();
+                        currentStream = null;
+                    }
                     ResetOutputChannel(freq, isFloat);
                     prepareNextStream(IndexInPlaylist(fname));
                     PlayQueuedStream();

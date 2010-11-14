@@ -640,7 +640,10 @@ namespace Gageas.Wrapper.BASS
             }
             public override bool Stop()
             {
-                return _BASS_ChannelStop(this.handle);
+                // _BASS_ChannelStopを使うと再開に難があるくさいので
+                this.Pause();
+                this.Start(true);
+                return this.Pause();
             }
             public override bool Pause()
             {
