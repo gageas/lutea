@@ -235,9 +235,9 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             var item_splitter = new char[] { '；', ';', '，', ',', '／', '/', '＆', '&', '・', '･', '、', '､', '（', '(', '）', ')', '\n', '\t' };
-            var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList().FindAll(e => e.Length > 1);
+            var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList();
             var subGenre = genre.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList().FindAll(e => e.Length > 1);
-            var q = String.Join(" OR ", subArtists.Select((_) => "LCMapUpper(tagArtist) like '%" + _.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%'").ToArray());
+            var q = String.Join(" OR ",(from __ in from _ in subArtists select _.LCMapUpper().Trim() select String.Format(__.Length>1?@" LCMapUpper(tagArtist) LIKE '%{0}%' ":@" LCMapUpper(tagArtist) = '{0}' ",__.EscapeSingleQuotSQL())).ToArray());
             object[][] related_albums = null;
             object[][] multi_disc_albums = null;
             using (var db = Controller.DBConnection)
