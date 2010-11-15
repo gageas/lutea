@@ -109,6 +109,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void setupPlaylistView()
         {
+            listView1.BeginUpdate();
             listView1.Enabled = false;
 
             // backup order/width
@@ -169,22 +170,8 @@ namespace Gageas.Lutea.DefaultUI
 
             playlistUpdated(null);
 
-            /*            if (ColumnOrder != null)
-                        {
-                            for (int i = 0; i < Math.Min(displayColumns.Length, ColumnOrder.Count); i++)
-                            {
-                                listView1.Columns[i].DisplayIndex = ColumnOrder[i];
-                            }
-                        }
-                        if (ColumnWidth != null)
-                        {
-                            for (int i = 0; i < Math.Min(displayColumns.Length, ColumnWidth.Length); i++)
-                            {
-                                listView1.Columns[i].Width = ColumnWidth[i];
-                            }
-                        }*/
+            listView1.EndUpdate();
             listView1.Enabled = true;
-
         }
 
         #region Application core event handler
