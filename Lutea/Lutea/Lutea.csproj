@@ -96,6 +96,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Lametag.cs" />
     <Compile Include="Core\Lutea.cs" />
     <Compile Include="Core\CoreComponent.cs" />
     <Compile Include="Core\LuteaPluginInterface.cs" />
