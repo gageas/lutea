@@ -1082,15 +1082,19 @@ namespace Gageas.Lutea.Core
                             }
                             else
                             {
-                                using (var fs = System.IO.File.Open(filename.Trim(), System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
+                                try
                                 {
-                                    var lametag = Lametag.Read(fs);
-                                    if (lametag != null)
+                                    using (var fs = System.IO.File.Open(filename.Trim(), System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
                                     {
-                                        nextStream.cueOffset = (ulong)(lametag.delay) * newstream.GetChans() * sizeof(float);
-                                        nextStream.cueLength = newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float);
+                                        var lametag = Lametag.Read(fs);
+                                        if (lametag != null)
+                                        {
+                                            nextStream.cueOffset = (ulong)(lametag.delay) * newstream.GetChans() * sizeof(float);
+                                            nextStream.cueLength = newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float);
+                                        }
                                     }
                                 }
+                                catch { }
                             }
                         }
                         if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
