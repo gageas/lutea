@@ -43,7 +43,7 @@ namespace Gageas.Lutea.Tags
             if (track != null) tag.Add(new KeyValuePair<string, object>("TRACK", track));
 
             var date = getTagValue<ATOM__dat>(rootAtom);
-            if (date != null) tag.Add(new KeyValuePair<string, object>("DATE", track));
+            if (date != null) tag.Add(new KeyValuePair<string, object>("DATE", date));
 
             var cover = getTagValue<ATOM_covr>(rootAtom);
             if (cover != null) tag.Add(new KeyValuePair<string, object>("COVER ART", cover));
