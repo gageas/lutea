@@ -445,6 +445,8 @@ namespace Gageas.Wrapper.BASS
             private const uint BASS_WASAPI_EXCLUSIVE = 1;
             private const uint BASS_WASAPI_AUTOFORMAT = 2;
             private const uint BASS_WASAPI_BUFFER = 4;
+
+            private bool running = false;
             private WASAPISTREAMPROC _proc;
             private StreamProc proc;
             private bool disposed = true;
@@ -514,25 +516,28 @@ namespace Gageas.Wrapper.BASS
             public override bool Start()
             {
                 if (disposed) return false;
-                return BASS_WASAPI_Start();
+                return running = BASS_WASAPI_Start();
             }
 
             public override bool Stop()
             {
                 if (disposed) return false;
+                running = false;
                 return BASS_WASAPI_Stop(true);
             }
 
             public override bool Resume()
             {
                 if (disposed) return false;
-                return BASS_WASAPI_Start();
+                if (running) return true;
+                return running = BASS_WASAPI_Start();
             }
 
             public override bool Pause()
             {
                 if (disposed) return false;
-                return BASS_WASAPI_Stop(true);
+                running = false;
+                return BASS_WASAPI_Stop(false);
             }
 
             public override bool SetVolume(float vol)
@@ -711,6 +716,11 @@ namespace Gageas.Wrapper.BASS
             public UInt64 Seconds2Bytes(double pos)
             {
                 return _BASS_ChannelSeconds2Bytes(handle, pos);
+            }
+
+            public double Bytes2Seconds(UInt64 pos)
+            {
+                return _BASS_ChannelBytes2Seconds(handle, pos);
             }
 
             public void setSync(SYNC_TYPE type, SyncProc callback, UInt64 data=0, object cookie = null){
