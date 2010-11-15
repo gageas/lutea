@@ -87,9 +87,9 @@ namespace Gageas.Lutea.Tags
             }
             if (ecd != null)
             {
-                if (ecd.Find((e) => e.Key == "TITLE").Key == null && cd.title != null) ecd.Add(new KeyValuePair<string, object>("TITLE", cd.title));
-                if (ecd.Find((e) => e.Key == "ARTIST").Key == null && cd.artist != null) ecd.Add(new KeyValuePair<string, object>("ARTIST", cd.artist));
-                if (ecd.Find((e) => e.Key == "COMMENT").Key == null && cd.description != null) ecd.Add(new KeyValuePair<string, object>("COMMENT", cd.description));
+                if (ecd.Find((e) => e.Key == "TITLE").Key == null && !String.IsNullOrEmpty(cd.title)) ecd.Add(new KeyValuePair<string, object>("TITLE", cd.title));
+                if (ecd.Find((e) => e.Key == "ARTIST").Key == null && !String.IsNullOrEmpty(cd.artist)) ecd.Add(new KeyValuePair<string, object>("ARTIST", cd.artist));
+                if (ecd.Find((e) => e.Key == "COMMENT").Key == null && !String.IsNullOrEmpty(cd.description)) ecd.Add(new KeyValuePair<string, object>("COMMENT", cd.description));
                 if (heo != null)
                 {
                     ecd.AddRange(heo);
