@@ -309,21 +309,21 @@ namespace Gageas.Lutea.Core
             {
                 get
                 {
-                    return (AppCore.currentStream != null) ? (AppCore.currentStream.cueLength > 0 ? AppCore.currentStream.cueLength : AppCore.currentStream.stream.length) : 0;
+                    return (AppCore.currentStream != null) ? (AppCore.currentStream.cueLength > 0 ? AppCore.currentStream.stream.Bytes2Seconds(AppCore.currentStream.cueLength) : AppCore.currentStream.stream.length) : 0;
                 }
             }
             public static double Position
             {
                 get
                 {
-                    return (AppCore.currentStream != null) ? AppCore.currentStream.stream.positionSec - AppCore.currentStream.cueOffset : 0;
+                    return (AppCore.currentStream != null) ? AppCore.currentStream.stream.positionSec - AppCore.currentStream.stream.Bytes2Seconds(AppCore.currentStream.cueOffset) : 0;
                 }
                 set
                 {
                     if (AppCore.currentStream == null) return;
                     //                    KillOutputChannel();
                     AppCore.outputChannel.Pause();
-                    AppCore.currentStream.stream.positionSec = value + AppCore.currentStream.cueOffset;
+                    AppCore.currentStream.stream.position = AppCore.currentStream.stream.Seconds2Bytes(value) + AppCore.currentStream.cueOffset;
 //                    AppCore.ResetOutputChannel(AppCore.currentStream.stream.GetFreq(), (AppCore.currentStream.stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0);
                     AppCore.outputChannel.Start();
                 }

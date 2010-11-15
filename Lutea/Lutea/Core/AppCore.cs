@@ -25,7 +25,7 @@ namespace Gageas.Lutea.Core
     /// </summary>
     class StreamObject
     {
-        public StreamObject(BASS.Stream stream, string file_name, double cueOffset = 0, double cueLength = 0){
+        public StreamObject(BASS.Stream stream, string file_name, ulong cueOffset = 0, ulong cueLength = 0){
             this.stream = stream;
             this.file_name = file_name;  // DBのfile_nameをそのまま入れる。.cueの場合あり
             this.cueOffset = cueOffset;
@@ -34,8 +34,8 @@ namespace Gageas.Lutea.Core
         public BASS.Stream stream;
         public string file_name;
         public string cueStreamFileName = null;
-        public double cueOffset = 0;
-        public double cueLength = 0;
+        public ulong cueOffset = 0;
+        public ulong cueLength = 0;
         public object[] meta;
         public double? gain;
         public bool ready = false;
@@ -247,14 +247,14 @@ namespace Gageas.Lutea.Core
             if (reference == null) return true;
             var info = reference.Info;
             uint freq = info.freq;
-//            uint chans = info.chans;
+            uint chans = info.chans;
 
-            return OutputStreamRebuildRequired(freq, (info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0);
+            return OutputStreamRebuildRequired(freq,chans, (info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0);
         }
-        private static bool OutputStreamRebuildRequired(uint freq, bool useFloat)
+        private static bool OutputStreamRebuildRequired(uint freq,uint chans, bool useFloat)
         {
 //            BASS.Stream.StreamFlag flag = info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT;
-            if (outputChannel == null || outputChannel.GetFreq() != freq)// || (outputChannel.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != flag)
+            if (outputChannel == null || outputChannel.GetFreq() != freq || outputChannel.GetChans() != chans)// || (outputChannel.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != flag)
             {
                 return true;
             }
@@ -266,10 +266,10 @@ namespace Gageas.Lutea.Core
         /// </summary>
         /// <param name="reference"></param>
         /// <returns>OutputStreamを作り直した時true</returns>
-        internal static bool ResetOutputChannel(uint freq, bool useFloat){ // BASS.Stream reference
+        internal static bool ResetOutputChannel(uint freq, uint chans, bool useFloat){ // BASS.Stream reference
             bool ret = false;
 //            var info = reference.Info;
-            if(OutputStreamRebuildRequired(freq,useFloat))
+            if(OutputStreamRebuildRequired(freq, chans, useFloat))
             {
                 outputMode = Controller.OutputModeEnum.STOP;
                 if (outputChannel != null)
@@ -292,7 +292,7 @@ namespace Gageas.Lutea.Core
                                 {
                                     BASS.BASS_Free();
                                     BASS.BASS_Init(0, OutputFreq);
-                                    outputChannel = new BASS.WASAPIOutput(freq, 2, StreamProc, true, enableWASAPIVolume, false);
+                                    outputChannel = new BASS.WASAPIOutput(freq, chans, StreamProc, true, enableWASAPIVolume, false);
                                     if (outputChannel != null)
                                     {
                                         outputMode = Controller.OutputModeEnum.WASAPIEx;
@@ -310,7 +310,7 @@ namespace Gageas.Lutea.Core
                                 {
                                     BASS.BASS_Free();
                                     BASS.BASS_Init(0, OutputFreq);
-                                    outputChannel = new BASS.WASAPIOutput(freq, 2, StreamProc, false, enableWASAPIVolume, false);
+                                    outputChannel = new BASS.WASAPIOutput(freq, chans, StreamProc, false, enableWASAPIVolume, false);
                                     if (outputChannel != null)
                                     {
                                         outputMode = Controller.OutputModeEnum.WASAPI;
@@ -329,7 +329,7 @@ namespace Gageas.Lutea.Core
                             {
                                 BASS.BASS_Free();
                                 BASS.BASS_Init(-1, OutputFreq);
-                                outputChannel = new BASS.UserSampleStream(freq, 2, StreamProc, (BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) | BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
+                                outputChannel = new BASS.UserSampleStream(freq, chans, StreamProc, (BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) | BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
                                 if (outputChannel != null) outputMode = Controller.OutputModeEnum.FloatingPoint;
                                 Logger.Debug("Use Float Output");
                             }
@@ -342,7 +342,7 @@ namespace Gageas.Lutea.Core
                     {
                         BASS.BASS_Free();
                         BASS.BASS_Init(-1, OutputFreq);
-                        outputChannel = new BASS.UserSampleStream(freq, 2, StreamProc, BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
+                        outputChannel = new BASS.UserSampleStream(freq, chans, StreamProc, BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
                         outputMode = Controller.OutputModeEnum.Integer16;
                         Logger.Debug("Use Int Output");
 
@@ -367,27 +367,6 @@ namespace Gageas.Lutea.Core
             }
         }
 
-        // WASAPI環境で1ch streamが作れないっぽいので、モノラルのデータをステレオ化する
-        private static void Mono2Stereo_float(IntPtr src, IntPtr dest, int srcsize)
-        {
-            srcsize--;
-            while(srcsize >= 0){
-                var read = Marshal.ReadInt32(src, srcsize * 4);
-                Marshal.WriteInt32(dest, srcsize * 8, read) ;
-                Marshal.WriteInt32(dest, srcsize * 8 + 4, read);
-                srcsize--;
-            }
-        }
-        private static void Mono2Stereo_int(IntPtr src, IntPtr dest, int srcsize)
-        {
-            while (srcsize-- > 0)
-            {
-                var read = Marshal.ReadInt16(src, srcsize * 2);
-                Marshal.WriteInt16(dest, srcsize * 4, read);
-                Marshal.WriteInt16(dest, srcsize * 4 + 2, read);
-            }
-        }
-
         private static void KillOutputChannel()
         {
             var _outputChannel = outputChannel;
@@ -405,37 +384,9 @@ namespace Gageas.Lutea.Core
         #endregion
 
         #region ストリームプロシージャ
-        private static uint readAsStereo(IntPtr buffer, uint length,BASS.Stream stream){
-            uint read;
-            if (stream.GetChans() == 1)
-            {
-                read = stream.GetData(buffer, length / 2);
-                if (read == 0x80000000 || read == 0xffffffff)
-                {
-                    return read;
-                }
-                else
-                {
-                    if ((stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0)
-                    {
-                        Mono2Stereo_float(buffer, buffer, (int)length / 2 / 4);
-                    }
-                    else
-                    {
-                        Mono2Stereo_int(buffer, buffer, (int)length / 2 / 2);
-                    }
-                    return read << 1;
-                }
-            }
-            else
-            {
-                read = stream.GetData(buffer, length);
-            }
-            return read;
-        }
-        private static uint readAsStereoGained(IntPtr buffer, uint length, BASS.Stream stream, double gaindB)
+        private static uint readStreamGained(IntPtr buffer, uint length, BASS.Stream stream, double gaindB)
         {
-            uint read = readAsStereo(buffer, length, stream);
+            uint read = stream.GetData(buffer, length);//readAsStereo(buffer, length, stream);
             if (read == 0xffffffff) return read;
             uint read_size = read & 0x7fffffff;
             ApplyGain(buffer, read_size, gaindB);
@@ -491,7 +442,15 @@ namespace Gageas.Lutea.Core
                 // currentStreamから読み出し
                 if (_current != null && _current.stream != null && _current.ready)
                 {
-                    read1 = readAsStereoGained(buffer, length, _current.stream, _current.gain == null ? NoReplaygainGainBoost : (ReplaygainGainBoost + _current.gain ?? 0));
+                    if ((_current.cueLength > 0 || _current.cueOffset > 0) && length + _current.stream.position > _current.cueLength + _current.cueOffset)
+                    {
+                        uint toread = (uint)(_current.cueLength + _current.cueOffset - _current.stream.position);
+                        read1 = readStreamGained(buffer, toread, _current.stream, _current.gain == null ? NoReplaygainGainBoost : (ReplaygainGainBoost + _current.gain ?? 0));
+                    }
+                    else
+                    {
+                        read1 = readStreamGained(buffer, length, _current.stream, _current.gain == null ? NoReplaygainGainBoost : (ReplaygainGainBoost + _current.gain ?? 0));
+                    }
                 }
                 if (read1 != 0xffffffff && ((read1 &= 0x7fffffff) == length)) return length;
 
@@ -499,9 +458,9 @@ namespace Gageas.Lutea.Core
                 if (read1 == 0xffffffff) read1 = 0;
                 if (_prepare != null && _prepare.stream != null && _prepare.ready)
                 {
-                    read2 = readAsStereoGained((IntPtr)((ulong)buffer + read1), length - read1, _prepare.stream, _prepare.gain == null ? NoReplaygainGainBoost : (ReplaygainGainBoost + _prepare.gain ?? 0));
-//                    SetVolumeGained(_prepare);
+                    read2 = readStreamGained((IntPtr)((ulong)buffer + read1), length - read1, _prepare.stream, _prepare.gain == null ? NoReplaygainGainBoost : (ReplaygainGainBoost + _prepare.gain ?? 0));
                 }
+                onFinish(BASS.SYNC_TYPE.END, _current);
             }
 #if DEBUG
             }
@@ -959,6 +918,7 @@ namespace Gageas.Lutea.Core
                 {
                     var fname = preparedStream.file_name;
                     var freq = preparedStream.stream.GetFreq();
+                    var chans = preparedStream.stream.GetChans();
                     var isFloat = (preparedStream.stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) > 0;
                     try
                     {
@@ -972,7 +932,7 @@ namespace Gageas.Lutea.Core
                         currentStream.stream.Dispose();
                         currentStream = null;
                     }
-                    ResetOutputChannel(freq, isFloat);
+                    ResetOutputChannel(freq, chans, isFloat);
                     prepareNextStream(IndexInPlaylist(fname));
                     PlayQueuedStream();
                     return;
@@ -989,23 +949,15 @@ namespace Gageas.Lutea.Core
                 // prepareにsyncを設定
                 if (preparedStream.cueLength > 0 || preparedStream.cueOffset > 0)
                 {
-                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_on80Percent, preparedStream.stream.Seconds2Bytes((preparedStream.cueOffset + preparedStream.cueLength) * 0.80));
-                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, preparedStream.stream.Seconds2Bytes(Math.Max((preparedStream.cueOffset + preparedStream.cueLength) * 0.90, (preparedStream.cueOffset + preparedStream.cueLength) - 5)));
-                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onFinish, preparedStream.stream.Seconds2Bytes(preparedStream.cueOffset + preparedStream.cueLength));
+                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_on80Percent, preparedStream.cueOffset + (ulong)(preparedStream.cueLength * 0.80));
+                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, preparedStream.cueOffset + (ulong)(Math.Max(preparedStream.cueLength * 0.90, preparedStream.cueLength - preparedStream.stream.Seconds2Bytes(5))));
+                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onFinish, preparedStream.cueOffset + preparedStream.cueLength, preparedStream);
                 }
                 else
                 {
-                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_on80Percent, preparedStream.stream.Seconds2Bytes(preparedStream.stream.length * 0.80));
-                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, preparedStream.stream.Seconds2Bytes(Math.Max(preparedStream.stream.length * 0.90, preparedStream.stream.length - 5)));
-                    preparedStream.stream.setSync(BASS.SYNC_TYPE.END, d_onFinish);
-                }
-
-                // トラックの開始位置にシーク
-                double seekOfset = preparedStream.cueOffset - (preparedStream.stream.positionSec);
-                if (Math.Abs(seekOfset) > 2) // シーク先がすぐ先の場合何もしない
-                {
-                    Logger.Debug("Seeking to " + preparedStream.cueOffset);
-                    preparedStream.stream.positionSec = preparedStream.cueOffset;
+                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_on80Percent, (ulong)(preparedStream.stream.filesize * 0.80));
+                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, (ulong)(Math.Max(preparedStream.stream.length * 0.90, preparedStream.stream.filesize - preparedStream.stream.Seconds2Bytes(5))));
+                    preparedStream.stream.setSync(BASS.SYNC_TYPE.END, d_onFinish, 0, preparedStream);
                 }
 
                 if (currentStream != null && currentStream.stream != preparedStream.stream)
@@ -1055,31 +1007,25 @@ namespace Gageas.Lutea.Core
                             ? track.file_name_CUESheet
                             : Path.GetDirectoryName(filename) + Path.DirectorySeparatorChar + track.file_name_CUESheet;
 
-                        if (currentStream != null && streamFullPath == currentStream.cueStreamFileName)
-                        {
-                            newstream = currentStream.stream;
-                        }
-                        else
-                        {
-                            Logger.Log("new Stream opened " + streamFullPath);
-                            newstream = new BASS.FileStream(streamFullPath, flag);
-                            if (newstream != null)
-                            {
-                                newstream.positionSec = track.start / 75.0;
-                            }
-//                            newstream.positionSec = track.start / 75.0;
-                        }
-
+                        Logger.Log("new Stream opened " + streamFullPath);
+                        newstream = new BASS.FileStream(streamFullPath, flag);
                         if (newstream == null)
                         {
                             preparedStream = null;
                             return false;
                         }
-                        nextStream = new StreamObject(newstream, filename, track.start / 75.0, (track.end > track.start ? ((track.end - track.start) / 75.0) : (newstream.length - (track.start / 75.0))));
+                        nextStream = new StreamObject(newstream, filename, newstream.Seconds2Bytes(track.start / 75.0) , newstream.Seconds2Bytes((track.end > track.start ? ((track.end - track.start) / 75.0) : (newstream.length - (track.start / 75.0)))));
                         if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
                         nextStream.cueStreamFileName = streamFullPath;
-                        nextStream.cueOffset = track.start / 75.0;
-                        nextStream.cueLength = (track.end > track.start ? ((track.end - track.start) / 75.0) : (newstream.length - (track.start / 75.0)));
+                        nextStream.cueOffset = (ulong)track.start * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
+                        if (track.end > track.start)
+                        {
+                            nextStream.cueLength = (ulong)(track.end - track.start) * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
+                        }
+                        else
+                        {
+                            nextStream.cueLength = (ulong)newstream.filesize - nextStream.cueOffset;
+                        }
                         var gain = track.getTagValue("ALBUM GAIN");
                         if (gain != null)
                         {
@@ -1089,24 +1035,14 @@ namespace Gageas.Lutea.Core
                     }
                     else
                     {
-                        bool created = false;
-                        BASS.Stream newstream;
-                        if (currentStream != null && filename.Trim() == currentStream.cueStreamFileName)
-                        {
-                            newstream = currentStream.stream;
-                        }
-                        else
-                        {
-                            newstream = new BASS.FileStream(filename, flag);
-                            created = true;
-                            Logger.Debug("Stream created" + newstream.length);
-                        }
+                        BASS.Stream newstream = new BASS.FileStream(filename, flag);
                         if (newstream == null)
                         {
                             preparedStream = null;
                             return false;
                         }
                         nextStream = new StreamObject(newstream, filename);
+                        nextStream.cueLength = 0;
                         var tag = Tags.MetaTag.readTagByFilename(filename.Trim(), false);
                         KeyValuePair<string, object> cue = tag.Find((match) => match.Key == "CUESHEET" ? true : false);
                         if (cue.Key != null)
@@ -1114,8 +1050,15 @@ namespace Gageas.Lutea.Core
                             CD cd = CUEparser.fromString(cue.Value.ToString(), filename, false);
                             CD.Track track = cd.tracks[Int32.Parse(row[(int)DBCol.tagTracknumber].ToString()) - 1];
                             nextStream.cueStreamFileName = filename.Trim();
-                            nextStream.cueOffset = track.start / 75.0;
-                            nextStream.cueLength = (track.end > track.start ? ((track.end - track.start) / 75.0) : (newstream.length - (track.start / 75.0)));
+                            nextStream.cueOffset = (ulong)track.start * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
+                            if (track.end > track.start)
+                            {
+                                nextStream.cueLength = (ulong)(track.end - track.start) * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
+                            }
+                            else
+                            {
+                                nextStream.cueLength = (ulong)newstream.filesize - nextStream.cueOffset;
+                            }
                             var gain = track.getTagValue("ALBUM GAIN");
                             if (gain != null)
                             {
@@ -1129,19 +1072,19 @@ namespace Gageas.Lutea.Core
                             {
                                 nextStream.gain = Util.Util.parseDouble(gain.Value.ToString());
                             }
-                        }
-                        if (created)
-                        {
-                            newstream.positionSec = nextStream.cueOffset;
-                            if (newstream != null)
+                            KeyValuePair<string, object> iTunSMPB = tag.Find((match) => match.Key.ToUpper() == "ITUNSMPB" ? true : false);
+                            if (iTunSMPB.Value != null)
                             {
-                                if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
+                                var smpbs = iTunSMPB.Value.ToString().Trim().Split(new char[] { ' ' }).Select(_=>System.Convert.ToUInt64(_, 16)).ToArray();
+                                // ref. http://nyaochi.sakura.ne.jp/archives/2006/09/15/itunes-v70070%E3%81%AE%E3%82%AE%E3%83%A3%E3%83%83%E3%83%97%E3%83%AC%E3%82%B9%E5%87%A6%E7%90%86/
+                                nextStream.cueOffset = (smpbs[1]) * newstream.GetChans() * sizeof(float);
+                                nextStream.cueLength = (smpbs[3]) * newstream.GetChans() * sizeof(float);
                             }
                         }
+                        if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
                     }
+                    nextStream.stream.position = nextStream.cueOffset;
                     nextStream.meta = row;
-//                    newstream.volume = _volume;
-//                    Logger.Log("Stream opened. " + newstream.length + " seconds");
                     // Outputを再構築せずにそのまま使えますのとき
                     preparedStream = nextStream;
                 }
@@ -1205,7 +1148,9 @@ namespace Gageas.Lutea.Core
         }
         private static void onFinish(BASS.SYNC_TYPE type, object cookie)
         {
-            Logger.Log("finished");
+            if (cookie != currentStream) return;
+            if (!currentStream.ready) return;
+            currentStream.ready = false;
 
             UpdatePlaybackCount(currentStream);
             if (playbackOrder == Controller.PlaybackOrder.Track)
