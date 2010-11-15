@@ -1075,10 +1075,22 @@ namespace Gageas.Lutea.Core
                             KeyValuePair<string, object> iTunSMPB = tag.Find((match) => match.Key.ToUpper() == "ITUNSMPB" ? true : false);
                             if (iTunSMPB.Value != null)
                             {
-                                var smpbs = iTunSMPB.Value.ToString().Trim().Split(new char[] { ' ' }).Select(_=>System.Convert.ToUInt64(_, 16)).ToArray();
+                                var smpbs = iTunSMPB.Value.ToString().Trim().Split(new char[] { ' ' }).Select(_ => System.Convert.ToUInt64(_, 16)).ToArray();
                                 // ref. http://nyaochi.sakura.ne.jp/archives/2006/09/15/itunes-v70070%E3%81%AE%E3%82%AE%E3%83%A3%E3%83%83%E3%83%97%E3%83%AC%E3%82%B9%E5%87%A6%E7%90%86/
                                 nextStream.cueOffset = (smpbs[1]) * newstream.GetChans() * sizeof(float);
                                 nextStream.cueLength = (smpbs[3]) * newstream.GetChans() * sizeof(float);
+                            }
+                            else
+                            {
+                                using (var fs = System.IO.File.Open(filename.Trim(), System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
+                                {
+                                    var lametag = Lametag.Read(fs);
+                                    if (lametag != null)
+                                    {
+                                        nextStream.cueOffset = (ulong)(lametag.delay) * newstream.GetChans() * sizeof(float);
+                                        nextStream.cueLength = newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float);
+                                    }
+                                }
                             }
                         }
                         if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
