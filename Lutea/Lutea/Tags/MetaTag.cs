@@ -68,14 +68,26 @@ namespace Gageas.Lutea.Tags
                         case ".tta":
                         case ".mp3":
                         case ".mp2":
-                            tag = ApeTag.Read(fs, createImageObject);
-                            if (tag == null) tag = new List<KeyValuePair<string, object>>();
-                            fs.Seek(0, System.IO.SeekOrigin.Begin);
-                            var tag_id3v2 = ID3ToTag(ID3V2Tag.read_id3tag(fs, createImageObject));
-                            if (tag_id3v2 != null) tag.AddRange(tag_id3v2);
-                            fs.Seek(0, System.IO.SeekOrigin.Begin);
-                            var tag_id3v1 = ID3.Read(fs);
-                            if (tag_id3v1 != null) tag.AddRange(tag_id3v1);
+                            try
+                            {
+                                tag = ApeTag.Read(fs, createImageObject);
+                                if (tag == null) tag = new List<KeyValuePair<string, object>>();
+                            }
+                            catch { }
+                            try
+                            {
+                                fs.Seek(0, System.IO.SeekOrigin.Begin);
+                                var tag_id3v2 = ID3ToTag(ID3V2Tag.read_id3tag(fs, createImageObject));
+                                if (tag_id3v2 != null) tag.AddRange(tag_id3v2);
+                            }
+                            catch { }
+                            try
+                            {
+                                fs.Seek(0, System.IO.SeekOrigin.Begin);
+                                var tag_id3v1 = ID3.Read(fs);
+                                if (tag_id3v1 != null) tag.AddRange(tag_id3v1);
+                            }
+                            catch { }
                             break;
 
                         default:
@@ -83,7 +95,7 @@ namespace Gageas.Lutea.Tags
                     }
                 }
             }
-            catch (UnauthorizedAccessException) { }
+            catch { }
 
             if (tag == null) return null;
 
