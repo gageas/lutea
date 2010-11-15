@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.IO;
 
 namespace Gageas.Lutea.Tags
@@ -25,44 +26,57 @@ namespace Gageas.Lutea.Tags
 
         public static List<KeyValuePair<string,object>> Read(Stream strm, bool createImageObject = true){
             List<KeyValuePair<string,object>> tag = new List<KeyValuePair<string,object>>();
-            ATOM_nodeList atom = new ATOM_nodeList();
-            atom.CreateHeavyObject = createImageObject;
-            atom.BuildFromStream(strm,0, strm.Length);
+            ATOM_nodeList rootAtom = new ATOM_nodeList();
+            rootAtom.CreateHeavyObject = createImageObject;
+            rootAtom.BuildFromStream(strm,0, strm.Length);
 
-            var artist = getTagValue<ATOM__ART>(atom);
+            var artist = getTagValue<ATOM__ART>(rootAtom);
             if (artist != null) tag.Add(new KeyValuePair<string, object>("ARTIST", artist));
 
-            var title = getTagValue<ATOM__nam>(atom);
+            var title = getTagValue<ATOM__nam>(rootAtom);
             if (title != null) tag.Add(new KeyValuePair<string, object>("TITLE", title));
 
-            var album = getTagValue<ATOM__alb>(atom);
+            var album = getTagValue<ATOM__alb>(rootAtom);
             if (album != null) tag.Add(new KeyValuePair<string, object>("ALBUM", album));
 
-            var track = getTagValue<ATOM_trkn>(atom);
+            var track = getTagValue<ATOM_trkn>(rootAtom);
             if (track != null) tag.Add(new KeyValuePair<string, object>("TRACK", track));
 
-            var cover = getTagValue<ATOM_covr>(atom);
+            var date = getTagValue<ATOM__dat>(rootAtom);
+            if (date != null) tag.Add(new KeyValuePair<string, object>("DATE", track));
+
+            var cover = getTagValue<ATOM_covr>(rootAtom);
             if (cover != null) tag.Add(new KeyValuePair<string, object>("COVER ART", cover));
+
+            var tmp = rootAtom.GetChildNodes<ATOM_____>();
+            foreach (var e in tmp)
+            {
+                var s = e.GetChildNode<ATOM_name>().Value;
+                if (s == "iTunSMPB")
+                {
+                    tag.Add(new KeyValuePair<string, object>("ITUNSMPB", e.GetChildNode<ATOM_data>().strValue));
+                }
+            }
 
             return tag;
         }
 
         abstract class ATOM : IEnumerable<ATOM>
         {
-//            public IEnumerator<ATOM> GetEnumerator()
-//            {
-//                return childNodes.GetEnumerator();
-//            }
+            // nullのとき、親ノードの値を継承する
+            private Boolean? createHeavyObject = null;
+            protected List<ATOM> childNodes;
             public ATOM ParentNode = null;
-            private List<ATOM> childNodes;
+
+            public abstract void BuildFromStream(Stream strm, int offset, long length);
+
             public ATOM()
             {
                 this.childNodes = new List<ATOM>();
             }
-            public abstract void BuildFromStream(Stream strm, int offset, long length);
-
 
             public T GetChildNode<T>() where T:ATOM {
+                if (childNodes == null) return null;
                 foreach (ATOM atom in childNodes)
                 {
                     if (atom is T) return (T)atom;
@@ -72,13 +86,25 @@ namespace Gageas.Lutea.Tags
                 return null;
             }
 
+            public IEnumerable<T> GetChildNodes<T>() where T : ATOM
+            {
+                if (childNodes == null) return null;
+                List<T> list = new List<T>();
+                foreach (ATOM atom in childNodes)
+                {
+                    if (atom is T) list.Add((T)atom);
+                    var sub = atom.GetChildNodes<T>();
+                    list.AddRange(sub);
+                }
+                return list;
+            }
+
             public void AddChild(ATOM node)
             {
                 node.ParentNode = this;
                 childNodes.Add(node);
             }
 
-            private Boolean? createHeavyObject = null;
             public Boolean CreateHeavyObject
             {
                 set
@@ -118,9 +144,19 @@ namespace Gageas.Lutea.Tags
         class ATOM_nodeList : ATOM
         {
             private const int NODE_LIST_HEADER_SIZE = 8;
+            private static readonly Regex linehead = new Regex(@"^", RegexOptions.Multiline);
             public ATOM_nodeList()
                 : base()
             {
+            }
+            public override string ToString()
+            {
+                List<string> buf = new List<string>();
+                foreach (var node in childNodes)
+                {
+                    buf.Add(linehead.Replace(node.GetType().Name + " : " + node.ToString(), "    "));
+                }
+                return this.GetType().Name + Environment.NewLine + String.Join(Environment.NewLine, buf.ToArray());
             }
             public override void BuildFromStream(Stream strm,int offset,long length){
                 long p = 0;
@@ -167,6 +203,15 @@ namespace Gageas.Lutea.Tags
                         case "covr":
                             atom = new ATOM_covr();
                             break;
+                        case "----":
+                            atom = new ATOM_____();
+                            break;
+                        case "name":
+                            atom = new ATOM_name();
+                            break;
+                        case "mean":
+                            atom = new ATOM_mean();
+                            break;
                         default:
                             switch (BitConverter.ToUInt32(header, 4)) // NOTICE: for Little Endian
                             {
@@ -181,6 +226,12 @@ namespace Gageas.Lutea.Tags
                                     break;
                                 case 0x6E6567A9: // .gen Genre
                                     atom = new ATOM__gen();
+                                    break;
+                                case 0x796164A9: // .dat Date
+                                    atom = new ATOM__dat();
+                                    break;
+                                default:
+                                    Logger.Debug("There's no rule to read " + atom_name);
                                     break;
                             }
                             break;
@@ -216,14 +267,9 @@ namespace Gageas.Lutea.Tags
             }
         }
 
-        private class ATOM_moov : ATOM_nodeList
-        {
+        private class ATOM_moov : ATOM_nodeList { }
 
-        }
-
-        private class ATOM_udta : ATOM_nodeList
-        {
-        }
+        private class ATOM_udta : ATOM_nodeList { }
 
         private class ATOM_meta : ATOM_nodeList
         {
@@ -233,42 +279,66 @@ namespace Gageas.Lutea.Tags
             }
         }
 
-        private class ATOM_ilst : ATOM_nodeList
+        private class ATOM_ilst : ATOM_nodeList { }
+
+        private class ATOM_trkn : ATOM_nodeList { }
+
+        private class ATOM_disk : ATOM_nodeList { }
+
+        private class ATOM__ART : ATOM_nodeList { }
+
+        private class ATOM__nam : ATOM_nodeList { }
+
+        private class ATOM__alb : ATOM_nodeList { }
+
+        private class ATOM__gen : ATOM_nodeList { }
+
+        private class ATOM__dat : ATOM_nodeList { }
+
+        private class ATOM_covr : ATOM_nodeList { }
+
+        private class ATOM_____ : ATOM_nodeList { } // ハイフン4つ
+
+        private class ATOM_name : ATOM
         {
+            public string Value;
+            public override string ToString()
+            {
+                return Value.ToString();
+            }
+            public override void BuildFromStream(Stream strm, int offset, long length)
+            {
+                byte[] buf = new byte[length];
+                strm.Read(buf, offset, (int)length);
+                Value = Encoding.ASCII.GetString(buf, 4, (int)length - 4);
+            }
         }
 
-        private class ATOM_trkn : ATOM_nodeList
+        private class ATOM_mean : ATOM
         {
-        }
-
-        private class ATOM_disk : ATOM_nodeList
-        {
-        }
-
-        private class ATOM__ART : ATOM_nodeList
-        {
-        }
-
-        private class ATOM__nam : ATOM_nodeList
-        {
-        }
-
-        private class ATOM__alb : ATOM_nodeList
-        {
-        }
-
-        private class ATOM__gen : ATOM_nodeList
-        {
-        }
-
-        private class ATOM_covr : ATOM_nodeList
-        {
+            public string Value;
+            public override string ToString()
+            {
+                return Value.ToString();
+            }
+            public override void BuildFromStream(Stream strm, int offset, long length)
+            {
+                byte[] buf = new byte[length];
+                strm.Read(buf, offset, (int)length);
+                Value = Encoding.ASCII.GetString(buf, 4, (int)length - 4);
+            }
         }
 
         private class ATOM_data : ATOM
         {
             public string strValue;
             public object objValue;
+            public override string ToString()
+            {
+                if (strValue != null) return strValue;
+                if (objValue != null) return "BinaryObject";
+                return "null";
+            }
             public override void BuildFromStream(Stream strm,int offset, long length)
             {
                 byte[] buf = new byte[length];
