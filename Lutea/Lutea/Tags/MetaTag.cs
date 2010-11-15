@@ -13,7 +13,11 @@ namespace Gageas.Lutea.Tags
             if (id3 == null) return null;
             List<KeyValuePair<string, object>> tag = new List<KeyValuePair<string, object>>();
             id3.frame.ForEach((x) => {
-                if (x.id == "TXXX")
+                if (ID3V2Tag.FRAMES[x.id_x].name4 == "TXXX")
+                {
+                    tag.Add(new KeyValuePair<string, object>(x.extid, x.extvalue));
+                }
+                else if (ID3V2Tag.FRAMES[x.id_x].name4 == "COMM" && !string.IsNullOrEmpty(x.extid))
                 {
                     tag.Add(new KeyValuePair<string, object>(x.extid, x.extvalue));
                 }
