@@ -38,15 +38,6 @@ namespace Gageas.Lutea.Tags
                 {
                     switch (System.IO.Path.GetExtension(filename).ToLower())
                     {
-                        case ".tta":
-                        ID3:
-                            tag = ID3ToTag(ID3V2Tag.read_id3tag(fs, createImageObject));
-                            if (tag == null)
-                            {
-                                tag = ID3.Read(fs);
-                            }
-                            break;
-
                         case ".flac":
                             tag = FlacTag.Read(fs);
                             break;
@@ -71,15 +62,22 @@ namespace Gageas.Lutea.Tags
                         case ".ape": // apetag MP3も一旦defaultでこっちに落とす。APETAGがなかったらgotoでID3へ
                         case ".tak":
                         case ".wv":
+                            tag = ApeTag.Read(fs, createImageObject);
+                            break;
+
+                        case ".tta":
                         case ".mp3":
                         case ".mp2":
-                            try
-                            {
-                                tag = ApeTag.Read(fs, createImageObject);
-                            }
-                            catch { }
-                            if (tag == null) { fs.Seek(0, System.IO.SeekOrigin.Begin); goto ID3; }
+                            tag = ApeTag.Read(fs, createImageObject);
+                            if (tag == null) tag = new List<KeyValuePair<string, object>>();
+                            fs.Seek(0, System.IO.SeekOrigin.Begin);
+                            var tag_id3v2 = ID3ToTag(ID3V2Tag.read_id3tag(fs, createImageObject));
+                            if (tag_id3v2 != null) tag.AddRange(tag_id3v2);
+                            fs.Seek(0, System.IO.SeekOrigin.Begin);
+                            var tag_id3v1 = ID3.Read(fs);
+                            if (tag_id3v1 != null) tag.AddRange(tag_id3v1);
                             break;
+
                         default:
                             return null;
                     }
