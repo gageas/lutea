@@ -44,7 +44,6 @@ namespace Gageas.Lutea.Core
 
     class AppCore
     {
-        private const int BASS_BUFFFER_LEN = 1500;
         private const string settingFileName = "settings.dat";
 
         internal static List<Lutea.Core.LuteaComponentInterface> plugins = new List<Core.LuteaComponentInterface>();
@@ -292,7 +291,7 @@ namespace Gageas.Lutea.Core
                                 try
                                 {
                                     BASS.BASS_Free();
-                                    BASS.BASS_Init(0, OutputFreq, BASS_BUFFFER_LEN);
+                                    BASS.BASS_Init(0, OutputFreq);
                                     outputChannel = new BASS.WASAPIOutput(freq, chans, StreamProc, true, enableWASAPIVolume, false);
                                     if (outputChannel != null)
                                     {
@@ -310,7 +309,7 @@ namespace Gageas.Lutea.Core
                                 try
                                 {
                                     BASS.BASS_Free();
-                                    BASS.BASS_Init(0, OutputFreq, BASS_BUFFFER_LEN);
+                                    BASS.BASS_Init(0, OutputFreq);
                                     outputChannel = new BASS.WASAPIOutput(freq, chans, StreamProc, false, enableWASAPIVolume, false);
                                     if (outputChannel != null)
                                     {
@@ -329,7 +328,7 @@ namespace Gageas.Lutea.Core
                             try
                             {
                                 BASS.BASS_Free();
-                                BASS.BASS_Init(-1, OutputFreq, BASS_BUFFFER_LEN);
+                                BASS.BASS_Init(-1, OutputFreq);
                                 outputChannel = new BASS.UserSampleStream(freq, chans, StreamProc, (BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) | BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
                                 if (outputChannel != null) outputMode = Controller.OutputModeEnum.FloatingPoint;
                                 Logger.Debug("Use Float Output");
@@ -342,7 +341,7 @@ namespace Gageas.Lutea.Core
                     if (outputChannel == null)
                     {
                         BASS.BASS_Free();
-                        BASS.BASS_Init(-1, OutputFreq, BASS_BUFFFER_LEN);
+                        BASS.BASS_Init(-1, OutputFreq);
                         outputChannel = new BASS.UserSampleStream(freq, chans, StreamProc, BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
                         outputMode = Controller.OutputModeEnum.Integer16;
                         Logger.Debug("Use Int Output");
@@ -368,7 +367,7 @@ namespace Gageas.Lutea.Core
             }
         }
 
-        private static void KillOutputChannel(bool waitsync=false)
+        private static void KillOutputChannel()
         {
             var _outputChannel = outputChannel;
             //            lock (outputChannelLock)
@@ -376,10 +375,6 @@ namespace Gageas.Lutea.Core
                 if (outputChannel != null)
                 {
                     outputChannel = null;
-                    if (waitsync)
-                    {
-                        Thread.Sleep(BASS_BUFFFER_LEN);
-                    }
                     _outputChannel.Stop();
                     _outputChannel.Dispose();
                 }
@@ -502,7 +497,7 @@ namespace Gageas.Lutea.Core
             if (initialized) return null;
             SetDllDirectoryW("");
 
-            BASS.BASS_Init(0, OutputFreq, BASS_BUFFFER_LEN);
+            BASS.BASS_Init(0, OutputFreq);
 
             userDirectory = new UserDirectory();
             // Load Components
@@ -890,14 +885,14 @@ namespace Gageas.Lutea.Core
                     {
                         outputChannel.Stop();
                     }
-                    PlayQueuedStream(stopCurrent);
+                    PlayQueuedStream();
                 }
             }));
             Logger.Debug("Leave PlayPlaylistItem");
             return true;
         }
 
-        private static void PlayQueuedStream(bool stopcurrent=false){
+        private static void PlayQueuedStream(){
             lock (prepareMutex)
             {
                 isPlaying = false;
@@ -927,7 +922,7 @@ namespace Gageas.Lutea.Core
                     var isFloat = (preparedStream.stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) > 0;
                     try
                     {
-                        KillOutputChannel(!stopcurrent);
+                        KillOutputChannel();
                     }
                     catch (Exception e) { Logger.Log(e.ToString()); }
                     preparedStream.stream.Dispose();
@@ -960,9 +955,9 @@ namespace Gageas.Lutea.Core
                 }
                 else
                 {
-//                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_on80Percent, (ulong)(preparedStream.stream.filesize * 0.80));
-//                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, (ulong)(Math.Max(preparedStream.stream.length * 0.90, preparedStream.stream.filesize - preparedStream.stream.Seconds2Bytes(5))));
-//                    preparedStream.stream.setSync(BASS.SYNC_TYPE.END, d_onFinish, 0, preparedStream);
+                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_on80Percent, (ulong)(preparedStream.stream.filesize * 0.80));
+                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, (ulong)(Math.Max(preparedStream.stream.length * 0.90, preparedStream.stream.filesize - preparedStream.stream.Seconds2Bytes(5))));
+                    preparedStream.stream.setSync(BASS.SYNC_TYPE.END, d_onFinish, 0, preparedStream);
                 }
 
                 if (currentStream != null && currentStream.stream != preparedStream.stream)
