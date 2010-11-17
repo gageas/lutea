@@ -2051,6 +2051,9 @@ namespace Gageas.Lutea.DefaultUI
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "DeleteObject")]
         private static extern bool DeleteObject(IntPtr hGDIOBJ);
 
+        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "SetTextColor")]
+        private static extern uint SetTextColor(IntPtr hDC, uint COLORREF);
+
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "TextOutW")]
         private static extern bool TextOut(IntPtr hDC, int nXStart, int nYStart, string str, int length);
 
@@ -2113,9 +2116,10 @@ namespace Gageas.Lutea.DefaultUI
             row = Controller.GetPlaylistRow(e.ItemIndex);
             if (row == null || row.Length == 0) return;
             var bounds = e.Bounds;
+            var isSelected = (e.State & ListViewItemStates.Selected) != 0;
             using (var g = e.Graphics)
             {
-                Brush brush = (e.State & ListViewItemStates.Selected) != 0 ? SystemBrushes.MenuHighlight : e.ItemIndex % 2 == 0 ? SystemBrushes.Window : SystemBrushes.ControlLight;
+                Brush brush = isSelected ? SystemBrushes.Highlight : e.ItemIndex % 2 == 0 ? SystemBrushes.Window : SystemBrushes.ControlLight;
                 g.FillRectangle(brush, bounds);
 
                 var cols = new List<ColumnHeader>();
@@ -2135,9 +2139,9 @@ namespace Gageas.Lutea.DefaultUI
                         int stars = 0;
                         int.TryParse(row[(int)col].ToString(), out stars);
                         stars /= 10;
-                        int y = (bounds.Height - StarImages[0].Height) / 2 + bounds.Y;
-                        int x = bounds.X + pc + 2;
-                        g.DrawImage(StarImages[stars], x, y, new Rectangle(0, 0, head.Width - 4, StarImages[stars].Height), GraphicsUnit.Pixel);
+                        int _y = (bounds.Height - StarImages[0].Height) / 2 + bounds.Y;
+                        int _x = bounds.X + pc + 2;
+                        g.DrawImage(StarImages[stars], _x, _y, new Rectangle(0, 0, head.Width - 4, StarImages[stars].Height), GraphicsUnit.Pixel);
                     }
                     pc += head.Width;
                 }
@@ -2146,54 +2150,59 @@ namespace Gageas.Lutea.DefaultUI
                 IntPtr hDC = g.GetHdc();
                 IntPtr hFont = (emphasizedRowId == e.ItemIndex ? new Font(listView1.Font, FontStyle.Bold) : listView1.Font).ToHfont();
                 IntPtr hOldFont = SelectObject(hDC, hFont);
+
+                Size size_dots;
+                GetTextExtentPoint32(hDC, "...", "...".Length, out size_dots);
+                int y = bounds.Y + (bounds.Height - size_dots.Height) / 2;
+
+                SelectObject(hDC, GetStockObject(WHITE_PEN));
+                SetTextColor(hDC, (uint)(isSelected ? SystemColors.HighlightText.ToArgb() : SystemColors.ControlText.ToArgb())&0xffffff);
                 foreach (ColumnHeader head in cols)
                 {
                     MoveToEx(hDC, bounds.X + pc - 1, bounds.Y, IntPtr.Zero);
-                    SelectObject(hDC, GetStockObject(WHITE_PEN));
                     LineTo(hDC, bounds.X + pc - 1, bounds.Y + bounds.Height);
                     DBCol col = (DBCol)head.Tag;
-                    var w = head.Width - 2;
-                    var str = row[(int)col].ToString();
+
                     if (col == DBCol.rating)
                     {
+                        pc += head.Width;
+
+                        continue;
+                    }
+
+                    var w = head.Width - 2;
+                    var str = row[(int)col].ToString();
+                    switch (col)
+                    {
+                        case DBCol.lastplayed:
+                        case DBCol.modify:
+                            str = str == "0" ? "-" : Controller.timestamp2DateTime(long.Parse(str)).ToString();
+                            break;
+                        case DBCol.statDuration:
+                            str = Util.Util.getMinSec(int.Parse(str));
+                            break;
+                        case DBCol.statBitrate:
+                            str = (int.Parse(str)) / 1000 + "kbps";
+                            break;
+                    }
+                    Size size;
+                    GetTextExtentPoint32(hDC, str, str.Length, out size);
+                    if (size.Width < w)
+                    {
+                        var padding = col == DBCol.tagTracknumber || col == DBCol.playcount || col == DBCol.lastplayed || col == DBCol.statBitrate || col == DBCol.statDuration ? (w - size.Width) - 1 : 1;
+                        TextOut(hDC, bounds.X + pc + padding, y, str, str.Length);
                     }
                     else
                     {
-                        switch (col)
+                        if (w > size_dots.Width)
                         {
-                            case DBCol.lastplayed:
-                            case DBCol.modify:
-                                str = str == "0" ? "-" : Controller.timestamp2DateTime(long.Parse(str)).ToString();
-                                break;
-                            case DBCol.statDuration:
-                                str = Util.Util.getMinSec(int.Parse(str));
-                                break;
-                            case DBCol.statBitrate:
-                                str = (int.Parse(str)) / 1000 + "kbps";
-                                break;
-                        }
-                        Size size;
-                        GetTextExtentPoint32(hDC, str, str.Length, out size);
-                        int y = bounds.Y + (bounds.Height - size.Height) / 2;
-                        if (size.Width < w)
-                        {
-                            var padding = col == DBCol.tagTracknumber || col == DBCol.playcount || col == DBCol.lastplayed || col == DBCol.statBitrate || col == DBCol.statDuration ? (w - size.Width) - 1 : 1;
-                            TextOut(hDC, bounds.X + pc + padding, y, str, str.Length);
-                        }
-                        else
-                        {
-                            Size size_dots;
-                            GetTextExtentPoint32(hDC, "...", "...".Length, out size_dots);
-                            if (w > size_dots.Width)
+                            int cnt = str.Length + 1;
+                            do
                             {
-                                int cnt = str.Length + 1;
-                                do
-                                {
-                                    GetTextExtentPoint32(hDC, str, --cnt, out size);
-                                    if (size.Width > w * 2) cnt = (int)(cnt * 0.75);
-                                } while (size.Width + size_dots.Width > w && cnt > 0);
-                                TextOut(hDC, bounds.X + pc + 1, y, str.Substring(0, cnt) + "...", cnt + 3);
-                            }
+                                GetTextExtentPoint32(hDC, str, --cnt, out size);
+                                if (size.Width > w * 2) cnt = (int)(cnt * 0.75);
+                            } while (size.Width + size_dots.Width > w && cnt > 0);
+                            TextOut(hDC, bounds.X + pc + 1, y, str.Substring(0, cnt) + "...", cnt + 3);
                         }
                     }
                     pc += head.Width;
@@ -2202,24 +2211,11 @@ namespace Gageas.Lutea.DefaultUI
                 DeleteObject(SelectObject(hDC, hOldFont));
                 g.ReleaseHdc(hDC);
 
-                /*
-                pc = 0;
-                foreach (ColumnHeader head in cols)
-                {
-                    DBCol col = (DBCol)head.Tag;
-                    var str = row[(int)col].ToString();
-                    TextRenderer.DrawText(g,str,listView1.Font,
-                }*/
-
                 if (emphasizedRowId == e.ItemIndex)
                 {
                     g.DrawRectangle(Pens.Navy, bounds.X - 1, bounds.Y, bounds.Width, bounds.Height - 1);
                 }
-
-                //                TextRenderer.DrawText(g, row[0].ToString(), listView1.Font, e.Bounds, listView1.ForeColor, flags);
-
             }
-
         }
 
         private void listView1_MouseDown(object sender, MouseEventArgs e)
