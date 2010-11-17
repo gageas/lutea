@@ -777,8 +777,8 @@ namespace Gageas.Wrapper.BASS
 
             public override bool SetVolume(float vol)
             {
-//                volume = vol;
-                _BASS_ChannelSlideAttribute(handle, (uint)BASS_ATTRIB.VOL, vol, 200); 
+                volume = vol;
+//                _BASS_ChannelSlideAttribute(handle, (uint)BASS_ATTRIB.VOL, vol, 200); 
                 return true;
             }
 
