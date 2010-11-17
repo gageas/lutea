@@ -36,6 +36,7 @@ namespace Gageas.Lutea.Core
         public string cueStreamFileName = null;
         public ulong cueOffset = 0;
         public ulong cueLength = 0;
+        public bool invalidateCueLengthOnSeek = false;
         public object[] meta;
         public double? gain;
         public bool ready = false;
@@ -447,7 +448,7 @@ namespace Gageas.Lutea.Core
                 // currentStreamから読み出し
                 if (_current != null && _current.stream != null && _current.ready)
                 {
-                    if ((_current.cueLength > 0 || _current.cueOffset > 0) && length + _current.stream.position > _current.cueLength + _current.cueOffset)
+                    if ((_current.cueLength > 0) && length + _current.stream.position > _current.cueLength + _current.cueOffset)
                     {
                         uint toread = (uint)(_current.cueLength + _current.cueOffset - _current.stream.position);
                         read1 = readStreamGained(buffer, toread, _current.stream, _current.gain == null ? NoReplaygainGainBoost : (ReplaygainGainBoost + _current.gain ?? 0));
@@ -956,13 +957,11 @@ namespace Gageas.Lutea.Core
                 {
                     preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_on80Percent, preparedStream.cueOffset + (ulong)(preparedStream.cueLength * 0.80));
                     preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, preparedStream.cueOffset + (ulong)(Math.Max(preparedStream.cueLength * 0.90, preparedStream.cueLength - preparedStream.stream.Seconds2Bytes(5))));
-                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onFinish, preparedStream.cueOffset + preparedStream.cueLength, preparedStream);
                 }
                 else
                 {
                     preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_on80Percent, (ulong)(preparedStream.stream.filesize * 0.80));
-                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, (ulong)(Math.Max(preparedStream.stream.length * 0.90, preparedStream.stream.filesize - preparedStream.stream.Seconds2Bytes(5))));
-                    preparedStream.stream.setSync(BASS.SYNC_TYPE.END, d_onFinish, 0, preparedStream);
+                    preparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, (ulong)(Math.Max(preparedStream.stream.filesize * 0.90, preparedStream.stream.filesize - preparedStream.stream.Seconds2Bytes(5))));
                 }
 
                 if (currentStream != null && currentStream.stream != preparedStream.stream)
@@ -1096,6 +1095,7 @@ namespace Gageas.Lutea.Core
                                         {
                                             nextStream.cueOffset = (ulong)(lametag.delay) * newstream.GetChans() * sizeof(float);
                                             nextStream.cueLength = newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float);
+                                            nextStream.invalidateCueLengthOnSeek = true;
                                         }
                                     }
                                 }
