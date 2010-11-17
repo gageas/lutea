@@ -178,7 +178,6 @@ namespace Gageas.Lutea.Core
             AppCore.enableWASAPIExclusive = pref.EnableWASAPIExclusive;
             AppCore.enableWASAPIVolume = pref.EnableWASAPIVolume;
             AppCore.OutputFreq = (uint)pref.OutputFreq;
-            AppCore.SetVolumeGained();
         }
     }
 }

@@ -98,7 +98,7 @@ namespace Gageas.Lutea.Core
                         }
                         else
                         {
-                            AppCore.SetVolumeGained(); //.stream.volume = (float)(_volume * Math.Pow(10.0, ((preparedStream.gain ?? (-gainBoost) + gainBoost) / 20.0)));
+                            AppCore.outputChannel.SetVolume(_volume); //.stream.volume = (float)(_volume * Math.Pow(10.0, ((preparedStream.gain ?? (-gainBoost) + gainBoost) / 20.0)));
                         }
                     }
                     AppCore._mute = value;
@@ -121,9 +121,9 @@ namespace Gageas.Lutea.Core
                 lock (volumeLock)
                 {
                     _volume = value;
-                    if (!mute && AppCore.currentStream != null)
+                    if (!mute && AppCore.outputChannel != null)
                     {
-                        AppCore.SetVolumeGained();
+                        AppCore.outputChannel.SetVolume(_volume);
                     }
                 }
             }
@@ -156,22 +156,6 @@ namespace Gageas.Lutea.Core
             }
         }
         #endregion
-
-
-        /// <summary>
-        /// Replay Gain付きのトラックの音量を上げる
-        /// </summary>
-        internal static void SetVolumeGained()
-        {
-            SetVolumeGained(currentStream);
-        }
-        private static void SetVolumeGained(StreamObject src)
-        {
-            if (outputChannel != null)
-            {
-                outputChannel.SetVolume((float)_volume);
-            }
-        }
 
         /// <summary>
         /// タグ(ApeTag)からデータベースのColumnへのマッピングを表すDicionary
@@ -255,7 +239,6 @@ namespace Gageas.Lutea.Core
         }
         private static bool OutputStreamRebuildRequired(uint freq,uint chans, bool useFloat)
         {
-//            BASS.Stream.StreamFlag flag = info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT;
             if (outputChannel == null || outputChannel.GetFreq() != freq || outputChannel.GetChans() != chans)// || (outputChannel.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != flag)
             {
                 return true;
@@ -338,21 +321,14 @@ namespace Gageas.Lutea.Core
                             catch { }
                         }
                     }
-
-                    // 16bit-int出力の生成を試行
-                    if (outputChannel == null)
-                    {
-                        BASS.BASS_Free();
-                        BASS.BASS_Init(-1, OutputFreq, BASS_BUFFFER_LEN);
-                        outputChannel = new BASS.UserSampleStream(freq, chans, StreamProc, BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
-                        outputMode = Controller.OutputModeEnum.Integer16;
-                        Logger.Debug("Use Int Output");
-
-                    }
                 }
                 ret = true;
             }
-            SetVolumeGained();
+            if (outputChannel != null)
+            {
+                outputChannel.SetVolume((float)_volume);
+                outputChannel.SetVolume((float)_volume);
+            }
             return ret;
         }
 
@@ -372,7 +348,7 @@ namespace Gageas.Lutea.Core
         private static void KillOutputChannel(bool waitsync=false)
         {
             var _outputChannel = outputChannel;
-            //            lock (outputChannelLock)
+            lock (outputChannelLock)
             {
                 if (outputChannel != null)
                 {
@@ -392,25 +368,22 @@ namespace Gageas.Lutea.Core
         #region ストリームプロシージャ
         private static uint readStreamGained(IntPtr buffer, uint length, BASS.Stream stream, double gaindB)
         {
-            uint read = stream.GetData(buffer, length);//readAsStereo(buffer, length, stream);
+            uint read = stream.GetData(buffer, length);
             if (read == 0xffffffff) return read;
             uint read_size = read & 0x7fffffff;
-            ApplyGain(buffer, read_size, gaindB);
-            return read;
-        }
-        private static void ApplyGain(IntPtr buffer, uint length, double gaindB)
-        {
             if (EnableReplayGain)
             {
-                unsafe
-                {
-                    double gain_l = Math.Pow(10.0, gaindB / 20.0);
-                    float* dest = (float*)buffer;
-                    for (int i = 0, l = (int)(length / 4); i < l; i++)
-                    {
-                        dest[i] *= (float)gain_l;
-                    }
-                }
+                ApplyGain(buffer, read_size, gaindB);
+            }
+            return read;
+        }
+        private unsafe static void ApplyGain(IntPtr buffer, uint length, double gaindB)
+        {
+            double gain_l = Math.Pow(10.0, gaindB / 20.0);
+            float* dest = (float*)buffer;
+            for (int i = 0, l = (int)(length / sizeof(float)); i < l; i++)
+            {
+                dest[i] *= (float)gain_l;
             }
         }
 
@@ -942,8 +915,6 @@ namespace Gageas.Lutea.Core
                     prepareNextStream(IndexInPlaylist(fname));
                     PlayQueuedStream();
                     return;
-
-//                    ResetOutputChannel(preparedStream.stream.GetFreq(), (preparedStream.stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0);
                 }
 
                 // currentのsyncを解除
@@ -971,9 +942,8 @@ namespace Gageas.Lutea.Core
                 currentStream = null;
                 preparedStream.ready = true;
                 preparedStream.playbackCounterUpdated = false;
-                //                preparedStream.stream.play();
                 currentStream = preparedStream;
-                SetVolumeGained();
+                outputChannel.SetVolume((float)_volume);
                 outputChannel.Resume();
                 preparedStream = null;
                 _pause = false;
@@ -1224,39 +1194,6 @@ namespace Gageas.Lutea.Core
         #endregion
 
         /// <summary>
-        /// ratingなどをバックグラウンドでdbに書きこむスレッド
-        /// </summary>
-        #region database Writer
-        /*
-        internal static Thread DatabaseWriterThread;
-        internal static Queue<string> DatabaseWriterQueue = new Queue<string>();
-        private static void DatabaseWriterThreadProc()
-        {
-            while (true)
-            {
-                try
-                {
-                    lock (DatabaseWriterQueue)
-                    {
-                        while (DatabaseWriterQueue.Count > 0)
-                        {
-                            var sql = DatabaseWriterQueue.Dequeue();
-                            using (var connect = Library.Connect(false))
-                            using (var stmt = connect.Prepare(sql))
-                            {
-                                stmt.Evaluate(null);
-                            }
-                        }
-                    }
-
-                    Thread.Sleep(Timeout.Infinite);
-                }
-                catch (Exception) { }
-            }
-        }*/
-        #endregion
-
-        /// <summary>
         /// 外部からデータベースに書き込んだ後に呼ぶ
         /// </summary>
         /// <param name="silent"></param>
@@ -1264,7 +1201,6 @@ namespace Gageas.Lutea.Core
         internal static void DatabaseUpdated(bool silent = false)
         {
             string latest = latestPlaylistQuery;
-//            createPlaylist(latestPlaylistQuery);
             if (!silent)
             {
                 if (h2k6db != null)
