@@ -320,10 +320,15 @@ namespace Gageas.Lutea.Core
                 }
                 set
                 {
-                    if (AppCore.currentStream == null) return;
+                    var _current = AppCore.currentStream;
+                    if (_current == null) return;
                     //                    KillOutputChannel();
                     AppCore.outputChannel.Pause();
-                    AppCore.currentStream.stream.position = AppCore.currentStream.stream.Seconds2Bytes(value) + AppCore.currentStream.cueOffset;
+                    if (_current.invalidateCueLengthOnSeek)
+                    {
+                        _current.cueLength = 0;
+                    }
+                    _current.stream.position = _current.stream.Seconds2Bytes(value) + _current.cueOffset;
 //                    AppCore.ResetOutputChannel(AppCore.currentStream.stream.GetFreq(), (AppCore.currentStream.stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0);
                     AppCore.outputChannel.Start();
                 }
