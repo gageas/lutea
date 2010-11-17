@@ -304,7 +304,9 @@ namespace Gageas.Lutea.Library
                     }
                     lock (SQLQue)
                     {
-                        foreach (var e in localQueue)
+                        var sortedQueue = localQueue.ToList();
+                        sortedQueue.Sort((x, y) => x.file_name.CompareTo(y.file_name));
+                        foreach (var e in sortedQueue)
                         {
                             SQLQue.Enqueue(e);
                         }
