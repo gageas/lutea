@@ -250,6 +250,7 @@ namespace Gageas.Wrapper.SQLite3
          */
         public abstract class STMT : IDisposable
         {
+            public abstract string Source { get; }
             public delegate void dCallback(Object[] o);
             public abstract void Evaluate(dCallback cb);
             public abstract object[][] EvaluateAll();
@@ -263,6 +264,7 @@ namespace Gageas.Wrapper.SQLite3
         {
             SQLite3DB db;
             IntPtr stmt;
+            string source;
             public _STMT(SQLite3DB db, String sql)
             {
                 this.db = db;
@@ -270,6 +272,7 @@ namespace Gageas.Wrapper.SQLite3
                 IntPtr _sql = Marshal.StringToHGlobalUni(sql);
                 try
                 {
+                    this.source = sql;
                     ret = sqlite3_prepare16(db.dbPtr, _sql, sql.Length * 2, out stmt, IntPtr.Zero);
                 }
                 finally
@@ -294,6 +297,11 @@ namespace Gageas.Wrapper.SQLite3
             ~_STMT()
             {
                 this.Dispose();
+            }
+
+            public override string Source
+            {
+                get { return this.source; }
             }
 
             public override void Reset()
