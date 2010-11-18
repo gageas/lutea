@@ -685,12 +685,12 @@ namespace Gageas.Lutea.Core
                 string not = "";
                 if (word[0] == '-')
                 {
-                    not = " NOT ";
+                    not = "NOT ";
                     word = word.Substring(1);
                 }
-                migemo_phrase[i] = not + " migemo( '" + word.EscapeSingleQuotSQL() + "' , tagTitle||'\n'||tagAlbum||'\n'||tagArtist||'\n'||tagComment||'\n'||tagGenre)";
+                migemo_phrase[i] = not + "migemo( '" + word.EscapeSingleQuotSQL() + "' , tagTitle||'\n'||tagAlbum||'\n'||tagArtist||'\n'||tagComment||'\n'||tagGenre)";
             }
-            return db.Prepare("CREATE TEMP TABLE playlist AS SELECT * FROM list WHERE " + String.Join(" AND ", migemo_phrase) + " ;");
+            return db.Prepare("CREATE TEMP TABLE playlist AS SELECT * FROM list WHERE " + String.Join(" AND ", migemo_phrase) + ";");
         }
         private static SQLite3DB.STMT GetRegexpSTMT(string sql, SQLite3DB db)
         {
@@ -750,7 +750,7 @@ namespace Gageas.Lutea.Core
                             using (SQLite3DB.Lock dbLock = h2k6db.GetLock("list"))
                             {
                                 tmt = Util.Util.TryThese<SQLite3DB.STMT>(new CreatePlaylistParser[]{
-                                    ()=>h2k6db.Prepare("CREATE TEMP TABLE playlist AS " + sql + ";"),
+                                    ()=>h2k6db.Prepare("CREATE TEMP TABLE playlist AS " + (sql==""?"SELECT * FROM list":sql) + ";"),
                                     ()=>GetRegexpSTMT(sql,h2k6db),
                                     ()=>GetMigemoSTMT(sql,h2k6db),
                                     ()=>h2k6db.Prepare("CREATE TEMP TABLE playlist AS SELECT * FROM list WHERE tagTitle||tagAlbum||tagArtist||tagComment like '%" + sql.EscapeSingleQuotSQL() + "%';"),
