@@ -489,6 +489,10 @@ namespace Gageas.Lutea.Core
             AppCore.createPlaylist(sql, playOnCreate);
         }
 
+        public static string LatestPlaylistQuery
+        {
+            get { return AppCore.latestPlaylistQuery; }
+        }
 
         public static object[] GetPlaylistRow(int index)
         {
