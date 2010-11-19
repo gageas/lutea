@@ -489,7 +489,7 @@ namespace Gageas.Wrapper.BASS
 #if DEBUG
                     Gageas.Lutea.Logger.Log("スレッドID"+th.Id+" のプライオリティを上げます");
 #endif
-                    th.PriorityLevel = System.Diagnostics.ThreadPriorityLevel.Highest;
+                    th.PriorityLevel = System.Diagnostics.ThreadPriorityLevel.TimeCritical;
                 }
                 if (!success)
                 {
@@ -542,6 +542,16 @@ namespace Gageas.Wrapper.BASS
 
             public override bool SetVolume(float vol)
             {
+                if (!volumeAdjust)
+                {
+                    if (vol == 0)
+                    {
+                        BASS_WASAPI_Stop(true);
+                    }
+                    else
+                    {
+                    }
+                }
                 if (!volumeAdjust) return false;
                 return BASS_WASAPI_SetVolume(true, vol);
             }
