@@ -41,13 +41,13 @@ namespace Gageas.Lutea.Library
             }
         }
 
-        public string QueryDir
+/*        public string QueryDir
         {
             get
             {
                 return UserDir + sep + "query";
             }
-        }
+        }*/
 
         public UserDirectory(string username)
         {
@@ -67,11 +67,11 @@ namespace Gageas.Lutea.Library
                 Directory.CreateDirectory(UserDir);
             }
 
-            if (!Directory.Exists(QueryDir))
+/*            if (!Directory.Exists(QueryDir))
             {
                 Directory.CreateDirectory(QueryDir);
                 // TODO: デフォルトのqファイルを書きだし
-            }
+            }*/
         }
 
         public H2k6Library OpenLibrary(ICollection<string> customColumns){
