@@ -1061,6 +1061,7 @@ namespace Gageas.Lutea.Core
                                 // ref. http://nyaochi.sakura.ne.jp/archives/2006/09/15/itunes-v70070%E3%81%AE%E3%82%AE%E3%83%A3%E3%83%83%E3%83%97%E3%83%AC%E3%82%B9%E5%87%A6%E7%90%86/
                                 nextStream.cueOffset = (smpbs[1]) * newstream.GetChans() * sizeof(float);
                                 nextStream.cueLength = (smpbs[3]) * newstream.GetChans() * sizeof(float);
+                                nextStream.invalidateCueLengthOnSeek = true;
                             }
                             else
                             {
