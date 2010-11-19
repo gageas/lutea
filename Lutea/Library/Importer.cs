@@ -353,7 +353,12 @@ namespace Gageas.Lutea.Library
 
                 processedFile.Clear();
 
-                var directories = System.IO.Directory.GetDirectories(importPath, "*", System.IO.SearchOption.AllDirectories);
+                string[] directories = null;
+                try
+                {
+                    directories = System.IO.Directory.GetDirectories(importPath, "*", System.IO.SearchOption.AllDirectories);
+                }
+                catch (Exception e) { Message(e.ToString()); return; }
                 SetMaximum_read(directories.Length);
 
                 workers = new List<Thread>();

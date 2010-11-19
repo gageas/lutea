@@ -494,6 +494,11 @@ namespace Gageas.Lutea.Core
             get { return AppCore.latestPlaylistQuery; }
         }
 
+        public static string LatestPlaylistQuerySub
+        {
+            get { return AppCore.latestPlaylistQuerySub; }
+        }
+
         public static object[] GetPlaylistRow(int index)
         {
             if (index < 0) return null;

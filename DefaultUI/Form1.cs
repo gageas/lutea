@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
+using System.IO;
 
 using Gageas.Lutea.Tags;
 using Gageas.Lutea.Util;
@@ -93,6 +94,7 @@ namespace Gageas.Lutea.DefaultUI
         private bool FFTLogarithmic = false;
         private Color SpectrumColor1 = SystemColors.Control;
         private Color SpectrumColor2 = Color.Orange;
+        private bool ColoredAlbum = true;
 
         public DefaultUIForm()
         {
@@ -423,6 +425,9 @@ namespace Gageas.Lutea.DefaultUI
                 list.KeyDown += (o, arg) => { if (arg.KeyCode == Keys.Return)Controller.PlayPlaylistItem(0); };
                 list.Margin = new System.Windows.Forms.Padding(0, 0, 0, 0);
                 page.Controls.Add(list);
+                page.Padding = new System.Windows.Forms.Padding(0);
+                page.Margin = new System.Windows.Forms.Padding(0);
+                page.BorderStyle = BorderStyle.None;
                 dummyFilterTab.TabPages.Add(page);
                 page.Tag = col;
             }
@@ -476,7 +481,7 @@ namespace Gageas.Lutea.DefaultUI
             int index = Controller.Current.IndexInPlaylist;
             if (sql != null)
             {
-                if (sql == textBox1.Text)
+                if (sql == textBox1.Text.Replace(@"\n", "\n"))
                 {
                     if (itemCount > 0)
                     {
@@ -515,12 +520,32 @@ namespace Gageas.Lutea.DefaultUI
         #endregion
 
         #region queryView utility methods
-        private void reloadDynamicPlaylist()
+        internal void reloadDynamicPlaylist()
         {
             char sep = System.IO.Path.DirectorySeparatorChar;
             treeView1.Nodes.Clear();
+            treeView1.ImageList = new ImageList();
+//            treeView1.ImageList.ImageSize = new System.Drawing.Size(12, 12);
+            treeView1.ImageList.ColorDepth = ColorDepth.Depth32Bit;
+            treeView1.ImageList.Images.Add(Shell32.GetShellIcon(3, false));
+            treeView1.ImageList.Images.Add(Shell32.GetShellIcon(70, false));
             TreeNode folder = new TreeNode("クエリ");
             string querydir = Controller.UserDirectory + sep + "query";
+            if (!Directory.Exists(querydir))
+            {
+                Directory.CreateDirectory(querydir);
+            }
+            if (Directory.GetFileSystemEntries(querydir).Length == 0)
+            {
+                new PlaylistEntryFile(querydir, "ランダム20曲", "SELECT * FROM list order by random() limit 20;", -1, 0).Save();
+                new PlaylistEntryFile(querydir, "一週間以内に聞いた曲", "SELECT * FROM list WHERE current_timestamp64() - lastplayed <= 604800;", 18, 0).Save();
+                new PlaylistEntryFile(querydir, "再生回数3回以上", "SELECT * FROM list WHERE playcount >= 3;", 17, 0).Save();
+                new PlaylistEntryFile(querydir, "評価3つ星以上", "SELECT * FROM list WHERE rating >= 30;", 15, 0).Save();
+                new PlaylistEntryFile(querydir, "3日以内に追加・更新された曲", "SELECT * FROM list WHERE current_timestamp64() - modify <= 259200;", -1, 0).Save();
+                new PlaylistEntryFile(querydir, "まだ聞いていない曲", "SELECT * FROM list WHERE lastplayed = 0;", 18, 0).Save();
+            }
+            folder.Tag = new PlaylistEntryDirectory(querydir);
+            folder.ImageIndex = 0;
             DynamicPlaylist.Load(querydir, folder, null);
             treeView1.Nodes.Add(folder);
             treeView1.ExpandAll();
@@ -531,11 +556,11 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (node == null) return;
             if (node.Tag == null) return;
-            if (node.Tag is PlaylistEntry)
+            if (node.Tag is PlaylistEntryFile)
             {
-                PlaylistEntry ent = (PlaylistEntry)node.Tag;
+                var ent = (PlaylistEntryFile)node.Tag;
                 textBox1.Text = null;
-                textBox1.Text = ent.sql;
+                textBox1.Text = ent.sql.Replace("\n", @"\n");
             }
         }
         #endregion
@@ -1073,7 +1098,7 @@ namespace Gageas.Lutea.DefaultUI
             try
             {
                 textBox1.BackColor = statusColor[(int)QueryStatus.Waiting];
-                Controller.createPlaylist(textBox1.Text);
+                Controller.createPlaylist(textBox1.Text.Replace(@"\n","\n"));
             }
             catch (Exception)
             {
@@ -1747,6 +1772,23 @@ namespace Gageas.Lutea.DefaultUI
                 }
             }
 
+
+            private bool coloredAlbum;
+            [Description("アルバムごとに色分けする\n適当")]
+            [DefaultValue(true)]
+            [Category("Playlist View")]
+            public bool ColoredAlbum
+            {
+                get
+                {
+                    return coloredAlbum;
+                }
+                set
+                {
+                    coloredAlbum = value;
+                }
+            }
+
             private DefaultUIForm form;
             public Preference(DefaultUIForm form)
             {
@@ -1757,6 +1799,7 @@ namespace Gageas.Lutea.DefaultUI
                 color1 = form.SpectrumColor1;
                 color2 = form.SpectrumColor2;
                 font_playlistView = new Font(form.listView1.Font, 0);
+                coloredAlbum = form.ColoredAlbum;
             }
         }
         private void parseSetting(Dictionary<string, object> setting)
@@ -1783,6 +1826,7 @@ namespace Gageas.Lutea.DefaultUI
                 ()=>SpectrumColor2 = (Color)setting["SpectrumColor2"],
                 ()=>displayColumns = (DBCol[])setting["DisplayColumns"],
                 ()=>listView1.Font = (System.Drawing.Font)setting["Font_PlaylistView"],
+                ()=>ColoredAlbum = (bool)setting["ColoredAlbum"],
             }, null);
         }
 
@@ -1848,7 +1892,7 @@ namespace Gageas.Lutea.DefaultUI
             pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
 
             // プレイリストビューの右クリックにColumn選択を生成
-            var column_select = new ToolStripMenuItem("Display");
+            var column_select = new ToolStripMenuItem("表示する項目");
             foreach (DBCol col in Enum.GetValues(typeof(DBCol)))
             {
                 ToolStripMenuItem item = new ToolStripMenuItem(Controller.GetColumnLocalString(col), null, (e, o) =>
@@ -1917,6 +1961,7 @@ namespace Gageas.Lutea.DefaultUI
             setting["SpectrumColor2"] = SpectrumColor2;
             setting["DisplayColumns"] = displayColumns;
             setting["Font_PlaylistView"] = listView1.Font;
+            setting["ColoredAlbum"] = ColoredAlbum;
             return setting;
         }
 
@@ -1934,6 +1979,7 @@ namespace Gageas.Lutea.DefaultUI
             this.SpectrumColor2 = pref.SpectrumColor2;
             this.SpectrumMode = pref.SpectrumMode;
             this.listView1.Font = pref.Font_playlistView;
+            this.ColoredAlbum = pref.ColoredAlbum;
             setupPlaylistView();
         }
 
@@ -1942,14 +1988,6 @@ namespace Gageas.Lutea.DefaultUI
             throw new NotImplementedException();
         }
         #endregion
-
-        private class DoubleBufferedListView : ListView
-        {
-            public DoubleBufferedListView()
-            {
-                DoubleBuffered = true;
-            }
-        }
 
         private void listView2_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1971,67 +2009,6 @@ namespace Gageas.Lutea.DefaultUI
         {
             e.DrawDefault = true;
         }
-
-        /*
-        private TextFormatFlags flags = TextFormatFlags.WordEllipsis | TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine;
-        private static StringFormat sf = new StringFormat(StringFormatFlags.NoWrap);
-        private void listView1_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
-        {
-            return;
-            using (var g = e.Graphics)
-            {
-                var b = e.Bounds;
-                if (b.Height < 10) return;
-                var str = row[(int)(displayColumns[e.ColumnIndex])].ToString();
-                if (displayColumns[e.ColumnIndex] == DBCol.rating)
-                {
-                    int stars = 0;
-                    int.TryParse(str,out stars);
-                    stars /= 10;
-                    for(int i=0;i<stars;i++){
-                        g.FillEllipse(SystemBrushes.ControlDarkDark,b.X + 10*i + 3,b.Y + 3,10,10);
-                    }
-
-//                    g.FillRectangle(Brushes.Blue, e.Bounds.X, e.Bounds.Y, e.Item.Text.Length * 10, 10);
-//                    g.FillRectangle(Brushes.Blue, e.Bounds.X, e.Bounds.Y,  , 10);
-                }
-                else
-                {
-                    switch (displayColumns[e.ColumnIndex])
-                    {
-                        case DBCol.lastplayed:
-                        case DBCol.modify:
-                            str = str == "0" ? "-" : Controller.timestamp2DateTime(long.Parse(str)).ToString();
-                            break;
-                        case DBCol.statDuration:
-                            str = Util.Util.getMinSec(int.Parse(str));
-                            break;
-                        case DBCol.statBitrate:
-                            str = (int.Parse(str)) / 1000 + "kbps";
-                            break;
-                    }
-                    IntPtr hDC = g.GetHdc();
-                    IntPtr hFont = this.Font.ToHfont();
-                    IntPtr hOldFont = SelectObject(hDC, hFont);
-                    TextOut(hDC, b.X, b.Y, str, str.Length);
-
-                    DeleteObject(SelectObject(hDC, hOldFont));
-                    g.ReleaseHdc(hDC);
-
-                    
-                    if (emphasizedRowId == e.ItemIndex)
-                    {
-                        TextRenderer.DrawText(g, str, new Font(listView1.Font,FontStyle.Bold), e.Bounds, SystemColors.ControlText,flags);
-                    }
-                    else
-                    {
-                        TextRenderer.DrawText(g, str, listView1.Font, e.Bounds, SystemColors.ControlText,flags);
-                    }
-                }
-                g.DrawLine(Pens.White, b.X, b.Y, b.X, b.Y+99);
-                e.DrawDefault = false;
-            }
-        }*/
 
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "MoveToEx")]
         private static extern bool MoveToEx(IntPtr hDC, int x, int y, IntPtr lpPoint);
@@ -2071,7 +2048,6 @@ namespace Gageas.Lutea.DefaultUI
 );
 
         private const int WHITE_PEN = 6;
-        private object[] row;
         //        IntPtr hBmpSrc = IntPtr.Zero;
         //        private GDIBitmap StarImage_on = null;
         //        private GDIBitmap StarImage_off = null;
@@ -2113,40 +2089,44 @@ namespace Gageas.Lutea.DefaultUI
         }
         private void listView1_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
-            row = Controller.GetPlaylistRow(e.ItemIndex);
+            var row = Controller.GetPlaylistRow(e.ItemIndex);
             if (row == null || row.Length == 0) return;
+
             var bounds = e.Bounds;
             var isSelected = (e.State & ListViewItemStates.Selected) != 0;
+
+            var row_above = Controller.GetPlaylistRow(e.ItemIndex - 1);
+            var isFirstTrack = row_above == null || row[(int)DBCol.tagAlbum].ToString() != row_above[(int)DBCol.tagAlbum].ToString();
             using (var g = e.Graphics)
             {
-                Brush brush = isSelected ? SystemBrushes.Highlight : e.ItemIndex % 2 == 0 ? SystemBrushes.Window : SystemBrushes.ControlLight;
+                // 背景色描画
+                // SystemBrushはsolidBrushのはずだけど
+                SolidBrush brush = (SolidBrush)(isSelected ? SystemBrushes.Highlight : e.ItemIndex % 2 == 0 ? SystemBrushes.Window : SystemBrushes.ControlLight);
+                if (ColoredAlbum & !isSelected)
+                {
+                    int c = (row[(int)DBCol.tagAlbum].GetHashCode() % 0x1000000) | 0x00c0c0c0;
+                    int red = (c & 0xff0000) >> 16;
+                    int green = (c & 0x00ff00) >> 8;
+                    int blue = c & 0xff;
+                    if (e.ItemIndex % 2 == 0)
+                    {
+                        red = 255 - (int)((255 - red) * 0.7);
+                        green = 255 - (int)((255 - green) * 0.7);
+                        blue = 255 - (int)((255 - blue) * 0.7);
+                    }
+                    brush = new SolidBrush(Color.FromArgb(red, green, blue));
+                }
                 g.FillRectangle(brush, bounds);
 
-                var cols = new List<ColumnHeader>();
+                // columnを表示順にソート
+                var cols = new ColumnHeader[listView1.Columns.Count];
                 foreach (ColumnHeader head in listView1.Columns)
                 {
-                    cols.Add(head);
+                    cols[head.DisplayIndex] = head;
                 }
-                cols.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+
+                // 各column描画準備
                 int pc = 0;
-
-                // 本当はbitbltするといいんだろうけど面倒だしたかが知れてるのでdrawImageする
-                foreach (ColumnHeader head in cols)
-                {
-                    DBCol col = (DBCol)head.Tag;
-                    if (col == DBCol.rating)
-                    {
-                        int stars = 0;
-                        int.TryParse(row[(int)col].ToString(), out stars);
-                        stars /= 10;
-                        int _y = (bounds.Height - StarImages[0].Height) / 2 + bounds.Y;
-                        int _x = bounds.X + pc + 2;
-                        g.DrawImage(StarImages[stars], _x, _y, new Rectangle(0, 0, head.Width - 4, StarImages[stars].Height), GraphicsUnit.Pixel);
-                    }
-                    pc += head.Width;
-                }
-
-                pc = 0;
                 IntPtr hDC = g.GetHdc();
                 IntPtr hFont = (emphasizedRowId == e.ItemIndex ? new Font(listView1.Font, FontStyle.Bold) : listView1.Font).ToHfont();
                 IntPtr hOldFont = SelectObject(hDC, hFont);
@@ -2157,6 +2137,8 @@ namespace Gageas.Lutea.DefaultUI
 
                 SelectObject(hDC, GetStockObject(WHITE_PEN));
                 SetTextColor(hDC, (uint)(isSelected ? SystemColors.HighlightText.ToArgb() : SystemColors.ControlText.ToArgb())&0xffffff);
+
+                // 各column描画
                 foreach (ColumnHeader head in cols)
                 {
                     MoveToEx(hDC, bounds.X + pc - 1, bounds.Y, IntPtr.Zero);
@@ -2165,8 +2147,15 @@ namespace Gageas.Lutea.DefaultUI
 
                     if (col == DBCol.rating)
                     {
+                        int stars = 0;
+                        int.TryParse(row[(int)col].ToString(), out stars);
+                        stars /= 10;
+                        int _y = (bounds.Height - StarImages[0].Height) / 2 + bounds.Y;
+                        int _x = bounds.X + pc + 2;
+                        g.ReleaseHdc(hDC);
+                        g.DrawImage(StarImages[stars], _x, _y, new Rectangle(0, 0, head.Width - 4, StarImages[0].Height), GraphicsUnit.Pixel);
+                        hDC = g.GetHdc();
                         pc += head.Width;
-
                         continue;
                     }
 
@@ -2183,6 +2172,10 @@ namespace Gageas.Lutea.DefaultUI
                             break;
                         case DBCol.statBitrate:
                             str = (int.Parse(str)) / 1000 + "kbps";
+                            break;
+                        case DBCol.file_size:
+                            int sz = int.Parse(str);
+                            str = sz > 1024 * 1024 ? String.Format("{0:0.00}MB", sz / 1024.0 / 1024) : String.Format("{0}KB", sz / 1024);
                             break;
                     }
                     Size size;
@@ -2211,9 +2204,16 @@ namespace Gageas.Lutea.DefaultUI
                 DeleteObject(SelectObject(hDC, hOldFont));
                 g.ReleaseHdc(hDC);
 
+                // アルバム先頭マーク描画
+                if (isFirstTrack)
+                {
+                    g.DrawLine(SystemPens.ControlDark, bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y);
+                }
+
+                // 強調枠描画
                 if (emphasizedRowId == e.ItemIndex)
                 {
-                    g.DrawRectangle(Pens.Navy, bounds.X - 1, bounds.Y, bounds.Width, bounds.Height - 1);
+                    g.DrawRectangle(Pens.Navy, bounds.X, bounds.Y, bounds.Width, bounds.Height - 1);
                 }
             }
         }
@@ -2273,38 +2273,69 @@ namespace Gageas.Lutea.DefaultUI
             }
             listView1.Cursor = Cursors.Arrow;
         }
-    }
 
-    /*
-    public class Track : TrackBar
-    {
-        [DllImport("user32.dll")]
-        private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, out _RECT lParam);
-
-        private const int TBM_GETCHANNELRECT = 1050;
-        public _RECT Rect
+        private void editToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            get
+            if (treeView1.SelectedNode != null)
             {
-                _RECT rect;
-                SendMessage(this.Handle, TBM_GETCHANNELRECT, IntPtr.Zero, out rect);
-                return rect;
+                if (treeView1.SelectedNode.Tag is PlaylistEntryFile)
+                {
+                    new QueryEditor((PlaylistEntryFile)treeView1.SelectedNode.Tag, this).ShowDialog();
+                }
             }
+//            Logger.Log(treeView1.SelectedNode.ToString());
         }
 
-        public Track()
+        private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            this.Maximum = 200;
-            this.Minimum = 0;
+            treeView1.SelectedNode = e.Node;
         }
 
-        public struct _RECT
+        private void newDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            public UInt32 left;
-            public UInt32 top;
-            public UInt32 right;
-            public UInt32 bottom;
+            if (treeView1.SelectedNode == null || treeView1.SelectedNode.Tag == null) return;
+            PlaylistEntryDirectory parent = null;
+            if (treeView1.SelectedNode.Tag is PlaylistEntryFile)
+            {
+                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Parent.Tag;
+            }
+            else if (treeView1.SelectedNode.Tag is PlaylistEntryDirectory)
+            {
+                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Tag;
+            }
+            (new QueryDirectoryNew(parent, this)).Show();
+        }
+
+        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeView1.SelectedNode == null) return;
+            if (MessageBox.Show("以下の項目を削除します\n " + treeView1.SelectedNode.Text, "クエリ項目の削除", MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            {
+                ((PlaylistEntry)treeView1.SelectedNode.Tag).Delete();
+            }
+            reloadDynamicPlaylist();
+        }
+
+        private void RenameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeView1.SelectedNode == null) return;
+            new QueryRenameForm((PlaylistEntry)treeView1.SelectedNode.Tag, this).ShowDialog();
+            reloadDynamicPlaylist();
+        }
+
+        private void CreateQueryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeView1.SelectedNode == null || treeView1.SelectedNode.Tag == null) return;
+            PlaylistEntryDirectory parent = null;
+            if (treeView1.SelectedNode.Tag is PlaylistEntryFile)
+            {
+                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Parent.Tag;
+            }
+            else if (treeView1.SelectedNode.Tag is PlaylistEntryDirectory)
+            {
+                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Tag;
+            }
+            new QueryEditor(parent.path, this).ShowDialog();
         }
     }
-    */
 }
