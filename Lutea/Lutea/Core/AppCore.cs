@@ -647,6 +647,7 @@ namespace Gageas.Lutea.Core
         private static String playlistQueryQueue = null;
         private static Boolean PlayOnCreate = false;
         internal static String latestPlaylistQuery = "SELECT * FROM list;";
+        internal static String latestPlaylistQuerySub = "";
         private static readonly object playlistQueryQueueLock = new object();
         internal static void createPlaylist(String sql, bool playOnCreate = false)
         {
@@ -673,7 +674,7 @@ namespace Gageas.Lutea.Core
             }
         }
 
-        private static SQLite3DB.STMT GetMigemoSTMT(string sql,SQLite3DB db)
+        private static string GetMigemoSTMT(string sql)
         {
             if (!Library.MigemoEnabled) throw new System.NotSupportedException("migemo is not enabled.");
 
@@ -690,15 +691,15 @@ namespace Gageas.Lutea.Core
                 }
                 migemo_phrase[i] = not + "migemo( '" + word.EscapeSingleQuotSQL() + "' , tagTitle||'\n'||tagAlbum||'\n'||tagArtist||'\n'||tagComment||'\n'||tagGenre)";
             }
-            return db.Prepare("CREATE TEMP TABLE playlist AS SELECT * FROM list WHERE " + String.Join(" AND ", migemo_phrase) + ";");
+            return "SELECT * FROM list WHERE " + String.Join(" AND ", migemo_phrase) + ";";
         }
-        private static SQLite3DB.STMT GetRegexpSTMT(string sql, SQLite3DB db)
+        private static string GetRegexpSTMT(string sql)
         {
             // prepareできねぇ・・・
             Match match = new Regex(@"^\/(.+)\/[a-z]*$").Match(sql);
             if (match.Success)
             {
-                return h2k6db.Prepare("CREATE TEMP TABLE playlist AS SELECT * FROM list WHERE tagTitle||'\n'||tagAlbum||'\n'||tagArtist||'\n'||tagComment regexp  '" + sql.EscapeSingleQuotSQL() + "' ;");
+                return "SELECT * FROM list WHERE tagTitle||'\n'||tagAlbum||'\n'||tagArtist||'\n'||tagComment regexp  '" + sql.EscapeSingleQuotSQL() + "' ;";
             }
             else
             {
@@ -706,6 +707,13 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        private static SQLite3DB.STMT prepareForCreatePlaylistView(SQLite3DB db, string subquery)
+        {
+            var stmt = db.Prepare("CREATE TEMP TABLE playlist AS " + subquery + " ;");
+            // prepareが成功した場合のみ以下が実行される
+            latestPlaylistQuerySub = subquery;
+            return stmt;
+        }
         delegate SQLite3DB.STMT CreatePlaylistParser();
         private static void createPlaylistProc()
         {
@@ -750,10 +758,12 @@ namespace Gageas.Lutea.Core
                             using (SQLite3DB.Lock dbLock = h2k6db.GetLock("list"))
                             {
                                 tmt = Util.Util.TryThese<SQLite3DB.STMT>(new CreatePlaylistParser[]{
-                                    ()=>h2k6db.Prepare("CREATE TEMP TABLE playlist AS " + (sql==""?"SELECT * FROM list":sql) + ";"),
-                                    ()=>GetRegexpSTMT(sql,h2k6db),
-                                    ()=>GetMigemoSTMT(sql,h2k6db),
-                                    ()=>h2k6db.Prepare("CREATE TEMP TABLE playlist AS SELECT * FROM list WHERE tagTitle||tagAlbum||tagArtist||tagComment like '%" + sql.EscapeSingleQuotSQL() + "%';"),
+//                                    ()=>h2k6db.Prepare("CREATE TEMP TABLE playlist AS " + (sql==""?"SELECT * FROM list":sql) + ";"),
+                                    ()=>prepareForCreatePlaylistView(h2k6db, sql==""?"SELECT * FROM list":sql),
+                                    ()=>prepareForCreatePlaylistView(h2k6db,GetRegexpSTMT(sql)),
+                                    ()=>prepareForCreatePlaylistView(h2k6db,GetMigemoSTMT(sql)),
+                                    ()=>prepareForCreatePlaylistView(h2k6db,"SELECT * FROM list WHERE tagTitle||tagAlbum||tagArtist||tagComment like '%" + sql.EscapeSingleQuotSQL() + "%';"),
+//                                    ()=>h2k6db.Prepare("CREATE TEMP TABLE playlist AS SELECT * FROM list WHERE tagTitle||tagAlbum||tagArtist||tagComment like '%" + sql.EscapeSingleQuotSQL() + "%';"),
                                 },null);
                                 if (tmt != null)
                                 {
@@ -1074,7 +1084,16 @@ namespace Gageas.Lutea.Core
                         }
                         if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
                     }
-                    nextStream.stream.position = nextStream.cueOffset;
+                    if (nextStream.cueOffset < 10000)
+                    {
+                        var mem = Marshal.AllocHGlobal((int)nextStream.cueOffset);
+                        nextStream.stream.GetData(mem, (uint)nextStream.cueOffset);
+                        Marshal.FreeHGlobal(mem);
+                    }
+                    else
+                    {
+                        nextStream.stream.position = nextStream.cueOffset;
+                    }
                     nextStream.meta = row;
                     // Outputを再構築せずにそのまま使えますのとき
                     preparedStream = nextStream;

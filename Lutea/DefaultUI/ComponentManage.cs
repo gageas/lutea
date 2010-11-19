@@ -47,5 +47,10 @@ namespace Gageas.Lutea.DefaultUI
             LuteaComponentInterface component = lcomponents[this.comboBox1.SelectedIndex];
             component.SetPreferenceObject(this.propertyGrid1.SelectedObject);
         }
+
+        private void Close_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
     }
 }
