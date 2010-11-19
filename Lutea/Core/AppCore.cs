@@ -758,12 +758,10 @@ namespace Gageas.Lutea.Core
                             using (SQLite3DB.Lock dbLock = h2k6db.GetLock("list"))
                             {
                                 tmt = Util.Util.TryThese<SQLite3DB.STMT>(new CreatePlaylistParser[]{
-//                                    ()=>h2k6db.Prepare("CREATE TEMP TABLE playlist AS " + (sql==""?"SELECT * FROM list":sql) + ";"),
                                     ()=>prepareForCreatePlaylistView(h2k6db, sql==""?"SELECT * FROM list":sql),
                                     ()=>prepareForCreatePlaylistView(h2k6db,GetRegexpSTMT(sql)),
                                     ()=>prepareForCreatePlaylistView(h2k6db,GetMigemoSTMT(sql)),
                                     ()=>prepareForCreatePlaylistView(h2k6db,"SELECT * FROM list WHERE tagTitle||tagAlbum||tagArtist||tagComment like '%" + sql.EscapeSingleQuotSQL() + "%';"),
-//                                    ()=>h2k6db.Prepare("CREATE TEMP TABLE playlist AS SELECT * FROM list WHERE tagTitle||tagAlbum||tagArtist||tagComment like '%" + sql.EscapeSingleQuotSQL() + "%';"),
                                 },null);
                                 if (tmt != null)
                                 {
