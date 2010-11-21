@@ -419,6 +419,7 @@ namespace Gageas.Wrapper.BASS
             public abstract bool Stop();
             public abstract bool Pause();
             public abstract bool SetVolume(float vol);
+            public abstract bool SetVolume(float vol,uint timespan);
             public abstract uint GetFreq();
             public abstract uint GetChans();
             public abstract float GetVolume();
@@ -540,6 +541,10 @@ namespace Gageas.Wrapper.BASS
                 return BASS_WASAPI_Stop(false);
             }
 
+            public override bool SetVolume(float vol, uint timespan)
+            {
+                return this.SetVolume(vol);
+            }
             public override bool SetVolume(float vol)
             {
                 if (!volumeAdjust)
@@ -788,8 +793,12 @@ namespace Gageas.Wrapper.BASS
             public override bool SetVolume(float vol)
             {
                 volume = vol;
-//                _BASS_ChannelSlideAttribute(handle, (uint)BASS_ATTRIB.VOL, vol, 200); 
                 return true;
+            }
+
+            public override bool SetVolume(float vol, uint timespan)
+            {
+                return _BASS_ChannelSlideAttribute(handle, (uint)BASS_ATTRIB.VOL, vol, timespan);
             }
 
             public override float GetVolume()

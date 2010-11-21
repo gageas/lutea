@@ -75,6 +75,7 @@ namespace Gageas.Lutea.Core
         internal static bool enableWASAPIExclusive = true;
         internal static bool enableWASAPIVolume = false;
         internal static uint OutputFreq = 44100;
+        internal static bool fadeInOutOnSkip = false;
         #endregion
 
         #region set/get Mute
@@ -326,7 +327,6 @@ namespace Gageas.Lutea.Core
             }
             if (outputChannel != null)
             {
-                outputChannel.SetVolume((float)_volume);
                 outputChannel.SetVolume((float)_volume);
             }
             return ret;
@@ -864,7 +864,7 @@ namespace Gageas.Lutea.Core
                         currentStream.ready = false;
                         if (stopCurrent)
                         {
-                            outputChannel.SetVolume(0F);
+                            outputChannel.SetVolume(0F, fadeInOutOnSkip ? 100u : 0u);
                         }
                     }
                     prepareNextStream(index);
@@ -951,7 +951,7 @@ namespace Gageas.Lutea.Core
                 preparedStream.ready = true;
                 preparedStream.playbackCounterUpdated = false;
                 currentStream = preparedStream;
-                outputChannel.SetVolume((float)_volume);
+                outputChannel.SetVolume((float)_volume, fadeInOutOnSkip ? 100u : 0u);
                 outputChannel.Resume();
                 preparedStream = null;
                 _pause = false;
