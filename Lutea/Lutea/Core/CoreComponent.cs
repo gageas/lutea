@@ -126,7 +126,24 @@ namespace Gageas.Lutea.Core
                 }
             }
 
-
+            /// <summary>
+            /// 曲間プチノイズ対策
+            /// </summary>
+            bool fadeInOutOnSkip = AppCore.fadeInOutOnSkip;
+            [Category("Output")]
+            [Description("曲間のプチノイズ対策にフェードインを利用する\n曲間のノイズが気になる場合有効にしてください(非WASAPI時のみ有効)")]
+            [DefaultValue(false)]
+            public bool FadeInOutOnSkip
+            {
+                get
+                {
+                    return fadeInOutOnSkip;
+                }
+                set
+                {
+                    fadeInOutOnSkip = value;
+                }
+            }
         }
         private void ParseSetting(Dictionary<string,object> setting)
         {
@@ -139,6 +156,7 @@ namespace Gageas.Lutea.Core
                 ()=>AppCore.enableWASAPIExclusive = (bool)setting["enableWASAPIExclusive"],
                 ()=>AppCore.enableWASAPIVolume = (bool)setting["enableWASAPIVolume"],
                 ()=>AppCore.OutputFreq = (uint)setting["outputFreq"],
+                ()=>AppCore.fadeInOutOnSkip = (bool)setting["fadeInOutOnSkip"],
             }, null);
         }
         public void Init(object setting)
@@ -160,6 +178,7 @@ namespace Gageas.Lutea.Core
             setting["enableWASAPIExclusive"] = AppCore.enableWASAPIExclusive;
             setting["enableWASAPIVolume"] = AppCore.enableWASAPIVolume;
             setting["outputFreq"] = AppCore.OutputFreq;
+            setting["fadeInOutOnSkip"] = AppCore.fadeInOutOnSkip;
             return setting;
         }
 
@@ -178,6 +197,7 @@ namespace Gageas.Lutea.Core
             AppCore.enableWASAPIExclusive = pref.EnableWASAPIExclusive;
             AppCore.enableWASAPIVolume = pref.EnableWASAPIVolume;
             AppCore.OutputFreq = (uint)pref.OutputFreq;
+            AppCore.fadeInOutOnSkip = pref.FadeInOutOnSkip;
         }
     }
 }
