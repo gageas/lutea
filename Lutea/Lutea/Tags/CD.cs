@@ -278,6 +278,7 @@ namespace Gageas.Lutea.Tags
                 var trackIndex = tr.tag.Find((match) => match.Key == "TRACK" ? true : false);
                 trackindex = int.Parse(trackIndex.Value.ToString());
                 tr.file_name = filename + new String(' ', trackindex);
+                tr.file_size = (int)((long)tr.bitrate * (tr.end - tr.start) / 75.0 / 8);
                 tr.tag.Add(new KeyValuePair<string, object>("ARTIST", cd.artist));
                 tr.tag.Add(new KeyValuePair<string, object>("GENRE", cd.genre));
                 tr.tag.Add(new KeyValuePair<string, object>("DATE", cd.date));
