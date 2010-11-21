@@ -69,6 +69,7 @@
             // 
             // Close
             // 
+            this.Close.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.Close.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.Close.Location = new System.Drawing.Point(515, 13);
             this.Close.Name = "Close";
