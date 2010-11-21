@@ -1162,11 +1162,6 @@ namespace Gageas.Lutea.Core
             currentStream.ready = false;
 
             UpdatePlaybackCount(currentStream);
-            if (playbackOrder == Controller.PlaybackOrder.Track)
-            {
-                currentStream.stream.positionSec = currentStream.cueOffset;
-                return;
-            }
             if (preparedStream == null)
             {
                 Controller.NextTrack(false);
