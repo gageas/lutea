@@ -2213,7 +2213,7 @@ namespace Gageas.Lutea.DefaultUI
                 // 強調枠描画
                 if (emphasizedRowId == e.ItemIndex)
                 {
-                    g.DrawRectangle(Pens.Navy, bounds.X, bounds.Y, bounds.Width, bounds.Height - 1);
+                    g.DrawRectangle(Pens.Navy, bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
                 }
             }
         }
