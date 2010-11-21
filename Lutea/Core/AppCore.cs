@@ -1180,16 +1180,16 @@ namespace Gageas.Lutea.Core
         private static void onPreFinish(BASS.SYNC_TYPE type, object cookie)
         {
             Logger.Log("preSync");
-            if (playbackOrder == Controller.PlaybackOrder.Track)
-            {
-                return;
-            }
             CoreEnqueue(() => prepareNextStream(getSuccTrackIndex()));
         }
 
         internal static int getSuccTrackIndex() // ストリーム終端に達した場合の次のトラックを取得
         {
             int id;
+            if (playbackOrder == Controller.PlaybackOrder.Track)
+            {
+                return Controller.Current.IndexInPlaylist;
+            }
             if (playbackOrder == Controller.PlaybackOrder.Random)
             {
                 if (currentPlaylistRows == 1) return 0;
