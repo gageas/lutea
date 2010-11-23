@@ -8,7 +8,7 @@
     <ProjectGuid>{DD79072E-827B-4600-94CC-BCE1670CCC36}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DefaultUI</RootNamespace>
+    <RootNamespace>Gageas.Lutea.DefaultUI</RootNamespace>
     <AssemblyName>DefaultUI</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Com.cs" />
     <Compile Include="ComponentManage.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -104,6 +105,7 @@
       <DependentUpon>QueryRenameForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Shell32.cs" />
+    <Compile Include="TaskbarExtension.cs" />
     <Compile Include="ToolStripComboBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -150,6 +152,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <EmbeddedResource Include="QueryDirectoryNew.resx">
       <DependentUpon>QueryDirectoryNew.cs</DependentUpon>
@@ -178,6 +181,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="next.bmp" />
+    <None Include="pause.bmp" />
     <Content Include="playpause.bmp" />
     <Content Include="prev.bmp" />
     <Content Include="stop.bmp" />
@@ -187,6 +191,9 @@
       <Project>{902630ED-15F9-4EB4-B30D-CDACD926C630}</Project>
       <Name>Lutea</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
