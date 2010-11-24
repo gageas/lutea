@@ -864,7 +864,7 @@ namespace Gageas.Lutea.Core
                         currentStream.ready = false;
                         if (stopCurrent)
                         {
-                            outputChannel.SetVolume(0F, fadeInOutOnSkip ? 100u : 0u);
+                            outputChannel.SetVolume(-1F, fadeInOutOnSkip ? 100u : 0u);
                         }
                     }
                     prepareNextStream(index);

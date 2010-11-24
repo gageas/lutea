@@ -549,12 +549,9 @@ namespace Gageas.Wrapper.BASS
             {
                 if (!volumeAdjust)
                 {
-                    if (vol == 0)
+                    if (vol == -1)
                     {
                         BASS_WASAPI_Stop(true);
-                    }
-                    else
-                    {
                     }
                 }
                 if (!volumeAdjust) return false;
@@ -792,12 +789,14 @@ namespace Gageas.Wrapper.BASS
 
             public override bool SetVolume(float vol)
             {
+                if (vol < 0) vol = 0;
                 volume = vol;
                 return true;
             }
 
             public override bool SetVolume(float vol, uint timespan)
             {
+                if (vol < 0) vol = 0;
                 return _BASS_ChannelSlideAttribute(handle, (uint)BASS_ATTRIB.VOL, vol, timespan);
             }
 
