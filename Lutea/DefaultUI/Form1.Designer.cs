@@ -276,7 +276,7 @@
             this.xTrackBar1.Size = new System.Drawing.Size(318, 25);
             this.xTrackBar1.TabIndex = 11;
             this.xTrackBar1.TabStop = false;
-            this.xTrackBar1.Value = 10D;
+            this.xTrackBar1.Value = 0D;
             this.xTrackBar1.OnScroll += new Gageas.Lutea.Core.Controller.VOIDVOID(this.xTrackBar1_OnScroll);
             // 
             // toolStrip1
