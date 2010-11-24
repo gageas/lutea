@@ -118,8 +118,16 @@ namespace Gageas.Lutea.DefaultUI
             }
             else
             {
-                g.DrawRectangle(Pens.Black, track);
-                g.DrawRectangle(Pens.Black, thumb);
+                g.DrawLine(SystemPens.ButtonShadow, track.Left, track.Top, track.Right, track.Top);
+                g.DrawLine(SystemPens.ButtonShadow, track.Left, track.Top, track.Left, track.Bottom);
+                g.DrawLine(SystemPens.ButtonHighlight, track.Right, track.Bottom, track.Right, track.Top);
+                g.DrawLine(SystemPens.ButtonHighlight, track.Right, track.Bottom, track.Left, track.Bottom);
+
+                g.FillRectangle(thumbState == TrackBarThumbState.Normal ? SystemBrushes.ButtonFace : SystemBrushes.ButtonHighlight, thumb);
+                g.DrawLine(SystemPens.ButtonHighlight, thumb.Left, thumb.Top, thumb.Right, thumb.Top);
+                g.DrawLine(SystemPens.ButtonHighlight, thumb.Left, thumb.Top, thumb.Left, thumb.Bottom);
+                g.DrawLine(SystemPens.ButtonShadow, thumb.Right, thumb.Bottom, thumb.Right, thumb.Top);
+                g.DrawLine(SystemPens.ButtonShadow, thumb.Right, thumb.Bottom, thumb.Left, thumb.Bottom);
             }
         }
 
@@ -179,6 +187,13 @@ namespace Gageas.Lutea.DefaultUI
         private void XTrackBar_Resize(object sender, EventArgs e)
         {
             this.Invalidate();
+        }
+
+        private void XTrackBar_MouseLeave(object sender, EventArgs e)
+        {
+            if(!Capture){
+                thumbState = TrackBarThumbState.Normal;
+            }
         }
     }
 }
