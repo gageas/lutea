@@ -2021,10 +2021,15 @@ namespace Gageas.Lutea.DefaultUI
             if (this.WindowState == FormWindowState.Normal)
             {
                 if (!config_FormLocation.IsEmpty) {
+                    var locationBackup = this.Location;
                     this.StartPosition = FormStartPosition.Manual;
                     this.Location = config_FormLocation;
+                    if (System.Windows.Forms.Screen.GetWorkingArea(this).IntersectsWith(this.Bounds) == false)
+                    {
+                        this.Location = locationBackup;
+                    }
                 }
-                if (!config_FormSize.IsEmpty) this.Size = config_FormSize;
+                if (!config_FormSize.IsEmpty) this.ClientSize = config_FormSize;
             }
             this.Show();
             pictureBox1.Width = pictureBox1.Height = splitContainer4.SplitterDistance = splitContainer3.SplitterDistance = settingCoverArtSize;
@@ -2104,7 +2109,7 @@ namespace Gageas.Lutea.DefaultUI
             if (this.WindowState == FormWindowState.Normal)
             {
                 setting["WindowLocation"] = this.Location;
-                setting["WindowSize"] = this.Size;
+                setting["WindowSize"] = this.ClientSize;
             }
             else
             {
