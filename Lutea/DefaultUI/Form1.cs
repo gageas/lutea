@@ -217,6 +217,7 @@ namespace Gageas.Lutea.DefaultUI
                         TaskbarExt.Taskbar.SetProgressState(this.Handle, TaskbarExtension.TbpFlag.NoProgress);
                     }
                     var hIcon = hIconForWindowIcon_Large;
+                    SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
                     hIconForWindowIcon_Large = IntPtr.Zero;
                     if (hIcon != IntPtr.Zero)
                     {
@@ -431,17 +432,25 @@ namespace Gageas.Lutea.DefaultUI
 
         private const int WM_COMMAND = 0x0111;
         private const int WM_GETICON = 0x007f;
+        private const int WM_SETICON = 0x0080;
         private const int WM_DWMSENDICONICTHUMBNAIL = 0x0323;
         private const int THBN_CLICKED = 0x1800;
         TaskbarExtension.ThumbButton[] taskbarThumbButtons = new TaskbarExtension.ThumbButton[4];
         protected override void WndProc(ref Message m)
         {
             bool omitBaseProc = false;
-            if (m.Msg == WM_GETICON && hIconForWindowIcon_Large != IntPtr.Zero)
+            if (m.Msg == WM_GETICON) // && hIconForWindowIcon_Large != IntPtr.Zero
             {
                 if ((uint)m.WParam == 1)
                 {
-                    m.Result = hIconForWindowIcon_Large;
+                    if (hIconForWindowIcon_Large == IntPtr.Zero)
+                    {
+                        m.Result = this.Icon.Handle;
+                    }
+                    else
+                    {
+                        m.Result = hIconForWindowIcon_Large;
+                    }
                     omitBaseProc = true;
                 }
             }
@@ -888,6 +897,10 @@ namespace Gageas.Lutea.DefaultUI
         //
         [DllImport("user32.dll")]
         static extern bool DestroyIcon(IntPtr hIcon);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
+
         private static IntPtr hIconForWindowIcon_Large;
         private void CoverArtLoaderProc()
         {
@@ -901,8 +914,13 @@ namespace Gageas.Lutea.DefaultUI
                     // Nextを連打したような場合に実際の処理が走らないように少しウェイト
                     Thread.Sleep(300);
                     Image coverArtImage = GetCoverArtImage();
+                    TaskbarExtension.tagRECT rect = new TaskbarExtension.tagRECT() { left = splitContainer1.SplitterDistance + splitContainer1.SplitterWidth, top = menuStrip1.Height };
+                    rect.bottom = rect.top + splitContainer3.Height;
+                    rect.right = rect.left + splitContainer3.Width;
+
                     this.Invoke((MethodInvoker)(() =>
                     {
+//                        TaskbarExt.Taskbar.SetThumbnailClip(this.Handle, rect);
                         var oldhIcon_Large = hIconForWindowIcon_Large;
                         hIconForWindowIcon_Large = IntPtr.Zero;
                         if (coverArtImage != null)
@@ -913,7 +931,19 @@ namespace Gageas.Lutea.DefaultUI
                             {
                                 g.DrawImage(coverArtImage, (size - coverArtImage.Width) / 2, (size - coverArtImage.Height) / 2, coverArtImage.Width, coverArtImage.Height);
                             }
-                            hIconForWindowIcon_Large = (bmp).GetHicon();
+                            Bitmap bmp2 = new Bitmap(32, 32);
+                            int outset = 1;
+                            using (var g = Graphics.FromImage(bmp2))
+                            {
+                                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                                g.DrawImage(bmp, -outset, -outset, bmp2.Width + outset * 2, bmp2.Height + outset * 2);
+                            }
+                            hIconForWindowIcon_Large = (bmp2).GetHicon();
+                            // xpだとこちらからSETICONしないといけないっぽいので
+                            SendMessage(this.Handle, WM_SETICON, (IntPtr)1, hIconForWindowIcon_Large);
+                        }
+                        else {
+                            SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
                         }
                         if (oldhIcon_Large != IntPtr.Zero)
                         {
