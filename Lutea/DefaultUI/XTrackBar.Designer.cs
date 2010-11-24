@@ -38,6 +38,7 @@
             this.Name = "XTrackBar";
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.XTrackBar_Paint);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.XTrackBar_MouseDown);
+            this.MouseLeave += new System.EventHandler(this.XTrackBar_MouseLeave);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.XTrackBar_MouseMove);
             this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.XTrackBar_MouseUp);
             this.Resize += new System.EventHandler(this.XTrackBar_Resize);
