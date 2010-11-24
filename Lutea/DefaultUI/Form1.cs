@@ -2018,12 +2018,15 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             setupPlaylistView();
-            this.Show();
             if (this.WindowState == FormWindowState.Normal)
             {
-                if (!config_FormLocation.IsEmpty) this.Location = config_FormLocation;
+                if (!config_FormLocation.IsEmpty) {
+                    this.StartPosition = FormStartPosition.Manual;
+                    this.Location = config_FormLocation;
+                }
                 if (!config_FormSize.IsEmpty) this.Size = config_FormSize;
             }
+            this.Show();
             pictureBox1.Width = pictureBox1.Height = splitContainer4.SplitterDistance = splitContainer3.SplitterDistance = settingCoverArtSize;
             splitContainer3_SplitterMoved(null, null);
             pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
