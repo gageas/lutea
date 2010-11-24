@@ -88,8 +88,8 @@
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripXTrackbar1 = new Gageas.Lutea.DefaultUI.ToolStripXTrackbar();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripXTrackbar1 = new Gageas.Lutea.DefaultUI.ToolStripXTrackbar();
             this.toolStripComboBox2 = new Gageas.Lutea.DefaultUI.ToolStripComboBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.toolStripContainer2 = new System.Windows.Forms.ToolStripContainer();
@@ -290,6 +290,7 @@
             this.toolStripButton5});
             this.toolStrip1.Location = new System.Drawing.Point(3, 89);
             this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.toolStrip1.Size = new System.Drawing.Size(435, 25);
             this.toolStrip1.TabIndex = 0;
             // 
@@ -688,8 +689,8 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel2,
-            this.toolStripXTrackbar1,
             this.toolStripStatusLabel1,
+            this.toolStripXTrackbar1,
             this.toolStripComboBox2});
             this.statusStrip1.Location = new System.Drawing.Point(0, 448);
             this.statusStrip1.Name = "statusStrip1";
@@ -704,10 +705,20 @@
             this.toolStripStatusLabel2.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.toolStripStatusLabel2.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(508, 24);
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(500, 24);
             this.toolStripStatusLabel2.Spring = true;
             this.toolStripStatusLabel2.Text = "toolStripStatusLabel2";
             this.toolStripStatusLabel2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
+            this.toolStripStatusLabel1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripStatusLabel1.Margin = new System.Windows.Forms.Padding(5, 3, 0, 2);
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Padding = new System.Windows.Forms.Padding(3, 2, 0, 0);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(141, 24);
+            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
             // toolStripXTrackbar1
             // 
@@ -715,16 +726,6 @@
             this.toolStripXTrackbar1.Size = new System.Drawing.Size(70, 27);
             this.toolStripXTrackbar1.Text = "toolStripXTrackbar1";
             this.toolStripXTrackbar1.onScroll += new Gageas.Lutea.Core.Controller.VOIDVOID(this.trackBar1_ValueChanged);
-            // 
-            // toolStripStatusLabel1
-            // 
-            this.toolStripStatusLabel1.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
-            this.toolStripStatusLabel1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(138, 24);
-            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // toolStripComboBox2
             // 
