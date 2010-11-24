@@ -97,6 +97,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             get
             {
+                if (Max == 0) return padx;
                 return (int)(padx + (innerWidth * Value / Max) - (thumbwidth / 2));
             }
         }
