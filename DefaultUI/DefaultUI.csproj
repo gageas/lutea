@@ -104,6 +104,7 @@
     <Compile Include="QueryRenameForm.Designer.cs">
       <DependentUpon>QueryRenameForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="RevConv.cs" />
     <Compile Include="Shell32.cs" />
     <Compile Include="TaskbarExtension.cs" />
     <Compile Include="ToolStripComboBox.cs">
