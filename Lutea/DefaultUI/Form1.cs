@@ -1952,8 +1952,10 @@ namespace Gageas.Lutea.DefaultUI
                 ()=>{
                     this.WindowState = (FormWindowState)setting["WindowState"];
                 },
+                ()=>this.splitContainer1.SplitterDistance = (int)setting["splitContainer1.SplitterDistance"],
+                ()=>this.splitContainer2.SplitterDistance = (int)setting["splitContainer2.SplitterDistance"],
                 ()=>{
-                    settingCoverArtSize = (int)setting["CoverArtPaneSize"];
+                    settingCoverArtSize = (int)setting["splitContainer3.SplitterDistance"];
                 },
                 ()=>LibraryLatestDir = (string)setting["LibraryLatestDir"],
                 ()=>SpectrumMode = (int)setting["SpectrumMode"],
@@ -2095,7 +2097,9 @@ namespace Gageas.Lutea.DefaultUI
         public object GetSetting()
         {
             var setting = new Dictionary<string, object>();
-            setting["CoverArtPaneSize"] = splitContainer3.SplitterDistance;
+            setting["splitContainer1.SplitterDistance"] = splitContainer1.SplitterDistance;
+            setting["splitContainer2.SplitterDistance"] = splitContainer2.SplitterDistance;
+            setting["splitContainer3.SplitterDistance"] = splitContainer3.SplitterDistance;
             Dictionary<DBCol, int> PlaylistViewColumnOrder = new Dictionary<DBCol, int>();
             Dictionary<DBCol, int> PlaylistViewColumnWidth = new Dictionary<DBCol, int>();
             for (int i = 0; i < listView1.Columns.Count; i++)
