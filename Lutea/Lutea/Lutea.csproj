@@ -125,7 +125,6 @@
     <Compile Include="Tags\MP4.cs" />
     <Compile Include="Tags\Ogg.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="External\RevConv.cs" />
     <Compile Include="Tags\MetaTag.cs" />
     <Compile Include="Util\StreamUtil.cs" />
     <Compile Include="Util\Util.cs" />
