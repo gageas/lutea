@@ -64,7 +64,7 @@ namespace Gageas.Lutea.Core
 //        private static WorkerThread outputStreamWorker = new WorkerThread();
         public static void CoreEnqueue(Controller.VOIDVOID d)
         {
-            coreWorker.CoreEnqueue(d);
+            coreWorker.AddTask(d);
         }
         #endregion
 
