@@ -512,7 +512,10 @@ namespace Gageas.Lutea.Core
 
         public static string GetPlaylistRowColumn(int rowindex, DBCol column)
         {
-            return GetPlaylistRow(rowindex)[(int)column].ToString();
+            var row = GetPlaylistRow(rowindex);
+            if(row == null)return null;
+            if (row.Length <= (int)column) return null;
+            return row[(int)column].ToString();
         }
 
         public static void Quit()
