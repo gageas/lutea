@@ -65,7 +65,7 @@ namespace Gageas.Lutea.Tags
             for (int i = 0; i < header.count; i++)
             {
                 var guid_sub = ReadGuid(stream, 0);
-                Logger.Log(guid_sub.ToString() + " , "+ stream.Position);
+                Logger.Debug(guid_sub.ToString() + " , "+ stream.Position);
                 if (guid_sub.Equals(GUID_CONTENTS_DESCRIPTION_OBJECT))
                 {
                     cd = ReadContentsDescriptionObject(stream, 0);
@@ -165,7 +165,7 @@ namespace Gageas.Lutea.Tags
                         byte[] buf_body = new byte[name_length + data_length];
                         strm.Read(buf_body, 0, buf_body.Length);
                         string name = Encoding.Unicode.GetString(buf_body, 0, name_length - 2);
-                        Logger.Log(name);
+                        Logger.Debug(name);
                     }
                 }
                 else if (guid.Equals(GUID_METADATA_LIBRARY_OBJECT))
@@ -207,12 +207,12 @@ namespace Gageas.Lutea.Tags
                             var memst2 = new MemoryStream(buf_body, (int)(name_length + memst.Position), (int)(buf_body.Length - name_length - memst.Position));
                             tag.Add(new KeyValuePair<string, object>("COVER ART", System.Drawing.Image.FromStream(memst2)));
                         }
-                        Logger.Log(name);
+                        Logger.Debug(name);
                     }
                 }
                 else
                 {
-                    Logger.Log("throughed " + guid.ToString());
+                    Logger.Debug("throughed " + guid.ToString());
                     strm.Seek((long)data_size - 8 - 16, SeekOrigin.Current);
                 }
             }
