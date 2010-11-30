@@ -9,13 +9,30 @@ namespace Gageas.Lutea.Core
     /// <summary>
     /// タスクのキューを特定のスレッドで処理するクラス
     /// </summary>
-    class WorkerThread
+    public class WorkerThread
     {
-        private Queue<Controller.VOIDVOID> taskQueue = new Queue<Controller.VOIDVOID>();
+        private Queue<Controller.VOIDVOID> taskQueue;
+        private Stack<Controller.VOIDVOID> taskStack;
+        private System.Collections.ICollection taskI;
         private Thread thisThread;
         private bool sleeping = false;
-        public WorkerThread()
+        private bool isLIFO;
+        public ThreadPriority Priority
         {
+            get { return thisThread.Priority; }
+            set { thisThread.Priority = value; }
+        }
+        public WorkerThread(bool isLIFO = false)
+        {
+            this.isLIFO = isLIFO;
+            if (isLIFO)
+            {
+                taskI = taskStack = new Stack<Controller.VOIDVOID>();
+            }
+            else
+            {
+                taskI = taskQueue = new Queue<Controller.VOIDVOID>();
+            }
             thisThread = new Thread(workerProc);
             thisThread.Start();
         }
@@ -26,13 +43,13 @@ namespace Gageas.Lutea.Core
                 try
                 {
                     Controller.VOIDVOID task = null;
-                    while (taskQueue.Count > 0)
+                    while (taskI.Count > 0)
                     {
                         lock (thisThread)
                         {
-                            if (taskQueue.Count > 0)
+                            if (taskI.Count > 0)
                             {
-                                task = taskQueue.Dequeue();
+                                task = isLIFO ? taskStack.Pop() : taskQueue.Dequeue();
                             }
                         }
                         if (task != null)
@@ -53,11 +70,15 @@ namespace Gageas.Lutea.Core
                 }
             }
         }
-        public void CoreEnqueue(Controller.VOIDVOID delg)
+        public void AddTask(Controller.VOIDVOID delg)
         {
             lock (thisThread)
             {
-                taskQueue.Enqueue(delg);
+                if(isLIFO){
+                    taskStack.Push(delg);
+                }else{
+                    taskQueue.Enqueue(delg);
+                }
                 if (sleeping) thisThread.Interrupt();
             }
         }
