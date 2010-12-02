@@ -1459,7 +1459,10 @@ namespace Gageas.Lutea.DefaultUI
 
         private void playlistView_DoubleClick(object sender, EventArgs e)
         {
-            Controller.PlayPlaylistItem(listView1.SelectedIndices[0]);
+            if (listView1.SelectedIndices.Count > 0)
+            {
+                Controller.PlayPlaylistItem(listView1.SelectedIndices[0]);
+            }
         }
 
         #endregion
