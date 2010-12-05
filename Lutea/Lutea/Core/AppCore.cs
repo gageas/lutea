@@ -720,12 +720,7 @@ namespace Gageas.Lutea.Core
         {
             while (true)
             {
-                if (h2k6db == null)
-                {
-                    h2k6db = Library.Connect(true);
-                }
-//                bool success = false;
-                SQLite3DB.STMT tmt = null;
+                h2k6db = h2k6db ?? Library.Connect(true);
                 try
                 {
                     String sql;
@@ -735,9 +730,10 @@ namespace Gageas.Lutea.Core
                         sql = playlistQueryQueue;
                         playOnCreate = PlayOnCreate;
                     }
-                    if (sql == null) {
+                    if (sql == null)
+                    {
                         Logger.Debug("Entering sleep");
-                        Thread.Sleep(System.Threading.Timeout.Infinite); 
+                        Thread.Sleep(System.Threading.Timeout.Infinite);
                     } // 待機
 
                     //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
@@ -757,13 +753,13 @@ namespace Gageas.Lutea.Core
                             h2k6db.Exec("DROP TABLE IF EXISTS playlist;");
                             Logger.Debug("playlist TABLE DROPed");
                             using (SQLite3DB.Lock dbLock = h2k6db.GetLock("list"))
-                            {
-                                tmt = Util.Util.TryThese<SQLite3DB.STMT>(new CreatePlaylistParser[]{
+                            using (SQLite3DB.STMT tmt = Util.Util.TryThese<SQLite3DB.STMT>(new CreatePlaylistParser[]{
                                     ()=>prepareForCreatePlaylistView(h2k6db, sql==""?"SELECT * FROM list":sql),
                                     ()=>prepareForCreatePlaylistView(h2k6db,GetRegexpSTMT(sql)),
                                     ()=>prepareForCreatePlaylistView(h2k6db,GetMigemoSTMT(sql)),
                                     ()=>prepareForCreatePlaylistView(h2k6db,"SELECT * FROM list WHERE tagTitle||tagAlbum||tagArtist||tagComment like '%" + sql.EscapeSingleQuotSQL() + "%';"),
-                                },null);
+                                }, null))
+                            {
                                 if (tmt != null)
                                 {
                                     for (int i = 0; i < 10; i++)
@@ -773,11 +769,8 @@ namespace Gageas.Lutea.Core
                                             tmt.Evaluate(null);
                                             break;
                                         }
-                                        catch (Exception)
-                                        {
-                                            Logger.Error("Evaluate failed");
-                                            Thread.Sleep(200);
-                                        }
+                                        catch (SQLite3DB.SQLite3Exception) { }
+                                        Thread.Sleep(200);
                                     }
 
                                     //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
@@ -793,7 +786,6 @@ namespace Gageas.Lutea.Core
                                         playlistCache = new object[currentPlaylistRows][];
                                         h2k6db.FetchRowRange("playlist", 0, PlaylistPreCacheCount, playlistCache);
                                         latestPlaylistQuery = sql;
-//                                        success = true; // TODO: 本来、SQLのparse失敗の時などfalseを変えす。今のところparse失敗しないので常にtrueになってる
                                     }
                                 }
                             }
@@ -808,34 +800,21 @@ namespace Gageas.Lutea.Core
                             Logger.Debug("コールバックをすりゅ");
                             Controller._PlaylistUpdated(sql);
 
-                            if (tmt != null) tmt.Dispose();
-                            tmt = null;
-                            /*
-                            try
+                            if (playOnCreate)
                             {
-                                var t = h2k6db.Prepare("SELECT tagArtist,COUNT(*) FROM playlist GROUP BY tagArtist ORDER BY COUNT(*) desc;");
-                                cache_filter = t.EvaluateAll();
+                                PlayPlaylistItem(0);
                             }
-                            catch (SQLite3DB.SQLite3Exception) { }
-                            */
-                            if(playOnCreate){
-                            PlayPlaylistItem(0);
-                                }
 
                             // プレイリストの残りをなめてキャッシュする
                             for (int i = PlaylistPreCacheCount; i < currentPlaylistRows; i++)
                             {
                                 Controller.GetPlaylistRow(i);
-//                                if ((i % 16) == 0) Thread.Sleep(10);
                             }
                             Logger.Debug("なめおわった");
                         }
                     }
                 }
-                catch (ThreadInterruptedException)
-                {
-                    if (tmt != null) tmt.Dispose();
-                }
+                catch (ThreadInterruptedException) { }
             }
         }
 
