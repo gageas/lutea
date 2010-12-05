@@ -716,6 +716,53 @@ namespace Gageas.Lutea.Core
             return stmt;
         }
         delegate SQLite3DB.STMT CreatePlaylistParser();
+        private static void createPlaylistTableInDB(string sql)
+        {
+            try
+            {
+                h2k6db.Exec("DROP TABLE IF EXISTS playlist;");
+                Logger.Debug("playlist TABLE DROPed");
+                using (SQLite3DB.Lock dbLock = h2k6db.GetLock("list"))
+                using (SQLite3DB.STMT tmt = Util.Util.TryThese<SQLite3DB.STMT>(new CreatePlaylistParser[]{
+                                    ()=>prepareForCreatePlaylistView(h2k6db, sql==""?"SELECT * FROM list":sql),
+                                    ()=>prepareForCreatePlaylistView(h2k6db,GetRegexpSTMT(sql)),
+                                    ()=>prepareForCreatePlaylistView(h2k6db,GetMigemoSTMT(sql)),
+                                    ()=>prepareForCreatePlaylistView(h2k6db,"SELECT * FROM list WHERE tagTitle||tagAlbum||tagArtist||tagComment like '%" + sql.EscapeSingleQuotSQL() + "%';"),
+                                }, null))
+                {
+                    if (tmt == null) return;
+                    for (int i = 0; i < 10; i++)
+                    {
+                        try
+                        {
+                            tmt.Evaluate(null);
+                            break;
+                        }
+                        catch (SQLite3DB.SQLite3Exception) { }
+                        Thread.Sleep(200);
+                    }
+
+                    //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
+                    Thread.Sleep(10);
+
+                    using (SQLite3DB.STMT tmt2 = h2k6db.Prepare("SELECT COUNT(*) FROM playlist ;"))
+                    {
+                        Logger.Debug("Creating new playlist " + sql);
+                        tmt2.Evaluate((o) => currentPlaylistRows = int.Parse(o[0].ToString()));
+                        Logger.Debug("Start Playlist Loader");
+
+                        // プレイリストの先頭一定数をキャッシュ
+                        playlistCache = new object[currentPlaylistRows][];
+                        h2k6db.FetchRowRange("playlist", 0, PlaylistPreCacheCount, playlistCache);
+                        latestPlaylistQuery = sql;
+                    }
+                }
+            }
+            catch (SQLite3DB.SQLite3Exception e)
+            {
+                Logger.Log(e.ToString());
+            }
+        }
         private static void createPlaylistProc()
         {
             while (true)
@@ -748,70 +795,20 @@ namespace Gageas.Lutea.Core
                     Logger.Debug("start to create playlist " + sql);
                     lock (dblock)
                     {
-                        try
+                        createPlaylistTableInDB(sql);
+
+                        // プレイリスト生成完了コールバックを呼ぶ
+                        Logger.Debug("コールバックをすりゅ");
+                        Controller._PlaylistUpdated(sql);
+
+                        if (playOnCreate) PlayPlaylistItem(0);
+
+                        // プレイリストの残りをなめてキャッシュする
+                        for (int i = PlaylistPreCacheCount; i < currentPlaylistRows; i++)
                         {
-                            h2k6db.Exec("DROP TABLE IF EXISTS playlist;");
-                            Logger.Debug("playlist TABLE DROPed");
-                            using (SQLite3DB.Lock dbLock = h2k6db.GetLock("list"))
-                            using (SQLite3DB.STMT tmt = Util.Util.TryThese<SQLite3DB.STMT>(new CreatePlaylistParser[]{
-                                    ()=>prepareForCreatePlaylistView(h2k6db, sql==""?"SELECT * FROM list":sql),
-                                    ()=>prepareForCreatePlaylistView(h2k6db,GetRegexpSTMT(sql)),
-                                    ()=>prepareForCreatePlaylistView(h2k6db,GetMigemoSTMT(sql)),
-                                    ()=>prepareForCreatePlaylistView(h2k6db,"SELECT * FROM list WHERE tagTitle||tagAlbum||tagArtist||tagComment like '%" + sql.EscapeSingleQuotSQL() + "%';"),
-                                }, null))
-                            {
-                                if (tmt != null)
-                                {
-                                    for (int i = 0; i < 10; i++)
-                                    {
-                                        try
-                                        {
-                                            tmt.Evaluate(null);
-                                            break;
-                                        }
-                                        catch (SQLite3DB.SQLite3Exception) { }
-                                        Thread.Sleep(200);
-                                    }
-
-                                    //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
-                                    Thread.Sleep(10);
-
-                                    using (SQLite3DB.STMT tmt2 = h2k6db.Prepare("SELECT COUNT(*) FROM playlist ;"))
-                                    {
-                                        Logger.Debug("Creating new playlist " + sql);
-                                        tmt2.Evaluate((o) => currentPlaylistRows = int.Parse(o[0].ToString()));
-                                        Logger.Debug("Start Playlist Loader");
-
-                                        // プレイリストの先頭一定数をキャッシュ
-                                        playlistCache = new object[currentPlaylistRows][];
-                                        h2k6db.FetchRowRange("playlist", 0, PlaylistPreCacheCount, playlistCache);
-                                        latestPlaylistQuery = sql;
-                                    }
-                                }
-                            }
+                            Controller.GetPlaylistRow(i);
                         }
-                        catch (SQLite3DB.SQLite3Exception e)
-                        {
-                            Logger.Log(e.ToString());
-                        }
-                        finally
-                        {
-                            // プレイリスト生成完了コールバックを呼ぶ
-                            Logger.Debug("コールバックをすりゅ");
-                            Controller._PlaylistUpdated(sql);
-
-                            if (playOnCreate)
-                            {
-                                PlayPlaylistItem(0);
-                            }
-
-                            // プレイリストの残りをなめてキャッシュする
-                            for (int i = PlaylistPreCacheCount; i < currentPlaylistRows; i++)
-                            {
-                                Controller.GetPlaylistRow(i);
-                            }
-                            Logger.Debug("なめおわった");
-                        }
+                        Logger.Debug("なめおわった");
                     }
                 }
                 catch (ThreadInterruptedException) { }
