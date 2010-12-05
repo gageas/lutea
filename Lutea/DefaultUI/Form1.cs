@@ -1482,11 +1482,9 @@ namespace Gageas.Lutea.DefaultUI
         }
         private void createFilterIndex(ListView list, ICollection<ListViewGroup> grps)
         {
-            ToolStripMenuItem toolstrip_index = new ToolStripMenuItem("索引");
             ToolStripMenuItem toolstrip_index_other = new ToolStripMenuItem("その他");
             ToolStripMenuItem toolstrip_index_num = new ToolStripMenuItem("数字");
             ToolStripMenuItem toolstrip_index_alpha = new ToolStripMenuItem("A-Z");
-            ToolStripMenuItem toolstrip_index_kana = new ToolStripMenuItem("あ-ん");
             ToolStripMenuItem toolstrip_index_kana_a = new ToolStripMenuItem("あ");
             ToolStripMenuItem toolstrip_index_kana_k = new ToolStripMenuItem("か");
             ToolStripMenuItem toolstrip_index_kana_s = new ToolStripMenuItem("さ");
@@ -1511,15 +1509,24 @@ namespace Gageas.Lutea.DefaultUI
                     toolstrip_index_kana_w,
                 };
 
-            toolstrip_index_kana.DropDownItems.AddRange(kanas);
-
+            list.ContextMenuStrip.Items.Add(new ToolStripSeparator());
             var charTypes = new ToolStripMenuItem[]{
                     toolstrip_index_num,
                     toolstrip_index_alpha,
-                    toolstrip_index_kana,
+                    toolstrip_index_kana_a,
+                    toolstrip_index_kana_k,
+                    toolstrip_index_kana_s,
+                    toolstrip_index_kana_t,
+                    toolstrip_index_kana_n,
+                    toolstrip_index_kana_h,
+                    toolstrip_index_kana_m,
+                    toolstrip_index_kana_y,
+                    toolstrip_index_kana_r,
+                    toolstrip_index_kana_w,
+
                     toolstrip_index_other,
                 };
-            toolstrip_index.DropDownItems.AddRange(charTypes);
+            list.ContextMenuStrip.Items.AddRange(charTypes);
 
             foreach (var e in kanas.Concat(charTypes))
             {
@@ -1555,7 +1562,8 @@ namespace Gageas.Lutea.DefaultUI
                 var item = grp.Items[0];
                 var last = grps.Last().Items[grps.Last().Items.Count - 1].Index; // 最後のグループの最後の項目
                 target.Enabled = true;
-                target.OwnerItem.Enabled = true;
+                if(target.OwnerItem != null) 
+                    target.OwnerItem.Enabled = true;
                 target.DropDownItems.Add(grp.Header, null, (e, obj) =>
                 {
                     list.ContextMenuStrip.Hide();
@@ -1564,7 +1572,6 @@ namespace Gageas.Lutea.DefaultUI
 
                 });
             }
-            list.ContextMenuStrip.Items.Add(toolstrip_index);
         }
         /// <summary>
         /// FilterViewを更新する。ごちゃごちゃしてるのでなんとかしたい
