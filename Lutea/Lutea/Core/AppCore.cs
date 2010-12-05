@@ -963,6 +963,95 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        private static StreamObject getStreamObjectCUE(CD cd, int index, BASS.Stream.StreamFlag flag, BASS.Stream newstream = null)
+        {
+            CD.Track track = cd.tracks[index];
+            String streamFullPath = System.IO.Path.IsPathRooted(track.file_name_CUESheet)
+                ? track.file_name_CUESheet
+                : Path.GetDirectoryName(cd.filename) + Path.DirectorySeparatorChar + track.file_name_CUESheet;
+            if (newstream == null)
+            {
+                Logger.Log("new Stream opened " + streamFullPath);
+                newstream = new BASS.FileStream(streamFullPath, flag);
+            }
+            if (newstream == null)
+            {
+                return null;
+            }
+            ulong offset = (ulong)track.start * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
+            ulong length = track.end > track.start
+                ? (ulong)(track.end - track.start) * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float)
+                : newstream.filesize - offset;
+            StreamObject nextStream = new StreamObject(newstream, cd.filename, offset, length);
+            if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
+            nextStream.cueStreamFileName = streamFullPath;
+            var gain = track.getTagValue("ALBUM GAIN");
+            if (gain != null)
+            {
+                nextStream.gain = Util.Util.parseDouble(gain.ToString());
+            }
+            return nextStream;
+        }
+        private static StreamObject getStreamObject(string filename, int tagTracknumber, BASS.Stream.StreamFlag flag)
+        {
+            StreamObject nextStream;
+            Logger.Log(String.Format("Trying to play file {0}", filename));
+
+            // case for CUE sheet
+            if (Path.GetExtension(filename).Trim().ToUpper() == ".CUE")
+            {
+                CD cd = CUEparser.fromFile(filename, false);
+                nextStream = getStreamObjectCUE(cd, tagTracknumber - 1, flag);
+            }
+            else
+            {
+                BASS.Stream newstream = new BASS.FileStream(filename, flag);
+                if (newstream == null)
+                {
+                    return null;
+                }
+                var tag = Tags.MetaTag.readTagByFilename(filename.Trim(), false);
+                KeyValuePair<string, object> cue = tag.Find((match) => match.Key == "CUESHEET");
+
+                // case for Internal CUESheet
+                if (cue.Key != null)
+                {
+                    CD cd = CUEparser.fromString(cue.Value.ToString(), filename, false);
+                    nextStream = getStreamObjectCUE(cd, tagTracknumber - 1, flag, newstream);
+                    nextStream.cueStreamFileName = filename.Trim();
+                }
+                else
+                {
+                    nextStream = new StreamObject(newstream, filename);
+                    KeyValuePair<string, object> gain = tag.Find((match) => match.Key == "REPLAYGAIN_ALBUM_GAIN");
+                    if (gain.Value != null)
+                    {
+                        nextStream.gain = Util.Util.parseDouble(gain.Value.ToString());
+                    }
+                    KeyValuePair<string, object> iTunSMPB = tag.Find((match) => match.Key.ToUpper() == "ITUNSMPB");
+                    if (iTunSMPB.Value != null)
+                    {
+                        var smpbs = iTunSMPB.Value.ToString().Trim().Split(new char[] { ' ' }).Select(_ => System.Convert.ToUInt64(_, 16)).ToArray();
+                        // ref. http://nyaochi.sakura.ne.jp/archives/2006/09/15/itunes-v70070%E3%81%AE%E3%82%AE%E3%83%A3%E3%83%83%E3%83%97%E3%83%AC%E3%82%B9%E5%87%A6%E7%90%86/
+                        nextStream.cueOffset = (smpbs[1]) * newstream.GetChans() * sizeof(float);
+                        nextStream.cueLength = (smpbs[3]) * newstream.GetChans() * sizeof(float);
+                        nextStream.invalidateCueLengthOnSeek = true;
+                    }
+                    else
+                    {
+                        var lametag = Lametag.Read(filename.Trim());
+                        if (lametag != null)
+                        {
+                            nextStream.cueOffset = (ulong)(lametag.delay) * newstream.GetChans() * sizeof(float);
+                            nextStream.cueLength = newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float);
+                            nextStream.invalidateCueLengthOnSeek = true;
+                        }
+                    }
+                }
+                if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
+            }
+            return nextStream;
+        }
         internal static int lastPreparedIndex;
         private static Boolean prepareNextStream(int index)
         {
@@ -979,112 +1068,16 @@ namespace Gageas.Lutea.Core
                 string filename = (string)row[(int)DBCol.file_name];
                 BASS.Stream.StreamFlag flag = BASS.Stream.StreamFlag.BASS_STREAM_DECODE;
                 if (floatingPointOutput) flag |= BASS.Stream.StreamFlag.BASS_STREAM_FLOAT;
-                StreamObject nextStream;
+                StreamObject nextStream = null;
                 try
                 {
-                    Logger.Log(String.Format("Trying to play file {0}", filename));
-                    if (Path.GetExtension(filename).Trim().ToUpper() == ".CUE")
+                    int tr = 1;
+                    Util.Util.tryParseInt(row[(int)DBCol.tagTracknumber].ToString(), ref tr);
+                    nextStream = getStreamObject(filename, tr, flag);
+                    if (nextStream == null)
                     {
-                        BASS.Stream newstream;
-                        CD cd = CUEparser.fromFile(filename, false);
-                        CD.Track track = cd.tracks[int.Parse(row[(int)DBCol.tagTracknumber].ToString()) - 1]; // dirty...
-                        String streamFullPath = System.IO.Path.IsPathRooted(track.file_name_CUESheet)
-                            ? track.file_name_CUESheet
-                            : Path.GetDirectoryName(filename) + Path.DirectorySeparatorChar + track.file_name_CUESheet;
-
-                        Logger.Log("new Stream opened " + streamFullPath);
-                        newstream = new BASS.FileStream(streamFullPath, flag);
-                        if (newstream == null)
-                        {
-                            preparedStream = null;
-                            return false;
-                        }
-                        nextStream = new StreamObject(newstream, filename, newstream.Seconds2Bytes(track.start / 75.0) , newstream.Seconds2Bytes((track.end > track.start ? ((track.end - track.start) / 75.0) : (newstream.length - (track.start / 75.0)))));
-                        if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
-                        nextStream.cueStreamFileName = streamFullPath;
-                        nextStream.cueOffset = (ulong)track.start * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
-                        if (track.end > track.start)
-                        {
-                            nextStream.cueLength = (ulong)(track.end - track.start) * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
-                        }
-                        else
-                        {
-                            nextStream.cueLength = (ulong)newstream.filesize - nextStream.cueOffset;
-                        }
-                        var gain = track.getTagValue("ALBUM GAIN");
-                        if (gain != null)
-                        {
-                            nextStream.gain = Util.Util.parseDouble(gain.ToString());
-                        }
-                        Logger.Debug("Setting sync on " + (track.end / 75.0));
-                    }
-                    else
-                    {
-                        BASS.Stream newstream = new BASS.FileStream(filename, flag);
-                        if (newstream == null)
-                        {
-                            preparedStream = null;
-                            return false;
-                        }
-                        nextStream = new StreamObject(newstream, filename);
-                        nextStream.cueLength = 0;
-                        var tag = Tags.MetaTag.readTagByFilename(filename.Trim(), false);
-                        KeyValuePair<string, object> cue = tag.Find((match) => match.Key == "CUESHEET" ? true : false);
-                        if (cue.Key != null)
-                        {
-                            CD cd = CUEparser.fromString(cue.Value.ToString(), filename, false);
-                            CD.Track track = cd.tracks[Int32.Parse(row[(int)DBCol.tagTracknumber].ToString()) - 1];
-                            nextStream.cueStreamFileName = filename.Trim();
-                            nextStream.cueOffset = (ulong)track.start * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
-                            if (track.end > track.start)
-                            {
-                                nextStream.cueLength = (ulong)(track.end - track.start) * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
-                            }
-                            else
-                            {
-                                nextStream.cueLength = (ulong)newstream.filesize - nextStream.cueOffset;
-                            }
-                            var gain = track.getTagValue("ALBUM GAIN");
-                            if (gain != null)
-                            {
-                                nextStream.gain = double.Parse(gain.ToString());
-                            }
-                        }
-                        else
-                        {
-                            KeyValuePair<string, object> gain = tag.Find((match) => match.Key == "REPLAYGAIN_ALBUM_GAIN" ? true : false);
-                            if (gain.Value != null)
-                            {
-                                nextStream.gain = Util.Util.parseDouble(gain.Value.ToString());
-                            }
-                            KeyValuePair<string, object> iTunSMPB = tag.Find((match) => match.Key.ToUpper() == "ITUNSMPB" ? true : false);
-                            if (iTunSMPB.Value != null)
-                            {
-                                var smpbs = iTunSMPB.Value.ToString().Trim().Split(new char[] { ' ' }).Select(_ => System.Convert.ToUInt64(_, 16)).ToArray();
-                                // ref. http://nyaochi.sakura.ne.jp/archives/2006/09/15/itunes-v70070%E3%81%AE%E3%82%AE%E3%83%A3%E3%83%83%E3%83%97%E3%83%AC%E3%82%B9%E5%87%A6%E7%90%86/
-                                nextStream.cueOffset = (smpbs[1]) * newstream.GetChans() * sizeof(float);
-                                nextStream.cueLength = (smpbs[3]) * newstream.GetChans() * sizeof(float);
-                                nextStream.invalidateCueLengthOnSeek = true;
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    using (var fs = System.IO.File.Open(filename.Trim(), System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
-                                    {
-                                        var lametag = Lametag.Read(fs);
-                                        if (lametag != null)
-                                        {
-                                            nextStream.cueOffset = (ulong)(lametag.delay) * newstream.GetChans() * sizeof(float);
-                                            nextStream.cueLength = newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float);
-                                            nextStream.invalidateCueLengthOnSeek = true;
-                                        }
-                                    }
-                                }
-                                catch { }
-                            }
-                        }
-                        if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
+                        preparedStream = null;
+                        return false;
                     }
                     if (nextStream.cueOffset < 10000)
                     {
@@ -1097,8 +1090,8 @@ namespace Gageas.Lutea.Core
                         nextStream.stream.position = nextStream.cueOffset;
                     }
                     nextStream.meta = row;
-                    // Outputを再構築せずにそのまま使えますのとき
                     preparedStream = nextStream;
+                    return true;
                 }
                 catch (Exception e)
                 {
@@ -1106,7 +1099,6 @@ namespace Gageas.Lutea.Core
                     Logger.Log(e.ToString());
                     return false;
                 }
-                return true;
             }
         }
 
