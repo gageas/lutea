@@ -797,7 +797,14 @@ namespace Gageas.Wrapper.BASS
             public override bool SetVolume(float vol, uint timespan)
             {
                 if (vol < 0) vol = 0;
-                return _BASS_ChannelSlideAttribute(handle, (uint)BASS_ATTRIB.VOL, vol, timespan);
+                if (timespan == 0)
+                {
+                    return _BASS_ChannelSetAttribute(handle, (uint)BASS_ATTRIB.VOL, vol);
+                }
+                else
+                {
+                    return _BASS_ChannelSlideAttribute(handle, (uint)BASS_ATTRIB.VOL, vol, timespan);
+                }
             }
 
             public override float GetVolume()
