@@ -129,6 +129,7 @@ namespace Gageas.Lutea.Util
             }
         }
 
+        private static readonly System.Text.RegularExpressions.Regex intRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+?");
         private static readonly System.Text.RegularExpressions.Regex doubleRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+(\.)?(\d+)?");
         public static double parseDouble(string src)
         {
@@ -138,6 +139,16 @@ namespace Gageas.Lutea.Util
                 return double.Parse(match.Value);
             }
             throw new System.FormatException();
+        }
+
+        public static bool tryParseInt(string src, ref int result)
+        {
+            var match = intRe.Match(src);
+            if (match.Success)
+            {
+                return int.TryParse(src, out result);
+            }
+            return false;
         }
 
         [DllImport("kernel32.dll",EntryPoint = "LCMapString", CharSet=CharSet.Unicode, SetLastError=true)]
