@@ -180,6 +180,7 @@ namespace Gageas.Lutea.Core
         internal static StreamObject preparedStream;
         private static object outputChannelLock = new object();
         internal static BASS.IPlayable outputChannel; // 出力ストリーム
+        internal static bool outputChannelIsReady = false;
 
         internal static object[][] playlistCache;
 
@@ -416,7 +417,7 @@ namespace Gageas.Lutea.Core
             try
             {
 #endif
-            if (outputChannel != null)
+            if (outputChannelIsReady && outputChannel != null)
             {
                 // currentStreamから読み出し
                 if (_current != null && _current.stream != null && _current.ready)
@@ -882,6 +883,7 @@ namespace Gageas.Lutea.Core
         private static void PlayQueuedStream(bool stopcurrent=false){
             lock (prepareMutex)
             {
+                outputChannelIsReady = false;
                 isPlaying = false;
                 // 再生するstreamが用意されているかどうかチェック
                 if (preparedStream == null)
@@ -953,6 +955,7 @@ namespace Gageas.Lutea.Core
                 currentStream = preparedStream;
                 outputChannel.SetVolume((float)_volume, fadeInOutOnSkip ? 100u : 0u);
                 outputChannel.Resume();
+                outputChannelIsReady = true;
                 preparedStream = null;
                 _pause = false;
                 isPlaying = true;
