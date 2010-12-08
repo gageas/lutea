@@ -7,14 +7,108 @@ namespace Gageas.Wrapper.BASS
 {
     public class BASS
     {
-        /*
-         * プラグイン構造体
-         */
-        private struct BASSPlugin
+        #region Plugin
+        /// <summary>
+        /// Pluginクラス
+        /// </summary>
+        public class BASSPlugin : IDisposable
         {
-            public IntPtr ptr;
-            public string filename;
+            IntPtr ptr;
+            string filename;
+
+            public BASSPlugin(string filename, IntPtr ptr)
+            {
+                this.filename = filename;
+                this.ptr = ptr;
+            }
+
+            public void Dispose()
+            {
+                _BASS_PluginFree(ptr);
+                ptr = IntPtr.Zero;
+                GC.SuppressFinalize(this);
+            }
+
+            ~BASSPlugin()
+            {
+                this.Dispose();
+            }
+
+            public string Filename
+            {
+                get { return filename; }
+            }
+
+            BASS_PLUGININFO GetInfo()
+            {
+                var p_pinfo = _BASS_PluginGetInfo(ptr);
+                return (BASS_PLUGININFO)Marshal.PtrToStructure(p_pinfo, typeof(BASS_PLUGININFO));
+            }
+
+            public UInt32 Version
+            {
+                get { return GetInfo().Version; }
+            }
+
+            public BASSPluginFormat[] GetFormats()
+            {
+                var p_pinfo = _BASS_PluginGetInfo(ptr);
+                var info = GetInfo();
+                if (info.FormatCount <= 0) return null;
+                BASSPluginFormat[] forms = new BASSPluginFormat[info.FormatCount];
+                for (int i = 0; i < info.FormatCount; i++)
+                {
+                    forms[i] = GetPluginForm(p_pinfo, i);
+                }
+                return forms;
+            }
+
+            BASSPluginFormat GetPluginForm(IntPtr thisptr, int index)
+            {
+                BASSPluginFormat pform;
+                var ptr = Marshal.ReadIntPtr(thisptr, sizeof(UInt32) * 2);
+                pform = (BASSPluginFormat)Marshal.PtrToStructure(new IntPtr((int)ptr + (sizeof(UInt32) + IntPtr.Size + IntPtr.Size) * index), typeof(BASSPluginFormat));
+                return pform;
+            }
+
         }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BASSPluginFormat
+        {
+            UInt32 ctype;
+            IntPtr name;
+            IntPtr exts;
+            public UInt32 CType
+            {
+                get
+                {
+                    return ctype;
+                }
+            }
+            public string Name
+            {
+                get
+                {
+                    return Marshal.PtrToStringAnsi(name);
+                }
+            }
+            public string Exts
+            {
+                get
+                {
+                    return Marshal.PtrToStringAnsi(exts);
+                }
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct BASS_PLUGININFO
+        {
+            public UInt32 Version;
+            public UInt32 FormatCount;
+        }
+        #endregion
 
         /*
          * Sync（再生時イベント列挙体）
@@ -201,7 +295,8 @@ namespace Gageas.Wrapper.BASS
                 pinPtr = _BASS_PluginLoad(filename, BASS_UNICODE | flags);
                 if (pinPtr != (IntPtr)0)
                 {
-                    plugins.Add(new BASSPlugin { filename = filename, ptr = pinPtr });
+                    var pin = new BASSPlugin(filename, pinPtr);
+                    plugins.Add(pin);
                     return true;
                 }
                 else
@@ -215,14 +310,9 @@ namespace Gageas.Wrapper.BASS
             }
         }
 
-        public static List<string> getLoadedPlugins()
+        public static List<BASSPlugin> GetLoadedPlugins()
         {
-            List<string> list = new List<string>();
-            foreach (BASSPlugin p in plugins)
-            {
-                list.Add(p.filename);
-            }
-            return list;
+            return plugins;
         }
         
         [System.Obsolete("これはシステムのマスターボリュームを変更する。Channnel#volumeを使うべし")]
@@ -263,7 +353,7 @@ namespace Gageas.Wrapper.BASS
             {
                 try
                 {
-                    _BASS_PluginFree(plugin.ptr);
+                    plugin.Dispose();
                 }
                 catch { }
             }
@@ -285,6 +375,9 @@ namespace Gageas.Wrapper.BASS
 
         [DllImport("bass.dll", EntryPoint = "BASS_PluginFree", CharSet = CharSet.Unicode)]
         private static extern bool _BASS_PluginFree(IntPtr plugin);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_PluginGetInfo", CharSet = CharSet.Unicode)]
+        private static extern IntPtr _BASS_PluginGetInfo(IntPtr plugin);
 
         [DllImport("bass.dll", EntryPoint = "BASS_SetConfig", CharSet = CharSet.Unicode)]
         public static extern bool BASS_SetConfig(BASS_CONFIG option, UInt32 value);
