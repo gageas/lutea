@@ -2319,83 +2319,6 @@ namespace Gageas.Lutea.DefaultUI
             e.DrawDefault = true;
         }
 
-        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "MoveToEx")]
-        private static extern bool MoveToEx(IntPtr hDC, int x, int y, IntPtr lpPoint);
-
-        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "LineTo")]
-        private static extern bool LineTo(IntPtr hDC, int xEnd, int yEnd);
-
-        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetTextExtentPoint32")]
-        private static extern bool GetTextExtentPoint32(IntPtr hDC, String str, int length, out Size sz);
-
-        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetStockObject")]
-        private static extern IntPtr GetStockObject(int id);
-
-        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "SelectObject")]
-        private static extern IntPtr SelectObject(IntPtr hDC, IntPtr hGDIOBJ);
-
-        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "DeleteObject")]
-        private static extern bool DeleteObject(IntPtr hGDIOBJ);
-
-        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "SetTextColor")]
-        private static extern uint SetTextColor(IntPtr hDC, uint COLORREF);
-
-        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "TextOutW")]
-        private static extern bool TextOut(IntPtr hDC, int nXStart, int nYStart, string str, int length);
-
-        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "BitBlt")]
-        private static extern bool BitBlt(
-    IntPtr hdcDest,    // コピー先デバイスコンテキスト
-    int nXDest,     // コピー先x座標
-    int nYDest,     // コピー先y座標
-    int nWidth,     // コピーする幅
-    int nHeight,    // コピーする高さ
-    IntPtr hdcSource,  // コピー元デバイスコンテキスト
-    int nXSource,   // コピー元x座標
-    int nYSource,   // コピー元y座標
-    uint dwRaster    // ラスタオペレーションコード
-);
-
-        private const int WHITE_PEN = 6;
-        //        IntPtr hBmpSrc = IntPtr.Zero;
-        //        private GDIBitmap StarImage_on = null;
-        //        private GDIBitmap StarImage_off = null;
-        private class GDIBitmap : IDisposable
-        {
-            public Image orig;
-            private Bitmap bitmap;
-            private Graphics g;
-            private IntPtr hDC;
-            public IntPtr HDC
-            {
-                get
-                {
-                    return hDC;
-                }
-            }
-            private IntPtr hBMP;
-            public GDIBitmap(Bitmap bitmap)
-            {
-                this.orig = bitmap;
-                this.bitmap = new Bitmap(bitmap);
-                using (var g = Graphics.FromImage(this.bitmap))
-                {
-                    g.DrawImage(bitmap, 0, 0);
-                }
-                //                this.bitmap = bitmap;
-                this.g = Graphics.FromImage(this.bitmap);
-                this.hDC = this.g.GetHdc();
-                this.hBMP = this.bitmap.GetHbitmap();
-                SelectObject(this.hDC, this.hBMP);
-            }
-            public void Dispose()
-            {
-                DeleteObject(this.hBMP);
-                g.ReleaseHdc();
-                g.Dispose();
-                bitmap.Dispose();
-            }
-        }
         private void listView1_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
             var row = Controller.GetPlaylistRow(e.ItemIndex);
@@ -2438,20 +2361,20 @@ namespace Gageas.Lutea.DefaultUI
                 int pc = 0;
                 IntPtr hDC = g.GetHdc();
                 IntPtr hFont = (emphasizedRowId == e.ItemIndex ? new Font(listView1.Font, FontStyle.Bold) : listView1.Font).ToHfont();
-                IntPtr hOldFont = SelectObject(hDC, hFont);
+                IntPtr hOldFont = GDI.SelectObject(hDC, hFont);
 
                 Size size_dots;
-                GetTextExtentPoint32(hDC, "...", "...".Length, out size_dots);
+                GDI.GetTextExtentPoint32(hDC, "...", "...".Length, out size_dots);
                 int y = bounds.Y + (bounds.Height - size_dots.Height) / 2;
 
-                SelectObject(hDC, GetStockObject(WHITE_PEN));
-                SetTextColor(hDC, (uint)(isSelected ? SystemColors.HighlightText.ToArgb() : SystemColors.ControlText.ToArgb())&0xffffff);
+                GDI.SelectObject(hDC, GDI.GetStockObject(GDI.WHITE_PEN));
+                GDI.SetTextColor(hDC, (uint)(isSelected ? SystemColors.HighlightText.ToArgb() : SystemColors.ControlText.ToArgb()) & 0xffffff);
 
                 // 各column描画
                 foreach (ColumnHeader head in cols)
                 {
-                    MoveToEx(hDC, bounds.X + pc - 1, bounds.Y, IntPtr.Zero);
-                    LineTo(hDC, bounds.X + pc - 1, bounds.Y + bounds.Height);
+                    GDI.MoveToEx(hDC, bounds.X + pc - 1, bounds.Y, IntPtr.Zero);
+                    GDI.LineTo(hDC, bounds.X + pc - 1, bounds.Y + bounds.Height);
                     DBCol col = (DBCol)head.Tag;
 
                     if (col == DBCol.rating)
@@ -2488,11 +2411,11 @@ namespace Gageas.Lutea.DefaultUI
                             break;
                     }
                     Size size;
-                    GetTextExtentPoint32(hDC, str, str.Length, out size);
+                    GDI.GetTextExtentPoint32(hDC, str, str.Length, out size);
                     if (size.Width < w)
                     {
                         var padding = col == DBCol.tagTracknumber || col == DBCol.playcount || col == DBCol.lastplayed || col == DBCol.statBitrate || col == DBCol.statDuration ? (w - size.Width) - 1 : 1;
-                        TextOut(hDC, bounds.X + pc + padding, y, str, str.Length);
+                        GDI.TextOut(hDC, bounds.X + pc + padding, y, str, str.Length);
                     }
                     else
                     {
@@ -2501,16 +2424,16 @@ namespace Gageas.Lutea.DefaultUI
                             int cnt = str.Length + 1;
                             do
                             {
-                                GetTextExtentPoint32(hDC, str, --cnt, out size);
+                                GDI.GetTextExtentPoint32(hDC, str, --cnt, out size);
                                 if (size.Width > w * 2) cnt = (int)(cnt * 0.75);
                             } while (size.Width + size_dots.Width > w && cnt > 0);
-                            TextOut(hDC, bounds.X + pc + 1, y, str.Substring(0, cnt) + "...", cnt + 3);
+                            GDI.TextOut(hDC, bounds.X + pc + 1, y, str.Substring(0, cnt) + "...", cnt + 3);
                         }
                     }
                     pc += head.Width;
                 }
 
-                DeleteObject(SelectObject(hDC, hOldFont));
+                GDI.DeleteObject(GDI.SelectObject(hDC, hOldFont));
                 g.ReleaseHdc(hDC);
 
                 // アルバム先頭マーク描画
