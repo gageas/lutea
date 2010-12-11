@@ -107,6 +107,13 @@ namespace Gageas.Lutea.DefaultUI
         private Color SpectrumColor2 = Color.Orange;
         private bool ColoredAlbum = true;
 
+        private bool UseMediaKey = false;
+        private Keys hotkey_PlayPause = Keys.None;
+        private Keys hotkey_Stop = Keys.None;
+        private Keys hotkey_NextTrack = Keys.None;
+        private Keys hotkey_PrevTrack = Keys.None;
+
+
         public DefaultUIForm()
         {
 #if DEBUG
@@ -1935,7 +1942,86 @@ namespace Gageas.Lutea.DefaultUI
                     coloredAlbum = value;
                 }
             }
+            
+            private bool useMediaKey;
+            [Description("マルチメディアキーを使用する")]
+            [DefaultValue(false)]
+            [Category("Hotkey")]
+            public bool UseMediaKey
+            {
+                get
+                {
+                    return useMediaKey;
+                }
+                set
+                {
+                    useMediaKey = value;
+                }
+            }
 
+            private Keys hotkey_NextTrack;
+            [Description("次の曲")]
+            [DefaultValue(Keys.None)]
+            [Category("Hotkey")]
+            public Keys Hotkey_NextTrack
+            {
+                get
+                {
+                    return hotkey_NextTrack;
+                }
+                set
+                {
+                    hotkey_NextTrack = value;
+                }
+            }
+            
+            private Keys hotkey_PrevTrack;
+            [Description("前の曲")]
+            [DefaultValue(Keys.None)]
+            [Category("Hotkey")]
+            public Keys Hotkey_PrevTrack
+            {
+                get
+                {
+                    return hotkey_PrevTrack;
+                }
+                set
+                {
+                    hotkey_PrevTrack = value;
+                }
+            }
+
+            private Keys hotkey_PlayPause;
+            [Description("再生/一時停止")]
+            [DefaultValue(Keys.None)]
+            [Category("Hotkey")]
+            public Keys Hotkey_PlayPause
+            {
+                get
+                {
+                    return hotkey_PlayPause;
+                }
+                set
+                {
+                    hotkey_PlayPause = value;
+                }
+            }
+
+            private Keys hotkey_Stop;
+            [Description("停止")]
+            [DefaultValue(Keys.None)]
+            [Category("Hotkey")]
+            public Keys Hotkey_Stop
+            {
+                get
+                {
+                    return hotkey_Stop;
+                }
+                set
+                {
+                    hotkey_Stop = value;
+                }
+            }
             private DefaultUIForm form;
             public Preference(DefaultUIForm form)
             {
@@ -1947,6 +2033,11 @@ namespace Gageas.Lutea.DefaultUI
                 color2 = form.SpectrumColor2;
                 font_playlistView = new Font(form.listView1.Font, 0);
                 coloredAlbum = form.ColoredAlbum;
+                useMediaKey = form.UseMediaKey;
+                hotkey_PlayPause = form.hotkey_PlayPause;
+                hotkey_Stop = form.hotkey_Stop;
+                hotkey_NextTrack = form.hotkey_NextTrack;
+                hotkey_PrevTrack = form.hotkey_PrevTrack;
             }
         }
         private void parseSetting(Dictionary<string, object> setting)
@@ -1976,7 +2067,33 @@ namespace Gageas.Lutea.DefaultUI
                 ()=>displayColumns = (DBCol[])setting["DisplayColumns"],
                 ()=>listView1.Font = (System.Drawing.Font)setting["Font_PlaylistView"],
                 ()=>ColoredAlbum = (bool)setting["ColoredAlbum"],
+                ()=>UseMediaKey = (bool)setting["UseMediaKey"],
+                ()=>hotkey_PlayPause = (Keys)setting["Hotkey_PlayPause"],
+                ()=>hotkey_Stop = (Keys)setting["Hotkey_Stop"],
+                ()=>hotkey_NextTrack = (Keys)setting["Hotkey_NextTrack"],
+                ()=>hotkey_PrevTrack = (Keys)setting["Hotkey_PrevTrack"],
             }, null);
+        }
+
+        private List<HotKey> hotkeys = new List<HotKey>();
+        public void setupHotKeys()
+        {
+            this.Invoke((MethodInvoker)(() =>
+            {
+                hotkeys.ForEach((e) => e.Dispose());
+                hotkeys.Clear();
+                hotkeys.Add(new HotKey(hotkey_PlayPause, (o, e) => { if (Controller.Current.Position > 0)Controller.TogglePause(); else Controller.Play(); }));
+                hotkeys.Add(new HotKey(hotkey_Stop, (o, e) => Controller.Stop()));
+                hotkeys.Add(new HotKey(hotkey_NextTrack, (o, e) => Controller.NextTrack()));
+                hotkeys.Add(new HotKey(hotkey_PrevTrack, (o, e) => Controller.PrevTrack()));
+                if (UseMediaKey)
+                {
+                    hotkeys.Add(new HotKey(0, Keys.MediaPreviousTrack, (o, e) => Controller.PrevTrack()));
+                    hotkeys.Add(new HotKey(0, Keys.MediaNextTrack, (o, e) => Controller.NextTrack()));
+                    hotkeys.Add(new HotKey(0, Keys.MediaPlayPause, (o, e) => { if (Controller.Current.Position > 0)Controller.TogglePause(); else Controller.Play(); }));
+                    hotkeys.Add(new HotKey(0, Keys.MediaStop, (o, e) => Controller.Stop()));
+                }
+            }));
         }
 
         private Bitmap[] StarImages = new Bitmap[6];
@@ -2102,6 +2219,8 @@ namespace Gageas.Lutea.DefaultUI
                 taskbarThumbButtons[3] = new TaskbarExtension.ThumbButton() { iID = 3, szTip = "Next", iBitmap = 3, dwMask = TaskbarExtension.ThumbButtonMask.Flags | TaskbarExtension.ThumbButtonMask.ToolTip | TaskbarExtension.ThumbButtonMask.Bitmap, dwFlags = TaskbarExtension.ThumbButtonFlags.Enabled };
             }
             catch { }
+
+            setupHotKeys();
         }
 
         public object GetSetting()
@@ -2141,6 +2260,11 @@ namespace Gageas.Lutea.DefaultUI
             setting["DisplayColumns"] = displayColumns;
             setting["Font_PlaylistView"] = listView1.Font;
             setting["ColoredAlbum"] = ColoredAlbum;
+            setting["UseMediaKey"] = UseMediaKey;
+            setting["Hotkey_PlayPause"] = hotkey_PlayPause;
+            setting["Hotkey_Stop"] = hotkey_Stop;
+            setting["Hotkey_NextTrack"] = hotkey_NextTrack;
+            setting["Hotkey_PrevTrack"] = hotkey_PrevTrack;
             return setting;
         }
 
@@ -2159,6 +2283,12 @@ namespace Gageas.Lutea.DefaultUI
             this.SpectrumMode = pref.SpectrumMode;
             this.listView1.Font = pref.Font_playlistView;
             this.ColoredAlbum = pref.ColoredAlbum;
+            this.UseMediaKey = pref.UseMediaKey;
+            this.hotkey_PlayPause = pref.Hotkey_PlayPause;
+            this.hotkey_Stop = pref.Hotkey_Stop;
+            this.hotkey_NextTrack = pref.Hotkey_NextTrack;
+            this.hotkey_PrevTrack = pref.Hotkey_PrevTrack;
+            setupHotKeys();
             setupPlaylistView();
         }
 
