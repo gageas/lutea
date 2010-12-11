@@ -106,6 +106,7 @@
     <Compile Include="QueryRenameForm.Designer.cs">
       <DependentUpon>QueryRenameForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="RatingRenderer.cs" />
     <Compile Include="RevConv.cs" />
     <Compile Include="Shell32.cs" />
     <Compile Include="TaskbarExtension.cs" />

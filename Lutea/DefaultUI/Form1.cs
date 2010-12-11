@@ -93,6 +93,11 @@ namespace Gageas.Lutea.DefaultUI
         DBCol[] filterColumns = { DBCol.tagArtist, DBCol.tagAlbum, DBCol.tagDate, DBCol.tagGenre, DBCol.infoCodec_sub, DBCol.rating };
 
         /// <summary>
+        /// Ratingの☆を描画
+        /// </summary>
+        RatingRenderer ratingRenderer;
+
+        /// <summary>
         /// settingから読み出した値を保持、あるいはデフォルト値
         /// </summary>
         private Size config_FormSize;
@@ -2096,55 +2101,14 @@ namespace Gageas.Lutea.DefaultUI
             }));
         }
 
-        private Bitmap[] StarImages = new Bitmap[6];
         public void Init(object _setting)
         {
-            //            this.Show();
             if (_setting != null)
             {
                 parseSetting((Dictionary<string, object>)_setting);
             }
 
-            // レーティング用の画像を準備
-            Image StarImage_on, StarImage_off;
-
-            try
-            {
-                StarImage_on = Image.FromFile(@"components\rating_on.gif");
-            }
-            catch
-            {
-                StarImage_on = new Bitmap(16, 16);
-                using (var g = Graphics.FromImage(StarImage_on))
-                {
-                    g.FillEllipse(SystemBrushes.ControlText, 2, 2, 12, 12);
-                }
-            }
-
-            try
-            {
-                StarImage_off = Image.FromFile(@"components\rating_off.gif");
-            }
-            catch
-            {
-                StarImage_off = new Bitmap(16, 16);
-                using (var g = Graphics.FromImage(StarImage_off))
-                {
-                    g.FillRectangle(SystemBrushes.GrayText, 6, 6, 4, 4);
-                }
-            }
-
-            for (int i = 0; i <= 5; i++)
-            {
-                StarImages[i] = new Bitmap(StarImage_on.Width * 5, StarImage_on.Height);
-                using (var g = Graphics.FromImage(StarImages[i]))
-                {
-                    for (int j = 0; j < 5; j++)
-                    {
-                        g.DrawImage(i > j ? StarImage_on : StarImage_off, j * StarImage_on.Width, 0);
-                    }
-                }
-            }
+            ratingRenderer = new RatingRenderer(@"components\rating_on.gif", @"components\rating_off.gif");
 
             setupPlaylistView();
             if (this.WindowState == FormWindowState.Normal)
@@ -2382,10 +2346,8 @@ namespace Gageas.Lutea.DefaultUI
                         int stars = 0;
                         int.TryParse(row[(int)col].ToString(), out stars);
                         stars /= 10;
-                        int _y = (bounds.Height - StarImages[0].Height) / 2 + bounds.Y;
-                        int _x = bounds.X + pc + 2;
                         g.ReleaseHdc(hDC);
-                        g.DrawImage(StarImages[stars], _x, _y, new Rectangle(0, 0, head.Width - 4, StarImages[0].Height), GraphicsUnit.Pixel);
+                        ratingRenderer.Draw(stars, g, bounds.X + pc + 2, bounds.Y, head.Width - 2, bounds.Height);
                         hDC = g.GetHdc();
                         pc += head.Width;
                         continue;
