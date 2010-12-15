@@ -2292,7 +2292,7 @@ namespace Gageas.Lutea.DefaultUI
             var isSelected = (e.State & ListViewItemStates.Selected) != 0;
 
             var row_above = Controller.GetPlaylistRow(e.ItemIndex - 1);
-            var isFirstTrack = row_above == null || row[(int)DBCol.tagAlbum].ToString() != row_above[(int)DBCol.tagAlbum].ToString();
+            var isFirstTrack = row_above == null || row_above.Length == 0 || row[(int)DBCol.tagAlbum].ToString() != row_above[(int)DBCol.tagAlbum].ToString();
             using (var g = e.Graphics)
             {
                 // 背景色描画
