@@ -506,8 +506,11 @@ namespace Gageas.Lutea.Core
             // 一時的に古いcacheの内容を吐いても問題ないので、mutexで固めるほどではない
             var _cache = AppCore.playlistCache;
             if (_cache.Length <= index) return null;
+            object[] value = null;
             if (_cache[index] == null) _cache[index] = AppCore.h2k6db.FetchRow("playlist", index + 1);
-            return _cache[index];
+            value = _cache[index];
+            if (value == null || value.Length == 0) return null;
+            return value;
         }
 
         public static string GetPlaylistRowColumn(int rowindex, DBCol column)
