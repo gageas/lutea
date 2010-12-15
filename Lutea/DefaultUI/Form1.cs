@@ -2286,13 +2286,13 @@ namespace Gageas.Lutea.DefaultUI
         private void listView1_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
             var row = Controller.GetPlaylistRow(e.ItemIndex);
-            if (row == null || row.Length == 0) return;
+            if (row == null) return;
 
             var bounds = e.Bounds;
             var isSelected = (e.State & ListViewItemStates.Selected) != 0;
 
             var row_above = Controller.GetPlaylistRow(e.ItemIndex - 1);
-            var isFirstTrack = row_above == null || row_above.Length == 0 || row[(int)DBCol.tagAlbum].ToString() != row_above[(int)DBCol.tagAlbum].ToString();
+            var isFirstTrack = row_above == null || row[(int)DBCol.tagAlbum].ToString() != row_above[(int)DBCol.tagAlbum].ToString();
             using (var g = e.Graphics)
             {
                 // 背景色描画
