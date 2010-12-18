@@ -831,6 +831,7 @@ namespace Gageas.Lutea.Core
             {
                 lock (prepareMutex)
                 {
+                    outputChannelIsReady = false;
                     if (preparedStream != null)
                     {
                         preparedStream.stream.Dispose();
