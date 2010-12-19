@@ -621,7 +621,7 @@ namespace Gageas.Lutea.Core
         {
             if (onVolumeChange != null) onVolumeChange.Invoke();
             if (onPlaybackOrderChange != null) onPlaybackOrderChange.Invoke();
-            PlaylistUpdated.Invoke(AppCore.latestPlaylistQuery);
+            if (PlaylistUpdated != null) PlaylistUpdated.Invoke(AppCore.latestPlaylistQuery);
 
 
             elapsedTimeWatcherThread = new Thread(elapsedTimeWatcher);
