@@ -423,17 +423,6 @@ namespace Gageas.Lutea.DefaultUI
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (logview != null)
-            {
-                logview.Close();
-            }
-            if (CoverArtTransitionTickTimer != null)
-            {
-                CoverArtTransitionTickTimer.Dispose();
-                CoverArtTransitionTickTimer = null;
-            }
-            yomigana.Dispose();
-            coverArtImageLoaderThread.Abort();
             Controller.Quit();
         }
 
@@ -2168,6 +2157,26 @@ namespace Gageas.Lutea.DefaultUI
         public void LibraryInitializeRequired()
         {
             throw new NotImplementedException();
+        }
+
+        public void Quit()
+        {
+            this.Invoke((MethodInvoker)(() =>
+            {
+                if (logview != null)
+                {
+                    logview.Close();
+                }
+                if (CoverArtTransitionTickTimer != null)
+                {
+                    CoverArtTransitionTickTimer.Dispose();
+                    CoverArtTransitionTickTimer = null;
+                }
+                yomigana.Dispose();
+            }));
+            coverArtImageLoaderThread.Abort();
+
+            this.Close();
         }
         #endregion
 

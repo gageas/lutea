@@ -61,6 +61,8 @@ namespace ClassLibrary1
 //            throw new NotImplementedException();
         }
 
+        public void Quit() { }
+
         private class Preference
         {
             private Class1 class1;

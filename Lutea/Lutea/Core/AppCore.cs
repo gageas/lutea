@@ -514,7 +514,7 @@ namespace Gageas.Lutea.Core
                     }
                     catch (Exception e)
                     {
-                        Logger.Log(e.ToString());
+                        Logger.Error(e.ToString());
                     }
                 }
             }
@@ -558,7 +558,7 @@ namespace Gageas.Lutea.Core
                             pin.Init(null);
                         }
                     }
-                    catch { }
+                    catch (Exception e) { Logger.Error(e); }
                 }
             }
 
@@ -596,8 +596,11 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// アプリケーション全体の終了
         /// </summary>
+        private static bool QuitProcess = false;
         internal static void Quit()
         {
+            if (QuitProcess) return;
+            QuitProcess = true;
             try
             {
                 isPlaying = false;
@@ -608,7 +611,7 @@ namespace Gageas.Lutea.Core
                     currentStream.stream.Dispose();
                 }
 
-                // saveSetting
+                // Quit plugins and save setting
                 using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite))
                 {
                     Dictionary<Guid, object> pluginSettings = new Dictionary<Guid, object>();
@@ -619,6 +622,7 @@ namespace Gageas.Lutea.Core
                             pluginSettings.Add(p.GetType().GUID, p.GetSetting());
                         }
                         catch { }
+                        finally { p.Quit(); }
                     }
                     (new BinaryFormatter()).Serialize(fs, pluginSettings);
                 }

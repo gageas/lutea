@@ -12,6 +12,7 @@ namespace Gageas.Lutea.Core
         object GetSetting();
         object GetPreferenceObject();
         void SetPreferenceObject(object pref);
+        void Quit();
     }
 
     public interface LuteaUIComponentInterface : LuteaComponentInterface

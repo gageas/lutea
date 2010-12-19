@@ -199,5 +199,9 @@ namespace Gageas.Lutea.Core
             AppCore.OutputFreq = (uint)pref.OutputFreq;
             AppCore.fadeInOutOnSkip = pref.FadeInOutOnSkip;
         }
+
+        public void Quit()
+        {
+        }
     }
 }
