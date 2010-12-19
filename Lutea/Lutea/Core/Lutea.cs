@@ -382,6 +382,43 @@ namespace Gageas.Lutea.Core
                     return IndexInPlaylist(AppCore.currentStream.file_name);
                 }
             }
+            
+            /// <summary>
+            /// 現在のカバーアートをImageオブジェクトとして返す。
+            /// カバーアートが無ければdefault.jpgのImageオブジェクトを返す。
+            /// default.jpgも見つからなければnullを返す。
+            /// FIXME?: この機能はCoreに移すかも
+            /// </summary>
+            /// <returns></returns>
+            public static System.Drawing.Image CoverArtImage()
+            {
+                System.Drawing.Image image = null;
+                if (StreamFilename != null)
+                {
+                    List<KeyValuePair<string, object>> tag = Tags.MetaTag.readTagByFilename(StreamFilename, true);
+                    if (tag != null)
+                    {
+                        image = (System.Drawing.Image)tag.Find((match) => match.Value is System.Drawing.Image).Value;
+                    }
+                    if (image == null)
+                    {
+                        String name = System.IO.Path.GetDirectoryName(StreamFilename);
+                        String[] searchPatterns = { "folder.jpg", "folder.jpeg", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp" };
+                        foreach (String searchPattern in searchPatterns)
+                        {
+                            String[] filename_candidate = System.IO.Directory.GetFiles(name, searchPattern);
+                            if (filename_candidate.Length > 0)
+                            {
+                                Logger.Log("CoverArt image is " + filename_candidate[0]);
+                                image = System.Drawing.Image.FromFile(filename_candidate[0]);
+                                if (image == null) continue;
+                                break;
+                            }
+                        }
+                    }
+                }
+                return image;
+            }
         }
 
         public static int IndexInPlaylist(string file_name)
