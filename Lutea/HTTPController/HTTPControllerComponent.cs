@@ -14,7 +14,6 @@ namespace Gageas.Lutea.HTTPController
     public class HTTPControllerComponent : LuteaComponentInterface
     {
         private HTTPController controller;
-        private Thread thread;
         public void Init(object _setting)
         {
             int port = 8080;
@@ -55,7 +54,6 @@ namespace Gageas.Lutea.HTTPController
         {
             var pref = (Preference)_pref;
             controller.Abort();
-            thread.Interrupt();
             Setup(pref.Port);
         }
 
