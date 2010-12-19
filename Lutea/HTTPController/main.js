@@ -6,7 +6,7 @@ var Controller = {
 	Stop : function(){hitPath("./?mode=control&operation=stop");},
 	Next : function(){hitPath("./?mode=control&operation=next");},
 	Prev : function(){hitPath("./?mode=control&operation=prev");},
-	Pause : function(){hitPath("./?mode=control&operation=pause");},
+	PlayPause : function(){hitPath("./?mode=control&operation=playpause");},
 	Quit : function(){hitPath("./?mode=control&operation=quit");}
 };
 
