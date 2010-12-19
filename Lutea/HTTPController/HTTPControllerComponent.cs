@@ -34,8 +34,7 @@ namespace Gageas.Lutea.HTTPController
             try
             {
                 controller = new HTTPController(port);
-                thread = new Thread(() => { controller.Start(); });
-                thread.Start();
+                controller.Start();
             }
             catch { Logger.Log("HTTPControllerサービスの起動に失敗しました。ポート番号" + port); }
         }

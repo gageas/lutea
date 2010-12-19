@@ -78,11 +78,8 @@ namespace Gageas.Lutea.HTTPController
             {
                 // Run Async
                 listener.BeginGetContext(listenerCallback, listener);
-                System.Threading.Thread.Sleep(1);
             }
             catch { }
-            {
-            }
         }
 
         private void listenerCallback(IAsyncResult result)
