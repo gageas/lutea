@@ -856,48 +856,7 @@ namespace Gageas.Lutea.DefaultUI
         /// 画像を切り替える際のフェード効果のためのタイマ
         /// </summary>
         System.Timers.Timer CoverArtTransitionTickTimer;
-
-        /// <summary>
-        /// 現在のカバーアートをImageオブジェクトとして返す。
-        /// カバーアートが無ければdefault.jpgのImageオブジェクトを返す。
-        /// default.jpgも見つからなければnullを返す。
-        /// FIXME?: この機能はCoreに移すかも
-        /// </summary>
-        /// <returns></returns>
-        private Image GetCoverArtImage()
-        {
-            string streamFilename = Controller.Current.StreamFilename;
-            Image image = null;
-            if (streamFilename != null)
-            {
-                List<KeyValuePair<string, object>> tag = MetaTag.readTagByFilename(streamFilename, true);
-                if (tag != null)
-                {
-                    //                    tag.ForEach((x) => { Logger.Debug(x.Key + " , " + x.Value.ToString().Replace("\0", "\r\n")); });
-                    image = (Image)tag.Find((match) => match.Value is System.Drawing.Image).Value;
-                    pictureBox1.Tag = null;
-                }
-                if (image == null)
-                {
-                    String name = System.IO.Path.GetDirectoryName(streamFilename);
-                    String[] searchPatterns = { "folder.jpg", "folder.jpeg", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp" };
-                    foreach (String searchPattern in searchPatterns)
-                    {
-                        String[] filename_candidate = System.IO.Directory.GetFiles(name, searchPattern);
-                        if (filename_candidate.Length > 0)
-                        {
-                            Logger.Log("CoverArt image is " + filename_candidate[0]);
-                            image = Image.FromFile(filename_candidate[0]);
-                            if (image == null) continue;
-                            pictureBox1.Tag = filename_candidate[0];
-                            break;
-                        }
-                    }
-                }
-            }
-            return image;
-        }
-
+        
         /// <summary>
         /// CoverArt画像をバックグラウンドで読み込むスレッドとして動作。
         /// 常に起動したままで、平常時はsleepしている。
@@ -925,7 +884,7 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     // Nextを連打したような場合に実際の処理が走らないように少しウェイト
                     Thread.Sleep(300);
-                    Image coverArtImage = GetCoverArtImage();
+                    Image coverArtImage = Controller.Current.CoverArtImage();
                     TaskbarExtension.tagRECT rect = new TaskbarExtension.tagRECT() { left = splitContainer1.SplitterDistance + splitContainer1.SplitterWidth, top = menuStrip1.Height };
                     rect.bottom = rect.top + splitContainer3.Height;
                     rect.right = rect.left + splitContainer3.Width;
@@ -978,7 +937,7 @@ namespace Gageas.Lutea.DefaultUI
                     try // Mutex ここから
                     {
                         // 新しい画像をリサイズ
-                        coverArtImage.Tag = GetResizedImageWithPadding(coverArtImage, CoverArtWidth, CoverArtHeight);
+                        coverArtImage.Tag = Util.Util.GetResizedImageWithPadding(coverArtImage, CoverArtWidth, CoverArtHeight);
 
                         if (true)
                         {
@@ -1075,55 +1034,6 @@ namespace Gageas.Lutea.DefaultUI
             return;
         }
 
-        /// <summary>
-        /// 画像を指定したwidth*heightに収まるようにアスペクト比を保ったまま縮小する。
-        /// Imageのサイズがwidth*heightになるように画像の周囲には余白をつける。
-        /// </summary>
-        /// <param name="image"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <returns></returns>
-        private Image GetResizedImageWithPadding(Image image, int width, int height)
-        {
-            return GetResizedImageWithPadding(image, width, height, Color.White);
-        }
-        private Image GetResizedImageWithPadding(Image image, int width, int height, Color backgroundColor)
-        {
-            double xZoomMax = (double)width / image.Width;
-            double yZoomMax = (double)height / image.Height;
-
-            double zoom = Math.Min(xZoomMax, yZoomMax);
-
-            int resizedWidth = 0;
-            int resizedHeight = 0;
-
-            int padX = 0;
-            int padY = 0;
-
-            if (xZoomMax > yZoomMax)
-            {
-                resizedWidth = (int)(yZoomMax * image.Width);
-                resizedHeight = height;
-                padY = 0;
-                padX = (width - resizedWidth) / 2;
-            }
-            else
-            {
-                resizedWidth = width;
-                resizedHeight = (int)(xZoomMax * image.Height);
-                padX = 0;
-                padY = (height - resizedHeight) / 2;
-            }
-
-            Image dest = new Bitmap(width, height);
-            using (var g = Graphics.FromImage(dest))
-            {
-                g.Clear(backgroundColor);
-                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                g.DrawImage(image, padX, padY, resizedWidth, resizedHeight);
-            }
-            return dest;
-        }
         #endregion
 
         #region UI Component events
@@ -1262,7 +1172,6 @@ namespace Gageas.Lutea.DefaultUI
             {
                 try
                 {
-                    //                    System.Diagnostics.Process.Start((string)pictureBox1.Tag);
                     if (coverViewForm != null)
                     {
                         coverViewForm.Close();
@@ -1294,7 +1203,7 @@ namespace Gageas.Lutea.DefaultUI
 
                 if (CurrentCoverArt != null)
                 {
-                    Image newSize = GetResizedImageWithPadding(CurrentCoverArt, CoverArtWidth, CoverArtHeight);
+                    Image newSize = Util.Util.GetResizedImageWithPadding(CurrentCoverArt, CoverArtWidth, CoverArtHeight);
                     CurrentCoverArt.Tag = newSize;
                     //                    composed = new Bitmap(newSize);
                     AlphaComposedImage(composed, newSize, 1F);
