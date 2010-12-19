@@ -1,0 +1,70 @@
+﻿body,html
+{
+    height : 100%;
+    margin : 0px;
+    padding : 0px;
+}
+
+table#layoutTable
+{
+    border : solid white 5px;
+    border-collapse :separate;
+    width : 100%;
+    height : 100%;
+}
+
+img
+{
+    border:outset 1px silver;
+}
+
+span
+{
+    border : outset 1px silver;
+    padding : 2px 3px;
+    cursor : pointer;
+}
+
+span:hover
+{
+    background-color : Silver;
+}
+
+td#playlistViewWrap
+{
+    width : 100%;
+    height : 100%;
+}
+
+div#infoView
+{
+    font-size : 150%;
+}
+
+iframe
+{
+    width : 100%;
+    height : 100%;
+    border : solid 1px silver;
+}
+
+ul.playlistItemWrap {
+    margin: 0 0 0 0;
+    padding: 0;
+    border : solid 1px gray;
+    border-width : 1px 0px 0px 0px;
+}
+
+li.playlistItem
+{
+    list-style-type :none;
+    border : solid 1px gray;
+    border-width : 0px 0px 1px 0px;
+    padding : 1px 0px 1px 5px;
+    cursor : pointer;
+}
+
+li.playlistItem:hover
+{
+    background-color : Silver;
+}
