@@ -23,15 +23,19 @@ namespace Gageas.Lutea.Core
                 w.Flush();
             });
 #endif
-            var mainform = AppCore.Init();
-            if (mainform != null)
+            try
             {
-                Application.Run(mainform);
+                var mainform = AppCore.Init();
+                if (mainform != null)
+                {
+                    Application.Run(mainform);
+                }
+                else
+                {
+                    Application.Run();
+                }
             }
-            else
-            {
-                Application.Run();
-            }
+            catch (Exception e) { Logger.Error(e); }
         }
     }
 }
