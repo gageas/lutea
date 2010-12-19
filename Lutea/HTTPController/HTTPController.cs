@@ -39,6 +39,9 @@ namespace Gageas.Lutea.HTTPController
         /// </summary>
         private Dictionary<string, HTTPRequestHandler> HTTPHandlers = new Dictionary<string, HTTPRequestHandler>();
 
+        private List<System.Threading.Thread> holdingConnections_Info = new List<System.Threading.Thread>();
+        private List<System.Threading.Thread> holdingConnections_Playlist = new List<System.Threading.Thread>();
+
         #region Constructor
         public HTTPController(int port)
         {
@@ -50,6 +53,21 @@ namespace Gageas.Lutea.HTTPController
             HTTPHandlers.Add("control", KickAPI);
             HTTPHandlers.Add("blank", ReturnBlank);
             listener.Start();
+            Controller.onTrackChange += (x) => {
+                lock (holdingConnections_Info)
+                {
+                    holdingConnections_Info.ForEach((e) => e.Interrupt());
+                    holdingConnections_Info.Clear();
+                }
+            };
+            Controller.PlaylistUpdated += (x) =>
+            {
+                lock (holdingConnections_Playlist)
+                {
+                    holdingConnections_Playlist.ForEach((e) => e.Interrupt());
+                    holdingConnections_Playlist.Clear();
+                }
+            };
         }
         #endregion
 
@@ -58,25 +76,23 @@ namespace Gageas.Lutea.HTTPController
         {
             try
             {
-                while (true)
-                {
-                    var ctx = listener.GetContext();
-                    HandleHTTPContext(ctx);
-
-                    /*
-                    // Run Async
-                    listener.BeginGetContext((result) => {
-                        HttpListener lsnr = (HttpListener)result.AsyncState;
-                        ProcessHTTPContext(lsnr.EndGetContext(result));
-                    }, listener);
-                     */
-                }
+                // Run Async
+                listener.BeginGetContext(listenerCallback, listener);
+                System.Threading.Thread.Sleep(1);
             }
             catch { }
             {
             }
         }
-        
+
+        private void listenerCallback(IAsyncResult result)
+        {
+            HttpListener lsnr = (HttpListener)result.AsyncState;
+            var context = lsnr.EndGetContext(result);
+            lsnr.BeginGetContext(listenerCallback, lsnr);
+            HandleHTTPContext(context);
+        }
+
         public void Abort()
         {
             listener.Abort();
@@ -157,6 +173,26 @@ namespace Gageas.Lutea.HTTPController
             switch (type)
             {
                 case "playlist":
+                    if (req.QueryString["comet"] == "true")
+                    {
+                        lock (holdingConnections_Playlist)
+                        {
+                            holdingConnections_Playlist.Add(System.Threading.Thread.CurrentThread);
+                        }
+                        try
+                        {
+                            System.Threading.Thread.Sleep(20 * 1000);
+                        }
+                        catch { }
+                        finally
+                        {
+                            lock (holdingConnections_Playlist)
+                            {
+                                holdingConnections_Playlist.Remove(System.Threading.Thread.CurrentThread);
+                            }
+                        }
+                    }
+
                     var playlist = doc.CreateElement("playlist");
                     for (int i = 0; i < Controller.CurrentPlaylistRows; i++)
                     {
@@ -171,6 +207,26 @@ namespace Gageas.Lutea.HTTPController
                     doc.AppendChild(playlist);
                     break;
                 default:
+                    if (req.QueryString["comet"] == "true")
+                    {
+                        lock (holdingConnections_Info)
+                        {
+                            holdingConnections_Info.Add(System.Threading.Thread.CurrentThread);
+                        }
+                        try
+                        {
+                            System.Threading.Thread.Sleep(20 * 1000);
+                        }
+                        catch { }
+                        finally
+                        {
+                            lock (holdingConnections_Info)
+                            {
+                                holdingConnections_Info.Remove(System.Threading.Thread.CurrentThread);
+                            }
+                        }
+                    }
+
                     var lutea = doc.CreateElement("lutea");
 
                     // 現在のトラックに関する情報をセット
@@ -242,7 +298,6 @@ namespace Gageas.Lutea.HTTPController
             catch (Exception ex)
             {
                 Logger.Log(ex);
-                throw (ex);
             }
             finally
             {
