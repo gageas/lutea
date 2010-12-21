@@ -266,9 +266,12 @@ namespace Gageas.Lutea.DefaultUI
             using (var db = Controller.DBConnection)
             {
                 // 関連アルバムを引っ張ってくる
-                using (var stmt = db.Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE tagAlbum IN (SELECT tagAlbum FROM list WHERE " + q + " ) GROUP BY tagAlbum ORDER BY COUNT(*) DESC;"))
+                if (subArtists.Count > 0)
                 {
-                    related_albums = stmt.EvaluateAll();
+                    using (var stmt = db.Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE tagAlbum IN (SELECT tagAlbum FROM list WHERE " + q + " ) GROUP BY tagAlbum ORDER BY COUNT(*) DESC;"))
+                    {
+                        related_albums = stmt.EvaluateAll();
+                    }
                 }
                 // ディスクnに分かれてる感じのアルバムを引っ張ってくる
                 using (var stmt = db.Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE LCMapUpper(tagAlbum) LIKE '" + new Regex(@"\d").Replace(album.LCMapUpper(), "_").EscapeSingleQuotSQL() + "' GROUP BY LCMapUpper(tagAlbum);"))
@@ -288,15 +291,18 @@ namespace Gageas.Lutea.DefaultUI
                 cms.Items.Add(new ToolStripSeparator());
 
                 // 関連アルバムを登録
-                foreach (var _ in related_albums)
+                if (related_albums != null)
                 {
-                    var album_title = _[0].ToString();
-                    if (string.IsNullOrEmpty(album_title)) continue;
-                    var query = "SELECT * FROM list WHERE tagAlbum = '" + album_title.EscapeSingleQuotSQL() + "';";
-                    cms.Items.Add("Album: [" + _[1].ToString() + "]" + album_title.Replace("&", "&&"), null, (e, o) => { Controller.createPlaylist(query); });
-                    var item = new ListViewItem(new string[] { "", _[0].ToString() });
-                    item.Tag = query;
-                    listView2.Items.Add(item);
+                    foreach (var _ in related_albums)
+                    {
+                        var album_title = _[0].ToString();
+                        if (string.IsNullOrEmpty(album_title)) continue;
+                        var query = "SELECT * FROM list WHERE tagAlbum = '" + album_title.EscapeSingleQuotSQL() + "';";
+                        cms.Items.Add("Album: [" + _[1].ToString() + "]" + album_title.Replace("&", "&&"), null, (e, o) => { Controller.createPlaylist(query); });
+                        var item = new ListViewItem(new string[] { "", _[0].ToString() });
+                        item.Tag = query;
+                        listView2.Items.Add(item);
+                    }
                 }
 
                 if (multi_disc_albums.Length > 1)
