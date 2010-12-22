@@ -847,10 +847,6 @@ namespace Gageas.Lutea.DefaultUI
         /// mutexの取得解放およびpictureBoxへの操作は全てメインスレッドから行う
         /// </summary>
         Mutex m = new Mutex();
-        /// <summary>
-        /// 画像を切り替える際のフェード効果のためのタイマ
-        /// </summary>
-        System.Timers.Timer CoverArtTransitionTickTimer;
         
         /// <summary>
         /// CoverArt画像をバックグラウンドで読み込むスレッドとして動作。
@@ -2173,11 +2169,18 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     logview.Close();
                 }
-                if (CoverArtTransitionTickTimer != null)
+                try
                 {
-                    CoverArtTransitionTickTimer.Dispose();
-                    CoverArtTransitionTickTimer = null;
+                    if (spectrumAnalyzerThread != null) spectrumAnalyzerThread.Abort();
                 }
+                catch { }
+
+                try
+                {
+                    if (coverArtImageLoaderThread != null) coverArtImageLoaderThread.Abort();
+                }
+                catch { }
+
                 yomigana.Dispose();
             }));
             coverArtImageLoaderThread.Abort();
