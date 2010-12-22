@@ -390,7 +390,22 @@ namespace Gageas.Lutea.Core
             /// FIXME?: この機能はCoreに移すかも
             /// </summary>
             /// <returns></returns>
+            internal static bool coverArtImageIsInvalid = false;
+            private static System.Drawing.Image coverArtImage = null;
             public static System.Drawing.Image CoverArtImage()
+            {
+                if (coverArtImageIsInvalid)
+                {
+                    coverArtImage = _CoverArtImage();
+                    coverArtImageIsInvalid = false;
+                }
+                if (coverArtImage == null) return null;
+                lock (coverArtImage)
+                {
+                    return new System.Drawing.Bitmap(coverArtImage);
+                }
+            }
+            private static System.Drawing.Image _CoverArtImage()
             {
                 System.Drawing.Image image = null;
                 if (StreamFilename != null)
@@ -638,6 +653,7 @@ namespace Gageas.Lutea.Core
         internal static void _OnTrackChange(int index)
         {
             elapsedtime = -1;
+            Current.coverArtImageIsInvalid = true;
             if (onTrackChange == null) return;
             onTrackChange.Invoke(index);
         }
