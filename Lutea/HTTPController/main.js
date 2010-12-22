@@ -1,9 +1,13 @@
-﻿var _file_name = undefined;
-var _playlistQuery = undefined;
+﻿var _file_name = null;
+var _playlistQuery = null;
 
-var loadDataTimer = null;
-var loadPlaylistTimer = null;
+var loadData_id = 0;
+var loadPlaylist_id = 0;
+
 var commitQueryTimer = null;
+
+var loadDataAjax = null;
+var loadPlaylistAjax = null;
 
 var emphasized_element = null;
 
@@ -20,17 +24,47 @@ var Controller = {
  初期化
 */
 function init() {
-	loadData(false);
-	loadPlaylist(false);
+	setInterval(function(){
+		
+	},20*1000);
+	loadData();
+	loadPlaylist();
+}
+
+function resetConnection(){
+	if(loadDataTimer){
+		
+	}
+var loadDataTimer = null;
+var loadPlaylistTimer = null;
 }
 
 /*
  プレーヤの現在の状態を読み込む
 */
-function loadData(useComet) {
-    var ajax = new Ajax();
-    ajax.open("GET", "./?mode=xml" + (useComet?"&comet=true":""));
-    ajax.onload = function (xmlhttp) {
+function loadData() {
+    loadDataAjax = new Ajax();
+
+    // 20秒後にタイムアウト
+    var timeoutTimer = setTimeout(function(){
+    	loadDataAjax.abort();
+        loadData();
+    },20*1000);
+    
+    loadDataAjax.open("GET", "./?mode=xml&comet_id=" + loadData_id);
+    loadDataAjax.onload = function (xmlhttp) {
+    	// タイムアウトタイマ解除
+    	clearTimeout(timeoutTimer);
+    	
+        var now = new Date();
+		var hours    = now.getHours();    // 時
+		var minutes  = now.getMinutes();  // 分
+		var seconds  = now.getSeconds();  // 秒
+		if ( hours   < 10 ) hours   = '0' + hours;
+		if ( minutes < 10 ) minutes = '0' + minutes;
+		if ( seconds < 10 ) seconds = '0' + seconds;
+        document.title = "Lutea WEB Interface " + hours + ":" + minutes + ":" + seconds + " sync OK.";
+        
 		var xml = xmlhttp.responseXML;
 		if(xml == null)return;
         var file_name = getTagValue(xml,"file_name");
@@ -50,29 +84,29 @@ function loadData(useComet) {
         	_playlistQuery = playlistQuery;
         	loadPlaylist();
         }
-        if(loadDataTimer) clearTimeout(loadDataTimer);
-        var now = new Date();
-		var hours    = now.getHours();    // 時
-		var minutes  = now.getMinutes();  // 分
-		var seconds  = now.getSeconds();  // 秒
- 
-		if ( hours   < 10 ) hours   = '0' + hours;
-		if ( minutes < 10 ) minutes = '0' + minutes;
-		if ( seconds < 10 ) seconds = '0' + seconds;
-
-        document.title = "Lutea WEB Interface " + hours + ":" + minutes + ":" + seconds + " sync OK.";
-        loadDataTimer = setTimeout(function(){loadData(true);}, 100);
+		loadData_id = getTagValue(xml, "comet_id");
+        setTimeout(function(){loadData();}, 50);
     }
-    ajax.send(null);
+    loadDataAjax.send(null);
 }
 
 /*
  playlistを読み込む
 */
-function loadPlaylist(useComet){
-    var ajax = new Ajax();
-    ajax.open("GET", "./?mode=xml&type=playlist" + (useComet?"&comet=true":""));
-    ajax.onload = function (xmlhttp) {
+function loadPlaylist(){
+    loadPlaylistAjax = new Ajax();
+    
+    // 20秒後にタイムアウト
+    var timeoutTimer = setTimeout(function(){
+    	loadPlaylistAjax.abort();
+    	loadPlaylist();
+    },20*1000);
+    
+    loadPlaylistAjax.open("GET", "./?mode=xml&type=playlist&comet_id=" + loadPlaylist_id);
+    loadPlaylistAjax.onload = function (xmlhttp) {
+    	// タイムアウトタイマ解除
+    	clearTimeout(timeoutTimer);
+    	
 		var xml = xmlhttp.responseXML;
 		if(xml == null)return;
 		var items = xml.getElementsByTagName("item");
@@ -96,13 +130,14 @@ function loadPlaylist(useComet){
 	        	}
         	})(i);
         	ul.appendChild(li);
-            if(loadPlaylistTimer) clearTimeout(loadPlaylistTimer);
-	        loadPlaylistTimer = setTimeout(function(){loadPlaylist(true);}, 100);
         }
         doc.body.appendChild(ul);
         emphasize(_file_name);
+
+        loadPlaylist_id = getTagValue(xml, "comet_id");
+		setTimeout(function(){loadPlaylist();}, 50);
     }
-    ajax.send(null);
+    loadPlaylistAjax.send(null);
 }
 
 function getIframeDoc(){
@@ -160,6 +195,7 @@ function Ajax(){
 	var xmlhttp = new XMLHttpRequest();
 	var self = this;
 	var onload_fired = false;
+	this.abort = function(){xmlhttp.abort();};
 	this.open = function(method,path){xmlhttp.open(method,path);};
 	this.send = function(content){xmlhttp.send(content);};
 	this.onload = function(){};

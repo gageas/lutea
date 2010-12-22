@@ -32,15 +32,22 @@ namespace Gageas.Lutea.HTTPController
         /// </summary>
         /// <param name="req">HTTPリクエスト</param>
         /// <param name="res">HTTPレスポンス</param>
-        private delegate void HTTPRequestHandler(HttpListenerRequest req, HttpListenerResponse res);
+        private delegate void HTTPRequestHandler(HttpListenerContext ctx);
 
         /// <summary>
         /// 各modeに対するハンドラを保持するテーブル
         /// </summary>
         private Dictionary<string, HTTPRequestHandler> HTTPHandlers = new Dictionary<string, HTTPRequestHandler>();
 
-        private List<System.Threading.Thread> holdingConnections_Info = new List<System.Threading.Thread>();
-        private List<System.Threading.Thread> holdingConnections_Playlist = new List<System.Threading.Thread>();
+        private List<HttpListenerContext> holdingConnections_Info = new List<HttpListenerContext>();
+        private List<HttpListenerContext> holdingConnections_Playlist = new List<HttpListenerContext>();
+
+        /// <summary>
+        /// utf8で吐くため、stringではなくbyte[]を使います
+        /// </summary>
+        private byte[] CachedXML_Info = null;
+        private byte[] CachedXML_Playlist = null;
+        private byte[] CachedImagePNG_CoverArt = null;
 
         #region Constructor
         public HTTPController(int port)
@@ -56,7 +63,15 @@ namespace Gageas.Lutea.HTTPController
             Controller.onTrackChange += (x) => {
                 lock (holdingConnections_Info)
                 {
-                    holdingConnections_Info.ForEach((e) => e.Interrupt());
+                    CachedXML_Info = null;
+                    CachedImagePNG_CoverArt = null;
+                    holdingConnections_Info.ForEach((ctx) =>
+                        System.Threading.ThreadPool.QueueUserWorkItem((_) =>
+                        {
+                            try { ReturnXML_Info(ctx.Request, ctx.Response); }
+                            catch { }
+                        })
+                    );
                     holdingConnections_Info.Clear();
                 }
             };
@@ -64,7 +79,14 @@ namespace Gageas.Lutea.HTTPController
             {
                 lock (holdingConnections_Playlist)
                 {
-                    holdingConnections_Playlist.ForEach((e) => e.Interrupt());
+                    CachedXML_Playlist = null;
+                    holdingConnections_Playlist.ForEach((ctx) => 
+                        System.Threading.ThreadPool.QueueUserWorkItem((_) =>
+                        {
+                            try { ReturnXML_Playlist(ctx.Request, ctx.Response); }
+                            catch { }
+                        })
+                    );
                     holdingConnections_Playlist.Clear();
                 }
             };
@@ -84,10 +106,14 @@ namespace Gageas.Lutea.HTTPController
 
         private void listenerCallback(IAsyncResult result)
         {
-            HttpListener lsnr = (HttpListener)result.AsyncState;
-            var context = lsnr.EndGetContext(result);
-            lsnr.BeginGetContext(listenerCallback, lsnr);
-            HandleHTTPContext(context);
+            try
+            {
+                HttpListener lsnr = (HttpListener)result.AsyncState;
+                var context = lsnr.EndGetContext(result);
+                lsnr.BeginGetContext(listenerCallback, lsnr);
+                HandleHTTPContext(context);
+            }
+            catch { }
         }
 
         public void Abort()
@@ -97,8 +123,10 @@ namespace Gageas.Lutea.HTTPController
         #endregion
 
         #region Handle each request mode
-        private void KickAPI(HttpListenerRequest req, HttpListenerResponse res)
+        private void KickAPI(HttpListenerContext ctx)
         {
+            var req = ctx.Request;
+            var res = ctx.Response;
             string op = req.QueryString["operation"];
             switch (op)
             {
@@ -129,10 +157,12 @@ namespace Gageas.Lutea.HTTPController
                     Controller.Quit();
                     break;
             }
+            res.Close();
         }
 
-        private void ReturnBlank(HttpListenerRequest req, HttpListenerResponse res)
+        private void ReturnBlank(HttpListenerContext ctx)
         {
+            var res = ctx.Response;
             res.ContentEncoding = Encoding.UTF8;
             res.ContentType = "text/html; charset=UTF-8";
 
@@ -142,15 +172,21 @@ namespace Gageas.Lutea.HTTPController
                 sw.Write("<html><head><meta http-equiv=\"X-UA-Compatible\" content=\"IE=8\" /><style type=\"text/css\">" + Properties.Resources.defalut_css + "</style></head><body></body></html>");
                 sw.Flush();
             }
+            res.Close();
         }
 
-        private void ReturnDefault(HttpListenerRequest req, HttpListenerResponse res)
+        private void ReturnDefault(HttpListenerContext ctx)
         {
+            var res = ctx.Response;
+            var req = ctx.Request;
             res.ContentEncoding = Encoding.UTF8;
+            var useGzip = req.Headers["Accept-Encoding"].Split(',').Contains("gzip");
+            if (useGzip) res.AppendHeader("Content-Encoding", "gzip");
             res.ContentType = "text/html; charset=UTF-8";
 
             using (var os = res.OutputStream)
-            using (var sw = new System.IO.StreamWriter(os))
+            using (var gzips = new System.IO.Compression.GZipStream(os, System.IO.Compression.CompressionMode.Compress))
+            using (var sw = new System.IO.StreamWriter(useGzip ? gzips : os))
             {
                 sw.Write(Properties.Resources.template_html
                     .Replace("%%SCRIPT%%", Properties.Resources.main_js)
@@ -158,117 +194,184 @@ namespace Gageas.Lutea.HTTPController
                     .Replace("%%IMAGE_SIZE%%", IMAGE_SIZE.ToString()));
                 sw.Flush();
             }
+            res.Close();
         }
 
-        private void ReturnXML(HttpListenerRequest req, HttpListenerResponse res)
+        /// <summary>
+        /// PlaylistをXMLで返すAPIのcometセッションIDを返す
+        /// </summary>
+        /// <returns></returns>
+        private int GetCometContext_XMLPlaylist()
         {
-            string type = req.QueryString["type"];
-            res.ContentEncoding = Encoding.UTF8;
-            res.ContentType = "text/xml; charset=UTF-8";
+            return Controller.LatestPlaylistQuery.GetHashCode();
+        }
 
-            var doc = new System.Xml.XmlDocument();
-            switch (type)
+        /// <summary>
+        /// 再生中トラックの情報をXMLで返すAPIのcometセッションIDを返す
+        /// </summary>
+        /// <returns></returns>
+        private int GetCometContext_XMLInfo()
+        {
+            return (Controller.Current.Filename + "").GetHashCode(); // null文字を空文字列にする
+        }
+
+        private void ReturnXML_Playlist(HttpListenerRequest req, HttpListenerResponse res)
+        {
+            var useGzip = req.Headers["Accept-Encoding"].Split(',').Contains("gzip");
+            if (useGzip) res.AppendHeader("Content-Encoding", "gzip");
+
+            byte[] xml = CachedXML_Playlist;
+            if (xml == null)
             {
-                case "playlist":
-                    if (req.QueryString["comet"] == "true")
-                    {
-                        lock (holdingConnections_Playlist)
-                        {
-                            holdingConnections_Playlist.Add(System.Threading.Thread.CurrentThread);
-                        }
-                        try
-                        {
-                            System.Threading.Thread.Sleep(20 * 1000);
-                        }
-                        catch { }
-                        finally
-                        {
-                            lock (holdingConnections_Playlist)
-                            {
-                                holdingConnections_Playlist.Remove(System.Threading.Thread.CurrentThread);
-                            }
-                        }
-                    }
+                var doc = new System.Xml.XmlDocument();
+                var lutea = doc.CreateElement("lutea");
+                doc.AppendChild(lutea);
+                var comet_id = doc.CreateElement("comet_id");
+                lutea.AppendChild(comet_id);
 
-                    var playlist = doc.CreateElement("playlist");
-                    for (int i = 0; i < Controller.CurrentPlaylistRows; i++)
-                    {
-                        var item = doc.CreateElement("item");
-                        item.SetAttribute("index", i.ToString());
-                        item.SetAttribute("file_name", Controller.GetPlaylistRowColumn(i, DBCol.file_name));
-                        item.SetAttribute("tagAlbum", Controller.GetPlaylistRowColumn(i, DBCol.tagAlbum));
-                        item.SetAttribute("tagArtist", Controller.GetPlaylistRowColumn(i, DBCol.tagArtist));
-                        item.SetAttribute("tagTitle", Controller.GetPlaylistRowColumn(i, DBCol.tagTitle));
-                        playlist.AppendChild(item);
-                    }
-                    doc.AppendChild(playlist);
-                    break;
-                default:
-                    if (req.QueryString["comet"] == "true")
-                    {
-                        lock (holdingConnections_Info)
-                        {
-                            holdingConnections_Info.Add(System.Threading.Thread.CurrentThread);
-                        }
-                        try
-                        {
-                            System.Threading.Thread.Sleep(20 * 1000);
-                        }
-                        catch { }
-                        finally
-                        {
-                            lock (holdingConnections_Info)
-                            {
-                                holdingConnections_Info.Remove(System.Threading.Thread.CurrentThread);
-                            }
-                        }
-                    }
+                var playlist = doc.CreateElement("playlist");
+                for (int i = 0; i < Controller.CurrentPlaylistRows; i++)
+                {
+                    var item = doc.CreateElement("item");
+                    item.SetAttribute("index", i.ToString());
+                    item.SetAttribute("file_name", Controller.GetPlaylistRowColumn(i, DBCol.file_name));
+                    item.SetAttribute("tagAlbum", Controller.GetPlaylistRowColumn(i, DBCol.tagAlbum));
+                    item.SetAttribute("tagArtist", Controller.GetPlaylistRowColumn(i, DBCol.tagArtist));
+                    item.SetAttribute("tagTitle", Controller.GetPlaylistRowColumn(i, DBCol.tagTitle));
+                    playlist.AppendChild(item);
+                }
 
-                    var lutea = doc.CreateElement("lutea");
+                lutea.AppendChild(playlist);
 
-                    // 現在のトラックに関する情報をセット
-                    var current = doc.CreateElement("current");
-                    foreach (DBCol e in Enum.GetValues(typeof(DBCol)))
-                    {
-                        var ele = doc.CreateElement(e.ToString());
-                        ele.InnerText = Controller.Current.MetaData(e);
-                        current.AppendChild(ele);
-                    }
-                    lutea.AppendChild(current);
+                // cometセッション識別子セット
+                comet_id.InnerText = GetCometContext_XMLPlaylist().ToString();
 
-                    // playlist生成クエリ文字列をセット
-                    var playlistquery = doc.CreateElement("playlistQuery");
-                    playlistquery.InnerText = Controller.LatestPlaylistQuery;
-                    lutea.AppendChild(playlistquery);
-
-                    doc.AppendChild(lutea);
-                    break;
+                var ms = new System.IO.MemoryStream();
+                var xw = new System.Xml.XmlTextWriter(ms, Encoding.UTF8);
+                doc.Save(xw);
+                xml = CachedXML_Playlist = ms.GetBuffer().Take((int)ms.Length).ToArray();
             }
+
             using (var os = res.OutputStream)
-            using (var sw = new System.IO.StreamWriter(os))
+            using (var gzips = new System.IO.Compression.GZipStream(os, System.IO.Compression.CompressionMode.Compress))
             {
                 try
                 {
-                    doc.Save(sw);
-                    sw.Flush();
+                    (useGzip ? gzips : os).Write(xml, 0, xml.Length);
                 }
                 catch { }
             }
+            res.Close();
         }
 
-        private void ReturnCover(HttpListenerRequest req, HttpListenerResponse res)
+        private void ReturnXML_Info(HttpListenerRequest req, HttpListenerResponse res)
         {
-            res.ContentType = "image/png";
-            var image = Controller.Current.CoverArtImage();
-            if (image == null)
+            var useGzip = req.Headers["Accept-Encoding"].Split(',').Contains("gzip");
+            if (useGzip) res.AppendHeader("Content-Encoding", "gzip");
+
+            byte[] xml = CachedXML_Info;
+            if (xml == null)
             {
-                image = new Bitmap(10, 10);
+                var doc = new System.Xml.XmlDocument();
+                var lutea = doc.CreateElement("lutea");
+                doc.AppendChild(lutea);
+                var comet_id = doc.CreateElement("comet_id");
+                lutea.AppendChild(comet_id);
+
+                // 現在のトラックに関する情報をセット
+                var current = doc.CreateElement("current");
+                foreach (DBCol e in Enum.GetValues(typeof(DBCol)))
+                {
+                    var ele = doc.CreateElement(e.ToString());
+                    ele.InnerText = Controller.Current.MetaData(e);
+                    current.AppendChild(ele);
+                }
+                lutea.AppendChild(current);
+
+                // playlist生成クエリ文字列をセット
+                var playlistquery = doc.CreateElement("playlistQuery");
+                playlistquery.InnerText = Controller.LatestPlaylistQuery;
+                lutea.AppendChild(playlistquery);
+
+                // cometセッション識別子セット
+                comet_id.InnerText = GetCometContext_XMLInfo().ToString();
+
+                var ms = new System.IO.MemoryStream();
+                var xw = new System.Xml.XmlTextWriter(ms, Encoding.UTF8);
+                doc.Save(xw);
+                xml = CachedXML_Info = ms.GetBuffer().Take((int)ms.Length).ToArray();
             }
-            var resized = Util.Util.GetResizedImageWithPadding(image, IMAGE_SIZE, IMAGE_SIZE);
-            var ms = new System.IO.MemoryStream();
-            resized.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-            var buf = ms.GetBuffer();
-            res.OutputStream.Write(buf, 0, buf.Length);
+
+            using (var os = res.OutputStream)
+            using (var gzips = new System.IO.Compression.GZipStream(os, System.IO.Compression.CompressionMode.Compress))
+            {
+                try
+                {
+                    (useGzip ? gzips : os).Write(xml, 0, xml.Length);
+                }
+                catch { }
+            }
+            res.Close();
+        }
+
+        private void ReturnXML(HttpListenerContext ctx)
+        {
+            var req = ctx.Request;
+            var res = ctx.Response;
+            res.ContentEncoding = Encoding.UTF8;
+            res.ContentType = "text/xml; charset=UTF-8";
+
+            string type = req.QueryString["type"];
+
+            int comet_session = 0;
+
+            switch (type)
+            {
+                case "playlist":
+                    Util.Util.tryParseInt(req.QueryString["comet_id"], ref comet_session);
+                    if (comet_session == GetCometContext_XMLPlaylist())
+                    {
+                        holdingConnections_Playlist.Add(ctx);
+                    }
+                    else
+                    {
+                        ReturnXML_Playlist(ctx.Request, ctx.Response);
+                    }
+                    break;
+                default:
+                    Util.Util.tryParseInt(req.QueryString["comet_id"], ref comet_session);
+                    if (comet_session == GetCometContext_XMLInfo())
+                    {
+                        holdingConnections_Info.Add(ctx);
+                    }
+                    else
+                    {
+                        ReturnXML_Info(ctx.Request, ctx.Response);
+                    }
+                    break;
+            }
+        }
+
+        private void ReturnCover(HttpListenerContext ctx)
+        {
+            var res = ctx.Response;
+            res.ContentType = "image/png";
+            if (CachedImagePNG_CoverArt == null)
+            {
+                var image = Controller.Current.CoverArtImage();
+                if (image == null)
+                {
+                    image = new Bitmap(1, 1);
+                }
+                var resized = Util.Util.GetResizedImageWithPadding(image, IMAGE_SIZE, IMAGE_SIZE);
+                using (var ms = new System.IO.MemoryStream())
+                {
+                    resized.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                    CachedImagePNG_CoverArt = ms.GetBuffer();
+                }
+            }
+            res.OutputStream.Write(CachedImagePNG_CoverArt, 0, CachedImagePNG_CoverArt.Length);
+            res.Close();
         }
         #endregion
 
@@ -290,7 +393,7 @@ namespace Gageas.Lutea.HTTPController
             {
                 HTTPRequestHandler handler = ReturnDefault;
                 if (HTTPHandlers.ContainsKey(mode)) handler = HTTPHandlers[mode];
-                handler(req, res);
+                handler(ctx);
             }
             catch (Exception ex)
             {
@@ -298,7 +401,7 @@ namespace Gageas.Lutea.HTTPController
             }
             finally
             {
-                res.Close();
+//                res.Close();
             }
         }
         #endregion
