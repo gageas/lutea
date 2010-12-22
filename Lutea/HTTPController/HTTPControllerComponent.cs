@@ -14,22 +14,30 @@ namespace Gageas.Lutea.HTTPController
     public class HTTPControllerComponent : LuteaComponentInterface
     {
         private HTTPController controller;
+        private bool enabled = false;
+        private int port = 8080;
         public void Init(object _setting)
         {
-            int port = 8080;
             if (_setting != null)
             {
                 var setting = (Dictionary<string, object>)_setting;
                 Util.Util.TryAll(
                     new Lutea.Core.Controller.VOIDVOID[]{
+                    () => enabled = (bool)setting["enabled"],
                     () => port = (int)setting["port"]
                 }, null);
             }
-            Setup(port);
+            Setup();
         }
 
-        private void Setup(int port)
+        private void Setup()
         {
+            try
+            {
+                if (controller != null) controller.Abort();
+            }
+            catch { }
+            if (!enabled) return;
             try
             {
                 controller = new HTTPController(port);
@@ -41,20 +49,22 @@ namespace Gageas.Lutea.HTTPController
         public object GetSetting()
         {
             var setting = new Dictionary<string, object>();
-            setting.Add("port", controller.port);
+            setting.Add("port", port);
+            setting.Add("enabled", enabled);
             return setting;
         }
 
         public object GetPreferenceObject()
         {
-            return new Preference(controller.port);
+            return new Preference(port, enabled);
         }
 
         public void SetPreferenceObject(object _pref)
         {
             var pref = (Preference)_pref;
-            controller.Abort();
-            Setup(pref.Port);
+            port = pref.Port;
+            enabled = pref.Enabled;
+            Setup();
         }
 
         public void Quit()
@@ -65,10 +75,12 @@ namespace Gageas.Lutea.HTTPController
         class Preference
         {
             private int port;
+            private bool enabled;
 
-            public Preference(int port)
+            public Preference(int port, bool enabled)
             {
                 this.port = port;
+                this.enabled = enabled;
             }
 
             [DefaultValue(8080)]
@@ -82,6 +94,20 @@ namespace Gageas.Lutea.HTTPController
                 set
                 {
                     this.port = value;
+                }
+            }
+
+            [DefaultValue(false)]
+            [Description("有効にする")]
+            public bool Enabled
+            {
+                get
+                {
+                    return enabled;
+                }
+                set
+                {
+                    this.enabled = value;
                 }
             }
         }
