@@ -1062,9 +1062,16 @@ namespace Gageas.Lutea.Core
                     }
                     if (nextStream.cueOffset < 10000)
                     {
-                        var mem = Marshal.AllocHGlobal((int)nextStream.cueOffset);
-                        nextStream.stream.GetData(mem, (uint)nextStream.cueOffset);
-                        Marshal.FreeHGlobal(mem);
+                        ulong left = nextStream.cueOffset;
+                        while (left > 0)
+                        {
+                            int toread = (int)Math.Min(500, left);
+                            var mem = Marshal.AllocHGlobal(toread);
+                            nextStream.stream.GetData(mem, (uint)toread);
+                            Marshal.FreeHGlobal(mem);
+                            Thread.Sleep(5);
+                            left -= (uint)toread;
+                        }
                     }
                     else
                     {
