@@ -392,19 +392,24 @@ namespace Gageas.Lutea.Core
             /// <returns></returns>
             internal static bool coverArtImageIsInvalid = false;
             private static System.Drawing.Image coverArtImage = null;
+            private static readonly object GetCoverArtImageLock = new object();
             public static System.Drawing.Image CoverArtImage()
             {
-                if (coverArtImageIsInvalid)
+                lock (GetCoverArtImageLock)
                 {
-                    coverArtImage = _CoverArtImage();
-                    coverArtImageIsInvalid = false;
-                }
-                if (coverArtImage == null) return null;
-                lock (coverArtImage)
-                {
-                    return new System.Drawing.Bitmap(coverArtImage);
+                    if (coverArtImageIsInvalid)
+                    {
+                        coverArtImage = _CoverArtImage();
+                        coverArtImageIsInvalid = false;
+                    }
+                    if (coverArtImage == null) return null;
+                    lock (coverArtImage)
+                    {
+                        return new System.Drawing.Bitmap(coverArtImage);
+                    }
                 }
             }
+
             private static System.Drawing.Image _CoverArtImage()
             {
                 System.Drawing.Image image = null;
