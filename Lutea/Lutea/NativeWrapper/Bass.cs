@@ -257,7 +257,7 @@ namespace Gageas.Wrapper.BASS
 #if DEBUG
                 Gageas.Lutea.Logger.Debug("スレッドID" + th.Id + " のプライオリティを上げます");
 #endif
-                th.PriorityLevel = System.Diagnostics.ThreadPriorityLevel.TimeCritical;
+                th.PriorityLevel = System.Diagnostics.ThreadPriorityLevel.Highest;
             }
             return BASS.available;
         }
@@ -583,7 +583,7 @@ namespace Gageas.Wrapper.BASS
 #if DEBUG
                     Gageas.Lutea.Logger.Log("スレッドID"+th.Id+" のプライオリティを上げます");
 #endif
-                    th.PriorityLevel = System.Diagnostics.ThreadPriorityLevel.TimeCritical;
+                    th.PriorityLevel = System.Diagnostics.ThreadPriorityLevel.Highest;
                 }
                 if (!success)
                 {
