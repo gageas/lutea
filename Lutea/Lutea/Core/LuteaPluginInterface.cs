@@ -20,7 +20,10 @@ namespace Gageas.Lutea.Core
         void LibraryInitializeRequired();
     }
 
-    public class LuteaComponentInfo : System.Attribute
+    [System.AttributeUsage(System.AttributeTargets.Class, 
+                   AllowMultiple=false, 
+                   Inherited=true)]
+    public sealed class LuteaComponentInfo : System.Attribute
     {
         public string name;
         public string auther;
