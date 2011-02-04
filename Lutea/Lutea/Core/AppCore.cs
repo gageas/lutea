@@ -477,14 +477,15 @@ namespace Gageas.Lutea.Core
             if (initialized) return null;
             SetDllDirectoryW("");
 
-            BASS.BASS_Init(0, OutputFreq, BASS_BUFFFER_LEN);
-
+            // userDirectoryオブジェクト取得
             userDirectory = new UserDirectory();
-            // Load Components
-            plugins.Add(new Core.CoreComponent());
 
+            // ライブラリ準備
             library = userDirectory.OpenLibrary(tagColumnMapping.Keys);
 
+            // コンポーネントの読み込み
+            // Core Componentをロード
+            plugins.Add(new Core.CoreComponent());
             try
             {
                 string[] components = System.IO.Directory.GetFiles(userDirectory.ComponentDir, "*.dll");
@@ -526,20 +527,18 @@ namespace Gageas.Lutea.Core
             {
                 using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.Open, System.IO.FileAccess.Read))
                 {
-                    object dec = (new BinaryFormatter()).Deserialize(fs);
-                    pluginSettings = (Dictionary<Guid, object>)dec;
+                    pluginSettings = (Dictionary<Guid, object>)(new BinaryFormatter()).Deserialize(fs);
                 }
             }
             catch (Exception e)
             {
-                Logger.Debug(e.ToString());
+                Logger.Error(e);
             }
 
             if (pluginSettings == null)
             {
                 pluginSettings = new Dictionary<Guid, object>();
             }
-
 
             // initialize plugins
             foreach (var pin in plugins)
@@ -562,6 +561,7 @@ namespace Gageas.Lutea.Core
                 }
             }
 
+            BASS.BASS_Init(-1, OutputFreq, BASS_BUFFFER_LEN);
             if (BASS.isAvailable)
             {
                 String[] dllList = System.IO.Directory.GetFiles(userDirectory.PluginDir, "*.dll");
