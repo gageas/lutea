@@ -585,7 +585,7 @@ namespace Gageas.Lutea.Core
                 String[] dllList = System.IO.Directory.GetFiles(userDirectory.PluginDir, "*.dll");
                 foreach (String dllFilename in dllList)
                 {
-                    bool success = BASS.BASS_PluginLoad(dllFilename, 0);
+                    bool success = BASS.Plugin.Load(dllFilename, 0);
                     Logger.Log("Loading " + dllFilename + (success ? " OK" : " Failed"));
                 }
                 if (BASS.Floatable)
