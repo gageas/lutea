@@ -269,7 +269,7 @@ namespace Gageas.Lutea.Core
                     if (useFloat)
                     {
                         // WASAPI出力の生成を試行
-                        if (BASS.isWASAPIAvailable)
+                        if (BASSWASAPIOutput.IsAvailable)
                         {
                             // WASAPI排他モードの生成を試行
                             if (enableWASAPIExclusive)
@@ -277,7 +277,7 @@ namespace Gageas.Lutea.Core
                                 try
                                 {
                                     BASS.BASS_SetDevice(0);
-                                    outputChannel = new BASS.WASAPIOutput(freq, chans, StreamProc, true, enableWASAPIVolume, false);
+                                    outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.Flags.Buffer | BASSWASAPIOutput.Flags.Exclusive, enableWASAPIVolume);
                                     if (outputChannel != null)
                                     {
                                         outputMode = Controller.OutputModeEnum.WASAPIEx;
@@ -294,7 +294,7 @@ namespace Gageas.Lutea.Core
                                 try
                                 {
                                     BASS.BASS_SetDevice(0);
-                                    outputChannel = new BASS.WASAPIOutput(freq, chans, StreamProc, false, enableWASAPIVolume, false);
+                                    outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.Flags.Buffer, enableWASAPIVolume);
                                     if (outputChannel != null)
                                     {
                                         outputMode = Controller.OutputModeEnum.WASAPI;
