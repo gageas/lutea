@@ -111,10 +111,11 @@
       <DependentUpon>Library.resx</DependentUpon>
     </Compile>
     <Compile Include="Library\UserDirectory.cs" />
+    <Compile Include="NativeWrapper\BASS\BASSWASAPIOutput.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Tags\ApeTag.cs" />
     <Compile Include="Core\AppCore.cs" />
-    <Compile Include="NativeWrapper\Bass.cs" />
+    <Compile Include="NativeWrapper\BASS\Bass.cs" />
     <Compile Include="Tags\CD.cs" />
     <Compile Include="Tags\ASF.cs" />
     <Compile Include="Tags\ID3.cs" />
