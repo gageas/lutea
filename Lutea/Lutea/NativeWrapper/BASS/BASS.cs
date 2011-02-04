@@ -11,12 +11,42 @@ namespace Gageas.Wrapper.BASS
         /// <summary>
         /// Pluginクラス
         /// </summary>
-        public class BASSPlugin : IDisposable
+        public class Plugin : IDisposable
         {
-            IntPtr ptr;
-            string filename;
+            private static List<Plugin> plugins = new List<Plugin>();
 
-            public BASSPlugin(string filename, IntPtr ptr)
+            public static Plugin[] GetPlugins()
+            {
+                return plugins.ToArray();
+            }
+
+            public static Boolean Load(string filename, uint flags)
+            {
+                IntPtr pinPtr = (IntPtr)0;
+                try
+                {
+                    pinPtr = _BASS_PluginLoad(filename, BASS_UNICODE | flags);
+                    if (pinPtr != (IntPtr)0)
+                    {
+                        var pin = new Plugin(filename, pinPtr);
+                        plugins.Add(pin);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
+
+            private IntPtr ptr;
+            private string filename;
+
+            private Plugin(string filename, IntPtr ptr)
             {
                 this.filename = filename;
                 this.ptr = ptr;
@@ -29,7 +59,7 @@ namespace Gageas.Wrapper.BASS
                 GC.SuppressFinalize(this);
             }
 
-            ~BASSPlugin()
+            ~Plugin()
             {
                 this.Dispose();
             }
@@ -238,10 +268,11 @@ namespace Gageas.Wrapper.BASS
             bool success = _BASS_GetDeviceInfo(device, out info);
             return success ? info : (BASS_DEVICEINFO?)null;
         }
+        
+        public delegate UInt32 StreamProc(IntPtr bffer, UInt32 length);
 
         private const uint BASS_UNICODE = 0x80000000;
         private const uint BASS_POS_BYTE = 0;
-        private static List<BASSPlugin> plugins = new List<BASSPlugin>();
 
         public static Boolean Floatable {
             get
@@ -304,37 +335,6 @@ namespace Gageas.Wrapper.BASS
             }
         }
 
-        /*
-         * ファイル名で指定したplug-inを読み込む。
-         */
-        public static bool BASS_PluginLoad(string filename, uint flags)
-        {
-            IntPtr pinPtr = (IntPtr)0;
-            try
-            {
-                pinPtr = _BASS_PluginLoad(filename, BASS_UNICODE | flags);
-                if (pinPtr != (IntPtr)0)
-                {
-                    var pin = new BASSPlugin(filename, pinPtr);
-                    plugins.Add(pin);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        public static List<BASSPlugin> GetLoadedPlugins()
-        {
-            return plugins;
-        }
-
         [System.Obsolete("これはシステムのマスターボリュームを変更する。Channnel#volumeを使うべし")]
         public static float volume
         {
@@ -365,124 +365,7 @@ namespace Gageas.Wrapper.BASS
         {
             return _BASS_Free();
         }
-
-        public static void Dispose()
-        {
-            foreach (BASSPlugin plugin in plugins)
-            {
-                try
-                {
-                    plugin.Dispose();
-                }
-                catch { }
-            }
-            plugins.Clear();
-            try
-            {
-                _BASS_Free();
-            }
-            catch
-            {
-            }
-        }
-        #region DLLImport BASS
-        [DllImport("bass.dll", EntryPoint = "BASS_Init")]
-        private static extern Boolean BASS_Init(int device, uint freq, uint flags, IntPtr hwnd, IntPtr guid);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_PluginLoad", CharSet = CharSet.Unicode)]
-        private static extern IntPtr _BASS_PluginLoad(string filename, uint flags);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_PluginFree", CharSet = CharSet.Unicode)]
-        private static extern bool _BASS_PluginFree(IntPtr plugin);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_PluginGetInfo", CharSet = CharSet.Unicode)]
-        private static extern IntPtr _BASS_PluginGetInfo(IntPtr plugin);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_SetConfig", CharSet = CharSet.Unicode)]
-        public static extern bool BASS_SetConfig(BASS_CONFIG option, UInt32 value);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_SetDevice", CharSet = CharSet.Unicode)]
-        public static extern bool BASS_SetDevice(UInt32 device);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_StreamCreateFile", CharSet = CharSet.Unicode)]
-        private static extern IntPtr _BASS_StreamCreateFile(Boolean ismemory, string filename, UInt64 offset, UInt64 length, uint flags);
-
-        private delegate UInt32 STREAMPROC(IntPtr handle, IntPtr buffer, UInt32 length, IntPtr user);
-        [DllImport("bass.dll", EntryPoint = "BASS_StreamCreate", CharSet = CharSet.Unicode)]
-        private static extern IntPtr _BASS_StreamCreate(uint freq, uint chans, uint flags, STREAMPROC proc, IntPtr user);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_StreamFree")]
-        private static extern bool _BASS_StreamFree(IntPtr stream);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelPlay")]
-        private static extern bool _BASS_ChannelPlay(IntPtr chan, bool restart);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelStop")]
-        private static extern bool _BASS_ChannelStop(IntPtr chan);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelPause")]
-        private static extern bool _BASS_ChannelPause(IntPtr handle);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetLength")]
-        private static extern UInt64 _BASS_ChannelGetLength(IntPtr handle, uint mode);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetData")]
-        private static extern uint _BASS_ChannelGetData(IntPtr handle, IntPtr buffer, uint length);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetData")]
-        private static extern uint _BASS_ChannelGetData(IntPtr handle, float[] buffer, uint length);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetInfo")]
-        private static extern bool _BASS_ChannelGetInfo(IntPtr handle, out BASS_CHANNELINFO info);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetPosition")]
-        private static extern UInt64 _BASS_ChannelGetPosition(IntPtr handle, uint mode);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSetPosition")]
-        private static extern bool _BASS_ChannelSetPosition(IntPtr handle, UInt64 pos, uint mode);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelBytes2Seconds")]
-        private static extern double _BASS_ChannelBytes2Seconds(IntPtr handle, UInt64 pos);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSeconds2Bytes")]
-        private static extern UInt64 _BASS_ChannelSeconds2Bytes(IntPtr handle, double pos);
-
-        private delegate void _SyncProc(IntPtr hsync, IntPtr handle, UInt32 data, IntPtr user);
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSetSync")]
-        private static extern IntPtr _BASS_ChannelSetSync(IntPtr handle, UInt32 type, UInt64 param, _SyncProc proc, IntPtr user);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelRemoveSync")]
-        private static extern bool _BASS_ChannelRemoveSync(IntPtr handle, IntPtr sync);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSetAttribute")]
-        private static extern bool _BASS_ChannelSetAttribute(IntPtr handle, UInt32 attrib, float value);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetAttribute")]
-        private static extern bool _BASS_ChannelGetAttribute(IntPtr handle, UInt32 attrib, out float value);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSlideAttribute")]
-        private static extern bool _BASS_ChannelSlideAttribute(IntPtr handle, UInt32 attrib, float value, uint time);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ErrorGetCode")]
-        public static extern int BASS_ErrorGetCode();
-
-        [DllImport("bass.dll", EntryPoint = "BASS_SetVolume")]
-        private static extern bool _BASS_SetVolume(float volume);
         
-        [DllImport("bass.dll", EntryPoint = "BASS_GetVolume")]
-        private static extern float _BASS_GetVolume();
-
-        [DllImport("bass.dll", EntryPoint = "BASS_GetVersion")]
-        private static extern UInt32 BASS_GetVersion();
-
-        [DllImport("bass.dll", EntryPoint = "BASS_GetDeviceInfo")]
-        private static extern bool _BASS_GetDeviceInfo(UInt32 device, out BASS_DEVICEINFO info);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_Free")]
-        private static extern bool _BASS_Free();
-        #endregion
-
-
         public abstract class IPlayable : IDisposable
         {
             public enum FFT : uint
@@ -733,7 +616,7 @@ namespace Gageas.Wrapper.BASS
             }
         }
 
-        public class Stream : Channel
+        public abstract class Stream : Channel
         {
             public enum StreamFlag : uint{
                 BASS_STREAM_DECODE = 0x200000,
@@ -755,21 +638,15 @@ namespace Gageas.Wrapper.BASS
             }
         }
 
-        public delegate UInt32 StreamProc(IntPtr bffer, UInt32 length);
         public class UserSampleStream : Stream
         {
-            private STREAMPROC _proc;
+            private STREAMPROC streamProc;
             private StreamProc proc;
-            public UserSampleStream(uint freq, uint channels,StreamProc proc,StreamFlag flag)
+            public UserSampleStream(uint freq, uint channels, StreamProc proc, StreamFlag flag)
             {
-                _proc = new STREAMPROC(_StreamProc);
+                this.streamProc = (handle, buffer, length, user) => this.disposed ? 0x80000000 : this.proc(buffer, length);
                 this.proc = proc;
-                handle = _BASS_StreamCreate(freq,channels,(uint)flag,_proc,(IntPtr)this.GetHashCode());
-            }
-            private UInt32 _StreamProc(IntPtr handle, IntPtr buffer, UInt32 length, IntPtr user)
-            {
-                if (this.disposed) return 0x80000000;
-                return proc(buffer, length);
+                this.handle = _BASS_StreamCreate(freq, channels, (uint)flag, this.streamProc, (IntPtr)this.GetHashCode());
             }
         }
 
@@ -786,5 +663,102 @@ namespace Gageas.Wrapper.BASS
                 _BASS_ChannelSetPosition(ret, 0, BASS_POS_BYTE);
             }
         }
+
+        #region DLLImport BASS
+        [DllImport("bass.dll", EntryPoint = "BASS_Init")]
+        private static extern Boolean BASS_Init(int device, uint freq, uint flags, IntPtr hwnd, IntPtr guid);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_PluginLoad", CharSet = CharSet.Unicode)]
+        private static extern IntPtr _BASS_PluginLoad(string filename, uint flags);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_PluginFree", CharSet = CharSet.Unicode)]
+        private static extern bool _BASS_PluginFree(IntPtr plugin);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_PluginGetInfo", CharSet = CharSet.Unicode)]
+        private static extern IntPtr _BASS_PluginGetInfo(IntPtr plugin);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_SetConfig", CharSet = CharSet.Unicode)]
+        public static extern bool BASS_SetConfig(BASS_CONFIG option, UInt32 value);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_SetDevice", CharSet = CharSet.Unicode)]
+        public static extern bool BASS_SetDevice(UInt32 device);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_StreamCreateFile", CharSet = CharSet.Unicode)]
+        private static extern IntPtr _BASS_StreamCreateFile(Boolean ismemory, string filename, UInt64 offset, UInt64 length, uint flags);
+
+        private delegate UInt32 STREAMPROC(IntPtr handle, IntPtr buffer, UInt32 length, IntPtr user);
+        [DllImport("bass.dll", EntryPoint = "BASS_StreamCreate", CharSet = CharSet.Unicode)]
+        private static extern IntPtr _BASS_StreamCreate(uint freq, uint chans, uint flags, STREAMPROC proc, IntPtr user);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_StreamFree")]
+        private static extern bool _BASS_StreamFree(IntPtr stream);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelPlay")]
+        private static extern bool _BASS_ChannelPlay(IntPtr chan, bool restart);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelStop")]
+        private static extern bool _BASS_ChannelStop(IntPtr chan);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelPause")]
+        private static extern bool _BASS_ChannelPause(IntPtr handle);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetLength")]
+        private static extern UInt64 _BASS_ChannelGetLength(IntPtr handle, uint mode);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetData")]
+        private static extern uint _BASS_ChannelGetData(IntPtr handle, IntPtr buffer, uint length);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetData")]
+        private static extern uint _BASS_ChannelGetData(IntPtr handle, float[] buffer, uint length);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetInfo")]
+        private static extern bool _BASS_ChannelGetInfo(IntPtr handle, out BASS_CHANNELINFO info);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetPosition")]
+        private static extern UInt64 _BASS_ChannelGetPosition(IntPtr handle, uint mode);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSetPosition")]
+        private static extern bool _BASS_ChannelSetPosition(IntPtr handle, UInt64 pos, uint mode);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelBytes2Seconds")]
+        private static extern double _BASS_ChannelBytes2Seconds(IntPtr handle, UInt64 pos);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSeconds2Bytes")]
+        private static extern UInt64 _BASS_ChannelSeconds2Bytes(IntPtr handle, double pos);
+
+        private delegate void _SyncProc(IntPtr hsync, IntPtr handle, UInt32 data, IntPtr user);
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSetSync")]
+        private static extern IntPtr _BASS_ChannelSetSync(IntPtr handle, UInt32 type, UInt64 param, _SyncProc proc, IntPtr user);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelRemoveSync")]
+        private static extern bool _BASS_ChannelRemoveSync(IntPtr handle, IntPtr sync);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSetAttribute")]
+        private static extern bool _BASS_ChannelSetAttribute(IntPtr handle, UInt32 attrib, float value);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelGetAttribute")]
+        private static extern bool _BASS_ChannelGetAttribute(IntPtr handle, UInt32 attrib, out float value);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSlideAttribute")]
+        private static extern bool _BASS_ChannelSlideAttribute(IntPtr handle, UInt32 attrib, float value, uint time);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_ErrorGetCode")]
+        public static extern int BASS_ErrorGetCode();
+
+        [DllImport("bass.dll", EntryPoint = "BASS_SetVolume")]
+        private static extern bool _BASS_SetVolume(float volume);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_GetVolume")]
+        private static extern float _BASS_GetVolume();
+
+        [DllImport("bass.dll", EntryPoint = "BASS_GetVersion")]
+        private static extern UInt32 BASS_GetVersion();
+
+        [DllImport("bass.dll", EntryPoint = "BASS_GetDeviceInfo")]
+        private static extern bool _BASS_GetDeviceInfo(UInt32 device, out BASS_DEVICEINFO info);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_Free")]
+        private static extern bool _BASS_Free();
+        #endregion
     }
 }
