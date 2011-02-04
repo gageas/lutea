@@ -242,7 +242,6 @@ namespace Gageas.Wrapper.BASS
         private const uint BASS_UNICODE = 0x80000000;
         private const uint BASS_POS_BYTE = 0;
         private static List<BASSPlugin> plugins = new List<BASSPlugin>();
-        static bool wasapiAvailable = false;
 
         public static Boolean Floatable {
             get
@@ -256,37 +255,6 @@ namespace Gageas.Wrapper.BASS
                 return floatable;
             }
         }
-
-        #region Static Constructor
-        static BASS()
-        {
-            try
-            {
-                uint wasapiVer = 0;
-                try
-                {
-                    wasapiVer = BASS_WASAPI_GetVersion();
-                }
-                catch { }
-                if (wasapiVer > 0)
-                {
-                    try
-                    {
-                        var test = new WASAPIOutput(44100, 2, null, false, false, false, false);
-                        if (test != null)
-                        {
-                            wasapiAvailable = true;
-                            test.Dispose();
-                        }
-                    }
-                    catch { }
-                }
-            }
-            catch
-            {
-            }
-        }
-        #endregion
 
         public static bool BASS_Init(int device, uint freq = 44100, uint buffer_len = 1500)
         {
@@ -333,17 +301,6 @@ namespace Gageas.Wrapper.BASS
                     return BASS.BASS_GetVersion() > 0;
                 }
                 catch { return false; }
-            }
-        }
-
-        /*
-         * basswasapi.dllの読み込みに成功したかどうか
-         */
-        public static bool isWASAPIAvailable
-        {
-            get
-            {
-                return BASS.wasapiAvailable;
             }
         }
 
@@ -525,45 +482,6 @@ namespace Gageas.Wrapper.BASS
         private static extern bool _BASS_Free();
         #endregion
 
-        #region DLLImport BASSWASAPI
-        private delegate UInt32 WASAPISTREAMPROC(IntPtr buffer, UInt32 length, IntPtr user);
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_Init")]
-        private static extern bool BASS_WASAPI_Init(int device, uint freq, uint chans, uint flags,
-            float buffer, float period, WASAPISTREAMPROC proc, IntPtr user);
-
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_Free")]
-        private static extern bool BASS_WASAPI_Free();
-
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_Stop")]
-        private static extern bool BASS_WASAPI_Stop(bool reset);
-
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_Start")]
-        private static extern bool BASS_WASAPI_Start();
-
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_GetInfo")]
-        private static extern bool BASS_WASAPI_GetInfo(out WASAPIOutput.BASS_WASAPI_INFO info);
-
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_GetVersion")]
-        private static extern uint BASS_WASAPI_GetVersion();
-
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_SetVolume")]
-        private static extern bool BASS_WASAPI_SetVolume(bool linear,float volume);
-
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_GetVolume")]
-        private static extern float BASS_WASAPI_GetVolume(bool lenear);
-
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_GetData")]
-        private static extern uint BASS_WASAPI_GetData(IntPtr buffer, uint length);
-
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_GetData")]
-        private static extern uint BASS_WASAPI_GetData(float[] buffer, uint length);
-
-        [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_SetMute")]
-        private static extern bool BASS_WASAPI_SetMute(bool mute);
-
-
-        #endregion
-
 
         public abstract class IPlayable : IDisposable
         {
@@ -592,178 +510,6 @@ namespace Gageas.Wrapper.BASS
             public abstract void Dispose();
             public abstract bool SetMute(bool mute);
         }
-        #region BASSWASAPIOutput
-        public class WASAPIOutput : IPlayable, IDisposable
-        {
-            static WASAPIOutput lastConstructed = null;
-            public struct BASS_WASAPI_INFO
-            {
-                public uint initflags;
-                public uint freq;
-                public uint chans;
-                public uint format;
-                public uint buflen;
-                public uint volmax;
-                public uint volmin;
-                public uint volstep;
-            }
-            private const uint BASS_WASAPI_EXCLUSIVE = 1;
-            private const uint BASS_WASAPI_AUTOFORMAT = 2;
-            private const uint BASS_WASAPI_BUFFER = 4;
-
-            private bool running = false;
-            private WASAPISTREAMPROC _proc;
-            private StreamProc proc;
-            private bool disposed = true;
-            private bool volumeAdjust = false;
-            private UInt32 _StreamProc(IntPtr buffer, UInt32 length, IntPtr user)
-            {
-                if (this.disposed) return 0x80000000;
-                return proc(buffer, length);
-            }
-            public WASAPIOutput(uint freq,uint chans,StreamProc proc, bool Exclusive = false, bool volumeAdjust = false, bool AutoFormat = false, bool DoubleBuffer = true)
-            {
-                if (lastConstructed != null)
-                {
-                    lastConstructed.Dispose();
-                    lastConstructed = null;
-                }
-                _proc = new WASAPISTREAMPROC(_StreamProc);
-                this.proc = proc;
-                bool success = false;
-                uint flag = 0;
-                if (Exclusive) flag += BASS_WASAPI_EXCLUSIVE;
-                if (AutoFormat) flag += BASS_WASAPI_AUTOFORMAT;
-                if (DoubleBuffer) flag += BASS_WASAPI_BUFFER;
-
-                // Init前から走っていたスレッドのIdを保持
-                var ths_before = System.Diagnostics.Process.GetCurrentProcess().Threads;
-                List<int> ids = new List<int>();
-                for (int i = 0; i < ths_before.Count; i++)
-                {
-                    ids.Add(ths_before[i].Id);
-                }
-                success = BASS_WASAPI_Init(-1, freq, chans, flag, 0.5F, 0.0F, _proc, IntPtr.Zero);
-
-                // 新しく生成されたスレッドのプライオリティを上げる
-                var ths_after = System.Diagnostics.Process.GetCurrentProcess().Threads;
-                for (int i = 0; i < ths_after.Count; i++)
-                {
-                    var th = ths_after[i];
-                    if (ids.Contains(th.Id)) continue;
-#if DEBUG
-                    Gageas.Lutea.Logger.Log("スレッドID"+th.Id+" のプライオリティを上げます");
-#endif
-                    th.PriorityLevel = System.Diagnostics.ThreadPriorityLevel.Highest;
-                }
-                if (!success)
-                {
-                    throw new Exception("");
-                }
-                disposed = false;
-                this.volumeAdjust = volumeAdjust;
-                lastConstructed = this;
-            }
-            public override void Dispose()
-            {
-                if (this.disposed) return;
-                Stop();
-                BASS_WASAPI_Free();
-
-//                throw new NotImplementedException();
-                GC.SuppressFinalize(this);
-                this.disposed = true;
-            }
-            ~WASAPIOutput(){
-                this.Dispose();
-            }
-
-            public override bool Start()
-            {
-                if (disposed) return false;
-                return running = BASS_WASAPI_Start();
-            }
-
-            public override bool Stop()
-            {
-                if (disposed) return false;
-                running = false;
-                return BASS_WASAPI_Stop(true);
-            }
-
-            public override bool Resume()
-            {
-                if (disposed) return false;
-                if (running) return true;
-                return running = BASS_WASAPI_Start();
-            }
-
-            public override bool Pause()
-            {
-                if (disposed) return false;
-                running = false;
-                return BASS_WASAPI_Stop(false);
-            }
-
-            public override bool SetVolume(float vol, uint timespan)
-            {
-                return this.SetVolume(vol);
-            }
-            public override bool SetVolume(float vol)
-            {
-                if (!volumeAdjust)
-                {
-                    if (vol == -1)
-                    {
-                        BASS_WASAPI_Stop(true);
-                    }
-                }
-                if (!volumeAdjust) return false;
-                return BASS_WASAPI_SetVolume(true, vol);
-            }
-
-            public override float GetVolume()
-            {
-                if (!volumeAdjust) return 1.0F;
-                return BASS_WASAPI_GetVolume(true);
-            }
-
-            public override bool SetMute(bool mute)
-            {
-                return BASS_WASAPI_SetMute(mute);
-            }
-
-            public BASS_WASAPI_INFO Info
-            {
-                get
-                {
-                    BASS_WASAPI_INFO info = new BASS_WASAPI_INFO();
-                    BASS_WASAPI_GetInfo(out info);
-                    return info;
-                }
-            }
-
-            public override uint GetFreq()
-            {
-                return Info.freq;
-            }
-
-            public override uint GetChans()
-            {
-                return Info.chans;
-            }
-
-            public override uint GetData(IntPtr buffer, uint length)
-            {
-                return BASS_WASAPI_GetData(buffer, length);
-            }
-
-            public override uint GetDataFFT(float[] buffer, IPlayable.FFT fftparam)
-            {
-                return BASS_WASAPI_GetData(buffer, (uint)fftparam);
-            }
-        }
-        #endregion
 
         public abstract class Channel : IPlayable, IDisposable
         {
