@@ -5,58 +5,63 @@ using System.Text;
 
 namespace Gageas.Lutea
 {
-    public class Logger
+    public static class Logger
     {
-        public delegate void LogEventHandler(LogEvent e);
-        private Logger()
+        public enum Level { Warn, Debug, Log, Error };
+
+        public struct LogMessage
         {
+            public readonly Level Level;
+            public readonly String Message;
+            public readonly DateTime Timestamp;
+            public readonly String StackTrace;
+            public LogMessage(String message, Level level)
+            {
+                this.Message = message;
+                this.Timestamp = DateTime.Now;
+                this.Level = level;
+                this.StackTrace = Environment.StackTrace;
+            }
+            public override string ToString()
+            {
+                return String.Format("[{0}.{1:000}][{2}] {3}", Timestamp.ToString(), Timestamp.Millisecond, Level.ToString(), Message);
+            }
         }
+
+        public delegate void LogEventHandler(LogMessage e);
+
         public static event LogEventHandler LogClient;
-        private static void raise(LogEvent e){
+
+        private static void raise(LogMessage e)
+        {
             if (LogClient != null)
             {
                 LogClient.Invoke(e);
             }
         }
 
+        #region 各レベルごとのログ出力メソッド
         public static void Log(object s)
         {
-            raise(new LogEvent(s.ToString(),Level.Log));
+            raise(new LogMessage(s.ToString(), Level.Log));
         }
 
         public static void Debug(object s)
         {
 #if DEBUG
-            raise(new LogEvent(s.ToString(), Level.Debug));
+            raise(new LogMessage(s.ToString(), Level.Debug));
 #endif
         }
 
         public static void Error(object s)
         {
-            raise(new LogEvent(s.ToString(), Level.Error));
+            raise(new LogMessage(s.ToString(), Level.Error));
         }
 
         public static void Warn(object s)
         {
-            raise(new LogEvent(s.ToString(), Level.Warn));
+            raise(new LogMessage(s.ToString(), Level.Warn));
         }
-
-        public enum Level { Warn, Debug, Log, Error };
-        public class LogEvent
-        {
-            public readonly Level Level;
-            public readonly String msg;
-            public readonly DateTime datetime;
-            public LogEvent(String msg, Level level)
-            {
-                this.msg = msg;
-                this.datetime = DateTime.Now;
-                this.Level = level;
-            }
-            public override string ToString()
-            {
-                return String.Format("[{0}.{1:000}][{2}] {3}", datetime.ToString(), datetime.Millisecond, Level.ToString(), msg);
-            }
-        }
+        #endregion
     }
 }
