@@ -59,7 +59,7 @@ namespace Gageas.Lutea.Tags
                             tag = ASF.Read(fs, createImageObject);
                             break;
 
-                        case ".ape": // apetag MP3も一旦defaultでこっちに落とす。APETAGがなかったらgotoでID3へ
+                        case ".ape":
                         case ".tak":
                         case ".wv":
                             tag = ApeTag.Read(fs, createImageObject);
