@@ -25,13 +25,18 @@ namespace Gageas.Lutea.Core
 #endif
             try
             {
+                Logger.Debug("Start Application");
                 var mainform = AppCore.Init();
+                Logger.Debug("Application core initialized.");
+
                 if (mainform != null)
                 {
+                    Logger.Debug("MainForm is " + mainform.GetType().ToString());
                     Application.Run(mainform);
                 }
                 else
                 {
+                    Logger.Debug("MainForm is null");
                     Application.Run();
                 }
             }
