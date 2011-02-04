@@ -115,7 +115,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Tags\ApeTag.cs" />
     <Compile Include="Core\AppCore.cs" />
-    <Compile Include="NativeWrapper\BASS\Bass.cs" />
+    <Compile Include="NativeWrapper\BASS\BASS.cs" />
     <Compile Include="Tags\CD.cs" />
     <Compile Include="Tags\ASF.cs" />
     <Compile Include="Tags\ID3.cs" />
