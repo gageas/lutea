@@ -314,7 +314,7 @@ namespace Gageas.Wrapper.BASS
         {
             return plugins;
         }
-        
+
         [System.Obsolete("これはシステムのマスターボリュームを変更する。Channnel#volumeを使うべし")]
         public static float volume
         {
@@ -381,6 +381,9 @@ namespace Gageas.Wrapper.BASS
 
         [DllImport("bass.dll", EntryPoint = "BASS_SetConfig", CharSet = CharSet.Unicode)]
         public static extern bool BASS_SetConfig(BASS_CONFIG option, UInt32 value);
+
+        [DllImport("bass.dll", EntryPoint = "BASS_SetDevice", CharSet = CharSet.Unicode)]
+        public static extern bool BASS_SetDevice(UInt32 device);
 
         [DllImport("bass.dll", EntryPoint = "BASS_StreamCreateFile", CharSet = CharSet.Unicode)]
         private static extern IntPtr _BASS_StreamCreateFile(Boolean ismemory, string filename, UInt64 offset, UInt64 length, uint flags);
