@@ -160,6 +160,7 @@ namespace Gageas.Wrapper.BASS
             BASS_CONFIG_UPDATETHREADS = 24,
         }
 
+        [StructLayout(LayoutKind.Sequential)]
         public struct BASS_CHANNELINFO
         {
             public UInt32 freq;
@@ -179,10 +180,68 @@ namespace Gageas.Wrapper.BASS
             }
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BASS_DEVICEINFO {
+            [Flags]
+            public enum FLAGS : uint
+            {
+                ENABLED = 1, DEFAULT = 2, INIT = 4
+            }
+
+            private IntPtr name;
+            private IntPtr driver;
+            private UInt32 flags;
+
+            public string Name
+            {
+                get
+                {
+                    return Marshal.PtrToStringAnsi(this.name);
+                }
+            }
+
+            public string Driver
+            {
+                get
+                {
+                    return Marshal.PtrToStringAnsi(this.driver);
+                }
+            }
+
+            public FLAGS Flags
+            {
+                get
+                {
+                    return (FLAGS)this.flags;
+                }
+            }
+
+            public bool isEnabled
+            {
+                get { return (Flags & FLAGS.ENABLED) != 0; }
+            }
+
+            public bool isDefault
+            {
+                get { return (Flags & FLAGS.DEFAULT) != 0; }
+            }
+
+            public bool isInit
+            {
+                get { return (Flags & FLAGS.INIT) != 0; }
+            }
+        }
+
+        public static BASS_DEVICEINFO? GetDeviceInfo(UInt32 device)
+        {
+            BASS_DEVICEINFO info;
+            bool success = _BASS_GetDeviceInfo(device, out info);
+            return success ? info : (BASS_DEVICEINFO?)null;
+        }
+
         private const uint BASS_UNICODE = 0x80000000;
         private const uint BASS_POS_BYTE = 0;
         private static List<BASSPlugin> plugins = new List<BASSPlugin>();
-        static bool available = false;
         static bool wasapiAvailable = false;
 
         public static Boolean Floatable {
@@ -231,7 +290,7 @@ namespace Gageas.Wrapper.BASS
 
         public static bool BASS_Init(int device, uint freq = 44100, uint buffer_len = 1500)
         {
-            if (available) return true;
+            bool success = false;
             // Init前から走っていたスレッドのIdを保持
             var ths_before = System.Diagnostics.Process.GetCurrentProcess().Threads;
             List<int> ids = new List<int>();
@@ -243,7 +302,7 @@ namespace Gageas.Wrapper.BASS
             // BASS初期化
             try
             {
-                BASS.available = BASS.BASS_Init(device, freq, 0, (IntPtr)0, (IntPtr)0);
+                success = BASS.BASS_Init(device, freq, 0, (IntPtr)0, (IntPtr)0);
                 BASS.BASS_SetConfig(BASS.BASS_CONFIG.BASS_CONFIG_BUFFER, buffer_len);
             }
             catch { }
@@ -259,7 +318,7 @@ namespace Gageas.Wrapper.BASS
 #endif
                 th.PriorityLevel = System.Diagnostics.ThreadPriorityLevel.Highest;
             }
-            return BASS.available;
+            return success;
         }
 
         /*
@@ -269,7 +328,11 @@ namespace Gageas.Wrapper.BASS
         {
             get
             {
-                return BASS.available;
+                try
+                {
+                    return BASS.BASS_GetVersion() > 0;
+                }
+                catch { return false; }
             }
         }
 
@@ -343,7 +406,6 @@ namespace Gageas.Wrapper.BASS
 
         public static bool BASS_Free()
         {
-            available = false;
             return _BASS_Free();
         }
 
@@ -452,6 +514,12 @@ namespace Gageas.Wrapper.BASS
         
         [DllImport("bass.dll", EntryPoint = "BASS_GetVolume")]
         private static extern float _BASS_GetVolume();
+
+        [DllImport("bass.dll", EntryPoint = "BASS_GetVersion")]
+        private static extern UInt32 BASS_GetVersion();
+
+        [DllImport("bass.dll", EntryPoint = "BASS_GetDeviceInfo")]
+        private static extern bool _BASS_GetDeviceInfo(UInt32 device, out BASS_DEVICEINFO info);
 
         [DllImport("bass.dll", EntryPoint = "BASS_Free")]
         private static extern bool _BASS_Free();
