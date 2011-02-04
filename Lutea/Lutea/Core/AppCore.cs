@@ -253,9 +253,8 @@ namespace Gageas.Lutea.Core
         /// </summary>
         /// <param name="reference"></param>
         /// <returns>OutputStreamを作り直した時true</returns>
-        internal static bool ResetOutputChannel(uint freq, uint chans, bool useFloat){ // BASS.Stream reference
+        internal static bool ResetOutputChannel(uint freq, uint chans, bool useFloat){
             bool ret = false;
-//            var info = reference.Info;
             if(OutputStreamRebuildRequired(freq, chans, useFloat))
             {
                 outputMode = Controller.OutputModeEnum.STOP;
@@ -277,8 +276,7 @@ namespace Gageas.Lutea.Core
                             {
                                 try
                                 {
-                                    BASS.BASS_Free();
-                                    BASS.BASS_Init(0, OutputFreq, BASS_BUFFFER_LEN);
+                                    BASS.BASS_SetDevice(0);
                                     outputChannel = new BASS.WASAPIOutput(freq, chans, StreamProc, true, enableWASAPIVolume, false);
                                     if (outputChannel != null)
                                     {
@@ -295,8 +293,7 @@ namespace Gageas.Lutea.Core
                             {
                                 try
                                 {
-                                    BASS.BASS_Free();
-                                    BASS.BASS_Init(0, OutputFreq, BASS_BUFFFER_LEN);
+                                    BASS.BASS_SetDevice(0);
                                     outputChannel = new BASS.WASAPIOutput(freq, chans, StreamProc, false, enableWASAPIVolume, false);
                                     if (outputChannel != null)
                                     {
@@ -314,8 +311,13 @@ namespace Gageas.Lutea.Core
                         {
                             try
                             {
-                                BASS.BASS_Free();
-                                BASS.BASS_Init(-1, OutputFreq, BASS_BUFFFER_LEN);
+                                var outdev = GetInitializedBassRealOutputDevice();
+                                if (outdev == 0)
+                                {
+                                    BASS.BASS_Init(-1, OutputFreq, BASS_BUFFFER_LEN);
+                                    outdev = GetInitializedBassRealOutputDevice();
+                                }
+                                BASS.BASS_SetDevice(outdev);
                                 outputChannel = new BASS.UserSampleStream(freq, chans, StreamProc, (BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) | BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
                                 if (outputChannel != null) outputMode = Controller.OutputModeEnum.FloatingPoint;
                                 Logger.Debug("Use Float Output");
@@ -331,6 +333,22 @@ namespace Gageas.Lutea.Core
                 outputChannel.SetVolume((float)_volume);
             }
             return ret;
+        }
+
+        /// <summary>
+        /// BASS_Initが実行されたサウンド出力デバイスを取得する(除くno soundデバイス)
+        /// </summary>
+        /// <returns>最初に見つかったInitedなサウンド出力デバイスのデバイス。見つからなかった場合は0</returns>
+        private static uint GetInitializedBassRealOutputDevice()
+        {
+            uint a;
+            BASS.BASS_DEVICEINFO? info;
+            for (a = 1; (info = BASS.GetDeviceInfo(a)).HasValue; a++)
+            {
+                var _info = info.Value;
+                if (_info.isInit) return a;
+            }
+            return 0;
         }
 
         private static void Memset(IntPtr ptr, byte set,int sizebytes, int offset = 0)
@@ -561,7 +579,7 @@ namespace Gageas.Lutea.Core
                 }
             }
 
-            BASS.BASS_Init(-1, OutputFreq, BASS_BUFFFER_LEN);
+            BASS.BASS_Init(0, OutputFreq, BASS_BUFFFER_LEN);
             if (BASS.isAvailable)
             {
                 String[] dllList = System.IO.Directory.GetFiles(userDirectory.PluginDir, "*.dll");

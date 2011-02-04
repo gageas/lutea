@@ -271,6 +271,8 @@ namespace Gageas.Lutea.Library
         private Queue<string> importFilenameQueue;
         private void importFileReadThreadProc()
         {
+            // BASSをno deviceで使用
+            BASS.BASS_SetDevice(0);
             while (importFilenameQueue.Count > 0)
             {
                 string directory_name;
@@ -313,7 +315,6 @@ namespace Gageas.Lutea.Library
                     }
                 }
                 catch (System.IO.IOException ex) { Logger.Error(ex.ToString()); }
-
             }
         }
 
