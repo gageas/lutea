@@ -229,7 +229,7 @@ namespace Gageas.Wrapper.BASS
         }
         #endregion
 
-        public static bool BASS_Init(int device, uint freq, uint buffer_len)
+        public static bool BASS_Init(int device, uint freq = 44100, uint buffer_len = 1500)
         {
             if (available) return true;
             // Init前から走っていたスレッドのIdを保持
