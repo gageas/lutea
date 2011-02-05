@@ -902,7 +902,7 @@ namespace Gageas.Lutea.Core
                 }
 
                 // Output Streamを再構築
-                if (OutputStreamRebuildRequired(preparedStream.stream))
+                if (OutputStreamRebuildRequired(preparedStream.stream) || _pause)
                 {
                     var fname = preparedStream.file_name;
                     var freq = preparedStream.stream.GetFreq();
@@ -912,7 +912,7 @@ namespace Gageas.Lutea.Core
                     {
                         KillOutputChannel(!stopcurrent);
                     }
-                    catch (Exception e) { Logger.Log(e.ToString()); }
+                    catch (Exception e) { Logger.Error(e); }
                     preparedStream.stream.Dispose();
                     preparedStream = null;
                     if (currentStream != null && currentStream.stream != null)
@@ -920,6 +920,7 @@ namespace Gageas.Lutea.Core
                         currentStream.stream.Dispose();
                         currentStream = null;
                     }
+                    _pause = false;
                     ResetOutputChannel(freq, chans, isFloat);
                     prepareNextStream(IndexInPlaylist(fname));
                     PlayQueuedStream();
