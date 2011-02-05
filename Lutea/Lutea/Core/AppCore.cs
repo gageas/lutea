@@ -45,7 +45,6 @@ namespace Gageas.Lutea.Core
 
     class AppCore
     {
-        private const int BASS_BUFFFER_LEN = 1500;
         private const string settingFileName = "settings.dat";
 
         internal static List<Lutea.Core.LuteaComponentInterface> plugins = new List<Core.LuteaComponentInterface>();
@@ -61,7 +60,6 @@ namespace Gageas.Lutea.Core
         /// </summary>
         #region Core Thread
         private static WorkerThread coreWorker = new WorkerThread();
-//        private static WorkerThread outputStreamWorker = new WorkerThread();
         public static void CoreEnqueue(Controller.VOIDVOID d)
         {
             coreWorker.AddTask(d);
@@ -78,6 +76,27 @@ namespace Gageas.Lutea.Core
         internal static bool fadeInOutOnSkip = false;
         #endregion
 
+        #region set/get Volume
+        private static float _volume = 1.0F;
+        internal static float volume
+        {
+            get
+            {
+                return _volume;
+//                return outputManager.volume;
+            }
+            set
+            {
+                _volume = value;
+                if (!mute)
+                {
+                    outputManager.Volume = value;
+                }
+            }
+
+        }
+        #endregion
+        
         #region set/get Mute
         private static bool _mute = false;
         internal static bool mute
@@ -89,71 +108,33 @@ namespace Gageas.Lutea.Core
             set
             {
                 if (mute == value) return;
-                lock (volumeLock)
+                if (outputManager.Available)
                 {
-                    if (AppCore.outputChannel != null)
+                    if (value)
                     {
-                        if (value)
-                        {
-                            AppCore.outputChannel.SetVolume(0);
-                        }
-                        else
-                        {
-                            AppCore.outputChannel.SetVolume(_volume); //.stream.volume = (float)(_volume * Math.Pow(10.0, ((preparedStream.gain ?? (-gainBoost) + gainBoost) / 20.0)));
-                        }
+                        outputManager.SetVolume(0, 0);
                     }
-                    AppCore._mute = value;
-                }
-            }
-        }
-        #endregion mute
-
-        #region set/get Volume
-        private static Object volumeLock = new Object();
-        private static float _volume = 1.0F;
-        internal static float volume
-        {
-            get
-            {
-                return _volume;
-            }
-            set
-            {
-                lock (volumeLock)
-                {
-                    _volume = value;
-                    if (!mute && AppCore.outputChannel != null)
+                    else
                     {
-                        AppCore.outputChannel.SetVolume(_volume);
+                        outputManager.SetVolume(_volume, 0);
                     }
                 }
+                _mute = value;
             }
 
         }
         #endregion
 
         #region set/get Pause
-        private static bool _pause = false;
         internal static bool pause
         {
             get
             {
-                return _pause;
+                return outputManager.Pause;
             }
             set
             {
-                if (AppCore.currentStream == null) return;
-                _pause = value;
-                if (value)
-                {
-                    AppCore.outputChannel.Pause();
-                    //                    currentStream.stream.pause();
-                }
-                else
-                {
-                    //                    currentStream.stream.play();
-                    AppCore.outputChannel.Resume();
-                }
+                outputManager.Pause = value;
             }
         }
         #endregion
@@ -178,9 +159,6 @@ namespace Gageas.Lutea.Core
         private static Boolean floatingPointOutput = false;
         internal static StreamObject currentStream; // 再生中のストリーム
         internal static StreamObject preparedStream;
-        private static object outputChannelLock = new object();
-        internal static BASS.IPlayable outputChannel; // 出力ストリーム
-        internal static bool outputChannelIsReady = false;
 
         internal static object[][] playlistCache;
 
@@ -189,7 +167,9 @@ namespace Gageas.Lutea.Core
         private static Object dblock = new Object();
         internal static Boolean isPlaying;
 
-
+        private static OutputManager outputManager = new OutputManager(StreamProc);
+        internal static bool outputChannelIsReady = false;
+        
         #region set/get Playback Order
         private static Controller.PlaybackOrder _playbackOrder;
         internal static Controller.PlaybackOrder playbackOrder
@@ -204,14 +184,13 @@ namespace Gageas.Lutea.Core
             }
         }
         #endregion
-
+        
         #region get Output Mode
-        private static Controller.OutputModeEnum outputMode;
         internal static Controller.OutputModeEnum OutputMode
         {
             get
             {
-                return outputMode;
+                return outputManager.OutputMode;
             }
         }
         #endregion
@@ -229,162 +208,52 @@ namespace Gageas.Lutea.Core
         internal static SQLite3DB h2k6db;
         internal static int currentPlaylistRows;
 
-        #region 出力ストリーム関連
-        private static bool OutputStreamRebuildRequired(BASS.Stream reference)
+        internal static uint FFTData(float[] buffer, Wrapper.BASS.BASS.IPlayable.FFT fftopt)
         {
-            if (reference == null) return true;
-            var info = reference.Info;
-            uint freq = info.freq;
-            uint chans = info.chans;
-
-            return OutputStreamRebuildRequired(freq,chans, (info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0);
-        }
-        private static bool OutputStreamRebuildRequired(uint freq,uint chans, bool useFloat)
-        {
-            if (outputChannel == null || outputChannel.GetFreq() != freq || outputChannel.GetChans() != chans)// || (outputChannel.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != flag)
+            if (outputManager.Available)
             {
-                return true;
+                return outputManager.GetDataFFT(buffer, fftopt);
             }
-            return false;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="reference"></param>
-        /// <returns>OutputStreamを作り直した時true</returns>
-        internal static bool ResetOutputChannel(uint freq, uint chans, bool useFloat){
-            bool ret = false;
-            if(OutputStreamRebuildRequired(freq, chans, useFloat))
+            else
             {
-                outputMode = Controller.OutputModeEnum.STOP;
-                if (outputChannel != null)
+                for (int i = 0; i < buffer.Length; i++)
                 {
-                    outputChannel.Dispose();
-                    outputChannel = null;
+                    buffer[i] = 0.0F;
                 }
-                lock (outputChannelLock)
-                {
-                    Logger.Log("Rebuild output");
-                    if (useFloat)
-                    {
-                        // WASAPI出力の生成を試行
-                        if (BASSWASAPIOutput.IsAvailable)
-                        {
-                            // WASAPI排他モードの生成を試行
-                            if (enableWASAPIExclusive)
-                            {
-                                try
-                                {
-                                    BASS.BASS_SetDevice(0);
-                                    outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.Flags.Buffer | BASSWASAPIOutput.Flags.Exclusive, enableWASAPIVolume);
-                                    if (outputChannel != null)
-                                    {
-                                        outputMode = Controller.OutputModeEnum.WASAPIEx;
-                                        Logger.Log(outputChannel.GetFreq().ToString());
-                                        Logger.Debug("Use WASAPI Exclusive Output");
-                                    }
-                                }
-                                catch (Exception e) { Logger.Log(e.ToString()); }
-                            }
-
-                            // WASAPI共有モードの生成を試行
-                            if (outputChannel == null)
-                            {
-                                try
-                                {
-                                    BASS.BASS_SetDevice(0);
-                                    outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.Flags.Buffer, enableWASAPIVolume);
-                                    if (outputChannel != null)
-                                    {
-                                        outputMode = Controller.OutputModeEnum.WASAPI;
-                                        Logger.Log(outputChannel.GetFreq().ToString());
-                                        Logger.Debug("Use WASAPI Shared Output");
-                                    }
-                                }
-                                catch (Exception e) { Logger.Log(e.ToString()); }
-                            }
-                        }
-
-                        // Floating point出力の生成を試行
-                        if (outputChannel == null)
-                        {
-                            try
-                            {
-                                var outdev = GetInitializedBassRealOutputDevice();
-                                if (outdev == 0)
-                                {
-                                    BASS.BASS_Init(-1, OutputFreq, BASS_BUFFFER_LEN);
-                                    outdev = GetInitializedBassRealOutputDevice();
-                                }
-                                BASS.BASS_SetDevice(outdev);
-                                outputChannel = new BASS.UserSampleStream(freq, chans, StreamProc, (BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) | BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
-                                if (outputChannel != null) outputMode = Controller.OutputModeEnum.FloatingPoint;
-                                Logger.Debug("Use Float Output");
-                            }
-                            catch { }
-                        }
-                    }
-                }
-                ret = true;
-            }
-            if (outputChannel != null)
-            {
-                outputChannel.SetVolume((float)_volume);
-            }
-            return ret;
-        }
-
-        /// <summary>
-        /// BASS_Initが実行されたサウンド出力デバイスを取得する(除くno soundデバイス)
-        /// </summary>
-        /// <returns>最初に見つかったInitedなサウンド出力デバイスのデバイス。見つからなかった場合は0</returns>
-        private static uint GetInitializedBassRealOutputDevice()
-        {
-            uint a;
-            BASS.BASS_DEVICEINFO? info;
-            for (a = 1; (info = BASS.GetDeviceInfo(a)).HasValue; a++)
-            {
-                var _info = info.Value;
-                if (_info.isInit) return a;
             }
             return 0;
         }
 
-        private static void Memset(IntPtr ptr, byte set,int sizebytes, int offset = 0)
+        internal static void SetPosition(double value)
+        {
+            var _current = currentStream;
+            if (_current == null) return;
+            outputManager.Pause = true;
+            if (_current.invalidateCueLengthOnSeek)
+            {
+                _current.cueLength = 0;
+            }
+            _current.stream.position = _current.stream.Seconds2Bytes(value) + _current.cueOffset;
+            outputManager.Start();
+
+        }
+
+        #region ストリームプロシージャ
+        private static void Memset(IntPtr ptr, byte set, int sizebytes, int offset = 0)
         {
             int sizedw = sizebytes >> 2;
             sizebytes = sizebytes & 3;
-            for(int i=0;i<sizedw;i++){
-                Marshal.WriteInt32(ptr,offset,0);
+            for (int i = 0; i < sizedw; i++)
+            {
+                Marshal.WriteInt32(ptr, offset, 0);
                 offset += 4;
             }
-            for(int i=0;i<sizebytes;i++){
+            for (int i = 0; i < sizebytes; i++)
+            {
                 Marshal.WriteByte(ptr, offset++, 0);
             }
         }
 
-        private static void KillOutputChannel(bool waitsync=false)
-        {
-            var _outputChannel = outputChannel;
-            lock (outputChannelLock)
-            {
-                if (outputChannel != null)
-                {
-                    outputChannel = null;
-                    if (waitsync)
-                    {
-                        Thread.Sleep(BASS_BUFFFER_LEN);
-                    }
-                    _outputChannel.Stop();
-                    _outputChannel.Dispose();
-                }
-            }
-            outputMode = Controller.OutputModeEnum.STOP;
-        }
-        #endregion
-
-        #region ストリームプロシージャ
         private static uint readStreamGained(IntPtr buffer, uint length, BASS.Stream stream, double gaindB)
         {
             uint read = stream.GetData(buffer, length);
@@ -435,7 +304,7 @@ namespace Gageas.Lutea.Core
             try
             {
 #endif
-            if (outputChannelIsReady && outputChannel != null)
+            if (outputChannelIsReady && outputManager.Available)
             {
                 // currentStreamから読み出し
                 if (_current != null && _current.stream != null && _current.ready)
@@ -579,7 +448,7 @@ namespace Gageas.Lutea.Core
                 }
             }
 
-            BASS.BASS_Init(0, OutputFreq, BASS_BUFFFER_LEN);
+            BASS.BASS_Init(0);
             if (BASS.isAvailable)
             {
                 String[] dllList = System.IO.Directory.GetFiles(userDirectory.PluginDir, "*.dll");
@@ -622,7 +491,7 @@ namespace Gageas.Lutea.Core
             try
             {
                 isPlaying = false;
-                KillOutputChannel();
+                outputManager.KillOutputChannel();
 
                 if (currentStream != null && currentStream.stream != null)
                 {
@@ -859,18 +728,18 @@ namespace Gageas.Lutea.Core
                         preparedStream.stream.Dispose();
                         preparedStream = null;
                     }
-                    if (outputChannel != null)
+                    if (outputManager.Available)
                     {
                         currentStream.ready = false;
                         if (stopCurrent)
                         {
-                            outputChannel.SetVolume(-1F, fadeInOutOnSkip ? 100u : 0u);
+                            outputManager.SetVolume(-1F, fadeInOutOnSkip ? 100u : 0u);
                         }
                     }
                     prepareNextStream(index);
-                    if (outputChannel != null && stopCurrent)
+                    if (outputManager.Available && stopCurrent)
                     {
-                        outputChannel.Stop();
+                        outputManager.Stop();
                     }
                     PlayQueuedStream(stopCurrent);
                 }
@@ -902,7 +771,7 @@ namespace Gageas.Lutea.Core
                 }
 
                 // Output Streamを再構築
-                if (OutputStreamRebuildRequired(preparedStream.stream) || _pause)
+                if (outputManager.RebuildRequired(preparedStream.stream) || pause)
                 {
                     var fname = preparedStream.file_name;
                     var freq = preparedStream.stream.GetFreq();
@@ -910,7 +779,7 @@ namespace Gageas.Lutea.Core
                     var isFloat = (preparedStream.stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) > 0;
                     try
                     {
-                        KillOutputChannel(!stopcurrent);
+                        outputManager.KillOutputChannel(!stopcurrent);
                     }
                     catch (Exception e) { Logger.Error(e); }
                     preparedStream.stream.Dispose();
@@ -920,8 +789,9 @@ namespace Gageas.Lutea.Core
                         currentStream.stream.Dispose();
                         currentStream = null;
                     }
-                    _pause = false;
-                    ResetOutputChannel(freq, chans, isFloat);
+                    pause = false;
+                    outputManager.ResetOutputChannel(freq, chans, isFloat);
+                    outputManager.SetVolume(_volume, 0);
                     prepareNextStream(IndexInPlaylist(fname));
                     PlayQueuedStream();
                     return;
@@ -953,11 +823,11 @@ namespace Gageas.Lutea.Core
                 preparedStream.ready = true;
                 preparedStream.playbackCounterUpdated = false;
                 currentStream = preparedStream;
-                outputChannel.SetVolume((float)_volume, fadeInOutOnSkip ? 100u : 0u);
-                outputChannel.Resume();
+                outputManager.SetVolume((float)_volume, fadeInOutOnSkip ? 100u : 0u);
+                outputManager.Resume();
                 outputChannelIsReady = true;
                 preparedStream = null;
-                _pause = false;
+                pause = false;
                 isPlaying = true;
                 Controller._OnTrackChange(Controller.Current.IndexInPlaylist);
             }
@@ -983,7 +853,7 @@ namespace Gageas.Lutea.Core
                 ? (ulong)(track.end - track.start) * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float)
                 : newstream.filesize - offset;
             StreamObject nextStream = new StreamObject(newstream, cd.filename, offset, length);
-            if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
+            if (!outputManager.RebuildRequired(newstream)) nextStream.ready = true;
             nextStream.cueStreamFileName = streamFullPath;
             var gain = track.getTagValue("ALBUM GAIN");
             if (gain != null)
@@ -1048,7 +918,7 @@ namespace Gageas.Lutea.Core
                         }
                     }
                 }
-                if (!OutputStreamRebuildRequired(newstream)) nextStream.ready = true;
+                if (!outputManager.RebuildRequired(newstream)) nextStream.ready = true;
             }
             return nextStream;
         }
@@ -1112,7 +982,7 @@ namespace Gageas.Lutea.Core
         internal static void stop()
         {
             isPlaying = false;
-            KillOutputChannel();
+            outputManager.KillOutputChannel();
             if (currentStream == null) return;
             if (currentStream.stream != null) currentStream.stream.Dispose();
             currentStream = null;

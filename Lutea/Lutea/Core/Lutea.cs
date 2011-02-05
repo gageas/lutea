@@ -54,18 +54,7 @@ namespace Gageas.Lutea.Core
 
         // FIXME?: 値を書き換えられてしまう
         public static uint FFTData(float[] buffer, Wrapper.BASS.BASS.IPlayable.FFT fftopt){
-            if (AppCore.outputChannel != null)
-            {
-                return AppCore.outputChannel.GetDataFFT(buffer, fftopt);
-            }
-            else
-            {
-                for (int i = 0; i < buffer.Length; i++)
-                {
-                    buffer[i] = 0.0F;
-                }
-            }
-            return 0;
+            return AppCore.FFTData(buffer, fftopt);
         }
 
         public static Boolean IsPlaying
@@ -320,17 +309,7 @@ namespace Gageas.Lutea.Core
                 }
                 set
                 {
-                    var _current = AppCore.currentStream;
-                    if (_current == null) return;
-                    //                    KillOutputChannel();
-                    AppCore.outputChannel.Pause();
-                    if (_current.invalidateCueLengthOnSeek)
-                    {
-                        _current.cueLength = 0;
-                    }
-                    _current.stream.position = _current.stream.Seconds2Bytes(value) + _current.cueOffset;
-//                    AppCore.ResetOutputChannel(AppCore.currentStream.stream.GetFreq(), (AppCore.currentStream.stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0);
-                    AppCore.outputChannel.Start();
+                    AppCore.SetPosition(value);
                 }
             }
             public static String MetaData(DBCol col)
