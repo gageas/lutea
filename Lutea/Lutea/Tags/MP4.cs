@@ -231,7 +231,7 @@ namespace Gageas.Lutea.Tags
                                     atom = new ATOM__dat();
                                     break;
                                 default:
-                                    Logger.Debug("There's no rule to read " + atom_name);
+//                                    Logger.Debug("There's no rule to read " + atom_name);
                                     break;
                             }
                             break;
