@@ -208,7 +208,7 @@ namespace Gageas.Lutea
             db.Exec("PRAGMA encoding = \"UTF-8\"; ");
             db.createFunction("regexp", 2, SQLite3.TextEncoding.SQLITE_UTF16, sqlite_regexp);
             db.createFunction("current_timestamp64", 0, SQLite3.TextEncoding.SQLITE_ANY, (o) => currentTimestamp);
-            db.createFunction("LCMapUpper", 1, SQLite3.TextEncoding.SQLITE_UTF16, (o) => o[0].LCMapUpper());
+            db.createFunction("LCMapUpper", 1, SQLite3.TextEncoding.SQLITE_UTF16, (o) => o[0] == null ? (object)0 : o[0].ToString().LCMapUpper());
             if (migemo != null)
             {
                 db.createFunction("migemo", 2, SQLite3.TextEncoding.SQLITE_UTF16, sqlite_migemo);
@@ -227,6 +227,7 @@ namespace Gageas.Lutea
         KVPool<string,Regex> migemoRePool;
         public object sqlite_migemo(string[] args)
         {
+            if (args[0] == null || args[1] == null) return 0;
             if (args[1].LCMapUpper().Contains(args[0].LCMapUpper())) return 1;
             if (migemo == null) return 0;
             var re = migemoRePool.Get(args[0]);
@@ -251,6 +252,7 @@ namespace Gageas.Lutea
         });
         public object sqlite_regexp(string[] args)
         {
+            if (args[0] == null || args[1] == null) return 0;
             var re = regexRePool.Get(args[0]);
             if (re == null) return 0;
             return re.Match(args[1]).Success ? 1 : 0;
