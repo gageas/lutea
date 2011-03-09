@@ -52,6 +52,7 @@ namespace Gageas.Wrapper.BASS
         private BASS.StreamProc originalStreamProc;
         private bool disposed = true;
         private bool volumeAdjust = false;
+        private static List<int> bassThreadIDs = new List<int>();
         
         #region Static Constructor
         static BASSWASAPIOutput()
@@ -100,10 +101,10 @@ namespace Gageas.Wrapper.BASS
             {
                 var th = ths_after[i];
                 if (ids.Contains(th.Id)) continue;
-#if DEBUG
-                Gageas.Lutea.Logger.Log("スレッドID" + th.Id + " のプライオリティを上げます");
-#endif
-                th.PriorityLevel = System.Diagnostics.ThreadPriorityLevel.Highest;
+                if (!bassThreadIDs.Contains(th.Id))
+                {
+                    bassThreadIDs.Add(th.Id);
+                }
             }
             if (!success)
             {
@@ -126,6 +127,26 @@ namespace Gageas.Wrapper.BASS
         ~BASSWASAPIOutput()
         {
             this.Dispose();
+        }
+
+        public static void SetPriority(System.Diagnostics.ThreadPriorityLevel priority)
+        {
+            var ths = System.Diagnostics.Process.GetCurrentProcess().Threads;
+            bassThreadIDs = bassThreadIDs.FindAll((e) =>
+            {
+                for (int i = 0; i < ths.Count; i++)
+                {
+                    if (e == ths[i].Id)
+                    {
+#if DEBUG
+                        Gageas.Lutea.Logger.Log("スレッドID" + ths[i].Id + " のプライオリティ" + priority);
+#endif
+                        ths[i].PriorityLevel = priority;
+                        return true;
+                    }
+                }
+                return false;
+            });
         }
 
         public override bool Start()

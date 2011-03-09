@@ -830,6 +830,8 @@ namespace Gageas.Lutea.Core
                 pause = false;
                 isPlaying = true;
                 Controller._OnTrackChange(Controller.Current.IndexInPlaylist);
+                BASS.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
+                BASSWASAPIOutput.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
             }
         }
 
@@ -954,7 +956,7 @@ namespace Gageas.Lutea.Core
                         ulong left = nextStream.cueOffset;
                         while (left > 0)
                         {
-                            int toread = (int)Math.Min(500, left);
+                            int toread = (int)Math.Min(1000, left);
                             var mem = Marshal.AllocHGlobal(toread);
                             nextStream.stream.GetData(mem, (uint)toread);
                             Marshal.FreeHGlobal(mem);
@@ -1047,6 +1049,8 @@ namespace Gageas.Lutea.Core
         private static void onPreFinish(BASS.SYNC_TYPE type, object cookie)
         {
             Logger.Log("preSync");
+            BASS.SetPriority(System.Diagnostics.ThreadPriorityLevel.Highest);
+            BASSWASAPIOutput.SetPriority(System.Diagnostics.ThreadPriorityLevel.Highest);
             CoreEnqueue(() => prepareNextStream(getSuccTrackIndex()));
         }
 
