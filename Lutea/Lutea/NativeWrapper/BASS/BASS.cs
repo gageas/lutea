@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace Gageas.Wrapper.BASS
 {
@@ -274,6 +275,8 @@ namespace Gageas.Wrapper.BASS
         private const uint BASS_UNICODE = 0x80000000;
         private const uint BASS_POS_BYTE = 0;
 
+        private static List<int> bassThreadIDs = new List<int>();
+
         public static Boolean Floatable {
             get
             {
@@ -312,17 +315,37 @@ namespace Gageas.Wrapper.BASS
             {
                 var th = ths_after[i];
                 if (ids.Contains(th.Id)) continue;
-#if DEBUG
-                Gageas.Lutea.Logger.Debug("スレッドID" + th.Id + " のプライオリティを上げます");
-#endif
-                th.PriorityLevel = System.Diagnostics.ThreadPriorityLevel.Highest;
+                if (!bassThreadIDs.Contains(th.Id))
+                {
+                    bassThreadIDs.Add(th.Id);
+                }
             }
             return success;
         }
 
-        /*
-         * bass.dllの読み込みに成功したかどうか
-         */
+        public static void SetPriority(System.Diagnostics.ThreadPriorityLevel priority)
+        {
+            var ths = System.Diagnostics.Process.GetCurrentProcess().Threads;
+            bassThreadIDs = bassThreadIDs.FindAll((e) =>
+            {
+                for (int i = 0; i < ths.Count; i++)
+                {
+                    if (e == ths[i].Id)
+                    {
+#if DEBUG
+                        Gageas.Lutea.Logger.Debug("スレッドID" + ths[i].Id + " のプライオリティ" + priority);
+#endif
+                        ths[i].PriorityLevel = priority;
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+
+        /// <summary>
+        /// bass.dllの読み込みに成功したかどうか
+        /// </summary>
         public static bool isAvailable
         {
             get
