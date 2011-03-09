@@ -120,9 +120,17 @@ namespace Gageas.Lutea.Util
             return LCMapString(source, MapFlags.HALFWIDTH|MapFlags.HIRAGANA|MapFlags.UPPERCASE);
         }
 
-        // ref. http://d.hatena.ne.jp/deraw/20060831/1156992224
+        /// <summary>
+        /// LCMapStringのwrapper
+        /// ref. http://d.hatena.ne.jp/deraw/20060831/1156992224
+        /// sourceがnullのとき、nullを返す
+        /// </summary>
+        /// <param name="source">ソース文字列</param>
+        /// <param name="mapFlags">変換フラグ</param>
+        /// <returns>変換後の文字列</returns>
         public static String LCMapString(string source, MapFlags mapFlags)
         {
+            if(source == null)return null;
             char[] buffer = new char[source.Length * 2];
             //StringBuilder buffer = new StringBuilder(source.Length*2);
             int len = _LCMapString(System.Threading.Thread.CurrentThread.CurrentCulture.LCID, (uint)mapFlags, source, source.Length, buffer, buffer.Length);
