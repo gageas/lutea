@@ -208,7 +208,7 @@ namespace Gageas.Lutea
             db.Exec("PRAGMA encoding = \"UTF-8\"; ");
             db.createFunction("regexp", 2, SQLite3.TextEncoding.SQLITE_UTF16, sqlite_regexp);
             db.createFunction("current_timestamp64", 0, SQLite3.TextEncoding.SQLITE_ANY, (o) => currentTimestamp);
-            db.createFunction("LCMapUpper", 1, SQLite3.TextEncoding.SQLITE_UTF16, (o) => o[0] == null ? (object)0 : o[0].ToString().LCMapUpper());
+            db.createFunction("LCMapUpper", 1, SQLite3.TextEncoding.SQLITE_UTF16, (o) => o[0] == null ? "" : o[0].ToString().LCMapUpper());
             if (migemo != null)
             {
                 db.createFunction("migemo", 2, SQLite3.TextEncoding.SQLITE_UTF16, sqlite_migemo);
