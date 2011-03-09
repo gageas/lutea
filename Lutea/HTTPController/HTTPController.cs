@@ -39,8 +39,19 @@ namespace Gageas.Lutea.HTTPController
         /// </summary>
         private Dictionary<string, HTTPRequestHandler> HTTPHandlers = new Dictionary<string, HTTPRequestHandler>();
 
-        private List<HttpListenerContext> holdingConnections_Info = new List<HttpListenerContext>();
-        private List<HttpListenerContext> holdingConnections_Playlist = new List<HttpListenerContext>();
+        private List<HttpListenerContextHolder> holdingConnections_Info = new List<HttpListenerContextHolder>();
+        private List<HttpListenerContextHolder> holdingConnections_Playlist = new List<HttpListenerContextHolder>();
+
+        private struct HttpListenerContextHolder
+        {
+            public HttpListenerContext ctx;
+            public readonly long tick;
+            public HttpListenerContextHolder(HttpListenerContext ctx)
+            {
+                this.ctx = ctx;
+                tick = System.DateTime.Now.Ticks;
+            }
+        }
 
         /// <summary>
         /// utf8で吐くため、stringではなくbyte[]を使います
@@ -53,9 +64,18 @@ namespace Gageas.Lutea.HTTPController
         public HTTPController(int port)
         {
             this.port = port;
+            // わざとfirewallのブロックポップアップを出す
+            try
+            {
+                var tcpsock = new System.Net.Sockets.TcpListener(IPAddress.Any, port);
+                tcpsock.Start();
+                tcpsock.Stop();
+            }
+            catch (Exception e) { Logger.Error(e); }
             listener = new HttpListener();
             listener.Prefixes.Add("http://*:" + port + "/");
             HTTPHandlers.Add("cover", ReturnCover);
+            HTTPHandlers.Add("coverorigsize", ReturnCoverOriginalSize);
             HTTPHandlers.Add("xml", ReturnXML);
             HTTPHandlers.Add("control", KickAPI);
             HTTPHandlers.Add("blank", ReturnBlank);
@@ -65,10 +85,11 @@ namespace Gageas.Lutea.HTTPController
                 {
                     CachedXML_Info = null;
                     CachedImagePNG_CoverArt = null;
-                    holdingConnections_Info.ForEach((ctx) =>
+                    holdingConnections_Info.ForEach((session) =>
                         System.Threading.ThreadPool.QueueUserWorkItem((_) =>
                         {
-                            try { ReturnXML_Info(ctx.Request, ctx.Response); }
+                            var ctx = session.ctx;
+                            try { ReturnXML_Info(ctx.Request, ctx.Response); Logger.Log("return"); }
                             catch { }
                         })
                     );
@@ -80,9 +101,10 @@ namespace Gageas.Lutea.HTTPController
                 lock (holdingConnections_Playlist)
                 {
                     CachedXML_Playlist = null;
-                    holdingConnections_Playlist.ForEach((ctx) => 
+                    holdingConnections_Playlist.ForEach((session) => 
                         System.Threading.ThreadPool.QueueUserWorkItem((_) =>
                         {
+                            var ctx = session.ctx;
                             try { ReturnXML_Playlist(ctx.Request, ctx.Response); }
                             catch { }
                         })
@@ -144,6 +166,12 @@ namespace Gageas.Lutea.HTTPController
                     break;
                 case "playpause":
                     Controller.TogglePause();
+                    break;
+                case "volup":
+                    Controller.Volume += 0.1F;
+                    break;
+                case "voldown":
+                    Controller.Volume -= 0.1F;
                     break;
                 case "playitem":
                     int index = 0;
@@ -331,7 +359,7 @@ namespace Gageas.Lutea.HTTPController
                     Util.Util.tryParseInt(req.QueryString["comet_id"], ref comet_session);
                     if (comet_session == GetCometContext_XMLPlaylist())
                     {
-                        holdingConnections_Playlist.Add(ctx);
+                        holdingConnections_Playlist.Add(new HttpListenerContextHolder(ctx));
                     }
                     else
                     {
@@ -342,7 +370,7 @@ namespace Gageas.Lutea.HTTPController
                     Util.Util.tryParseInt(req.QueryString["comet_id"], ref comet_session);
                     if (comet_session == GetCometContext_XMLInfo())
                     {
-                        holdingConnections_Info.Add(ctx);
+                        holdingConnections_Info.Add(new HttpListenerContextHolder(ctx));
                     }
                     else
                     {
@@ -350,6 +378,20 @@ namespace Gageas.Lutea.HTTPController
                     }
                     break;
             }
+
+            // 60sec以上前の接続を破棄
+            var expiredConnections = holdingConnections_Playlist.FindAll(_ => (System.DateTime.Now.Ticks - _.tick) > 60 * 1000 * 1000 * 10)
+                .Concat(holdingConnections_Info.FindAll(_ => (System.DateTime.Now.Ticks - _.tick) > 60 * 1000 * 1000 * 10));
+            foreach (HttpListenerContextHolder e in expiredConnections)
+            {
+                try
+                {
+                    e.ctx.Response.Abort();
+                }
+                catch { }
+            };
+            holdingConnections_Playlist.RemoveAll(_ => expiredConnections.Contains(_));
+            holdingConnections_Info.RemoveAll(_ => expiredConnections.Contains(_));
         }
 
         private void ReturnCover(HttpListenerContext ctx)
@@ -372,6 +414,24 @@ namespace Gageas.Lutea.HTTPController
             }
             res.OutputStream.Write(CachedImagePNG_CoverArt, 0, CachedImagePNG_CoverArt.Length);
             res.Close();
+        }
+
+        private void ReturnCoverOriginalSize(HttpListenerContext ctx)
+        {
+            var res = ctx.Response;
+            res.ContentType = "image/jpeg";
+            var image = Controller.Current.CoverArtImage();
+            if (image == null)
+            {
+                image = new Bitmap(1, 1);
+            }
+            using (var ms = new System.IO.MemoryStream())
+            {
+                image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                var buffer = ms.GetBuffer();
+                res.OutputStream.Write(buffer, 0, buffer.Length);
+                res.Close();
+            }
         }
         #endregion
 
