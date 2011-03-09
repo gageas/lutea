@@ -611,8 +611,26 @@ namespace Gageas.Lutea.Core
         {
             try
             {
-                h2k6db.Exec("DROP TABLE IF EXISTS playlist;");
-                Logger.Debug("playlist TABLE DROPed");
+                // Luteaで生成するplaylistをdrop
+                try
+                {
+                    h2k6db.Exec("DROP TABLE IF EXISTS playlist;");
+                    Logger.Debug("playlist TABLE(Lutea type) DROPed");
+                }
+                catch (SQLite3DB.SQLite3Exception e) {
+                    // H2k6で生成するplaylistをdrop
+                    try
+                    {
+                        h2k6db.Exec("DROP VIEW IF EXISTS playlist;");
+                        Logger.Debug("playlist TABLE(H2k6 type) DROPed");
+                    }
+                    catch (SQLite3DB.SQLite3Exception ee)
+                    {
+                        Logger.Error(e);
+                        Logger.Log(ee);
+                    }
+                }
+
                 using (SQLite3DB.Lock dbLock = h2k6db.GetLock("list"))
                 using (SQLite3DB.STMT tmt = Util.Util.TryThese<SQLite3DB.STMT>(new CreatePlaylistParser[]{
                                     ()=>prepareForCreatePlaylistView(h2k6db, sql==""?"SELECT * FROM list":sql),
