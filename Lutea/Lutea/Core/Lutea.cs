@@ -409,7 +409,10 @@ namespace Gageas.Lutea.Core
                             if (filename_candidate.Length > 0)
                             {
                                 Logger.Log("CoverArt image is " + filename_candidate[0]);
-                                image = System.Drawing.Image.FromFile(filename_candidate[0]);
+                                using (var fs = new System.IO.FileStream(filename_candidate[0], System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                                {
+                                    image = System.Drawing.Image.FromStream(fs);
+                                }
                                 if (image == null) continue;
                                 break;
                             }
