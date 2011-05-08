@@ -479,42 +479,32 @@ namespace Gageas.Lutea.Core
 
         public static void SetRating(string filename, int rate)
         {
+            SetRating(new String[] { filename }, rate);
+        }
+
+        public static void SetRating(string[] filenames, int rate)
+        {
             AppCore.CoreEnqueue(() =>
             {
                 using (var db = DBConnection)
                 {
-                    using (var stmt = db.Prepare("UPDATE list SET rating = " + rate + " WHERE file_name = '" + filename.EscapeSingleQuotSQL() + "';"))
+                    db.Exec("BEGIN;");
+                    using (var stmt = db.Prepare("UPDATE list SET rating = ? WHERE file_name = ? ;"))
                     {
-                        stmt.Evaluate(null);
-                    }
-                }
-                //                    AppCore.DatabaseWriterQueue.Enqueue("UPDATE list SET rating = " + rate + " WHERE file_name = '" + filename.EscapeSingleQuotSQL() + "';");
-                var row = AppCore.playlistCache.First(((o) => ((string)o[(int)DBCol.file_name]) == filename));
-                if (row != null)
-                {
-                    row[(int)DBCol.rating] = rate.ToString();
-                }
-                _PlaylistUpdated(null);
-            });
-        }
-        public static void SetRating(string[] filenames, int rate)
-        {
-            AppCore.CoreEnqueue(() => {
-                foreach (string filename in filenames)
-                {
-                    using (var db = DBConnection)
-                    {
-                        using (var stmt = db.Prepare("UPDATE list SET rating = " + rate + " WHERE file_name = '" + filename.EscapeSingleQuotSQL() + "';"))
+                        foreach (var file_name in filenames)
                         {
+                            stmt.Bind(1, rate.ToString());
+                            stmt.Bind(2, file_name);
                             stmt.Evaluate(null);
+                            stmt.Reset();
+                            var row = AppCore.playlistCache.First(((o) => ((string)o[(int)DBCol.file_name]) == file_name));
+                            if (row != null)
+                            {
+                                row[(int)DBCol.rating] = rate.ToString();
+                            }
                         }
                     }
-//                    AppCore.DatabaseWriterQueue.Enqueue("UPDATE list SET rating = " + rate + " WHERE file_name = '" + filename.EscapeSingleQuotSQL() + "';");
-                    var row = AppCore.playlistCache.First(((o) => ((string)o[(int)DBCol.file_name]) == filename));
-                    if (row != null)
-                    {
-                        row[(int)DBCol.rating] = rate.ToString();
-                    }
+                    db.Exec("COMMIT;");
                 }
                 _PlaylistUpdated(null);
             });
