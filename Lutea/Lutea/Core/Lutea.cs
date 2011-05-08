@@ -401,26 +401,36 @@ namespace Gageas.Lutea.Core
                     }
                     if (image == null)
                     {
-                        String name = System.IO.Path.GetDirectoryName(StreamFilename);
-                        String[] searchPatterns = { "folder.jpg", "folder.jpeg", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp" };
-                        foreach (String searchPattern in searchPatterns)
-                        {
-                            String[] filename_candidate = System.IO.Directory.GetFiles(name, searchPattern);
-                            if (filename_candidate.Length > 0)
-                            {
-                                Logger.Log("CoverArt image is " + filename_candidate[0]);
-                                using (var fs = new System.IO.FileStream(filename_candidate[0], System.IO.FileMode.Open, System.IO.FileAccess.Read))
-                                {
-                                    image = System.Drawing.Image.FromStream(fs);
-                                }
-                                if (image == null) continue;
-                                break;
-                            }
-                        }
+                        image = GetExternalCoverArt(StreamFilename);
                     }
                 }
                 return image;
             }
+        }
+        private static System.Drawing.Image GetExternalCoverArt(string path)
+        {
+            System.Drawing.Image image = null;
+            String name = System.IO.Path.GetDirectoryName(path);
+            String[] searchPatterns = { "folder.jpg", "folder.jpeg", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp" };
+            foreach (String searchPattern in searchPatterns)
+            {
+                try
+                {
+                    String[] filename_candidate = System.IO.Directory.GetFiles(name, searchPattern);
+                    foreach (var file_name in filename_candidate)
+                    {
+                        Logger.Log("CoverArt image is " + file_name);
+                        using (var fs = new System.IO.FileStream(file_name, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                        {
+                            image = System.Drawing.Image.FromStream(fs);
+                        }
+                        if (image == null) continue;
+                        break;
+                    }
+                }
+                catch { }
+            }
+            return image;
         }
 
         public static int IndexInPlaylist(string file_name)
