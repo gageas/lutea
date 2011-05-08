@@ -916,7 +916,10 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         try
                         {
-                            coverArtImage = Image.FromFile("default.jpg");
+                            using (var fs = new System.IO.FileStream("default.jpg", System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                            {
+                                coverArtImage = System.Drawing.Image.FromStream(fs);
+                            }
                         }
                         catch { }
                     }
