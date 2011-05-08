@@ -263,7 +263,7 @@ namespace Gageas.Lutea.DefaultUI
             var q = String.Join(" OR ",(from __ in from _ in subArtists select _.LCMapUpper().Trim() select String.Format(__.Length>1?@" LCMapUpper(tagArtist) LIKE '%{0}%' ":@" LCMapUpper(tagArtist) = '{0}' ",__.EscapeSingleQuotSQL())).ToArray());
             object[][] related_albums = null;
             object[][] multi_disc_albums = null;
-            using (var db = Controller.DBConnection)
+            using (var db = Controller.GetDBConnection())
             {
                 // 関連アルバムを引っ張ってくる
                 if (subArtists.Count > 0)
@@ -1513,7 +1513,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 object[][] cache_filter = null;
                 // ライブラリからfilterViewに表示する項目を取得
-                using (var db = Controller.DBConnection)
+                using (var db = Controller.GetDBConnection())
                 using (var stmt = db.Prepare("SELECT " + col.ToString() + " ,COUNT(*) FROM list GROUP BY " + col.ToString() + " ORDER BY COUNT(*) desc;"))
                 {
                     cache_filter = stmt.EvaluateAll();

@@ -328,7 +328,7 @@ namespace Gageas.Lutea.Core
                 {
                     AppCore.CoreEnqueue(() =>
                     {
-                        using (var db = DBConnection)
+                        using (var db = GetDBConnection())
                         {
                             using(var stmt = db.Prepare("UPDATE list SET rating = " + value + " WHERE file_name = '" + Filename.EscapeSingleQuotSQL() + "'")){
                                 stmt.Evaluate(null);
@@ -453,12 +453,14 @@ namespace Gageas.Lutea.Core
             }
         }
 
-        public static SQLite3DB DBConnection
+        /// <summary>
+        /// ライブラリデータベースへの接続を取得する
+        /// コンポーネントに対してはReadOnlyのデータベースアクセスを提供したい気もするが気のせい
+        /// </summary>
+        /// <returns></returns>
+        public static SQLite3DB GetDBConnection()
         {
-            get
-            {
-                return AppCore.Library.Connect(false);
-            }
+            return AppCore.Library.Connect(false);
         }
 
         public static string UserDirectory
@@ -486,7 +488,7 @@ namespace Gageas.Lutea.Core
         {
             AppCore.CoreEnqueue(() =>
             {
-                using (var db = DBConnection)
+                using (var db = GetDBConnection())
                 {
                     db.Exec("BEGIN;");
                     using (var stmt = db.Prepare("UPDATE list SET rating = ? WHERE file_name = ? ;"))
@@ -580,7 +582,7 @@ namespace Gageas.Lutea.Core
         {
             object[][] file_names;
             List<string> dead_filenames = new List<string>();
-            using (var db = DBConnection)
+            using (var db = GetDBConnection())
             {
                 using (var stmt = db.Prepare("SELECT file_name FROM list;"))
                 {
@@ -600,7 +602,7 @@ namespace Gageas.Lutea.Core
 
         public static Boolean removeItem(IEnumerable<string> file_names)
         {
-            using (var db = DBConnection)
+            using (var db = GetDBConnection())
             {
                 db.Exec("BEGIN;");
                 using (var stmt = db.Prepare("DELETE FROM list WHERE file_name = ?;"))
