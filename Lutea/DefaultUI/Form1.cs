@@ -237,7 +237,7 @@ namespace Gageas.Lutea.DefaultUI
                     }
                 }
 
-                toolStripStatusLabel2.Text = "Playing " + Controller.Current.StreamFilename;
+                toolStripStatusLabel2.Text = "Playing " + Controller.Current.StreamFilename.Replace("&", "&&");
                 groupBox1.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData(DBCol.tagTracknumber))).Replace("&", "&&");
                 trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}",
                     Controller.Current.MetaData(DBCol.tagTitle),
