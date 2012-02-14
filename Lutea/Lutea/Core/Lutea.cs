@@ -142,7 +142,7 @@ namespace Gageas.Lutea.Core
                     if (t != elapsedtime)
                     {
                         elapsedtime = t;
-                        onElapsedTimeChange.BeginInvoke(t, null, null);
+                        onElapsedTimeChange.BeginInvoke(t, (_ => { onElapsedTimeChange.EndInvoke(_); }), null);
                         GC.Collect();
                     }
                     if (t > 0) icache = -1;
