@@ -218,7 +218,7 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     trackInfoText.Text = "Stop";
                     setFormTitle(null);
-                    toolStripStatusLabel2.Text = "Ready ";
+                    setStatusText("Ready ");
                     if (spectrumAnalyzerThread != null)
                     {
                         spectrumAnalyzerThread.Abort();
@@ -237,7 +237,7 @@ namespace Gageas.Lutea.DefaultUI
                     }
                 }
 
-                toolStripStatusLabel2.Text = "Playing " + Controller.Current.StreamFilename.Replace("&", "&&");
+                setStatusText("Playing " + Controller.Current.StreamFilename);
                 groupBox1.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData(DBCol.tagTracknumber))).Replace("&", "&&");
                 trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}",
                     Controller.Current.MetaData(DBCol.tagTitle),
@@ -510,6 +510,11 @@ namespace Gageas.Lutea.DefaultUI
         {
             this.Invoke((MethodInvoker)(() => this.Text = (string.IsNullOrEmpty(title) ? "" : title + " - ") + "Lutea✻" + Controller.OutputMode.ToString()));
         }
+
+        private void setStatusText(String text)
+        {
+            this.toolStripStatusLabel2.Text = text.ToString().Replace("&", "&&");
+        }
         #endregion
 
         #region FilterView utility methods
@@ -593,7 +598,7 @@ namespace Gageas.Lutea.DefaultUI
                     if (itemCount > 0)
                     {
                         textBox1.BackColor = statusColor[(int)QueryStatus.Normal];
-                        toolStripStatusLabel2.Text = "Found " + itemCount + " Tracks.";
+                        setStatusText("Found " + itemCount + " Tracks.");
                     }
                     else
                     {
@@ -1503,7 +1508,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 dummyFilterTab.Enabled = false;
                 list.Items.Clear();
-                toolStripStatusLabel2.Text = "読み仮名を取得しています";
+                setStatusText("読み仮名を取得しています");
                 list.BeginUpdate();
             }));
 
@@ -1565,7 +1570,7 @@ namespace Gageas.Lutea.DefaultUI
                 grpList.Sort((x, y) => x.Header.CompareTo(y.Header));
                 this.Invoke((MethodInvoker)(() =>
                 {
-                    toolStripStatusLabel2.Text = "　 ";
+                    setStatusText("　 ");
                     list.Groups.AddRange(grpList.ToArray());
                     list.Items.AddRange(items.ToArray());
                     createFilterIndex(list, grpList);
