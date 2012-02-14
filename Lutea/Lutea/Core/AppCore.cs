@@ -969,16 +969,15 @@ namespace Gageas.Lutea.Core
                         preparedStream = null;
                         return false;
                     }
-                    if (nextStream.cueOffset < 10000)
+                    if (nextStream.cueOffset < 30000)
                     {
                         ulong left = nextStream.cueOffset;
+                        var mem = Marshal.AllocHGlobal(1000);
                         while (left > 0)
                         {
                             int toread = (int)Math.Min(1000, left);
-                            var mem = Marshal.AllocHGlobal(toread);
                             nextStream.stream.GetData(mem, (uint)toread);
-                            Marshal.FreeHGlobal(mem);
-                            Thread.Sleep(5);
+                            Thread.Sleep(0);
                             left -= (uint)toread;
                         }
                     }
@@ -1069,7 +1068,16 @@ namespace Gageas.Lutea.Core
             Logger.Log("preSync");
             BASS.SetPriority(System.Diagnostics.ThreadPriorityLevel.Highest);
             BASSWASAPIOutput.SetPriority(System.Diagnostics.ThreadPriorityLevel.Highest);
-            CoreEnqueue(() => prepareNextStream(getSuccTrackIndex()));
+            System.Threading.ThreadPool.QueueUserWorkItem((WaitCallback)(_ =>
+            {
+                var row = Controller.GetPlaylistRow(getSuccTrackIndex());
+                string filename = (string)row[(int)DBCol.file_name];
+                using (var f = File.OpenRead(filename))
+                {
+                    // open for test.
+                }
+                CoreEnqueue(() => prepareNextStream(getSuccTrackIndex()));
+            }));
         }
 
         internal static int getSuccTrackIndex() // ストリーム終端に達した場合の次のトラックを取得
