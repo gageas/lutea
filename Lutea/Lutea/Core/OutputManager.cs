@@ -104,6 +104,7 @@ namespace Gageas.Lutea.Core
 
         internal void Start()
         {
+            _pause = false;
             if (Available) outputChannel.Start();
         }
 
