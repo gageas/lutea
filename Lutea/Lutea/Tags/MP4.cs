@@ -36,7 +36,7 @@ namespace Gageas.Lutea.Tags
 
             try
             {
-                ReadRecurse(strm, 0, strm.Length, tag, createImageObject);
+                ReadRecurse(strm, strm.Length, tag, createImageObject);
             }
             catch (Exception) { }
 
@@ -50,10 +50,10 @@ namespace Gageas.Lutea.Tags
         /// <param name="offset"></param>
         /// <param name="length"></param>
         /// <returns></returns>
-        private static string ReadName(Stream strm, int offset, int length)
+        private static string ReadName(Stream strm, int length)
         {
             var buf = new byte[length];
-            strm.Read(buf, offset, length);
+            strm.Read(buf, 0, length);
             return Encoding.ASCII.GetString(buf, 4, (int)length - 4);
         }
 
@@ -65,23 +65,40 @@ namespace Gageas.Lutea.Tags
         /// <param name="length"></param>
         /// <param name="createImageObject">Read embedded Cover Art(=true) or not(=false)</param>
         /// <returns></returns>
-        private static object ReadData(Stream strm, int offset, int length, bool createImageObject)
+        private static object ReadData(Stream strm, int length, bool createImageObject)
         {
-            var buf = new byte[length];
-            strm.Read(buf, (int)offset, (int)length);
-            switch (BitConverter.ToUInt64(buf, 0))
+            if(length <= 8){
+                return null;
+            }
+            byte[] buf;
+            var buf_type = new byte[8];
+            strm.Read(buf_type, 0, (int)8);
+            switch (BitConverter.ToUInt64(buf_type, 0))
             {
                 case 0: // trkn or disk. "nn/mm" style.
-                    return ((buf[10] << 8) + buf[11]) + "/" + ((buf[12] << 8) + buf[13]);
+                    buf = new byte[length - 8];
+                    strm.Read(buf,0,buf.Length);
+                    return ((buf[2] << 8) + buf[3]) + "/" + ((buf[4] << 8) + buf[5]);
                     break;
                 case 0x000000000D000000: // Image
                     if (createImageObject)
                     {
-                        return System.Drawing.Image.FromStream(new MemoryStream(buf, NODE_LIST_HEADER_SIZE, buf.Length - NODE_LIST_HEADER_SIZE));
+                        buf = new byte[length - 8];
+                        strm.Read(buf, 0, buf.Length);
+                        return System.Drawing.Image.FromStream(new MemoryStream(buf, 0, buf.Length));
+                    }
+                    else
+                    {
+                        strm.Seek(length - 8, SeekOrigin.Current);
                     }
                     break;
                 case 0x0000000001000000: // Text
-                    return Encoding.UTF8.GetString(buf, NODE_LIST_HEADER_SIZE, buf.Length - NODE_LIST_HEADER_SIZE);
+                    buf = new byte[length - 8];
+                    strm.Read(buf, 0, buf.Length);
+                    return Encoding.UTF8.GetString(buf, 0, buf.Length);
+                    break;
+                default:
+                    strm.Seek(length - 8, SeekOrigin.Current);
                     break;
             }
             return null;
@@ -96,10 +113,9 @@ namespace Gageas.Lutea.Tags
         /// <param name="strm"></param>
         /// <param name="createImageObject"></param>
         /// <param name="tagKey">Use this string as tag-key (and "data" node's value as tag-value). This string will provided from "data" node's parent or previous node.</param>
-        private static void ReadRecurse(Stream strm, long offset, long length, List<KeyValuePair<string, object>> tags, bool createImageObject = true, string tagKey = null)
+        private static void ReadRecurse(Stream strm, long length, List<KeyValuePair<string, object>> tags, bool createImageObject = true, string tagKey = null)
         {
             long p = 0;
-            strm.Seek(offset, SeekOrigin.Current);
             string lastTagKeyName = null;
             byte[] header = new byte[NODE_LIST_HEADER_SIZE];
 
@@ -118,31 +134,32 @@ namespace Gageas.Lutea.Tags
                     case "ilst":
                     case "disk":
                     case "----":
-                        ReadRecurse(strm, 0, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject);
+                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject);
                         break;
 
                     case "meta":
-                        ReadRecurse(strm, 4, atom_size - NODE_LIST_HEADER_SIZE - 4, tags, createImageObject);
+                        strm.Seek(4, SeekOrigin.Current);
+                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE - 4, tags, createImageObject);
                         break;
 
                     case "data":
                         if (lastTagKeyName == null) lastTagKeyName = tagKey;
                         if (lastTagKeyName == null) break;
-                        object data = ReadData(strm, (int)offset, (int)atom_size, createImageObject);
+                        object data = ReadData(strm, (int)atom_size, createImageObject);
                         if (data != null) { tags.Add(new KeyValuePair<string, object>(lastTagKeyName, data)); }
                         lastTagKeyName = null;
                         break;
 
                     case "trkn":
-                        ReadRecurse(strm, 0, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "TRACK");
+                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "TRACK");
                         break;
 
                     case "covr":
-                        ReadRecurse(strm, 0, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "COVER ART");
+                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "COVER ART");
                         break;
 
                     case "name":
-                        string name = ReadName(strm, (int)offset, (int)atom_size);
+                        string name = ReadName(strm, (int)atom_size);
                         if (name == "iTunSMPB")
                         {
                             lastTagKeyName = "ITUNSMPB";
@@ -154,19 +171,19 @@ namespace Gageas.Lutea.Tags
                         switch (BitConverter.ToUInt32(header, NODE_NAME_FIELD_SIZE)) // NOTICE: for Little Endian
                         {
                             case 0x545241A9: // .ART Artist
-                                ReadRecurse(strm, 0, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "ARTIST");
+                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "ARTIST");
                                 break;
                             case 0x6D616EA9: // .nam Track
-                                ReadRecurse(strm, 0, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "TITLE");
+                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "TITLE");
                                 break;
                             case 0x626C61A9: // .alb Album
-                                ReadRecurse(strm, 0, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "ALBUM");
+                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "ALBUM");
                                 break;
                             case 0x6E6567A9: // .gen Genre
-                                ReadRecurse(strm, 0, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "GENRE");
+                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "GENRE");
                                 break;
                             case 0x796164A9: // .dat Date
-                                ReadRecurse(strm, 0, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "DATE");
+                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "DATE");
                                 break;
                             default:
                                 break;
