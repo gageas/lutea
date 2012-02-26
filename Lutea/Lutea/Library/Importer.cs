@@ -41,7 +41,8 @@ namespace Gageas.Lutea.Library
         private void BindTrackInfo(SQLite3DB.STMT stmt, H2k6LibraryTrack track)
         {
             stmt.Reset();
-            string[] basicColumnValue = { track.file_name, track.file_title, track.file_ext, track.file_size.ToString() };
+            string extension = (((track.file_ext == "CUE") && (track is CD.Track)) ? ((CD.Track)track).file_ext_CUESheet : track.file_ext).ToUpper();
+            string[] basicColumnValue = { track.file_name, track.file_title, extension, track.file_size.ToString() };
             for (int i = 0; i < H2k6Library.basicColumn.Length; i++)
             {
                 stmt.Bind(i + 1, basicColumnValue[i]);
@@ -60,7 +61,7 @@ namespace Gageas.Lutea.Library
                     stmt.Bind(i + 1, "");
                 }
             }
-            string[] stats = { track.duration.ToString(), track.channels.ToString(), track.freq.ToString(), track.bitrate.ToString(), ((int)track.codec).ToString(), track.file_ext.ToUpper(), H2k6Library.currentTimestamp.ToString() };
+            string[] stats = { track.duration.ToString(), track.channels.ToString(), track.freq.ToString(), track.bitrate.ToString(), ((int)track.codec).ToString(), extension, H2k6Library.currentTimestamp.ToString() };
             for (int i = AppCore.Library.Columns.Length; i < AppCore.Library.Columns.Length + stats.Length; i++)
             {
                 string stat = stats[i - AppCore.Library.Columns.Length];
@@ -128,6 +129,14 @@ namespace Gageas.Lutea.Library
                     {
                         currentCD = SQLQue.Dequeue();
                         Step_import();
+
+                        // CUEで実体ファイルが存在しない場合、インポートしない
+                        if (currentCD is CD.Track) {
+                            if (!System.IO.File.Exists(((CD.Track)currentCD).file_name_CUESheet))
+                            {
+                                continue;
+                            }
+                        }
 
                         if (currentCD.duration == 0) continue;
                         // Titleが無かったらfile_titleを付与
