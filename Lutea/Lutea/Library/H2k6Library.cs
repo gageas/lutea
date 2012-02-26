@@ -38,7 +38,7 @@ namespace Gageas.Lutea
             {
 //                return (new Regex(@"\.(?<1>[^\.]+)$")).Match(this._file_name).Groups[1].Value.Trim();
                 if (file_name == "") return "";
-                return System.IO.Path.GetExtension(file_name).Trim().Substring(1);
+                return System.IO.Path.GetExtension(file_name).Trim().Substring(1).ToUpper();
             }
         }
         private string _file_name = "";

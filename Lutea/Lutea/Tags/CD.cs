@@ -56,6 +56,17 @@ namespace Gageas.Lutea.Tags
                     _file_name_CUESheet = value;
                 }
             }
+
+            /// <summary>
+            /// 実体streamのextension
+            /// </summary>
+            public string file_ext_CUESheet
+            {
+                get
+                {
+                    return System.IO.Path.GetExtension(_file_name_CUESheet).Trim().Substring(1).ToUpper();
+                }
+            }
         }
 
         // <summary>
