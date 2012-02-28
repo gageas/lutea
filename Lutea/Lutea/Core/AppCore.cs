@@ -882,7 +882,7 @@ namespace Gageas.Lutea.Core
             }
             return nextStream;
         }
-        private static StreamObject getStreamObject(string filename, int tagTracknumber, BASS.Stream.StreamFlag flag)
+        private static StreamObject getStreamObject(string filename, int tagTracknumber, BASS.Stream.StreamFlag flag, List<KeyValuePair<string,object>> tag = null)
         {
             StreamObject nextStream;
             Logger.Log(String.Format("Trying to play file {0}", filename));
@@ -900,7 +900,10 @@ namespace Gageas.Lutea.Core
                 {
                     return null;
                 }
-                var tag = Tags.MetaTag.readTagByFilename(filename.Trim(), false);
+                if (tag == null)
+                {
+                    tag = Tags.MetaTag.readTagByFilename(filename.Trim(), false);
+                }
                 KeyValuePair<string, object> cue = tag.Find((match) => match.Key == "CUESHEET");
 
                 // case for Internal CUESheet
@@ -943,7 +946,7 @@ namespace Gageas.Lutea.Core
             return nextStream;
         }
         internal static int lastPreparedIndex;
-        private static Boolean prepareNextStream(int index)
+        private static Boolean prepareNextStream(int index, List<KeyValuePair<string,object>> tags = null)
         {
             lock (prepareMutex)
             {
@@ -963,7 +966,7 @@ namespace Gageas.Lutea.Core
                 {
                     int tr = 1;
                     Util.Util.tryParseInt(row[(int)DBCol.tagTracknumber].ToString(), ref tr);
-                    nextStream = getStreamObject(filename, tr, flag);
+                    nextStream = getStreamObject(filename, tr, flag, tags);
                     if (nextStream == null)
                     {
                         preparedStream = null;
@@ -1066,18 +1069,23 @@ namespace Gageas.Lutea.Core
         private static void onPreFinish(BASS.SYNC_TYPE type, object cookie)
         {
             Logger.Log("preSync");
-            BASS.SetPriority(System.Diagnostics.ThreadPriorityLevel.Highest);
-            BASSWASAPIOutput.SetPriority(System.Diagnostics.ThreadPriorityLevel.Highest);
-            System.Threading.ThreadPool.QueueUserWorkItem((WaitCallback)(_ =>
-            {
+            var th = new Thread(() => {
                 var row = Controller.GetPlaylistRow(getSuccTrackIndex());
                 string filename = (string)row[(int)DBCol.file_name];
+                byte[] buf = new byte[10 * 1000];
                 using (var f = File.OpenRead(filename))
                 {
-                    // open for test.
+                    for (int i = 0; i < 10; i++)
+                    {
+                        f.Read(buf, 0, buf.Count());
+                        Thread.Sleep(0);
+                    }
                 }
+                var tag = MetaTag.readTagByFilename(filename, false);
                 CoreEnqueue(() => prepareNextStream(getSuccTrackIndex()));
-            }));
+            });
+            th.Priority = ThreadPriority.Lowest;
+            th.Start();
         }
 
         internal static int getSuccTrackIndex() // ストリーム終端に達した場合の次のトラックを取得
