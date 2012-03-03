@@ -1131,6 +1131,73 @@ namespace Gageas.Lutea.DefaultUI
         {
             reloadDynamicPlaylist();
         }
+
+        private void editToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeView1.SelectedNode != null)
+            {
+                if (treeView1.SelectedNode.Tag is PlaylistEntryFile)
+                {
+                    new QueryEditor((PlaylistEntryFile)treeView1.SelectedNode.Tag, this).ShowDialog();
+                }
+            }
+        }
+
+        private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                previouslyClicked = e.Node;
+            };
+            treeView1.SelectedNode = e.Node;
+        }
+
+        private void newDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeView1.SelectedNode == null || treeView1.SelectedNode.Tag == null) return;
+            PlaylistEntryDirectory parent = null;
+            if (treeView1.SelectedNode.Tag is PlaylistEntryFile)
+            {
+                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Parent.Tag;
+            }
+            else if (treeView1.SelectedNode.Tag is PlaylistEntryDirectory)
+            {
+                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Tag;
+            }
+            (new QueryDirectoryNew(parent, this)).Show();
+        }
+
+        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeView1.SelectedNode == null) return;
+            if (MessageBox.Show("以下の項目を削除します\n " + treeView1.SelectedNode.Text, "クエリ項目の削除", MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
+            {
+                ((PlaylistEntry)treeView1.SelectedNode.Tag).Delete();
+            }
+            reloadDynamicPlaylist();
+        }
+
+        private void RenameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeView1.SelectedNode == null) return;
+            new QueryRenameForm((PlaylistEntry)treeView1.SelectedNode.Tag, this).ShowDialog();
+            reloadDynamicPlaylist();
+        }
+
+        private void CreateQueryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeView1.SelectedNode == null || treeView1.SelectedNode.Tag == null) return;
+            PlaylistEntryDirectory parent = null;
+            if (treeView1.SelectedNode.Tag is PlaylistEntryFile)
+            {
+                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Parent.Tag;
+            }
+            else if (treeView1.SelectedNode.Tag is PlaylistEntryDirectory)
+            {
+                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Tag;
+            }
+            new QueryEditor(parent.path, this).ShowDialog();
+        }
         #endregion
 
         #region queryTextBox event
@@ -2403,68 +2470,5 @@ namespace Gageas.Lutea.DefaultUI
             listView1.Cursor = Cursors.Arrow;
         }
 
-        private void editToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (treeView1.SelectedNode != null)
-            {
-                if (treeView1.SelectedNode.Tag is PlaylistEntryFile)
-                {
-                    new QueryEditor((PlaylistEntryFile)treeView1.SelectedNode.Tag, this).ShowDialog();
-                }
-            }
-//            Logger.Log(treeView1.SelectedNode.ToString());
-        }
-
-        private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            treeView1.SelectedNode = e.Node;
-        }
-
-        private void newDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (treeView1.SelectedNode == null || treeView1.SelectedNode.Tag == null) return;
-            PlaylistEntryDirectory parent = null;
-            if (treeView1.SelectedNode.Tag is PlaylistEntryFile)
-            {
-                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Parent.Tag;
-            }
-            else if (treeView1.SelectedNode.Tag is PlaylistEntryDirectory)
-            {
-                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Tag;
-            }
-            (new QueryDirectoryNew(parent, this)).Show();
-        }
-
-        private void DeleteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (treeView1.SelectedNode == null) return;
-            if (MessageBox.Show("以下の項目を削除します\n " + treeView1.SelectedNode.Text, "クエリ項目の削除", MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
-            {
-                ((PlaylistEntry)treeView1.SelectedNode.Tag).Delete();
-            }
-            reloadDynamicPlaylist();
-        }
-
-        private void RenameToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (treeView1.SelectedNode == null) return;
-            new QueryRenameForm((PlaylistEntry)treeView1.SelectedNode.Tag, this).ShowDialog();
-            reloadDynamicPlaylist();
-        }
-
-        private void CreateQueryToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (treeView1.SelectedNode == null || treeView1.SelectedNode.Tag == null) return;
-            PlaylistEntryDirectory parent = null;
-            if (treeView1.SelectedNode.Tag is PlaylistEntryFile)
-            {
-                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Parent.Tag;
-            }
-            else if (treeView1.SelectedNode.Tag is PlaylistEntryDirectory)
-            {
-                parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Tag;
-            }
-            new QueryEditor(parent.path, this).ShowDialog();
-        }
     }
 }
