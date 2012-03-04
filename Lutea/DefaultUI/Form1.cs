@@ -415,7 +415,7 @@ namespace Gageas.Lutea.DefaultUI
             //            treeView1.ImageList.ImageSize = new System.Drawing.Size(12, 12);
             treeView1.ImageList.ColorDepth = ColorDepth.Depth32Bit;
             treeView1.ImageList.Images.Add(Shell32.GetShellIcon(3, false));
-            treeView1.ImageList.Images.Add(Shell32.GetShellIcon(70, false));
+            treeView1.ImageList.Images.Add(Shell32.GetShellIcon(116, false)); //70
             reloadDynamicPlaylist();
             //            queryTextBox_TextChanged(sender, e);
             toolStripComboBox2.GetControl.Items.AddRange(Enum.GetNames(typeof(Controller.PlaybackOrder)));
@@ -1143,12 +1143,52 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        /// <summary>
+        /// QueryView上でクリックされたとき
+        /// 右クリックメニューの準備等を行う
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
+            //　右クリックの場合
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
+                var node = e.Node;
+                if (node != null && node.Tag != null)
+                {
+                    for (int i = 0; i < queryTreeViewContextMenuStrip1.Items.Count; i++)
+                    {
+                        // 全てのメニューアイテムを一旦enableに
+                        var item = queryTreeViewContextMenuStrip1.Items[i];
+                        item.Enabled = true;
+                        if (item.Tag != null)
+                        {
+                            // ディレクトリノードの場合
+                            if (node.Tag is PlaylistEntryDirectory)
+                            {
+                                if (item.Tag.ToString().Contains("-dir"))
+                                {
+                                    item.Enabled = false;
+                                }
+                            }
+ 
+                            // ルートノード("クエリ"フォルダ)の場合
+                            if (node.Level == 0)
+                            {
+                                if (item.Tag.ToString().Contains("-root"))
+                                {
+                                    item.Enabled = false;
+                                }
+                            }
+                        }
+                    }
+                }
+                // クエリの実行を抑制する
                 previouslyClicked = e.Node;
             };
+
+            // クリックされたノードをSelectedNodeに設定。
             treeView1.SelectedNode = e.Node;
         }
 

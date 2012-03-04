@@ -454,6 +454,7 @@
             // 
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.editToolStripMenuItem.Tag = "-dir";
             this.editToolStripMenuItem.Text = "クエリ編集...";
             this.editToolStripMenuItem.Click += new System.EventHandler(this.editToolStripMenuItem_Click);
             // 
@@ -485,6 +486,7 @@
             // 
             this.削除ToolStripMenuItem.Name = "削除ToolStripMenuItem";
             this.削除ToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.削除ToolStripMenuItem.Tag = "-root";
             this.削除ToolStripMenuItem.Text = "削除...";
             this.削除ToolStripMenuItem.Click += new System.EventHandler(this.DeleteToolStripMenuItem_Click);
             // 
@@ -492,6 +494,7 @@
             // 
             this.名前の変更ToolStripMenuItem.Name = "名前の変更ToolStripMenuItem";
             this.名前の変更ToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.名前の変更ToolStripMenuItem.Tag = "-root";
             this.名前の変更ToolStripMenuItem.Text = "名前の変更...";
             this.名前の変更ToolStripMenuItem.Click += new System.EventHandler(this.RenameToolStripMenuItem_Click);
             // 
