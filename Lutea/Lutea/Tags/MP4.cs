@@ -78,7 +78,16 @@ namespace Gageas.Lutea.Tags
                 case 0: // trkn or disk. "nn/mm" style.
                     buf = new byte[length - 8];
                     strm.Read(buf,0,buf.Length);
-                    return ((buf[2] << 8) + buf[3]) + "/" + ((buf[4] << 8) + buf[5]);
+                    var tr = ((buf[2] << 8) + buf[3]);
+                    var tr_total = ((buf[4] << 8) + buf[5]);
+                    if (tr_total == 0)
+                    {
+                        return tr.ToString();
+                    }
+                    else
+                    {
+                        return tr + "/" + tr_total;
+                    }
                     break;
                 case 0x000000000D000000: // Image
                     if (createImageObject)
