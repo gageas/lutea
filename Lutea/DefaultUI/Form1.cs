@@ -1369,8 +1369,39 @@ namespace Gageas.Lutea.DefaultUI
                             Controller.PlayPlaylistItem(listView1.SelectedIndices[0]);
                         }
                     }
+                    else if (e.Modifiers == Keys.Shift) // Shift + J
+                    {
+                        // 次のアルバムの先頭トラックを選択
+                        string prev_album = null;
+                        string album = null;
+                        int idx = -1;
+                        if (listView1.SelectedIndices.Count > 0)
+                        {
+                            idx = listView1.SelectedIndices[0];
+                        }
+                        else if (Controller.Current.IndexInPlaylist > 0)
+                        {
+                            idx = Controller.Current.IndexInPlaylist;
+                        }
+
+                        if (idx != -1)
+                        {
+                            prev_album = Controller.GetPlaylistRowColumn(idx, DBCol.tagAlbum);
+                            do
+                            {
+                                if((idx + 1 == listView1.Items.Count)){
+                                    break;
+                                }
+                                idx++;
+                                album = Controller.GetPlaylistRowColumn(idx, DBCol.tagAlbum);
+                            } while (album == prev_album);
+                            selectRow(idx);
+                            listView1.EnsureVisible(Math.Min(idx + 5, listView1.Items.Count - 1));
+                        }
+                    }
                     else // J
                     {
+                        // 次のトラックを選択
                         if (listView1.SelectedIndices.Count > 0)
                         {
                             selectRow(listView1.SelectedIndices[0] + 1);
@@ -1399,17 +1430,51 @@ namespace Gageas.Lutea.DefaultUI
                     e.SuppressKeyPress = true;
                     break;
                 case Keys.K:
-                    if (listView1.SelectedIndices.Count > 0)
+                    if (e.Modifiers == Keys.Shift) // Shift + K
                     {
-                        selectRow(listView1.SelectedIndices[0] - 1);
-                    }
-                    else if (Controller.Current.IndexInPlaylist > 0)
-                    {
-                        selectRow(Controller.Current.IndexInPlaylist - 1);
+                        // 前のアルバムの先頭トラックを選択
+                        string prev_album = null;
+                        string album = null;
+                        int idx = -1;
+                        if (listView1.SelectedIndices.Count > 0)
+                        {
+                            idx = listView1.SelectedIndices[0];
+                        }
+                        else if (Controller.Current.IndexInPlaylist > 0)
+                        {
+                            idx = Controller.Current.IndexInPlaylist;
+                        }
+
+                        if (idx > 0)
+                        {
+                            prev_album = Controller.GetPlaylistRowColumn(idx - 1, DBCol.tagAlbum);
+                            do
+                            {
+                                idx--;
+                                if (idx == 0)
+                                {
+                                    break;
+                                }
+                                album = Controller.GetPlaylistRowColumn(idx - 1, DBCol.tagAlbum);
+                            } while (album == prev_album);
+                            selectRow(idx);
+                        }
                     }
                     else
                     {
-                        goto case Keys.L;
+                        // 前のトラックを選択
+                        if (listView1.SelectedIndices.Count > 0)
+                        {
+                            selectRow(listView1.SelectedIndices[0] - 1);
+                        }
+                        else if (Controller.Current.IndexInPlaylist > 0)
+                        {
+                            selectRow(Controller.Current.IndexInPlaylist - 1);
+                        }
+                        else
+                        {
+                            goto case Keys.L;
+                        }
                     }
                     e.Handled = true;
                     e.SuppressKeyPress = true;
