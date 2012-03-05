@@ -80,15 +80,8 @@ namespace Gageas.Lutea.Tags
                     strm.Read(buf,0,buf.Length);
                     var tr = ((buf[2] << 8) + buf[3]);
                     var tr_total = ((buf[4] << 8) + buf[5]);
-                    if (tr_total == 0)
-                    {
-                        return tr.ToString();
-                    }
-                    else
-                    {
-                        return tr + "/" + tr_total;
-                    }
-                    break;
+                    return (tr_total == 0 ? tr.ToString() : (tr + "/" + tr_total));
+
                 case 0x000000000D000000: // Image
                     if (createImageObject)
                     {
@@ -101,11 +94,11 @@ namespace Gageas.Lutea.Tags
                         strm.Seek(length - 8, SeekOrigin.Current);
                     }
                     break;
+
                 case 0x0000000001000000: // Text
                     buf = new byte[length - 8];
                     strm.Read(buf, 0, buf.Length);
                     return Encoding.UTF8.GetString(buf, 0, buf.Length);
-                    break;
                 default:
                     strm.Seek(length - 8, SeekOrigin.Current);
                     break;
