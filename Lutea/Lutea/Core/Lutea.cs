@@ -378,7 +378,7 @@ namespace Gageas.Lutea.Core
                 {
                     if (coverArtImageIsInvalid)
                     {
-                        coverArtImage = _CoverArtImage();
+                        coverArtImage = CoverArtImageForFile(StreamFilename);
                         coverArtImageIsInvalid = false;
                     }
                     if (coverArtImage == null) return null;
@@ -388,25 +388,26 @@ namespace Gageas.Lutea.Core
                     }
                 }
             }
-
-            private static System.Drawing.Image _CoverArtImage()
-            {
-                System.Drawing.Image image = null;
-                if (StreamFilename != null)
-                {
-                    List<KeyValuePair<string, object>> tag = Tags.MetaTag.readTagByFilename(StreamFilename, true);
-                    if (tag != null)
-                    {
-                        image = (System.Drawing.Image)tag.Find((match) => match.Value is System.Drawing.Image).Value;
-                    }
-                    if (image == null)
-                    {
-                        image = GetExternalCoverArt(StreamFilename);
-                    }
-                }
-                return image;
-            }
         }
+
+        public static System.Drawing.Image CoverArtImageForFile(string filename)
+        {
+            System.Drawing.Image image = null;
+            if (filename != null)
+            {
+                List<KeyValuePair<string, object>> tag = Tags.MetaTag.readTagByFilename(filename, true);
+                if (tag != null)
+                {
+                    image = (System.Drawing.Image)tag.Find((match) => match.Value is System.Drawing.Image).Value;
+                }
+                if (image == null)
+                {
+                    image = GetExternalCoverArt(filename);
+                }
+            }
+            return image;
+        }
+
         private static System.Drawing.Image GetExternalCoverArt(string path)
         {
             System.Drawing.Image image = null;
