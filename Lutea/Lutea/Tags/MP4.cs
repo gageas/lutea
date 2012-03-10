@@ -83,6 +83,7 @@ namespace Gageas.Lutea.Tags
                     return (tr_total == 0 ? tr.ToString() : (tr + "/" + tr_total));
 
                 case 0x000000000D000000: // Image
+                case 0x000000000E000000: // Image
                     if (createImageObject)
                     {
                         buf = new byte[length - 8];
