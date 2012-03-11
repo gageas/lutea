@@ -15,11 +15,42 @@ namespace Gageas.Lutea.DefaultUI
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "LineTo")]
         public static extern bool LineTo(IntPtr hDC, int xEnd, int yEnd);
 
+        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "Rectangle")]
+        public static extern bool Rectangle(IntPtr hdc, int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
+
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetTextExtentPoint32")]
         public static extern bool GetTextExtentPoint32(IntPtr hDC, String str, int length, out Size sz);
 
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetStockObject")]
-        public static extern IntPtr GetStockObject(int id);
+        public static extern IntPtr GetStockObject(StockObjects id);
+
+        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "SetDCPenColor")]
+        public static extern UInt32 SetDCPenColor(IntPtr hdc, UInt32 crColor);
+
+        // 引数のrgb値のチェックしてない
+        public static UInt32 SetDCPenColor(IntPtr hdc, int r, int g, int b)
+        {
+            return SetDCPenColor(hdc, (UInt32)(r | g << 8 | b << 16));
+        }
+
+        public static UInt32 SetDCPenColor(IntPtr hdc, Color color)
+        {
+            return SetDCPenColor(hdc, (UInt32)(color.R | color.G << 8 | color.B << 16));
+        }
+
+        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "SetDCBrushColor")]
+        public static extern UInt32 SetDCBrushColor(IntPtr hdc, UInt32 crColor);
+
+        public static UInt32 SetDCBrushColor(IntPtr hdc, Color color)
+        {
+            return SetDCBrushColor(hdc, (UInt32)(color.R | color.G << 8 | color.B << 16));
+        }
+
+        // 引数のrgb値のチェックしてない
+        public static UInt32 SetDCBrushColor(IntPtr hdc, int r, int g, int b)
+        {
+            return SetDCBrushColor(hdc, (UInt32)(r | g << 8 | b << 16));
+        }
 
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "SelectObject")]
         public static extern IntPtr SelectObject(IntPtr hDC, IntPtr hGDIOBJ);
@@ -28,7 +59,7 @@ namespace Gageas.Lutea.DefaultUI
         public static extern bool DeleteObject(IntPtr hGDIOBJ);
 
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "SetTextColor")]
-        public static extern uint SetTextColor(IntPtr hDC, uint COLORREF);
+        public static extern uint SetTextColor(IntPtr hDC, UInt32 COLORREF);
 
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "TextOutW")]
         public static extern bool TextOut(IntPtr hDC, int nXStart, int nYStart, string str, int length);
@@ -46,13 +77,37 @@ namespace Gageas.Lutea.DefaultUI
             uint dwRaster    // ラスタオペレーションコード
         );
 
-        public const int WHITE_PEN = 6;
+        public enum StockObjects
+        {
+            WHITE_BRUSH = 0,
+            LTGRAY_BRUSH = 1,
+            GRAY_BRUSH = 2,
+            DKGRAY_BRUSH = 3,
+            BLACK_BRUSH = 4,
+            NULL_BRUSH = 5,
+            HOLLOW_BRUSH = NULL_BRUSH,
+            WHITE_PEN = 6,
+            BLACK_PEN = 7,
+            NULL_PEN = 8,
+            OEM_FIXED_FONT = 10,
+            ANSI_FIXED_FONT = 11,
+            ANSI_VAR_FONT = 12,
+            SYSTEM_FONT = 13,
+            DEVICE_DEFAULT_FONT = 14,
+            DEFAULT_PALETTE = 15,
+            SYSTEM_FIXED_FONT = 16,
+            DEFAULT_GUI_FONT = 17,
+            DC_BRUSH = 18,
+            DC_PEN = 19,
+        }
+
         public class GDIBitmap : IDisposable
         {
-            public Image orig;
             private Bitmap bitmap;
             private Graphics g;
             private IntPtr hDC;
+            public readonly int Width;
+            public readonly int Height;
             public IntPtr HDC
             {
                 get
@@ -62,14 +117,10 @@ namespace Gageas.Lutea.DefaultUI
             }
             private IntPtr hBMP;
             public GDIBitmap(Bitmap bitmap)
-            {
-                this.orig = bitmap;
-                this.bitmap = new Bitmap(bitmap);
-                using (var g = Graphics.FromImage(this.bitmap))
-                {
-                    g.DrawImage(bitmap, 0, 0);
-                }
-                //                this.bitmap = bitmap;
+           {
+                this.bitmap = bitmap;
+                this.Width = bitmap.Width;
+                this.Height = bitmap.Height;
                 this.g = Graphics.FromImage(this.bitmap);
                 this.hDC = this.g.GetHdc();
                 this.hBMP = this.bitmap.GetHbitmap();
@@ -77,10 +128,30 @@ namespace Gageas.Lutea.DefaultUI
             }
             public void Dispose()
             {
-                DeleteObject(this.hBMP);
-                g.ReleaseHdc();
-                g.Dispose();
-                bitmap.Dispose();
+                if (this.hBMP != IntPtr.Zero)
+                {
+                    try
+                    {
+                        DeleteObject(this.hBMP);
+                    }
+                    catch { }
+                }
+                if (g != null)
+                {
+                    try
+                    {
+                        g.Dispose();
+                    }
+                    catch { }
+                }
+                if (bitmap != null)
+                {
+                    try
+                    {
+                        bitmap.Dispose();
+                    }
+                    catch { }
+                }
                 GC.SuppressFinalize(this);
             }
             ~GDIBitmap(){
