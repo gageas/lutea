@@ -111,6 +111,8 @@ namespace Gageas.Lutea.DefaultUI
         private Color SpectrumColor1 = SystemColors.Control;
         private Color SpectrumColor2 = Color.Orange;
         private bool ColoredAlbum = true;
+        private Boolean ShowCoverArtInPlaylistView = true;
+        private int CoverArtSizeInPlaylistView = 80;
 
         private bool UseMediaKey = false;
         private Keys hotkey_PlayPause = Keys.None;
@@ -1033,6 +1035,35 @@ namespace Gageas.Lutea.DefaultUI
             return;
         }
 
+        private Image GetResizedImageWithoutPadding(Image image, int width, int height)
+        {
+            double xZoomMax = (double)width / image.Width;
+            double yZoomMax = (double)height / image.Height;
+
+            double zoom = Math.Min(xZoomMax, yZoomMax);
+
+            int resizedWidth = 0;
+            int resizedHeight = 0;
+
+            if (xZoomMax > yZoomMax)
+            {
+                resizedWidth = (int)(yZoomMax * image.Width);
+                resizedHeight = height;
+            }
+            else
+            {
+                resizedWidth = width;
+                resizedHeight = (int)(xZoomMax * image.Height);
+            }
+
+            Image dest = new Bitmap(resizedWidth, resizedHeight);
+            using (var g = Graphics.FromImage(dest))
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.DrawImage(image, 0, 0, resizedWidth, resizedHeight);
+            }
+            return dest;
+        }
         #endregion
 
         #region UI Component events
@@ -2012,6 +2043,40 @@ namespace Gageas.Lutea.DefaultUI
             }
 
 
+            private Boolean showCoverArtInPlaylistView;
+            [Description("プレイリストにカバーアートを表示する")]
+            [DefaultValue(true)]
+            [Category("Playlist View")]
+            public Boolean ShowCoverArtInPlaylistView
+            {
+                get
+                {
+                    return showCoverArtInPlaylistView;
+                }
+                set
+                {
+                    showCoverArtInPlaylistView = value;
+                }
+            }
+
+
+            private int coverArtSizeInPlaylistView;
+            [Description("プレイリストに表示するカバーアートのサイズ")]
+            [DefaultValue(80)]
+            [Category("Playlist View")]
+            public int CoverArtSizeInPlaylistView
+            {
+                get
+                {
+                    return coverArtSizeInPlaylistView;
+                }
+                set
+                {
+                    coverArtSizeInPlaylistView = value;
+                }
+            }
+
+            
             private bool coloredAlbum;
             [Description("アルバムごとに色分けする\n適当")]
             [DefaultValue(true)]
@@ -2118,6 +2183,8 @@ namespace Gageas.Lutea.DefaultUI
                 color2 = form.SpectrumColor2;
                 font_playlistView = new Font(form.listView1.Font, 0);
                 coloredAlbum = form.ColoredAlbum;
+                ShowCoverArtInPlaylistView = form.ShowCoverArtInPlaylistView;
+                CoverArtSizeInPlaylistView = form.CoverArtSizeInPlaylistView;
                 useMediaKey = form.UseMediaKey;
                 hotkey_PlayPause = form.hotkey_PlayPause;
                 hotkey_Stop = form.hotkey_Stop;
@@ -2151,6 +2218,8 @@ namespace Gageas.Lutea.DefaultUI
                 ()=>SpectrumColor2 = (Color)setting["SpectrumColor2"],
                 ()=>displayColumns = (DBCol[])setting["DisplayColumns"],
                 ()=>listView1.Font = (System.Drawing.Font)setting["Font_PlaylistView"],
+                ()=>ShowCoverArtInPlaylistView = (Boolean)setting["ShowCoverArtInPlaylistView"],
+                ()=>CoverArtSizeInPlaylistView = (int)setting["CoverArtSizeInPlaylistView"],
                 ()=>ColoredAlbum = (bool)setting["ColoredAlbum"],
                 ()=>UseMediaKey = (bool)setting["UseMediaKey"],
                 ()=>hotkey_PlayPause = (Keys)setting["Hotkey_PlayPause"],
@@ -2303,6 +2372,8 @@ namespace Gageas.Lutea.DefaultUI
             setting["SpectrumColor2"] = SpectrumColor2;
             setting["DisplayColumns"] = displayColumns;
             setting["Font_PlaylistView"] = listView1.Font;
+            setting["ShowCoverArtInPlaylistView"] = ShowCoverArtInPlaylistView;
+            setting["CoverArtSizeInPlaylistView"] = CoverArtSizeInPlaylistView;
             setting["ColoredAlbum"] = ColoredAlbum;
             setting["UseMediaKey"] = UseMediaKey;
             setting["Hotkey_PlayPause"] = hotkey_PlayPause;
@@ -2326,6 +2397,15 @@ namespace Gageas.Lutea.DefaultUI
             this.SpectrumColor2 = pref.SpectrumColor2;
             this.SpectrumMode = pref.SpectrumMode;
             this.listView1.Font = pref.Font_playlistView;
+            this.ShowCoverArtInPlaylistView = pref.ShowCoverArtInPlaylistView;
+            if (this.CoverArtSizeInPlaylistView != pref.CoverArtSizeInPlaylistView)
+            {
+                this.CoverArtSizeInPlaylistView = pref.CoverArtSizeInPlaylistView;
+                lock (coverArts)
+                {
+                    coverArts.Clear();
+                }
+            }
             this.ColoredAlbum = pref.ColoredAlbum;
             this.UseMediaKey = pref.UseMediaKey;
             this.hotkey_PlayPause = pref.Hotkey_PlayPause;
@@ -2390,36 +2470,203 @@ namespace Gageas.Lutea.DefaultUI
             e.DrawDefault = true;
         }
 
+        private Thread playlistViewImageLoader = null;
+        private bool playlistViewImageLoaderInSleep = false;
+        private void playlistViewImageLoadProc()
+        {
+            while (true)
+            {
+                try
+                {
+                    while (true)
+                    {
+                        // キューの先頭の要素を取得
+                        KeyValuePair<string, List<int>> task = new KeyValuePair<string, List<int>>();
+                        lock (playlistViewImageLoadQueue)
+                        {
+                            if (playlistViewImageLoadQueue.Count > 0)
+                            {
+                                task = playlistViewImageLoadQueue.Last();
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+
+                        if (task.Key != null)
+                        {
+                            var album = task.Key;
+                            if (coverArts.ContainsKey(album))
+                            {
+                                List<int> rowsToUpdate = null;
+                                lock (playlistViewImageLoadQueue)
+                                {
+                                    rowsToUpdate = task.Value;
+                                    playlistViewImageLoadQueue.Remove(task);
+                                }
+
+                                listView1.Invoke((MethodInvoker)(() =>
+                                {
+                                    foreach (var index in rowsToUpdate)
+                                    {
+                                        if (index < listView1.VirtualListSize)
+                                        {
+                                            listView1.RedrawItems(index, index, true);
+                                        }
+                                    }
+                                }));
+                                continue;
+                            }
+                            var file_name = Controller.GetPlaylistRowColumn(task.Value[0], DBCol.file_name).ToString().Trim();
+                            var orig = Controller.CoverArtImageForFile(file_name);
+                            if (orig != null)
+                            {
+                                var size = CoverArtSizeInPlaylistView;
+
+                                var resize = GetResizedImageWithoutPadding(orig, size, size);
+                                var bordered = new Bitmap(resize.Width + 3, resize.Height + 3);
+                                using (var gg = Graphics.FromImage(bordered))
+                                {
+                                    // ここでアルファ使うと描画が重くなる
+                                    gg.FillRectangle(Brushes.Silver, new Rectangle(3, 3, resize.Width, resize.Height));
+                                    gg.DrawImage(resize, 1,  1);
+                                    gg.DrawRectangle(Pens.Gray, new Rectangle(0, 0, resize.Width + 1, resize.Height + 1));
+                                }
+                                lock (coverArts)
+                                {
+                                    coverArts[album] = new GDI.GDIBitmap(bordered);
+                                }
+
+                                List<int> rowsToUpdate = null;
+                                lock (playlistViewImageLoadQueue)
+                                {
+                                    rowsToUpdate = task.Value;
+                                    playlistViewImageLoadQueue.Remove(task);
+                                }
+
+                                listView1.Invoke((MethodInvoker)(() =>
+                                {
+                                    foreach (var index in rowsToUpdate)
+                                    {
+                                        if (index < listView1.VirtualListSize)
+                                        {
+                                            listView1.RedrawItems(index, index, true);
+                                        }
+                                    }
+                                }));
+                            }
+                            else
+                            {
+                                coverArts[album] = new GDI.GDIBitmap(dummyEmptyBitmap);
+                            }
+                        }
+                        Thread.Sleep(50);
+                    }
+                    playlistViewImageLoaderInSleep = true;
+                    Thread.Sleep(Timeout.Infinite);
+                }
+                catch (ThreadInterruptedException)
+                {
+                    playlistViewImageLoaderInSleep = false;
+                }
+                catch { }
+            }
+        }
+        private List<KeyValuePair<string, List<int>>> playlistViewImageLoadQueue = new List<KeyValuePair<string, List<int>>>();
+        private Dictionary<string, GDI.GDIBitmap> coverArts = new Dictionary<string, GDI.GDIBitmap>();
+        WorkerThread worker = new WorkerThread(true);
+//        private int playlistViewImageView_ImageSize = 80;
+        private readonly Bitmap dummyEmptyBitmap = new Bitmap(1, 1);
         private void listView1_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
             var row = Controller.GetPlaylistRow(e.ItemIndex);
             if (row == null) return;
-
+            var index = e.ItemIndex;
             var bounds = e.Bounds;
             var isSelected = (e.State & ListViewItemStates.Selected) != 0;
 
-            var row_above = Controller.GetPlaylistRow(e.ItemIndex - 1);
-            var isFirstTrack = row_above == null || row[(int)DBCol.tagAlbum].ToString() != row_above[(int)DBCol.tagAlbum].ToString();
+            int indexInGroup = 0;
+            while (row[(int)DBCol.tagAlbum].ToString() == Controller.GetPlaylistRowColumn(e.ItemIndex - indexInGroup, DBCol.tagAlbum)) indexInGroup++;
+            var isFirstTrack = indexInGroup == 1;
+
+            var album = row[(int)DBCol.tagAlbum].ToString();
+
             using (var g = e.Graphics)
             {
+                IntPtr hDC = g.GetHdc();
+
                 // 背景色描画
                 // SystemBrushはsolidBrushのはずだけど
-                SolidBrush brush = (SolidBrush)(isSelected ? SystemBrushes.Highlight : e.ItemIndex % 2 == 0 ? SystemBrushes.Window : SystemBrushes.ControlLight);
+                GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.DC_BRUSH));
+                GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.DC_PEN));
                 if (ColoredAlbum & !isSelected)
                 {
-                    int c = (row[(int)DBCol.tagAlbum].GetHashCode() % 0x1000000) | 0x00c0c0c0;
-                    int red = (c & 0xff0000) >> 16;
-                    int green = (c & 0x00ff00) >> 8;
+                    int c = (album.GetHashCode() & 0xFFFFFF) | 0x00c0c0c0;
+                    int red = c >> 16;
+                    int green = (c >> 8) & 0xff;
                     int blue = c & 0xff;
-                    if (e.ItemIndex % 2 == 0)
+                    if (index % 2 == 0)
                     {
                         red = 255 - (int)((255 - red) * 0.7);
                         green = 255 - (int)((255 - green) * 0.7);
                         blue = 255 - (int)((255 - blue) * 0.7);
                     }
-                    brush = new SolidBrush(Color.FromArgb(red, green, blue));
+                    GDI.SetDCBrushColor(hDC, red, green, blue);
+                    GDI.SetDCPenColor(hDC, red, green, blue);
                 }
-                g.FillRectangle(brush, bounds);
+                else
+                {
+                    var fillcolor = ((SolidBrush)(isSelected 
+                            ? SystemBrushes.Highlight
+                            : index % 2 == 0 
+                                ? SystemBrushes.Window
+                                : SystemBrushes.ControlLight)).Color;
+                    GDI.SetDCBrushColor(hDC, fillcolor);
+                    GDI.SetDCPenColor(hDC, fillcolor);
+                }
+                GDI.Rectangle(hDC, bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height);
+
+                // カバアート読み込みをキューイング
+                if (ShowCoverArtInPlaylistView)
+                {
+                    if (!string.IsNullOrEmpty(album))
+                    {
+                        if (((indexInGroup - 2) * bounds.Height) < CoverArtSizeInPlaylistView && !coverArts.ContainsKey(album))
+                        {
+                            lock (playlistViewImageLoadQueue)
+                            {
+                                if (playlistViewImageLoadQueue.Exists((_) => _.Key == album))
+                                {
+                                    playlistViewImageLoadQueue.First((_) => _.Key == album).Value.Add(index);
+                                }
+                                else
+                                {
+                                    playlistViewImageLoadQueue.Add(new KeyValuePair<string, List<int>>(album, new List<int>(new int[] { index })));
+                                }
+                            }
+                            if (playlistViewImageLoader == null)
+                            {
+                                playlistViewImageLoader = new Thread(playlistViewImageLoadProc);
+                                playlistViewImageLoader.Priority = ThreadPriority.Lowest;
+                                playlistViewImageLoader.Start();
+                            }
+                            if (playlistViewImageLoaderInSleep)
+                            {
+                                playlistViewImageLoader.Interrupt();
+                            }
+                        }
+                    }
+                }
+
+                // アルバム先頭マーク描画
+                if (isFirstTrack)
+                {
+                    GDI.SetDCPenColor(hDC, SystemPens.ControlDark.Color);
+                    GDI.MoveToEx(hDC, bounds.X, bounds.Y, IntPtr.Zero);
+                    GDI.LineTo(hDC, bounds.X + bounds.Width, bounds.Y);
+                }
 
                 // columnを表示順にソート
                 var cols = new ColumnHeader[listView1.Columns.Count];
@@ -2430,16 +2677,24 @@ namespace Gageas.Lutea.DefaultUI
 
                 // 各column描画準備
                 int pc = 0;
-                IntPtr hDC = g.GetHdc();
                 IntPtr hFont = (emphasizedRowId == e.ItemIndex ? new Font(listView1.Font, FontStyle.Bold) : listView1.Font).ToHfont();
                 IntPtr hOldFont = GDI.SelectObject(hDC, hFont);
+
+                // 強調枠描画
+                if (emphasizedRowId == e.ItemIndex)
+                {
+                    GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.NULL_BRUSH));
+                    GDI.SetDCPenColor(hDC, Color.Navy);
+                    GDI.Rectangle(hDC, bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height);
+                }
 
                 Size size_dots;
                 GDI.GetTextExtentPoint32(hDC, "...", "...".Length, out size_dots);
                 int y = bounds.Y + (bounds.Height - size_dots.Height) / 2;
 
-                GDI.SelectObject(hDC, GDI.GetStockObject(GDI.WHITE_PEN));
+                GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.WHITE_PEN));
                 GDI.SetTextColor(hDC, (uint)(isSelected ? SystemColors.HighlightText.ToArgb() : SystemColors.ControlText.ToArgb()) & 0xffffff);
+
 
                 // 各column描画
                 foreach (ColumnHeader head in cols)
@@ -2447,6 +2702,8 @@ namespace Gageas.Lutea.DefaultUI
                     GDI.MoveToEx(hDC, bounds.X + pc - 1, bounds.Y, IntPtr.Zero);
                     GDI.LineTo(hDC, bounds.X + pc - 1, bounds.Y + bounds.Height);
                     DBCol col = (DBCol)head.Tag;
+
+                    if ((int)(col) >= row.Length) continue;
 
                     if (col == DBCol.rating)
                     {
@@ -2458,6 +2715,27 @@ namespace Gageas.Lutea.DefaultUI
                         hDC = g.GetHdc();
                         pc += head.Width;
                         continue;
+                    }
+
+                    if (ShowCoverArtInPlaylistView && col == DBCol.tagTracknumber)
+                    {
+                        if (coverArts.ContainsKey(album))
+                        {
+                            var img = coverArts[album];
+                            var margin = 2;
+                            if (img != null)
+                            {
+                                GDI.BitBlt(hDC,
+                                    bounds.X + pc + (CoverArtSizeInPlaylistView - img.Width) / 2 + margin, 
+                                    bounds.Y + (indexInGroup == 1 ? margin : 0), 
+                                    img.Width, 
+                                    bounds.Height - (indexInGroup == 1 ? margin : 0), 
+                                    img.HDC, 
+                                    0, 
+                                    (indexInGroup - 1) * bounds.Height - (indexInGroup != 1 ? margin : 0),
+                                    0x00CC0020);
+                            }
+                        }
                     }
 
                     var w = head.Width - 2;
@@ -2488,9 +2766,14 @@ namespace Gageas.Lutea.DefaultUI
                     }
                     else
                     {
+                        int cnt = str.Length + 1;
+                        // 文字のサイズが表示領域の倍以上ある場合一気に切り詰める
+                        if (size.Width > (w * 1.1))
+                        {
+                            cnt = (int)(cnt * (w * 1.1) / (size.Width));
+                        }
                         if (w > size_dots.Width)
                         {
-                            int cnt = str.Length + 1;
                             do
                             {
                                 GDI.GetTextExtentPoint32(hDC, str, --cnt, out size);
@@ -2505,17 +2788,6 @@ namespace Gageas.Lutea.DefaultUI
                 GDI.DeleteObject(GDI.SelectObject(hDC, hOldFont));
                 g.ReleaseHdc(hDC);
 
-                // アルバム先頭マーク描画
-                if (isFirstTrack)
-                {
-                    g.DrawLine(SystemPens.ControlDark, bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y);
-                }
-
-                // 強調枠描画
-                if (emphasizedRowId == e.ItemIndex)
-                {
-                    g.DrawRectangle(Pens.Navy, bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
-                }
             }
         }
 
