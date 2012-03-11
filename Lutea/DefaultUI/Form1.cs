@@ -20,7 +20,7 @@ using Gageas.Lutea.Core;
 namespace Gageas.Lutea.DefaultUI
 {
     [GuidAttribute("406AB8D9-F6CF-4234-8B32-4D0064DA0200")]
-    [LuteaComponentInfo("DefaultUI", "Gageas", 0.1, "標準GUI Component")]
+    [LuteaComponentInfo("DefaultUI", "Gageas", 0.087, "標準GUI Component")]
     public partial class DefaultUIForm : Form, Lutea.Core.LuteaUIComponentInterface
     {
         #region General-purpose delegates
@@ -74,7 +74,7 @@ namespace Gageas.Lutea.DefaultUI
         /// 各Columnのでデフォルトの幅を定義
         /// </summary>
         Dictionary<DBCol, int> defaultColumnDisplayWidth = new Dictionary<DBCol, int>(){
-            {DBCol.tagTracknumber,40},
+            {DBCol.tagTracknumber,130},
             {DBCol.tagTitle,120},
             {DBCol.tagArtist,120},
             {DBCol.tagAlbum,80},
