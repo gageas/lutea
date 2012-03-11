@@ -1072,6 +1072,7 @@ namespace Gageas.Lutea.Core
             var th = new Thread(() => {
                 var row = Controller.GetPlaylistRow(getSuccTrackIndex());
                 string filename = (string)row[(int)DBCol.file_name];
+                List<KeyValuePair<string,object>> tag = null;
                 if (File.Exists(filename))
                 {
                     byte[] buf = new byte[10 * 1000];
@@ -1083,9 +1084,9 @@ namespace Gageas.Lutea.Core
                             Thread.Sleep(0);
                         }
                     }
-                    var tag = MetaTag.readTagByFilename(filename, false);
+                    tag = MetaTag.readTagByFilename(filename, false);
                 }
-                CoreEnqueue(() => prepareNextStream(getSuccTrackIndex()));
+                CoreEnqueue(() => prepareNextStream(getSuccTrackIndex(), tag));
             });
             th.Priority = ThreadPriority.Lowest;
             th.Start();
