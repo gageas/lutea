@@ -60,6 +60,7 @@
     <Compile Include="CoverViewerForm.Designer.cs">
       <DependentUpon>CoverViewerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="DefaultUIPreference.cs" />
     <Compile Include="DoubleBufferedListView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -109,6 +110,7 @@
     <Compile Include="RatingRenderer.cs" />
     <Compile Include="RevConv.cs" />
     <Compile Include="Shell32.cs" />
+    <Compile Include="SpectrumRenderer.cs" />
     <Compile Include="TaskbarExtension.cs" />
     <Compile Include="ToolStripComboBox.cs">
       <SubType>Component</SubType>
