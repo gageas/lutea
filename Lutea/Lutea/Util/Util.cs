@@ -21,56 +21,6 @@ namespace Gageas.Lutea.Util
 
     public static class Util
     {
-
-        /// <summary>
-        /// 画像を指定したwidth*heightに収まるようにアスペクト比を保ったまま縮小する。
-        /// Imageのサイズがwidth*heightになるように画像の周囲には余白をつける。
-        /// </summary>
-        /// <param name="image"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <returns></returns>
-        public static Image GetResizedImageWithPadding(Image image, int width, int height)
-        {
-            return GetResizedImageWithPadding(image, width, height, Color.White);
-        }
-        public static Image GetResizedImageWithPadding(Image image, int width, int height, Color backgroundColor)
-        {
-            double xZoomMax = (double)width / image.Width;
-            double yZoomMax = (double)height / image.Height;
-
-            double zoom = Math.Min(xZoomMax, yZoomMax);
-
-            int resizedWidth = 0;
-            int resizedHeight = 0;
-
-            int padX = 0;
-            int padY = 0;
-
-            if (xZoomMax > yZoomMax)
-            {
-                resizedWidth = (int)(yZoomMax * image.Width);
-                resizedHeight = height;
-                padY = 0;
-                padX = (width - resizedWidth) / 2;
-            }
-            else
-            {
-                resizedWidth = width;
-                resizedHeight = (int)(xZoomMax * image.Height);
-                padX = 0;
-                padY = (height - resizedHeight) / 2;
-            }
-
-            Image dest = new Bitmap(width, height);
-            using (var g = Graphics.FromImage(dest))
-            {
-                g.Clear(backgroundColor);
-                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                g.DrawImage(image, padX, padY, resizedWidth, resizedHeight);
-            }
-            return dest;
-        }
         public static String Repeat(this string src, int count)
         {
             if (count > 0)
