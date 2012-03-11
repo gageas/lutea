@@ -56,6 +56,11 @@ namespace Gageas.Lutea.DefaultUI
         Thread coverArtImageLoaderThread;
 
         /// <summary>
+        /// スペアナを描画するクラスのオブジェクト
+        /// </summary>
+        SpectrumRenderer SpectrumRenderer = null;
+
+        /// <summary>
         /// Windows7の拡張タスクバーを制御
         /// </summary>
         TaskbarExtension TaskbarExt;
@@ -106,7 +111,7 @@ namespace Gageas.Lutea.DefaultUI
         private int settingCoverArtSize = 120;
 
         private int SpectrumMode = 0;
-        private Preference.FFTNum FFTNum = Preference.FFTNum.FFT1024;
+        private DefaultUIPreference.FFTNum FFTNum = DefaultUIPreference.FFTNum.FFT1024;
         private bool FFTLogarithmic = false;
         private Color SpectrumColor1 = SystemColors.Control;
         private Color SpectrumColor2 = Color.Orange;
@@ -134,7 +139,7 @@ namespace Gageas.Lutea.DefaultUI
             toolStripStatusLabel1.Text = "";
         }
 
-        private void setupPlaylistView()
+        private void ResetPlaylistView()
         {
             listView1.BeginUpdate();
             listView1.Enabled = false;
@@ -201,6 +206,21 @@ namespace Gageas.Lutea.DefaultUI
             listView1.Enabled = true;
         }
 
+        private void ResetSpectrumRenderer(bool forceReset = false)
+        {
+            if (forceReset && SpectrumRenderer != null)
+            {
+                SpectrumRenderer.Abort();
+                SpectrumRenderer = null;
+            }
+
+            if (SpectrumRenderer == null)
+            {
+                SpectrumRenderer = new SpectrumRenderer(this.pictureBox2, FFTLogarithmic, FFTNum, SpectrumColor1, SpectrumColor2, SpectrumMode);
+                SpectrumRenderer.Start();
+            }
+        }
+
         #region Application core event handler
         private void trackChange(int index)
         {
@@ -221,10 +241,10 @@ namespace Gageas.Lutea.DefaultUI
                     trackInfoText.Text = "Stop";
                     setFormTitle(null);
                     setStatusText("Ready ");
-                    if (spectrumAnalyzerThread != null)
+                    if (SpectrumRenderer != null)
                     {
-                        spectrumAnalyzerThread.Abort();
-                        spectrumAnalyzerThread = null;
+                        SpectrumRenderer.Abort();
+                        SpectrumRenderer = null;
                     }
                     if (TaskbarExt != null)
                     {
@@ -252,12 +272,7 @@ namespace Gageas.Lutea.DefaultUI
             }));
             if (index < 0) return;
 
-            if (spectrumAnalyzerThread == null)
-            {
-                spectrumAnalyzerThread = new Thread(SpectrumAnalyzerProc);
-                spectrumAnalyzerThread.IsBackground = true;
-                spectrumAnalyzerThread.Start();
-            }
+            ResetSpectrumRenderer();
 
             var item_splitter = new char[] { '；', ';', '，', ',', '／', '/', '＆', '&', '・', '･', '、', '､', '（', '(', '）', ')', '\n', '\t' };
             var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -590,8 +605,6 @@ namespace Gageas.Lutea.DefaultUI
         private void refreshPlaylistView(string sql) // playlistの内容を更新
         {
             int itemCount = Controller.CurrentPlaylistRows;
-            itemCache = new ListViewItem[itemCount];
-
             int index = Controller.Current.IndexInPlaylist;
             if (sql != null)
             {
@@ -674,167 +687,6 @@ namespace Gageas.Lutea.DefaultUI
         }
         #endregion
 
-        // TODO: とりあえずめんどくさいからスレッドでずっと走らせる
-        private Thread spectrumAnalyzerThread = null;
-        private void SpectrumAnalyzerProc()
-        {
-            float[] fftdata = null;
-            float[] barPosition = null;
-            float[] barWidth = null;
-            Point[] points = null;
-            bool isLogarithmic = FFTLogarithmic; //barPosition,barWidthがLog用で初期化されているかどうか
-            Preference.FFTNum fftNum = FFTNum;
-            int w = 0;
-            int h = 0;
-            Bitmap b = null;
-            SolidBrush opacityBackgroundBlush = new SolidBrush(Color.White);
-            while (true)
-            {
-                this.Invoke((MethodInvoker)(() =>
-                {
-                    w = pictureBox2.Width;
-                    h = pictureBox2.Height;
-                    opacityBackgroundBlush.Color = Color.FromArgb(70, SystemColors.Control);
-
-                    // 描画の条件が変わる等した場合
-                    if (b == null || pictureBox2.Image == null || w != b.Width || h != b.Height || isLogarithmic != FFTLogarithmic || fftNum != FFTNum)
-                    {
-                        if (w * h > 0)
-                        {
-                            b = new Bitmap(pictureBox2.Width, pictureBox2.Height);
-                            using (var g = Graphics.FromImage(b))
-                            {
-                                g.Clear(SystemColors.Control);
-                            }
-                            pictureBox2.Image = (Bitmap)b.Clone();
-                            barPosition = null;
-                            isLogarithmic = FFTLogarithmic;
-                            fftNum = FFTNum;
-                            fftdata = new float[(int)fftNum / 2];
-                            points = new Point[fftdata.Length];
-                            for (int i = 0; i < points.Length; i++)
-                            {
-                                points[i] = new Point();
-                            }
-                        }
-                        else
-                        {
-                            pictureBox2.Image = null;
-                            b = null;
-                        }
-                    }
-                    if (pictureBox2.Image != null)
-                    {
-                        using (var g = Graphics.FromImage(pictureBox2.Image))
-                        {
-                            g.DrawImage(b, 0, 0);
-                        }
-                        pictureBox2.Refresh();
-                    }
-                }));
-
-                if (SpectrumMode < 0 || SpectrumMode > 4 || !Controller.IsPlaying)
-                {
-                    b = null;
-                    Thread.Sleep(200);
-                    continue;
-                }
-                if ((w * h) > 0)
-                {
-                    Wrapper.BASS.BASS.IPlayable.FFT bassFFTNum = fftNum == Preference.FFTNum.FFT256
-                        ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT256
-                        : fftNum == Preference.FFTNum.FFT512
-                        ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT512
-                        : fftNum == Preference.FFTNum.FFT1024
-                        ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT1024
-                        : fftNum == Preference.FFTNum.FFT2048
-                        ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT2048
-                        : fftNum == Preference.FFTNum.FFT4096
-                        ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT4096
-                        : Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT8192;
-                    Controller.FFTData(fftdata, bassFFTNum);
-                    int n = fftdata.Length;
-                    float ww = (float)w / n;
-                    using (var g = Graphics.FromImage(b))
-                    {
-                        g.FillRectangle(opacityBackgroundBlush, 0, 0, w, h);
-                        var rect = new RectangleF();
-                        rect.Width = ww;
-                        var brush = new SolidBrush(Color.White);
-
-                        double max = Math.Log10(n);
-                        if (barPosition == null)
-                        {
-                            barPosition = new float[fftdata.Length];
-                            barWidth = new float[fftdata.Length];
-                            for (int i = 1; i < n; i++)
-                            {
-                                if (FFTLogarithmic)
-                                {
-                                    barPosition[i] = (float)(Math.Log10(i) / max * w);
-                                    barWidth[i] = (float)((Math.Log10(i + 1) - Math.Log10(i)) / max * w);
-                                }
-                                else
-                                {
-                                    barPosition[i] = (float)i * ww;
-                                    barWidth[i] = ww;
-                                }
-                            }
-                        }
-
-                        // ちょっとかっこ悪いけどこのループ内で分岐書きたくないので
-                        if (SpectrumMode == 0)
-                        {
-                            for (int j = 0; j < n; j++)
-                            {
-                                float d = (float)(fftdata[j] * h * j / 8);
-                                int c = (int)(Math.Pow(0.03, fftdata[j] * j / 30.0) * 255);
-                                rect.X = barPosition[j];
-                                rect.Width = barWidth[j];
-                                rect.Y = h - d;
-                                rect.Height = d;
-                                brush.Color = Color.FromArgb((int)c, SpectrumColor1);
-                                g.FillRectangle(brush, rect);
-                                brush.Color = Color.FromArgb(255 - (int)c, SpectrumColor2);
-                                g.FillRectangle(brush, rect);
-                            }
-                        }
-                        else
-                        {
-                            for (int j = 0; j < n; j++)
-                            {
-                                points[j].X = (int)barPosition[j];
-                                points[j].Y = (int)(h - fftdata[j] * h * j / 8);
-                            }
-                            points[points.Length - 1].Y = h;
-                            switch (SpectrumMode)
-                            {
-                                case 0:
-                                    break;
-                                case 1:
-                                    g.DrawLines(new Pen(SpectrumColor2), points);
-                                    break;
-                                case 2:
-                                    g.DrawCurve(new Pen(SpectrumColor2), points);
-                                    break;
-                                case 3:
-                                    g.FillPolygon(new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(0, 0, w, h), SpectrumColor2, SpectrumColor1, 90, false), points);
-                                    break;
-                                case 4:
-                                    g.FillClosedCurve(new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(0, 0, w, h), SpectrumColor2, SpectrumColor1, 90, false), points);
-                                    break;
-                                default:
-                                    Thread.Sleep(100);
-                                    break;
-                            }
-                        }
-                    }
-                }
-
-                Thread.Sleep(20);
-            }
-        }
-
         /* CoverArt関連の関数群
          * 
          * 複数の場所から同時に同一のImageオブジェクトを触ると怒られるようなので、
@@ -884,12 +736,13 @@ namespace Gageas.Lutea.DefaultUI
                     Thread.Sleep(300);
                     Image coverArtImage = Controller.Current.CoverArtImage();
                     TaskbarExtension.tagRECT rect = new TaskbarExtension.tagRECT() { left = splitContainer1.SplitterDistance + splitContainer1.SplitterWidth, top = menuStrip1.Height };
-                    rect.bottom = rect.top + splitContainer3.Height;
-                    rect.right = rect.left + splitContainer3.Width;
+                    rect.top = 0;
+                    rect.left = 0;
+                    rect.bottom = 100;
+                    rect.right = 100;
 
                     this.Invoke((MethodInvoker)(() =>
                     {
-//                        TaskbarExt.Taskbar.SetThumbnailClip(this.Handle, rect);
                         var oldhIcon_Large = hIconForWindowIcon_Large;
                         hIconForWindowIcon_Large = IntPtr.Zero;
                         if (coverArtImage != null)
@@ -938,7 +791,7 @@ namespace Gageas.Lutea.DefaultUI
                     try // Mutex ここから
                     {
                         // 新しい画像をリサイズ
-                        coverArtImage.Tag = Util.Util.GetResizedImageWithPadding(coverArtImage, CoverArtWidth, CoverArtHeight);
+                        coverArtImage.Tag = ImageUtil.GetResizedImageWithPadding(coverArtImage, CoverArtWidth, CoverArtHeight);
 
                         if (true)
                         {
@@ -974,7 +827,7 @@ namespace Gageas.Lutea.DefaultUI
                                     }
                                 }));
                             }
-                            Image composed = GetAlphaComposedImage(transitionBeforeImage, resized, (float)i / TRANSITION_STEPS);
+                            Image composed = ImageUtil.GetAlphaComposedImage(transitionBeforeImage, resized, (float)i / TRANSITION_STEPS);
                             this.Invoke((MethodInvoker)(() =>
                             {
                                 Graphics.FromImage(pictureBox1.Image).DrawImage(composed, 0, 0);
@@ -994,76 +847,6 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        /// <summary>
-        /// fromを背景にtoをopacityの不透明度で描画したImageオブジェクトを返す
-        /// </summary>
-        /// <param name="from">背景画像</param>
-        /// <param name="to">オーバーレイする画像</param>
-        /// <param name="opacity">不透明度</param>
-        /// <returns>描画結果のImage(Bitmap)オブジェクト</returns>
-        System.Drawing.Imaging.ColorMatrix cm = new System.Drawing.Imaging.ColorMatrix();
-        System.Drawing.Imaging.ImageAttributes ia = new System.Drawing.Imaging.ImageAttributes();
-        private Image GetAlphaComposedImage(Image from, Image to, float opacity)
-        {
-            //            Image ret = new Bitmap(from);
-            Image ret = new Bitmap(to.Width, to.Height);
-            using (var g = Graphics.FromImage(ret))
-            {
-                g.DrawImage(from, 0, 0);
-            }
-            AlphaComposedImage(ret, to, opacity);
-            return ret;
-        }
-        private void AlphaComposedImage(Image from, Image to, float opacity)
-        {
-            //            float f = 1.5F - opacity / 2.0F;
-            //            cm.Matrix00 = f;
-            //            cm.Matrix11 = f;
-            //            cm.Matrix22 = f;
-            cm.Matrix33 = opacity;
-            ia.SetColorMatrix(cm);
-            SolidBrush b = new SolidBrush(Color.FromArgb((int)(Math.Sin(opacity * Math.PI) * 40), Color.White));
-            //            Image renderTmp = new Bitmap(to.Width, to.Height);
-            using (var gg = Graphics.FromImage(from))
-            {
-                {
-                    gg.DrawImage(to, new Rectangle(0, 0, to.Width, to.Height), 0, 0, to.Width, to.Height, GraphicsUnit.Pixel, ia);
-                    gg.FillRectangle(b, 0, 0, to.Width, to.Height);
-                    gg.DrawRectangle(Pens.Gray, 0, 0, to.Width - 1, to.Height - 1);
-                }
-            }
-            return;
-        }
-
-        private Image GetResizedImageWithoutPadding(Image image, int width, int height)
-        {
-            double xZoomMax = (double)width / image.Width;
-            double yZoomMax = (double)height / image.Height;
-
-            double zoom = Math.Min(xZoomMax, yZoomMax);
-
-            int resizedWidth = 0;
-            int resizedHeight = 0;
-
-            if (xZoomMax > yZoomMax)
-            {
-                resizedWidth = (int)(yZoomMax * image.Width);
-                resizedHeight = height;
-            }
-            else
-            {
-                resizedWidth = width;
-                resizedHeight = (int)(xZoomMax * image.Height);
-            }
-
-            Image dest = new Bitmap(resizedWidth, resizedHeight);
-            using (var g = Graphics.FromImage(dest))
-            {
-                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                g.DrawImage(image, 0, 0, resizedWidth, resizedHeight);
-            }
-            return dest;
-        }
         #endregion
 
         #region UI Component events
@@ -1340,10 +1123,9 @@ namespace Gageas.Lutea.DefaultUI
 
                 if (CurrentCoverArt != null)
                 {
-                    Image newSize = Util.Util.GetResizedImageWithPadding(CurrentCoverArt, CoverArtWidth, CoverArtHeight);
+                    Image newSize = ImageUtil.GetResizedImageWithPadding(CurrentCoverArt, CoverArtWidth, CoverArtHeight);
                     CurrentCoverArt.Tag = newSize;
-                    //                    composed = new Bitmap(newSize);
-                    AlphaComposedImage(composed, newSize, 1F);
+                    ImageUtil.AlphaComposedImage(composed, newSize, 1F);
                 }
                 this.Invoke((MethodInvoker)(() =>
                 {
@@ -1363,15 +1145,7 @@ namespace Gageas.Lutea.DefaultUI
         #endregion
 
         #region PlaylistView event
-        /*
-         * 1つのListViewItemオブジェクトを使いまわすのは
-         * やっぱり問題があるっぽい(上に遅い)のでやめる
-         */
-        /// <summary>
-        /// playlist viewに表示するitemのキャッシュ
-        /// </summary>
-        private ListViewItem it = null;
-        private ListViewItem[] itemCache;
+
         private void playlistView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
             String[] s = new string[listView1.Columns.Count];
@@ -1806,7 +1580,6 @@ namespace Gageas.Lutea.DefaultUI
                 th.Start(list);
                 th.Priority = ThreadPriority.Lowest;
             }
-            //            this.BeginInvoke((MethodInvoker)(() => refreshFilter()));
         }
         #endregion
 
@@ -1814,7 +1587,6 @@ namespace Gageas.Lutea.DefaultUI
         private void splitContainer3_SplitterMoved(object sender, SplitterEventArgs e)
         {
             splitContainer4.SplitterDistance = splitContainer3.SplitterDistance;
-            //            splitContainer3.Refresh();
         }
         #endregion
 
@@ -1937,261 +1709,7 @@ namespace Gageas.Lutea.DefaultUI
         #endregion
 
         #region pluginInterface methods
-        class Preference
-        {
-            public enum FFTNum
-            {
-                FFT256 = 256,
-                FFT512 = 512,
-                FFT1024 = 1024,
-                FFT2048 = 2048,
-                FFT4096 = 4096,
-                FFT8192 = 8192,
-            }
-            bool _FFTLogarithmic;
 
-            private int spectrumMode;
-            [Description("スペクトラムアナライザ描画モード\n0～4")]
-            [DefaultValue(0)]
-            [Category("Spectrum Analyzer")]
-            public int SpectrumMode
-            {
-                get
-                {
-                    return spectrumMode;
-                }
-                set
-                {
-                    spectrumMode = value;
-                }
-            }
-
-            [Description("スペクトラムアナライザで横軸を対数にする")]
-            [DefaultValue(false)]
-            [Category("Spectrum Analyzer")]
-            public bool FFTLogarithmic
-            {
-                get
-                {
-                    return _FFTLogarithmic;
-                }
-                set
-                {
-                    _FFTLogarithmic = value;
-                }
-            }
-
-            private FFTNum _FFTNum;
-            [Description("FFTの細かさ")]
-            [DefaultValue(FFTNum.FFT1024)]
-            [Category("Spectrum Analyzer")]
-            public FFTNum FFTNumber
-            {
-                get
-                {
-                    return _FFTNum;
-                }
-                set
-                {
-                    _FFTNum = value;
-                }
-            }
-
-            private Color color1;
-            [Description("Color1")]
-            [Category("Spectrum Analyzer")]
-            public Color SpectrumColor1
-            {
-                get
-                {
-                    return color1;
-                }
-                set
-                {
-                    color1 = value;
-                }
-            }
-
-            private Color color2;
-            [Description("Color2")]
-            [Category("Spectrum Analyzer")]
-            public Color SpectrumColor2
-            {
-                get
-                {
-                    return color2;
-                }
-                set
-                {
-                    color2 = value;
-                }
-            }
-
-            private Font font_playlistView;
-            [Description("プレイリストのフォント")]
-            [Category("Playlist View")]
-            public Font Font_playlistView
-            {
-                get
-                {
-                    return font_playlistView;
-                }
-                set
-                {
-                    font_playlistView = value;
-                }
-            }
-
-
-            private Boolean showCoverArtInPlaylistView;
-            [Description("プレイリストにカバーアートを表示する")]
-            [DefaultValue(true)]
-            [Category("Playlist View")]
-            public Boolean ShowCoverArtInPlaylistView
-            {
-                get
-                {
-                    return showCoverArtInPlaylistView;
-                }
-                set
-                {
-                    showCoverArtInPlaylistView = value;
-                }
-            }
-
-
-            private int coverArtSizeInPlaylistView;
-            [Description("プレイリストに表示するカバーアートのサイズ")]
-            [DefaultValue(80)]
-            [Category("Playlist View")]
-            public int CoverArtSizeInPlaylistView
-            {
-                get
-                {
-                    return coverArtSizeInPlaylistView;
-                }
-                set
-                {
-                    coverArtSizeInPlaylistView = value;
-                }
-            }
-
-            
-            private bool coloredAlbum;
-            [Description("アルバムごとに色分けする\n適当")]
-            [DefaultValue(true)]
-            [Category("Playlist View")]
-            public bool ColoredAlbum
-            {
-                get
-                {
-                    return coloredAlbum;
-                }
-                set
-                {
-                    coloredAlbum = value;
-                }
-            }
-            
-            private bool useMediaKey;
-            [Description("マルチメディアキーを使用する")]
-            [DefaultValue(false)]
-            [Category("Hotkey")]
-            public bool UseMediaKey
-            {
-                get
-                {
-                    return useMediaKey;
-                }
-                set
-                {
-                    useMediaKey = value;
-                }
-            }
-
-            private Keys hotkey_NextTrack;
-            [Description("次の曲")]
-            [DefaultValue(Keys.None)]
-            [Category("Hotkey")]
-            public Keys Hotkey_NextTrack
-            {
-                get
-                {
-                    return hotkey_NextTrack;
-                }
-                set
-                {
-                    hotkey_NextTrack = value;
-                }
-            }
-            
-            private Keys hotkey_PrevTrack;
-            [Description("前の曲")]
-            [DefaultValue(Keys.None)]
-            [Category("Hotkey")]
-            public Keys Hotkey_PrevTrack
-            {
-                get
-                {
-                    return hotkey_PrevTrack;
-                }
-                set
-                {
-                    hotkey_PrevTrack = value;
-                }
-            }
-
-            private Keys hotkey_PlayPause;
-            [Description("再生/一時停止")]
-            [DefaultValue(Keys.None)]
-            [Category("Hotkey")]
-            public Keys Hotkey_PlayPause
-            {
-                get
-                {
-                    return hotkey_PlayPause;
-                }
-                set
-                {
-                    hotkey_PlayPause = value;
-                }
-            }
-
-            private Keys hotkey_Stop;
-            [Description("停止")]
-            [DefaultValue(Keys.None)]
-            [Category("Hotkey")]
-            public Keys Hotkey_Stop
-            {
-                get
-                {
-                    return hotkey_Stop;
-                }
-                set
-                {
-                    hotkey_Stop = value;
-                }
-            }
-            private DefaultUIForm form;
-            public Preference(DefaultUIForm form)
-            {
-                this.form = form;
-                SpectrumMode = form.SpectrumMode;
-                _FFTLogarithmic = form.FFTLogarithmic;
-                _FFTNum = form.FFTNum;
-                color1 = form.SpectrumColor1;
-                color2 = form.SpectrumColor2;
-                font_playlistView = new Font(form.listView1.Font, 0);
-                coloredAlbum = form.ColoredAlbum;
-                ShowCoverArtInPlaylistView = form.ShowCoverArtInPlaylistView;
-                CoverArtSizeInPlaylistView = form.CoverArtSizeInPlaylistView;
-                useMediaKey = form.UseMediaKey;
-                hotkey_PlayPause = form.hotkey_PlayPause;
-                hotkey_Stop = form.hotkey_Stop;
-                hotkey_NextTrack = form.hotkey_NextTrack;
-                hotkey_PrevTrack = form.hotkey_PrevTrack;
-            }
-        }
         private void parseSetting(Dictionary<string, object> setting)
         {
             Util.Util.TryAll(new MethodInvoker[]{
@@ -2199,7 +1717,6 @@ namespace Gageas.Lutea.DefaultUI
                     ColumnOrder = (Dictionary<DBCol, int>)setting["PlaylistViewColumnOrder"];
                     ColumnWidth = (Dictionary<DBCol, int>)setting["PlaylistViewColumnWidth"];
                 },
-//                ()=>textBox1.Text = setting["LastExecutedSQL"].ToString(),
                 ()=>config_FormLocation = (Point)setting["WindowLocation"],
                 ()=>config_FormSize = (Size)setting["WindowSize"],
                 ()=>{
@@ -2213,7 +1730,7 @@ namespace Gageas.Lutea.DefaultUI
                 ()=>LibraryLatestDir = (string)setting["LibraryLatestDir"],
                 ()=>SpectrumMode = (int)setting["SpectrumMode"],
                 ()=>FFTLogarithmic = (bool)setting["FFTLogarithmic"],
-                ()=>FFTNum = (Preference.FFTNum)setting["FFTNum"],
+                ()=>FFTNum = (DefaultUIPreference.FFTNum)setting["FFTNum"],
                 ()=>SpectrumColor1 = (Color)setting["SpectrumColor1"],
                 ()=>SpectrumColor2 = (Color)setting["SpectrumColor2"],
                 ()=>displayColumns = (DBCol[])setting["DisplayColumns"],
@@ -2230,7 +1747,7 @@ namespace Gageas.Lutea.DefaultUI
         }
 
         private List<HotKey> hotkeys = new List<HotKey>();
-        public void setupHotKeys()
+        public void ResetHotKeys()
         {
             this.Invoke((MethodInvoker)(() =>
             {
@@ -2259,7 +1776,7 @@ namespace Gageas.Lutea.DefaultUI
 
             ratingRenderer = new RatingRenderer(@"components\rating_on.gif", @"components\rating_off.gif");
 
-            setupPlaylistView();
+            ResetPlaylistView();
             if (this.WindowState == FormWindowState.Normal)
             {
                 if (!config_FormLocation.IsEmpty) {
@@ -2293,8 +1810,7 @@ namespace Gageas.Lutea.DefaultUI
                         }
                     }
                     displayColumns = displayColumns_list.ToArray();
-                    //                    displayColumns = new DBCol[];
-                    setupPlaylistView();
+                    ResetPlaylistView();
                 });
                 item.CheckOnClick = true;
                 item.Tag = col;
@@ -2333,7 +1849,7 @@ namespace Gageas.Lutea.DefaultUI
             }
             catch { }
 
-            setupHotKeys();
+            ResetHotKeys();
         }
 
         public object GetSetting()
@@ -2385,12 +1901,28 @@ namespace Gageas.Lutea.DefaultUI
 
         public object GetPreferenceObject()
         {
-            return new Preference(this);
+            var pref = new DefaultUIPreference(this);
+            pref.SpectrumMode = this.SpectrumMode;
+            pref.FFTLogarithmic = this.FFTLogarithmic;
+            pref.FFTNumber = this.FFTNum;
+            pref.SpectrumColor1 = this.SpectrumColor1;
+            pref.SpectrumColor2 = this.SpectrumColor2;
+            pref.Font_playlistView = new Font(this.listView1.Font, 0);
+            pref.ColoredAlbum = this.ColoredAlbum;
+            pref.ShowCoverArtInPlaylistView = this.ShowCoverArtInPlaylistView;
+            pref.CoverArtSizeInPlaylistView = this.CoverArtSizeInPlaylistView;
+            pref.UseMediaKey = this.UseMediaKey;
+            pref.Hotkey_PlayPause = this.hotkey_PlayPause;
+            pref.Hotkey_Stop = this.hotkey_Stop;
+            pref.Hotkey_NextTrack = this.hotkey_NextTrack;
+            pref.Hotkey_PrevTrack = this.hotkey_PrevTrack;
+
+            return pref;
         }
 
         public void SetPreferenceObject(object _pref)
         {
-            var pref = (Preference)_pref;
+            var pref = (DefaultUIPreference)_pref;
             this.FFTLogarithmic = pref.FFTLogarithmic;
             this.FFTNum = pref.FFTNumber;
             this.SpectrumColor1 = pref.SpectrumColor1;
@@ -2412,8 +1944,9 @@ namespace Gageas.Lutea.DefaultUI
             this.hotkey_Stop = pref.Hotkey_Stop;
             this.hotkey_NextTrack = pref.Hotkey_NextTrack;
             this.hotkey_PrevTrack = pref.Hotkey_PrevTrack;
-            setupHotKeys();
-            setupPlaylistView();
+            ResetHotKeys();
+            ResetPlaylistView();
+            ResetSpectrumRenderer(true);
         }
 
         public void LibraryInitializeRequired()
@@ -2431,7 +1964,7 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 try
                 {
-                    if (spectrumAnalyzerThread != null) spectrumAnalyzerThread.Abort();
+                    if (SpectrumRenderer != null) SpectrumRenderer.Abort();
                 }
                 catch { }
 
@@ -2525,14 +2058,16 @@ namespace Gageas.Lutea.DefaultUI
                             {
                                 var size = CoverArtSizeInPlaylistView;
 
-                                var resize = GetResizedImageWithoutPadding(orig, size, size);
-                                var bordered = new Bitmap(resize.Width + 3, resize.Height + 3);
+                                var resize = ImageUtil.GetResizedImageWithoutPadding(orig, size, size);
+                                var w = resize.Width;
+                                var h = resize.Height;
+                                var bordered = new Bitmap(w + 3, h + 3);
                                 using (var gg = Graphics.FromImage(bordered))
                                 {
                                     // ここでアルファ使うと描画が重くなる
-                                    gg.FillRectangle(Brushes.Silver, new Rectangle(3, 3, resize.Width, resize.Height));
+                                    gg.FillRectangle(Brushes.Silver, new Rectangle(3, 3, w, h));
                                     gg.DrawImage(resize, 1,  1);
-                                    gg.DrawRectangle(Pens.Gray, new Rectangle(0, 0, resize.Width + 1, resize.Height + 1));
+                                    gg.DrawRectangle(Pens.Gray, new Rectangle(0, 0, w + 1, h + 1));
                                 }
                                 lock (coverArts)
                                 {
@@ -2577,7 +2112,6 @@ namespace Gageas.Lutea.DefaultUI
         private List<KeyValuePair<string, List<int>>> playlistViewImageLoadQueue = new List<KeyValuePair<string, List<int>>>();
         private Dictionary<string, GDI.GDIBitmap> coverArts = new Dictionary<string, GDI.GDIBitmap>();
         WorkerThread worker = new WorkerThread(true);
-//        private int playlistViewImageView_ImageSize = 80;
         private readonly Bitmap dummyEmptyBitmap = new Bitmap(1, 1);
         private void listView1_DrawItem(object sender, DrawListViewItemEventArgs e)
         {

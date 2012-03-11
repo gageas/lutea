@@ -405,7 +405,7 @@ namespace Gageas.Lutea.HTTPController
                 {
                     image = new Bitmap(1, 1);
                 }
-                var resized = Util.Util.GetResizedImageWithPadding(image, IMAGE_SIZE, IMAGE_SIZE);
+                var resized = Util.ImageUtil.GetResizedImageWithPadding(image, IMAGE_SIZE, IMAGE_SIZE);
                 using (var ms = new System.IO.MemoryStream())
                 {
                     resized.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
