@@ -1072,16 +1072,19 @@ namespace Gageas.Lutea.Core
             var th = new Thread(() => {
                 var row = Controller.GetPlaylistRow(getSuccTrackIndex());
                 string filename = (string)row[(int)DBCol.file_name];
-                byte[] buf = new byte[10 * 1000];
-                using (var f = File.OpenRead(filename))
+                if (File.Exists(filename))
                 {
-                    for (int i = 0; i < 10; i++)
+                    byte[] buf = new byte[10 * 1000];
+                    using (var f = File.OpenRead(filename))
                     {
-                        f.Read(buf, 0, buf.Count());
-                        Thread.Sleep(0);
+                        for (int i = 0; i < 10; i++)
+                        {
+                            f.Read(buf, 0, buf.Count());
+                            Thread.Sleep(0);
+                        }
                     }
+                    var tag = MetaTag.readTagByFilename(filename, false);
                 }
-                var tag = MetaTag.readTagByFilename(filename, false);
                 CoreEnqueue(() => prepareNextStream(getSuccTrackIndex()));
             });
             th.Priority = ThreadPriority.Lowest;
