@@ -85,7 +85,7 @@ namespace Gageas.Lutea.DefaultUI
                     size(1);
                 }
                 int i = (int)m.WParam;
-                Logger.Log(i.ToString());
+                Logger.Debug(i.ToString());
             }
             base.WndProc(ref m);
         }
