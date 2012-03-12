@@ -408,9 +408,13 @@ namespace Gageas.Lutea.Core
             return image;
         }
 
+        /// <summary>
+        /// メディアファイルと同じフォルダにあるカバーアートっぽい画像を読み込む
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         private static System.Drawing.Image GetExternalCoverArt(string path)
         {
-            System.Drawing.Image image = null;
             String name = System.IO.Path.GetDirectoryName(path);
             String[] searchPatterns = { "folder.jpg", "folder.jpeg", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp" };
             foreach (String searchPattern in searchPatterns)
@@ -420,18 +424,16 @@ namespace Gageas.Lutea.Core
                     String[] filename_candidate = System.IO.Directory.GetFiles(name, searchPattern);
                     foreach (var file_name in filename_candidate)
                     {
-                        Logger.Log("CoverArt image is " + file_name);
                         using (var fs = new System.IO.FileStream(file_name, System.IO.FileMode.Open, System.IO.FileAccess.Read))
                         {
-                            image = System.Drawing.Image.FromStream(fs);
+                            var image = System.Drawing.Image.FromStream(fs);
+                            if (image != null) return image;
                         }
-                        if (image == null) continue;
-                        break;
                     }
                 }
                 catch { }
             }
-            return image;
+            return null;
         }
 
         public static int IndexInPlaylist(string file_name)
