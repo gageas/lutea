@@ -1146,11 +1146,10 @@ namespace Gageas.Lutea.DefaultUI
 
         #region PlaylistView event
 
+        ListViewItem dummyPlaylistViewItem = new ListViewItem(new string[99]);
         private void playlistView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
-            String[] s = new string[listView1.Columns.Count];
-            e.Item = new ListViewItem(s);
-            return;
+            e.Item = dummyPlaylistViewItem;
         }
 
         private void playlistView_KeyDown(object sender, KeyEventArgs e)
@@ -2115,21 +2114,25 @@ namespace Gageas.Lutea.DefaultUI
         private readonly Bitmap dummyEmptyBitmap = new Bitmap(1, 1);
         private void listView1_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
-            var row = Controller.GetPlaylistRow(e.ItemIndex);
-            if (row == null) return;
             var index = e.ItemIndex;
+            var row = Controller.GetPlaylistRow(index);
+            if (row == null) return;
             var bounds = e.Bounds;
             var isSelected = (e.State & ListViewItemStates.Selected) != 0;
 
             int indexInGroup = 0;
-            while (row[(int)DBCol.tagAlbum].ToString() == Controller.GetPlaylistRowColumn(e.ItemIndex - indexInGroup, DBCol.tagAlbum)) indexInGroup++;
-            var isFirstTrack = indexInGroup == 1;
-
             var album = row[(int)DBCol.tagAlbum].ToString();
+            while (album == Controller.GetPlaylistRowColumn(index - indexInGroup, DBCol.tagAlbum)) indexInGroup++;
+            var isFirstTrack = indexInGroup == 1;
 
             using (var g = e.Graphics)
             {
                 IntPtr hDC = g.GetHdc();
+                var bounds_X = bounds.X;
+                var bounds_Y = bounds.Y;
+                var bounds_Width = bounds.Width;
+                var bounds_Height = bounds.Height;
+
 
                 // 背景色描画
                 // SystemBrushはsolidBrushのはずだけど
@@ -2160,14 +2163,14 @@ namespace Gageas.Lutea.DefaultUI
                     GDI.SetDCBrushColor(hDC, fillcolor);
                     GDI.SetDCPenColor(hDC, fillcolor);
                 }
-                GDI.Rectangle(hDC, bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height);
+                GDI.Rectangle(hDC, bounds_X, bounds_Y, bounds_X + bounds_Width, bounds_Y + bounds_Height);
 
                 // カバアート読み込みをキューイング
                 if (ShowCoverArtInPlaylistView)
                 {
                     if (!string.IsNullOrEmpty(album))
                     {
-                        if (((indexInGroup - 2) * bounds.Height) < CoverArtSizeInPlaylistView && !coverArts.ContainsKey(album))
+                        if (((indexInGroup - 2) * bounds_Height) < CoverArtSizeInPlaylistView && !coverArts.ContainsKey(album))
                         {
                             lock (playlistViewImageLoadQueue)
                             {
@@ -2198,8 +2201,8 @@ namespace Gageas.Lutea.DefaultUI
                 if (isFirstTrack)
                 {
                     GDI.SetDCPenColor(hDC, SystemPens.ControlDark.Color);
-                    GDI.MoveToEx(hDC, bounds.X, bounds.Y, IntPtr.Zero);
-                    GDI.LineTo(hDC, bounds.X + bounds.Width, bounds.Y);
+                    GDI.MoveToEx(hDC, bounds_X, bounds_Y, IntPtr.Zero);
+                    GDI.LineTo(hDC, bounds_X + bounds_Width, bounds_Y);
                 }
 
                 // columnを表示順にソート
@@ -2211,33 +2214,35 @@ namespace Gageas.Lutea.DefaultUI
 
                 // 各column描画準備
                 int pc = 0;
-                IntPtr hFont = (emphasizedRowId == e.ItemIndex ? new Font(listView1.Font, FontStyle.Bold) : listView1.Font).ToHfont();
+                IntPtr hFont = (emphasizedRowId == index ? new Font(listView1.Font, FontStyle.Bold) : listView1.Font).ToHfont();
                 IntPtr hOldFont = GDI.SelectObject(hDC, hFont);
 
                 // 強調枠描画
-                if (emphasizedRowId == e.ItemIndex)
+                if (emphasizedRowId == index)
                 {
                     GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.NULL_BRUSH));
                     GDI.SetDCPenColor(hDC, Color.Navy);
-                    GDI.Rectangle(hDC, bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height);
+                    GDI.Rectangle(hDC, bounds_X, bounds_Y, bounds_X + bounds_Width, bounds_Y + bounds_Height);
                 }
 
                 Size size_dots;
                 GDI.GetTextExtentPoint32(hDC, "...", "...".Length, out size_dots);
-                int y = bounds.Y + (bounds.Height - size_dots.Height) / 2;
+                int y = bounds_Y + (bounds_Height - size_dots.Height) / 2;
+                int size_dots_Width = size_dots.Width;
 
                 GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.WHITE_PEN));
                 GDI.SetTextColor(hDC, (uint)(isSelected ? SystemColors.HighlightText.ToArgb() : SystemColors.ControlText.ToArgb()) & 0xffffff);
 
 
                 // 各column描画
+                var row_Length = row.Length;
                 foreach (ColumnHeader head in cols)
                 {
-                    GDI.MoveToEx(hDC, bounds.X + pc - 1, bounds.Y, IntPtr.Zero);
-                    GDI.LineTo(hDC, bounds.X + pc - 1, bounds.Y + bounds.Height);
+                    GDI.MoveToEx(hDC, bounds_X + pc - 1, bounds_Y, IntPtr.Zero);
+                    GDI.LineTo(hDC, bounds_X + pc - 1, bounds_Y + bounds_Height);
                     DBCol col = (DBCol)head.Tag;
 
-                    if ((int)(col) >= row.Length) continue;
+                    if ((int)(col) >= row_Length) continue;
 
                     if (col == DBCol.rating)
                     {
@@ -2245,7 +2250,7 @@ namespace Gageas.Lutea.DefaultUI
                         int.TryParse(row[(int)col].ToString(), out stars);
                         stars /= 10;
                         g.ReleaseHdc(hDC);
-                        ratingRenderer.Draw(stars, g, bounds.X + pc + 2, bounds.Y, head.Width - 2, bounds.Height);
+                        ratingRenderer.Draw(stars, g, bounds_X + pc + 2, bounds_Y, head.Width - 2, bounds_Height);
                         hDC = g.GetHdc();
                         pc += head.Width;
                         continue;
@@ -2260,13 +2265,13 @@ namespace Gageas.Lutea.DefaultUI
                             if (img != null)
                             {
                                 GDI.BitBlt(hDC,
-                                    bounds.X + pc + (CoverArtSizeInPlaylistView - img.Width) / 2 + margin, 
-                                    bounds.Y + (indexInGroup == 1 ? margin : 0), 
-                                    img.Width, 
-                                    bounds.Height - (indexInGroup == 1 ? margin : 0), 
+                                    bounds_X + pc + (CoverArtSizeInPlaylistView - img.Width) / 2 + margin,
+                                    bounds_Y + (indexInGroup == 1 ? margin : 0), 
+                                    img.Width,
+                                    bounds_Height - (indexInGroup == 1 ? margin : 0), 
                                     img.HDC, 
-                                    0, 
-                                    (indexInGroup - 1) * bounds.Height - (indexInGroup != 1 ? margin : 0),
+                                    0,
+                                    (indexInGroup - 1) * bounds_Height - (indexInGroup != 1 ? margin : 0),
                                     0x00CC0020);
                             }
                         }
@@ -2296,7 +2301,7 @@ namespace Gageas.Lutea.DefaultUI
                     if (size.Width < w)
                     {
                         var padding = col == DBCol.tagTracknumber || col == DBCol.playcount || col == DBCol.lastplayed || col == DBCol.statBitrate || col == DBCol.statDuration ? (w - size.Width) - 1 : 1;
-                        GDI.TextOut(hDC, bounds.X + pc + padding, y, str, str.Length);
+                        GDI.TextOut(hDC, bounds_X + pc + padding, y, str, str.Length);
                     }
                     else
                     {
@@ -2306,14 +2311,13 @@ namespace Gageas.Lutea.DefaultUI
                         {
                             cnt = (int)(cnt * (w * 1.1) / (size.Width));
                         }
-                        if (w > size_dots.Width)
+                        if (w > size_dots_Width)
                         {
                             do
                             {
                                 GDI.GetTextExtentPoint32(hDC, str, --cnt, out size);
-                                if (size.Width > w * 2) cnt = (int)(cnt * 0.75);
-                            } while (size.Width + size_dots.Width > w && cnt > 0);
-                            GDI.TextOut(hDC, bounds.X + pc + 1, y, str.Substring(0, cnt) + "...", cnt + 3);
+                            } while (size.Width + size_dots_Width > w && cnt > 0);
+                            GDI.TextOut(hDC, bounds_X + pc + 1, y, str.Substring(0, cnt) + "...", cnt + 3);
                         }
                     }
                     pc += head.Width;
