@@ -78,9 +78,16 @@ namespace Gageas.Lutea.Tags
                 case 0: // trkn or disk. "nn/mm" style.
                     buf = new byte[length - 8];
                     strm.Read(buf,0,buf.Length);
-                    var tr = ((buf[2] << 8) + buf[3]);
-                    var tr_total = ((buf[4] << 8) + buf[5]);
-                    return (tr_total == 0 ? tr.ToString() : (tr + "/" + tr_total));
+                    if (length - 8 == 2)
+                    {
+                        return (buf[0] << 8) + buf[1];
+                    }
+                    else
+                    {
+                        var tr = ((buf[2] << 8) + buf[3]);
+                        var tr_total = ((buf[4] << 8) + buf[5]);
+                        return (tr_total == 0 ? tr.ToString() : (tr + "/" + tr_total));
+                    }
 
                 case 0x000000000D000000: // Image
                 case 0x000000000E000000: // Image
@@ -149,12 +156,35 @@ namespace Gageas.Lutea.Tags
                         if (lastTagKeyName == null) lastTagKeyName = tagKey;
                         if (lastTagKeyName == null) break;
                         object data = ReadData(strm, (int)atom_size, createImageObject);
-                        if (data != null) { tags.Add(new KeyValuePair<string, object>(lastTagKeyName, data)); }
+                        if(data == null){
+                           lastTagKeyName = null;                            
+                            break;
+                        }
+                        if (tagKey == "GENRE" && data is int)
+                        {
+                            var genreStr = ID3.GetGenreString((int)data - 1);
+                            if (genreStr != null)
+                            {
+                                tags.Add(new KeyValuePair<string, object>(lastTagKeyName, genreStr));
+                            }
+                        }
+                        else
+                        {
+                            tags.Add(new KeyValuePair<string, object>(lastTagKeyName, data));
+                        }
                         lastTagKeyName = null;
                         break;
 
                     case "trkn":
                         ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "TRACK");
+                        break;
+
+                    case "aART":
+                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "ALBUM ARTIST");
+                        break;
+
+                    case "gnre":
+                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "GENRE");
                         break;
 
                     case "covr":
@@ -187,6 +217,9 @@ namespace Gageas.Lutea.Tags
                                 break;
                             case 0x796164A9: // .dat Date
                                 ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "DATE");
+                                break;
+                            case 0x746D63A9: // .cmt Date
+                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "COMMENT");
                                 break;
                             default:
                                 break;
