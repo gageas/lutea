@@ -548,8 +548,14 @@ namespace Gageas.Lutea.DefaultUI
             {
                 var page = new TabPage(Controller.GetColumnLocalString(col));
                 var list = new FilterViewListView();
-                //list.SelectEvent += new FilterViewListView.SelectEventHandler(filterViewSelectEvent);
-                list.SelectEvent += (c, vals) => { Controller.createPlaylist(list.getQueryString()); };
+                list.SelectEvent += (c, vals) => {
+                    if (SupplessFilterViewSelectChangeEvent)
+                    {
+                        SupplessFilterViewSelectChangeEvent = false;
+                        return;
+                    }
+                    Controller.createPlaylist(list.getQueryString()); 
+                };
                 list.DoubleClick += (o, arg) => { Controller.createPlaylist(list.getQueryString(), true); };
                 list.KeyDown += (o, arg) => { if (arg.KeyCode == Keys.Return)Controller.PlayPlaylistItem(0); };
                 list.Margin = new System.Windows.Forms.Padding(0, 0, 0, 0);
@@ -1469,13 +1475,18 @@ namespace Gageas.Lutea.DefaultUI
                 });
             }
         }
+
+
+        private bool SupplessFilterViewSelectChangeEvent = false;
         /// <summary>
         /// FilterViewを更新する。ごちゃごちゃしてるのでなんとかしたい
         /// </summary>
         /// <param name="o"></param>
         public void refreshFilter(object o, string textForSelected = null)
         {
-            ListView list = (ListView)(o != null ? o : dummyFilterTab.SelectedTab.Controls[0]);
+            FilterViewListView list = (FilterViewListView)(o != null ? o : dummyFilterTab.SelectedTab.Controls[0]);
+
+            list.MouseClick += (oo, e) => { if(e.Button == System.Windows.Forms.MouseButtons.Right){SupplessFilterViewSelectChangeEvent = true;} };
 
             list.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
             list.ContextMenuStrip.Items.Add("読み修正", null, correctToolStripMenuItem_Click);
@@ -1541,13 +1552,11 @@ namespace Gageas.Lutea.DefaultUI
                 item_allFiles.Tag = null;
                 items.Add(item_allFiles);
 
-                List<ListViewGroup> grpList = new List<ListViewGroup>(groups.Count);
-                foreach (var e in groups) grpList.Add(e.Value);
-                grpList.Sort((x, y) => x.Header.CompareTo(y.Header));
+                var grpList = groups.Select((_) => _.Value).ToList().OrderBy((_) => _.Header).ToArray();
                 this.Invoke((MethodInvoker)(() =>
                 {
                     setStatusText("　 ");
-                    list.Groups.AddRange(grpList.ToArray());
+                    list.Groups.AddRange(grpList);
                     list.Items.AddRange(items.ToArray());
                     createFilterIndex(list, grpList);
                     list.EndUpdate();
