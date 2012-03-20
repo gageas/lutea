@@ -628,6 +628,12 @@ namespace Gageas.Lutea.DefaultUI
                 }
             }
 
+            // プレイリストが更新されてアイテムの位置が変わったらカバーアート読み込みキューを消去
+            lock (playlistViewImageLoadQueue)
+            {
+                playlistViewImageLoadQueue.Clear();
+            }
+
             if (sql != null)
             {
                 selectRow(index < 0 ? 0 : index);
@@ -2031,80 +2037,13 @@ namespace Gageas.Lutea.DefaultUI
                             }
                             else
                             {
+                                // キューが空になったら無限ループを向けて待ちに入る
                                 break;
                             }
                         }
 
+                        playlistViewImageLoadQueueItemConsume(task);
 
-                        if (task.Key != null)
-                        {
-                            var album = task.Key;
-                            if (coverArts.ContainsKey(album))
-                            {
-                                List<int> rowsToUpdate = null;
-                                lock (playlistViewImageLoadQueue)
-                                {
-                                    rowsToUpdate = task.Value;
-                                    playlistViewImageLoadQueue.Remove(task);
-                                }
-
-                                listView1.Invoke((MethodInvoker)(() =>
-                                {
-                                    foreach (var index in rowsToUpdate)
-                                    {
-                                        if (index < listView1.VirtualListSize)
-                                        {
-                                            listView1.RedrawItems(index, index, true);
-                                        }
-                                    }
-                                }));
-                                continue;
-                            }
-                            var file_name = Controller.GetPlaylistRowColumn(task.Value[0], DBCol.file_name).ToString().Trim();
-                            var orig = Controller.CoverArtImageForFile(file_name);
-                            if (orig != null)
-                            {
-                                var size = CoverArtSizeInPlaylistView;
-
-                                var resize = ImageUtil.GetResizedImageWithoutPadding(orig, size, size);
-                                var w = resize.Width;
-                                var h = resize.Height;
-                                var bordered = new Bitmap(w + 3, h + 3);
-                                using (var gg = Graphics.FromImage(bordered))
-                                {
-                                    // ここでアルファ使うと描画が重くなる
-                                    gg.FillRectangle(Brushes.Silver, new Rectangle(3, 3, w, h));
-                                    gg.DrawImage(resize, 1,  1);
-                                    gg.DrawRectangle(Pens.Gray, new Rectangle(0, 0, w + 1, h + 1));
-                                }
-                                lock (coverArts)
-                                {
-                                    coverArts[album] = new GDI.GDIBitmap(bordered);
-                                }
-
-                                List<int> rowsToUpdate = null;
-                                lock (playlistViewImageLoadQueue)
-                                {
-                                    rowsToUpdate = task.Value;
-                                    playlistViewImageLoadQueue.Remove(task);
-                                }
-
-                                listView1.Invoke((MethodInvoker)(() =>
-                                {
-                                    foreach (var index in rowsToUpdate)
-                                    {
-                                        if (index < listView1.VirtualListSize)
-                                        {
-                                            listView1.RedrawItems(index, index, true);
-                                        }
-                                    }
-                                }));
-                            }
-                            else
-                            {
-                                coverArts[album] = new GDI.GDIBitmap(dummyEmptyBitmap);
-                            }
-                        }
                         Thread.Sleep(50);
                     }
                     playlistViewImageLoaderInSleep = true;
@@ -2114,7 +2053,72 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     playlistViewImageLoaderInSleep = false;
                 }
-                catch { }
+                catch(Exception e) {
+                    Logger.Log(e);
+                }
+            }
+        }
+
+        private void playlistViewImageLoadQueueItemConsume(KeyValuePair<string, List<int>> task)
+        {
+            try
+            {
+                if (task.Key != null)
+                {
+                    var album = task.Key;
+                    if (coverArts.ContainsKey(album))
+                    {
+                        return;
+                    }
+                    var file_name = Controller.GetPlaylistRowColumn(task.Value[0], DBCol.file_name).ToString().Trim();
+                    var orig = Controller.CoverArtImageForFile(file_name);
+                    if (orig != null)
+                    {
+                        var size = CoverArtSizeInPlaylistView;
+
+                        var resize = ImageUtil.GetResizedImageWithoutPadding(orig, size, size);
+                        var w = resize.Width;
+                        var h = resize.Height;
+                        var bordered = new Bitmap(w + 3, h + 3);
+                        using (var gg = Graphics.FromImage(bordered))
+                        {
+                            // ここでアルファ使うと描画が重くなる
+                            gg.FillRectangle(Brushes.Silver, new Rectangle(3, 3, w, h));
+                            gg.DrawImage(resize, 1, 1);
+                            gg.DrawRectangle(Pens.Gray, new Rectangle(0, 0, w + 1, h + 1));
+                        }
+                        lock (coverArts)
+                        {
+                            coverArts[album] = new GDI.GDIBitmap(bordered);
+                        }
+
+                    }
+                    else
+                    {
+                        coverArts[album] = new GDI.GDIBitmap(dummyEmptyBitmap);
+                    }
+                }
+            }
+            finally
+            {
+                List<int> rowsToUpdate = null;
+
+                lock (playlistViewImageLoadQueue)
+                {
+                    rowsToUpdate = task.Value;
+                    playlistViewImageLoadQueue.Remove(task);
+                }
+
+                listView1.Invoke((MethodInvoker)(() =>
+                {
+                    foreach (var index in rowsToUpdate)
+                    {
+                        if (index < listView1.VirtualListSize)
+                        {
+                            listView1.RedrawItems(index, index, true);
+                        }
+                    }
+                }));
             }
         }
         private List<KeyValuePair<string, List<int>>> playlistViewImageLoadQueue = new List<KeyValuePair<string, List<int>>>();
