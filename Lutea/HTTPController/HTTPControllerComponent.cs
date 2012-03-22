@@ -10,7 +10,7 @@ using Gageas.Lutea.Core;
 namespace Gageas.Lutea.HTTPController
 {
     [GuidAttribute("E63658A1-2ACC-40A1-BE98-2B5F5FC95243")]
-    [LuteaComponentInfo("HTTPController", "Gageas", 0.087, "HTTPController")]
+    [LuteaComponentInfo("HTTPController", "Gageas", 0.088, "HTTPController")]
     public class HTTPControllerComponent : LuteaComponentInterface
     {
         private HTTPController controller;
