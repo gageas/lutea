@@ -130,14 +130,6 @@ namespace Gageas.Lutea.Library
                         currentCD = SQLQue.Dequeue();
                         Step_import();
 
-                        // CUEで実体ファイルが存在しない場合、インポートしない
-                        if (currentCD is CD.Track) {
-                            if (!System.IO.File.Exists(((CD.Track)currentCD).file_name_CUESheet))
-                            {
-                                continue;
-                            }
-                        }
-
                         if (currentCD.duration == 0) continue;
                         // Titleが無かったらfile_titleを付与
                         if (currentCD.tag.Find((e) => e.Key == "TITLE").Key == null) currentCD.tag.Add(new KeyValuePair<string, object>("TITLE", currentCD.file_title));
@@ -193,26 +185,36 @@ namespace Gageas.Lutea.Library
             }
             CD cd = CUEparser.fromFile(file_name, true);
             if (cd == null) return;
-            KeyValuePair<string, bool> tagHasCUECache = new KeyValuePair<string, bool>();
+
+            string lastCheckedFilename = null;
+            bool   lastCheckedFileShouldSkip = false;
             foreach (CD.Track tr in cd.tracks)
             {
                 if (tr.file_name_CUESheet == "") continue;
 
-                // 実体ストリームにCUESHEETが埋め込まれているかどうかをキャッシュする
-                if (tagHasCUECache.Key != tr.file_name_CUESheet)
+                // 実体ストリームが存在しない、またはCUESHEETが埋め込まれているなら、.cueファイルとしてのインポートはスキップする。
+                if (lastCheckedFilename != tr.file_name_CUESheet)
                 {
-                    var tagInRealStream = MetaTag.readTagByFilename(tr.file_name_CUESheet, false);
-                    if (tagInRealStream == null)
+                    lastCheckedFilename = tr.file_name_CUESheet;
+                    lastCheckedFileShouldSkip = false; // 変数初期化
+
+                    // 実体ファイルが存在しないならスキップ
+                    if (!System.IO.File.Exists(lastCheckedFilename))
                     {
-                        tagHasCUECache = new KeyValuePair<string, bool>(tr.file_name_CUESheet, false);
+                        lastCheckedFileShouldSkip = true;
                     }
-                    else
+
+                    // CUEシートが埋め込まれているならスキップ
+                    var tagInRealStream = MetaTag.readTagByFilename(tr.file_name_CUESheet, false);
+                    if (tagInRealStream != null)
                     {
-                        tagHasCUECache = new KeyValuePair<string, bool>(tr.file_name_CUESheet, tagInRealStream.Find((e) => e.Key == "CUESHEET").Value != null);
+                        if(tagInRealStream.Find((e) => e.Key == "CUESHEET").Value != null){
+                            lastCheckedFileShouldSkip = true;
+                        }
                     }
                 }
                 // ストリームのタグにCUESHEETがある時はなにもしない
-                if (tagHasCUECache.Value)
+                if (lastCheckedFileShouldSkip)
                 {
                     continue;
                 }

@@ -28,6 +28,10 @@ namespace Gageas.Wrapper.SQLite3
         private IntPtr dbPtrForLock = (IntPtr)0;
         bool locked = false;
 
+        private static string ReadStringFromLPWSTR(IntPtr lpwstr)
+        {
+            return (lpwstr == IntPtr.Zero ? null : Marshal.PtrToStringUni(lpwstr));
+        }
 
         // Exception
         public class SQLite3Exception : System.ApplicationException
@@ -47,13 +51,12 @@ namespace Gageas.Wrapper.SQLite3
         public SQLite3DB(string filename, bool lockable)
         {
             int ret;
-            IntPtr _filename = Marshal.StringToHGlobalUni(filename);
             try
             {
-                ret = sqlite3_open16(_filename, out dbPtr); //UTF16toUTF8( 
+                ret = sqlite3_open16(filename, out dbPtr);
                 if (lockable)
                 {
-                    ret = sqlite3_open16(_filename, out dbPtrForLock);
+                    ret = sqlite3_open16(filename, out dbPtrForLock);
                 }
 
             }
@@ -63,7 +66,6 @@ namespace Gageas.Wrapper.SQLite3
             }
             if (ret != SQLite3.SQLITE3_OK)
             {
-                Marshal.FreeHGlobal(_filename);
                 throw (new SQLite3Exception("db file open error."));
             }
         }
@@ -109,15 +111,13 @@ namespace Gageas.Wrapper.SQLite3
                 if (locked) return null;
                 if (dbPtrForLock != IntPtr.Zero)
                 {
-                    IntPtr _sql = Marshal.StringToHGlobalAnsi("BEGIN;SELECT rowid FROM " + tableName + " LIMIT 1;");
                     int ret = -1;
                     try
                     {
-                        ret = sqlite3_exec(dbPtrForLock, _sql, null, IntPtr.Zero, IntPtr.Zero);
+                        ret = sqlite3_exec(dbPtrForLock, "BEGIN;SELECT rowid FROM " + tableName + " LIMIT 1;", null, IntPtr.Zero, IntPtr.Zero);
                     }
                     finally
                     {
-                        Marshal.FreeHGlobal(_sql);
                     }
                     if (ret != SQLite3.SQLITE3_OK)
                     {
@@ -158,14 +158,12 @@ namespace Gageas.Wrapper.SQLite3
                 if (!locked) return;
                 if (dbPtrForLock != IntPtr.Zero)
                 {
-                    IntPtr _sql = Marshal.StringToHGlobalAnsi("ROLLBACK;");
                     try
                     {
-                        sqlite3_exec(dbPtrForLock, _sql, null, IntPtr.Zero, IntPtr.Zero);
+                        sqlite3_exec(dbPtrForLock, "ROLLBACK;", null, IntPtr.Zero, IntPtr.Zero);
                     }
                     finally
                     {
-                        Marshal.FreeHGlobal(_sql);
                     }
                     locked = false;
                 }
@@ -223,15 +221,13 @@ namespace Gageas.Wrapper.SQLite3
         {
             lock (this)
             {
-                IntPtr _sql = Marshal.StringToHGlobalAnsi(sql);
                 int ret = -1;
                 try
                 {
-                    ret = sqlite3_exec(dbPtr, _sql, callback, (IntPtr)0, IntPtr.Zero);
+                    ret = sqlite3_exec(dbPtr, sql, callback, IntPtr.Zero, IntPtr.Zero);
                 }
                 finally
                 {
-                    Marshal.FreeHGlobal(_sql);
                 }
                 if (ret != SQLite3.SQLITE3_OK)
                 {
@@ -269,19 +265,17 @@ namespace Gageas.Wrapper.SQLite3
             {
                 this.db = db;
                 int ret = -1;
-                IntPtr _sql = Marshal.StringToHGlobalUni(sql);
                 try
                 {
                     this.source = sql;
-                    ret = sqlite3_prepare16(db.dbPtr, _sql, sql.Length * 2, out stmt, IntPtr.Zero);
+                    ret = sqlite3_prepare16(db.dbPtr, sql, sql.Length * 2, out stmt, IntPtr.Zero);
                 }
                 finally
                 {
-                    Marshal.FreeHGlobal(_sql);
                 }
                 if (ret != SQLite3.SQLITE3_OK)
                 {
-                    throw new SQLite3Exception("prepare error\n" + Marshal.PtrToStringUni(sqlite3_errmsg16(db.dbPtr)));
+                    throw new SQLite3Exception("prepare error\n" + ReadStringFromLPWSTR(sqlite3_errmsg16(db.dbPtr)));
                 }
             }
             public override void Dispose()
@@ -322,17 +316,15 @@ namespace Gageas.Wrapper.SQLite3
                 {
                     int N = sqlite3_column_count(stmt);
                     object[] o = new string[N];
-                    IntPtr wstr;
                     for (int i = 0; i < N; i++)
                     {
-                        wstr = sqlite3_column_text16(stmt, i);
-                        o[i] = (wstr == IntPtr.Zero ? null : Marshal.PtrToStringUni(wstr));
+                        o[i] = ReadStringFromLPWSTR(sqlite3_column_text16(stmt, i));
                     }
                     cb(o);
                 }
                 if (r != SQLite3.SQLITE_DONE)
                 {
-                    throw new SQLite3Exception(Marshal.PtrToStringUni(sqlite3_errmsg16(db.dbPtr)));
+                    throw new SQLite3Exception(ReadStringFromLPWSTR(sqlite3_errmsg16(db.dbPtr)));
                 }
                 Reset();
             }
@@ -344,17 +336,15 @@ namespace Gageas.Wrapper.SQLite3
                 while (SQLite3.SQLITE3_ROW == (r = sqlite3_step(this.stmt)))
                 {
                     object[] o = new string[N];
-                    IntPtr wstr;
                     for (int i = 0; i < N; i++)
                     {
-                        wstr = sqlite3_column_text16(stmt, i);
-                        o[i] = (wstr == IntPtr.Zero ? null : Marshal.PtrToStringUni(wstr));
+                        o[i] = ReadStringFromLPWSTR(sqlite3_column_text16(stmt, i));
                     }
                     data.Add(o);
                 }
                 if (r != SQLite3.SQLITE_DONE)
                 {
-                    throw new SQLite3Exception(Marshal.PtrToStringUni(sqlite3_errmsg16(db.dbPtr)));
+                    throw new SQLite3Exception(ReadStringFromLPWSTR(sqlite3_errmsg16(db.dbPtr)));
                 }
                 Reset();
                 return data.ToArray();
@@ -367,17 +357,15 @@ namespace Gageas.Wrapper.SQLite3
                 object[] o = new string[N];
                 if (r == SQLite3.SQLITE3_ROW)
                 {
-                    IntPtr wstr;
                     for (int i = 0; i < N; i++)
                     {
-                        wstr = sqlite3_column_text16(stmt, i);
-                        o[i] = (wstr == IntPtr.Zero ? null : Marshal.PtrToStringUni(wstr));
+                        o[i] = ReadStringFromLPWSTR(sqlite3_column_text16(stmt, i));
                     }
                 }
                 r = sqlite3_step(this.stmt);
                 if (r != SQLite3.SQLITE_DONE)
                 {
-                    throw new SQLite3Exception(Marshal.PtrToStringUni(sqlite3_errmsg16(db.dbPtr)));
+                    throw new SQLite3Exception(ReadStringFromLPWSTR(sqlite3_errmsg16(db.dbPtr)));
                 }
                 Reset();
                 return o;
@@ -429,8 +417,7 @@ namespace Gageas.Wrapper.SQLite3
             string[] arg = new string[n];
             for (int i = 0; i < n; i++)
             {
-                IntPtr valuestr = sqlite3_value_text16(Marshal.ReadIntPtr(sqlite3_value, i * IntPtr.Size));
-                String str = Marshal.PtrToStringUni(valuestr);
+                String str = ReadStringFromLPWSTR(sqlite3_value_text16(Marshal.ReadIntPtr(sqlite3_value, i * IntPtr.Size)));
                 arg[i] = str;
             }
 
@@ -461,8 +448,8 @@ namespace Gageas.Wrapper.SQLite3
         #endregion
 
         #region DLL Import
-        [DllImport("sqlite3.dll", EntryPoint = "sqlite3_open16", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int sqlite3_open16(IntPtr filename, out IntPtr db);
+        [DllImport("sqlite3.dll", EntryPoint = "sqlite3_open16", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        private static extern int sqlite3_open16([MarshalAs(UnmanagedType.LPWStr)]string filename, out IntPtr db);
 
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_close", CallingConvention = CallingConvention.Cdecl)]
         private static extern int sqlite3_close(IntPtr db);
@@ -474,13 +461,10 @@ namespace Gageas.Wrapper.SQLite3
         private static extern void sqlite3_interrupt(IntPtr db);
 
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_exec", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int sqlite3_exec(IntPtr db,IntPtr sql,Exec_callback callback,IntPtr p2, IntPtr err);
+        private static extern int sqlite3_exec(IntPtr db,[MarshalAs(UnmanagedType.LPStr)]string sql,Exec_callback callback,IntPtr p2, IntPtr err);
 
-        //        [DllImport("sqlite3.dll", EntryPoint = "sqlite3_prepare",CharSet=CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-//        private static extern int sqlite3_prepare(IntPtr db, byte[] sql, int sqllen, out IntPtr stmt, IntPtr err);
-
-        [DllImport("sqlite3.dll", EntryPoint = "sqlite3_prepare16", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int sqlite3_prepare16(IntPtr db, IntPtr sql, int sqllen, out IntPtr stmt, IntPtr tail);
+        [DllImport("sqlite3.dll", EntryPoint = "sqlite3_prepare16", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        private static extern int sqlite3_prepare16(IntPtr db,[MarshalAs(UnmanagedType.LPWStr)]string sql, int sqllen, out IntPtr stmt, IntPtr tail);
 
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_reset", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         private static extern int sqlite3_reset(IntPtr stmt);
@@ -504,16 +488,16 @@ namespace Gageas.Wrapper.SQLite3
         private static extern IntPtr sqlite3_column_text16(IntPtr stmt, int columnId);
 
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_bind_text", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int sqlite3_bind_text(IntPtr stmt,int id,IntPtr str,int len,IntPtr dispose);
+        private static extern int sqlite3_bind_text(IntPtr stmt,int id,[MarshalAs(UnmanagedType.LPStr)]string str,int len,IntPtr dispose);
 
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_bind_text16", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int sqlite3_bind_text16(IntPtr stmt,int id,string str,int len,UInt32 dispose);
+        private static extern int sqlite3_bind_text16(IntPtr stmt, int id, [MarshalAs(UnmanagedType.LPWStr)]string str, int len, UInt32 dispose);
 
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_result_null", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         private static extern void sqlite3_result_null(IntPtr sqlite3_context);
 
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_result_text16", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void sqlite3_result_text16(IntPtr sqlite3_context,string str,int length,UInt32 dispose);
+        private static extern void sqlite3_result_text16(IntPtr sqlite3_context, [MarshalAs(UnmanagedType.LPWStr)]string str, int length, UInt32 dispose);
 
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_result_int", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         private static extern void sqlite3_result_int(IntPtr sqlite3_context, Int32 val);
