@@ -5,6 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 
 using System.ComponentModel;
+using Gageas.Wrapper.BASS;
 
 namespace Gageas.Lutea.Core
 {
@@ -15,6 +16,7 @@ namespace Gageas.Lutea.Core
     [LuteaComponentInfo("Core","Gageas",0.088, "アプリケーションのコア")]
     public class CoreComponent : LuteaComponentInterface
     {
+        private const string PseudoDeviceNameForDefaultOutput = "(Default)";
         public class Preference
         {
             bool enableReplayGain = AppCore.EnableReplayGain;
@@ -144,7 +146,72 @@ namespace Gageas.Lutea.Core
                     fadeInOutOnSkip = value;
                 }
             }
+
+            string preferredDeviceName = AppCore.preferredDeviceName;
+            string[] devlist = GetDeviceNameListForSetting();
+            [TypeConverter(typeof(OutputDeviceConverter))]
+            [Category("Output")]
+            [Description("出力デバイス選択")]
+            public String PreferredDeviceName
+            {
+                get
+                {
+                    if (devlist.Any(_ => _ == preferredDeviceName))
+                    {
+                        return devlist.First(_ => _ == preferredDeviceName);
+                    }
+                    else
+                    {
+                        return devlist[0];
+                    }
+                }
+                set
+                {
+                    if (devlist.Any(_ => _ == value))
+                    {
+                        preferredDeviceName = devlist.First(_ => _ == value);
+                    }
+                    else
+                    {
+                        preferredDeviceName = devlist[0];
+                    }
+                }
+            }
         }
+
+        /// <summary>
+        /// PropertyGridにデバイス一覧を表示するためのConverter
+        /// </summary>
+        class OutputDeviceConverter : StringConverter
+        {
+            private string[] devlist;
+            public OutputDeviceConverter()
+            {
+                devlist = GetDeviceNameListForSetting();
+            }
+
+            public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+            {
+                return true;
+            }
+            public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+            {
+                return new StandardValuesCollection(devlist);
+            }
+            public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// 出力デバイスとして選択可能なデバイスの名前のリストを取得する
+        /// </summary>
+        /// <returns></returns>
+        private static string[] GetDeviceNameListForSetting() {
+            return BASS.GetDevices().Select(((_, i) => i == 0 ? PseudoDeviceNameForDefaultOutput : _.Name)).ToArray();
+        }
+
         private void ParseSetting(Dictionary<string,object> setting)
         {
             Util.Util.TryAll(new Controller.VOIDVOID[] { 
@@ -157,6 +224,7 @@ namespace Gageas.Lutea.Core
                 ()=>AppCore.enableWASAPIVolume = (bool)setting["enableWASAPIVolume"],
                 ()=>AppCore.OutputFreq = (uint)setting["outputFreq"],
                 ()=>AppCore.fadeInOutOnSkip = (bool)setting["fadeInOutOnSkip"],
+                ()=>AppCore.preferredDeviceName = (string)setting["preferredDeviceName"],
             }, null);
         }
         public void Init(object setting)
@@ -179,6 +247,7 @@ namespace Gageas.Lutea.Core
             setting["enableWASAPIVolume"] = AppCore.enableWASAPIVolume;
             setting["outputFreq"] = AppCore.OutputFreq;
             setting["fadeInOutOnSkip"] = AppCore.fadeInOutOnSkip;
+            setting["preferredDeviceName"] = AppCore.preferredDeviceName;
             return setting;
         }
 
@@ -198,6 +267,7 @@ namespace Gageas.Lutea.Core
             AppCore.enableWASAPIVolume = pref.EnableWASAPIVolume;
             AppCore.OutputFreq = (uint)pref.OutputFreq;
             AppCore.fadeInOutOnSkip = pref.FadeInOutOnSkip;
+            AppCore.preferredDeviceName = pref.PreferredDeviceName == PseudoDeviceNameForDefaultOutput ? "" : pref.PreferredDeviceName;
         }
 
         public void Quit()

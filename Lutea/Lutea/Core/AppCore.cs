@@ -74,6 +74,7 @@ namespace Gageas.Lutea.Core
         internal static bool enableWASAPIVolume = false;
         internal static uint OutputFreq = 44100;
         internal static bool fadeInOutOnSkip = false;
+        internal static string preferredDeviceName = "";
         #endregion
 
         #region set/get Volume
@@ -808,7 +809,7 @@ namespace Gageas.Lutea.Core
                         currentStream = null;
                     }
                     pause = false;
-                    outputManager.ResetOutputChannel(freq, chans, isFloat);
+                    outputManager.ResetOutputChannel(freq, chans, isFloat, preferredDeviceName);
                     outputManager.SetVolume(_volume, 0);
                     prepareNextStream(IndexInPlaylist(fname));
                     PlayQueuedStream();

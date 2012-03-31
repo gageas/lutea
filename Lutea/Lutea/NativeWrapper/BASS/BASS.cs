@@ -261,6 +261,11 @@ namespace Gageas.Wrapper.BASS
             {
                 get { return (Flags & FLAGS.INIT) != 0; }
             }
+
+            public override string ToString()
+            {
+                return "Name:" + Name + "ID: " + Driver + "Flags" + Flags;
+            }
         }
 
         public static BASS_DEVICEINFO? GetDeviceInfo(UInt32 device)
@@ -288,6 +293,23 @@ namespace Gageas.Wrapper.BASS
                 }
                 return floatable;
             }
+        }
+
+        /// <summary>
+        /// 全てのデバイスのデバイス情報の配列を返す
+        /// </summary>
+        /// <returns>デバイス情報の配列</returns>
+        public static BASS_DEVICEINFO[] GetDevices()
+        {
+            UInt32 id = 0;
+            BASS_DEVICEINFO? info = new BASS_DEVICEINFO();
+            List<BASS_DEVICEINFO> list = new List<BASS_DEVICEINFO>();
+            while ((info = GetDeviceInfo(id)) != null)
+            {
+                list.Add(info.Value);
+                id++;
+            }
+            return list.ToArray();
         }
 
         public static bool BASS_Init(int device, uint freq = 44100, uint buffer_len = 1500)
