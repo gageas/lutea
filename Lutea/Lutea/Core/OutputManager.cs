@@ -12,7 +12,7 @@ namespace Gageas.Lutea.Core
         private const int BASS_BUFFFER_LEN = 1500;
         private const uint OutputFreq = 44100;
 
-        private delegate BASS.IPlayable OutputChannelBuilder(uint freq, uint chans);
+        private delegate BASS.IPlayable OutputChannelBuilder(uint freq, uint chans, string preferredDeviceName);
 
         /// <summary>
         /// 出力ストリーム
@@ -176,7 +176,7 @@ namespace Gageas.Lutea.Core
         /// <param name="freq">出力周波数</param>
         /// <param name="chans">出力チャンネル</param>
         /// <param name="useFloat">浮動小数点出力モード</param>
-        internal void ResetOutputChannel(uint freq, uint chans, bool useFloat)
+        internal void ResetOutputChannel(uint freq, uint chans, bool useFloat, string preferredDeviceName = null)
         {
             if (RebuildRequired(freq, chans, useFloat))
             {
@@ -188,7 +188,7 @@ namespace Gageas.Lutea.Core
                         outputChannel.Dispose();
                         outputChannel = null;
                     }
-                    Logger.Log("Rebuild output");
+                    Logger.Debug("Rebuild output");
                     if (useFloat)
                     {
                         outputChannel = Util.Util.TryThese<BASS.IPlayable>(
@@ -196,7 +196,7 @@ namespace Gageas.Lutea.Core
                                 BuildWASAPIExOutput, 
                                 BuildWASAPIOutput, 
                                 BuildFloatingPointOutput 
-                            }, new object[] { freq, chans });
+                            }, new object[] { freq, chans, preferredDeviceName });
                     }
                 }
             }
@@ -207,15 +207,32 @@ namespace Gageas.Lutea.Core
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="chans"></param>
+        /// <param name="preferredDeviceName">デフォルトデバイスに優先して選択するデバイスの名前</param>
         /// <returns></returns>
-        private BASS.IPlayable BuildWASAPIExOutput(uint freq, uint chans)
+        private BASS.IPlayable BuildWASAPIExOutput(uint freq, uint chans, string preferredDeviceName)
         {
             if (!BASSWASAPIOutput.IsAvailable || !AppCore.enableWASAPIExclusive)
             {
                 throw new Exception();
             }
             BASS.BASS_SetDevice(0);
-            var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.Flags.Buffer | BASSWASAPIOutput.Flags.Exclusive, AppCore.enableWASAPIVolume);
+
+            int deviceid = -1;
+            var devices = BASSWASAPIOutput.GetDevices();
+            for (int i = 0; i < devices.Length; i++)
+            {
+                var device = devices[i];
+                if (
+                    (device.Name == preferredDeviceName) && 
+                    ((device.Flag & BASSWASAPIOutput.BASS_WASAPI_DEVICEINFO.Flags.BASS_DEVICE_INPUT) == 0) && 
+                    (device.Mixchans>=2))
+                {
+                    deviceid = i;
+                    Logger.Debug("Found preferred output device:" + device.ToString());
+                    break;
+                }
+            }
+            var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.InitFlags.Buffer | BASSWASAPIOutput.InitFlags.Exclusive, AppCore.enableWASAPIVolume, deviceid);
             if (outputChannel == null) throw new Exception();
             outputMode = Controller.OutputModeEnum.WASAPIEx;
             Logger.Debug("Use WASAPI Exclusive Output");
@@ -227,15 +244,32 @@ namespace Gageas.Lutea.Core
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="chans"></param>
+        /// <param name="preferredDeviceName">デフォルトデバイスに優先して選択するデバイスの名前</param>
         /// <returns></returns>
-        private BASS.IPlayable BuildWASAPIOutput(uint freq, uint chans)
+        private BASS.IPlayable BuildWASAPIOutput(uint freq, uint chans, string preferredDeviceName)
         {
             if (!BASSWASAPIOutput.IsAvailable)
             {
                 throw new Exception();
             }
             BASS.BASS_SetDevice(0);
-            var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.Flags.Buffer, AppCore.enableWASAPIVolume);
+
+            int deviceid = -1;
+            var devices = BASSWASAPIOutput.GetDevices();
+            for (int i = 0; i < devices.Length; i++)
+            {
+                var device = devices[i];
+                if (
+                    (device.Name == preferredDeviceName) &&
+                    ((device.Flag & BASSWASAPIOutput.BASS_WASAPI_DEVICEINFO.Flags.BASS_DEVICE_INPUT) == 0) &&
+                    (device.Mixchans >= 2))
+                {
+                    deviceid = i;
+                    Logger.Debug("Found preferred output device:" + device.ToString());
+                    break;
+                }
+            }
+            var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.InitFlags.Buffer, AppCore.enableWASAPIVolume, deviceid);
             if (outputChannel == null) throw new Exception();
             outputMode = Controller.OutputModeEnum.WASAPI;
             Logger.Debug("Use WASAPI Shared Output");
@@ -247,13 +281,26 @@ namespace Gageas.Lutea.Core
         /// </summary>
         /// <param name="freq"></param>
         /// <param name="chans"></param>
+        /// <param name="preferredDeviceName">デフォルトデバイスに優先して選択するデバイスの名前</param>
         /// <returns></returns>
-        private BASS.IPlayable BuildFloatingPointOutput(uint freq, uint chans)
+        private BASS.IPlayable BuildFloatingPointOutput(uint freq, uint chans, string preferredDeviceName)
         {
             var outdev = GetInitializedBassRealOutputDevice();
             if (outdev == 0)
             {
-                BASS.BASS_Init(-1, OutputFreq, BASS_BUFFFER_LEN);
+                int deviceid = -1;
+                var devices = BASS.GetDevices();
+                for (int i = 0; i < devices.Length; i++)
+                {
+                    var device = devices[i];
+                    if (device.Name == preferredDeviceName)
+                    {
+                        deviceid = i;
+                        Logger.Debug("Found preferred output device:" + device.ToString());
+                        break;
+                    }
+                }
+                BASS.BASS_Init(deviceid, OutputFreq, BASS_BUFFFER_LEN);
                 outdev = GetInitializedBassRealOutputDevice();
             }
             BASS.BASS_SetDevice(outdev);
