@@ -104,7 +104,6 @@ namespace Gageas.Lutea.DefaultUI
 
                 if (SpectrumMode < 0 || SpectrumMode > 4 || !Controller.IsPlaying)
                 {
-                    b = null;
                     Thread.Sleep(200);
                     continue;
                 }
