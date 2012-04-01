@@ -72,7 +72,6 @@ namespace Gageas.Lutea.Core
         internal static double NoReplaygainGainBoost = 0.0;
         internal static bool enableWASAPIExclusive = true;
         internal static bool enableWASAPIVolume = false;
-        internal static uint OutputFreq = 44100;
         internal static bool fadeInOutOnSkip = false;
         internal static string preferredDeviceName = "";
         #endregion
@@ -449,9 +448,9 @@ namespace Gageas.Lutea.Core
                 }
             }
 
-            BASS.BASS_Init(0);
             if (BASS.isAvailable)
             {
+                BASS.BASS_Init(0);
                 String[] dllList = System.IO.Directory.GetFiles(userDirectory.PluginDir, "*.dll");
                 foreach (String dllFilename in dllList)
                 {

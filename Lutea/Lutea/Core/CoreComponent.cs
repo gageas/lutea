@@ -102,32 +102,6 @@ namespace Gageas.Lutea.Core
                 }
             }
 
-            public enum Freqs : uint
-            {
-                Freq_44100 = 44100,
-                Freq_48000 = 48000,
-                Freq_96000 = 96000,
-                Freq_192000 = 192000
-            }
-            /// <summary>
-            /// 出力周波数
-            /// </summary>
-            uint outputFreq = AppCore.OutputFreq;
-            [Category("Output")]
-            [Description("出力周波数(Hz)\n※ 停止後に反映されます")]
-            [DefaultValue(Freqs.Freq_44100)]
-            public Freqs OutputFreq
-            {
-                get
-                {
-                    return (Freqs)outputFreq;
-                }
-                set
-                {
-                    outputFreq = (uint)value;
-                }
-            }
-
             /// <summary>
             /// 曲間プチノイズ対策
             /// </summary>
@@ -222,7 +196,6 @@ namespace Gageas.Lutea.Core
                 ()=>AppCore.createPlaylist((string)setting["latestPlaylistQuery"]),
                 ()=>AppCore.enableWASAPIExclusive = (bool)setting["enableWASAPIExclusive"],
                 ()=>AppCore.enableWASAPIVolume = (bool)setting["enableWASAPIVolume"],
-                ()=>AppCore.OutputFreq = (uint)setting["outputFreq"],
                 ()=>AppCore.fadeInOutOnSkip = (bool)setting["fadeInOutOnSkip"],
                 ()=>AppCore.preferredDeviceName = (string)setting["preferredDeviceName"],
             }, null);
@@ -245,7 +218,6 @@ namespace Gageas.Lutea.Core
             setting["latestPlaylistQuery"] = AppCore.latestPlaylistQuery;
             setting["enableWASAPIExclusive"] = AppCore.enableWASAPIExclusive;
             setting["enableWASAPIVolume"] = AppCore.enableWASAPIVolume;
-            setting["outputFreq"] = AppCore.OutputFreq;
             setting["fadeInOutOnSkip"] = AppCore.fadeInOutOnSkip;
             setting["preferredDeviceName"] = AppCore.preferredDeviceName;
             return setting;
@@ -265,7 +237,6 @@ namespace Gageas.Lutea.Core
             AppCore.NoReplaygainGainBoost = pref.NoReplaygainGainBoost;
             AppCore.enableWASAPIExclusive = pref.EnableWASAPIExclusive;
             AppCore.enableWASAPIVolume = pref.EnableWASAPIVolume;
-            AppCore.OutputFreq = (uint)pref.OutputFreq;
             AppCore.fadeInOutOnSkip = pref.FadeInOutOnSkip;
             AppCore.preferredDeviceName = pref.PreferredDeviceName == PseudoDeviceNameForDefaultOutput ? "" : pref.PreferredDeviceName;
         }
