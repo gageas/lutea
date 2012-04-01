@@ -10,7 +10,6 @@ namespace Gageas.Lutea.Core
     class OutputManager
     {
         private const int BASS_BUFFFER_LEN = 1500;
-        private const uint OutputFreq = 44100;
 
         private delegate BASS.IPlayable OutputChannelBuilder(uint freq, uint chans, string preferredDeviceName);
 
@@ -300,7 +299,7 @@ namespace Gageas.Lutea.Core
                         break;
                     }
                 }
-                BASS.BASS_Init(deviceid, OutputFreq, BASS_BUFFFER_LEN);
+                BASS.BASS_Init(deviceid, freq, BASS_BUFFFER_LEN);
                 outdev = GetInitializedBassRealOutputDevice();
             }
             BASS.BASS_SetDevice(outdev);
