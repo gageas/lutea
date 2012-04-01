@@ -239,21 +239,6 @@ namespace Gageas.Lutea.Core
         }
 
         #region ストリームプロシージャ
-        private static void Memset(IntPtr ptr, byte set, int sizebytes, int offset = 0)
-        {
-            int sizedw = sizebytes >> 2;
-            sizebytes = sizebytes & 3;
-            for (int i = 0; i < sizedw; i++)
-            {
-                Marshal.WriteInt32(ptr, offset, 0);
-                offset += 4;
-            }
-            for (int i = 0; i < sizebytes; i++)
-            {
-                Marshal.WriteByte(ptr, offset++, 0);
-            }
-        }
-
         private static uint readStreamGained(IntPtr buffer, uint length, BASS.Stream stream, double gaindB)
         {
             uint read = stream.GetData(buffer, length);
@@ -297,7 +282,7 @@ namespace Gageas.Lutea.Core
             uint read2 = 0xffffffff;
 
             // prepareからも読み込めなかった時、バッファをゼロフィルして返す（無音）
-            Memset(buffer, 0, (int)length);
+            ZeroMemory(buffer, length);
             // BASSのデフォルトで0.01秒毎ぐらいにコールされるっぽい。(WASAPI時?)
             // try-catchのコストが気になるのでリリースビルドでは除去する。通常例外おきないはず。
 #if DEBUG
@@ -1143,5 +1128,8 @@ namespace Gageas.Lutea.Core
 
         [DllImport("Kernel32.dll")]
 		private static extern bool SetDllDirectoryW(string lpPathName);
+
+        [DllImport("Kernel32.dll")]
+        private static extern void ZeroMemory(IntPtr dest, UInt32 length);
     }
 }
