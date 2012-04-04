@@ -1916,7 +1916,7 @@ namespace Gageas.Lutea.DefaultUI
         public object GetPreferenceObject()
         {
             var pref = new DefaultUIPreference(this);
-            pref.SpectrumMode = this.SpectrumMode;
+            pref.SpectrumMode = (DefaultUIPreference.SpectrumModes)this.SpectrumMode;
             pref.FFTLogarithmic = this.FFTLogarithmic;
             pref.FFTNumber = this.FFTNum;
             pref.SpectrumColor1 = this.SpectrumColor1;
@@ -1941,7 +1941,7 @@ namespace Gageas.Lutea.DefaultUI
             this.FFTNum = pref.FFTNumber;
             this.SpectrumColor1 = pref.SpectrumColor1;
             this.SpectrumColor2 = pref.SpectrumColor2;
-            this.SpectrumMode = pref.SpectrumMode;
+            this.SpectrumMode = (int)pref.SpectrumMode;
             this.listView1.Font = pref.Font_playlistView;
             this.ShowCoverArtInPlaylistView = pref.ShowCoverArtInPlaylistView;
             if (this.CoverArtSizeInPlaylistView != pref.CoverArtSizeInPlaylistView)

@@ -25,11 +25,21 @@ namespace Gageas.Lutea.DefaultUI
         }
         bool _FFTLogarithmic;
 
-        private int spectrumMode;
+        public enum SpectrumModes
+        {
+            None = -1,
+            Mode0 = 0,
+            Mode1 = 1,
+            Mode2 = 2,
+            Mode3 = 3,
+            Mode4 = 4
+        }
+
+        private SpectrumModes spectrumMode;
         [Description("スペクトラムアナライザ描画モード\n0～4")]
-        [DefaultValue(0)]
+        [DefaultValue(SpectrumModes.Mode0)]
         [Category("Spectrum Analyzer")]
-        public int SpectrumMode
+        public SpectrumModes SpectrumMode
         {
             get
             {
