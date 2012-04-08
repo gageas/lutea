@@ -99,10 +99,17 @@ namespace Gageas.Lutea.Tags
 
             if (tag == null) return null;
 
-            // ARTISTがないとき、ALBUMARTISTをARTISTとして扱う
+            // BANDをALBUM ARTISTとして扱う
+            var band = tag.Find((e) => { return e.Key == "BAND"; });
+            if (band.Value != null)
+            {
+                tag.Add(new KeyValuePair<string, object>("ALBUM ARTIST", band.Value));
+            }
+
+            // ARTISTがないとき、ALBUM ARTISTをARTISTとして扱う
             if (tag.Find((e) => { return e.Key == "ARTIST"; }).Value == null)
             {
-                var albumartist = tag.Find((e) => { return e.Key == "ALBUMARTIST"; });
+                var albumartist = tag.Find((e) => { return e.Key == "ALBUM ARTIST"; });
                 if (albumartist.Value != null)
                 {
                     tag.Add(new KeyValuePair<string, object>("ARTIST", albumartist.Value));
