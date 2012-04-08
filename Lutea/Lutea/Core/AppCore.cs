@@ -49,10 +49,6 @@ namespace Gageas.Lutea.Core
 
         internal static List<Lutea.Core.LuteaComponentInterface> plugins = new List<Core.LuteaComponentInterface>();
 
-        // このへん今後後で使う
-        private Column[] columns = {
-                                       new Column(){nameDB = "file_name", nameDisplay = "ファイル名"}
-                                   };
 
         /// <summary>
         /// アプリケーションのコアスレッド。
@@ -138,23 +134,6 @@ namespace Gageas.Lutea.Core
             }
         }
         #endregion
-
-        /// <summary>
-        /// タグ(ApeTag)からデータベースのColumnへのマッピングを表すDicionary
-        /// </summary>
-        #region tagColumnMapping
-        public static Dictionary<string, DBCol> tagColumnMapping = new Dictionary<string, DBCol>(){
-            {"TITLE",DBCol.tagTitle},
-            {"ARTIST",DBCol.tagArtist},
-            {"ALBUM",DBCol.tagAlbum},
-            {"GENRE",DBCol.tagGenre},
-            {"DATE",DBCol.tagDate},
-            {"COMMENT",DBCol.tagComment},
-            {"TRACK",DBCol.tagTracknumber},
-            {"LYRICS",DBCol.tagLyrics},
-        };
-        #endregion
-
 
         private static Boolean floatingPointOutput = false;
         internal static StreamObject currentStream; // 再生中のストリーム
@@ -353,7 +332,7 @@ namespace Gageas.Lutea.Core
             userDirectory = new UserDirectory();
 
             // ライブラリ準備
-            library = userDirectory.OpenLibrary(tagColumnMapping.Keys);
+            library = userDirectory.OpenLibrary(new string[]{});
 
             // コンポーネントの読み込み
             // Core Componentをロード
@@ -566,7 +545,7 @@ namespace Gageas.Lutea.Core
                     not = "NOT ";
                     word = word.Substring(1);
                 }
-                migemo_phrase[i] = not + "migemo( '" + word.EscapeSingleQuotSQL() + "' , tagTitle||'\n'||tagAlbum||'\n'||tagArtist||'\n'||tagComment||'\n'||tagGenre)";
+                migemo_phrase[i] = not + "migemo( '" + word.EscapeSingleQuotSQL() + "' , " + String.Join("||'\n'||",GetSearchTargetColumns()) + ")";
             }
             return "SELECT * FROM list WHERE " + String.Join(" AND ", migemo_phrase) + ";";
         }
@@ -576,12 +555,17 @@ namespace Gageas.Lutea.Core
             Match match = new Regex(@"^\/(.+)\/[a-z]*$").Match(sql);
             if (match.Success)
             {
-                return "SELECT * FROM list WHERE tagTitle||'\n'||tagAlbum||'\n'||tagArtist||'\n'||tagComment regexp  '" + sql.EscapeSingleQuotSQL() + "' ;";
+                return "SELECT * FROM list WHERE " + String.Join("||'\n'||", GetSearchTargetColumns()) + " regexp  '" + sql.EscapeSingleQuotSQL() + "' ;";
             }
             else
             {
                 throw new System.ArgumentException();
             }
+        }
+
+        private static string[] GetSearchTargetColumns()
+        {
+            return Controller.Columns.Where(_ => _.IsTextSearchTarget).Select(_ => _.DBText).ToArray();
         }
 
         private static SQLite3DB.STMT prepareForCreatePlaylistView(SQLite3DB db, string subquery)
@@ -943,14 +927,14 @@ namespace Gageas.Lutea.Core
                     return false;
                 }
                 object[] row = Controller.GetPlaylistRow(index);
-                string filename = (string)row[(int)DBCol.file_name];
+                string filename = (string)row[Controller.GetColumnIndexByDBText("file_name")];
                 BASS.Stream.StreamFlag flag = BASS.Stream.StreamFlag.BASS_STREAM_DECODE;
                 if (floatingPointOutput) flag |= BASS.Stream.StreamFlag.BASS_STREAM_FLOAT;
                 StreamObject nextStream = null;
                 try
                 {
                     int tr = 1;
-                    Util.Util.tryParseInt(row[(int)DBCol.tagTracknumber].ToString(), ref tr);
+                    Util.Util.tryParseInt(row[Controller.GetColumnIndexByDBText("tagTracknumber")].ToString(), ref tr);
                     nextStream = getStreamObject(filename, tr, flag, tags);
                     if (nextStream == null)
                     {
@@ -1003,8 +987,8 @@ namespace Gageas.Lutea.Core
             if (strm.playbackCounterUpdated) return;
             strm.playbackCounterUpdated = true;
             var currentIndexInPlaylist = Controller.Current.IndexInPlaylist;
-            int count = int.Parse(Controller.Current.MetaData(DBCol.playcount)) + 1;
-            string file_name = Controller.Current.MetaData(DBCol.file_name);
+            int count = int.Parse(Controller.Current.MetaData(Controller.GetColumnIndexByDBText("playcount"))) + 1;
+            string file_name = Controller.Current.MetaData(Controller.GetColumnIndexByDBText("file_name"));
             Logger.Log("再生カウントを更新しまつ" + file_name + ",  " + count);
             CoreEnqueue(() =>
             {
@@ -1021,8 +1005,8 @@ namespace Gageas.Lutea.Core
                 var row = Controller.GetPlaylistRow(currentIndexInPlaylist);
                 if (row != null)
                 {
-                    row[(int)DBCol.playcount] = (int.Parse(row[(int)DBCol.playcount].ToString()) + 1).ToString();
-                    row[(int)DBCol.lastplayed] = (H2k6Library.currentTimestamp).ToString();
+                    row[Controller.GetColumnIndexByDBText("playcount")] = (int.Parse(row[Controller.GetColumnIndexByDBText("playcount")].ToString()) + 1).ToString();
+                    row[Controller.GetColumnIndexByDBText("lastplayed")] = (H2k6Library.currentTimestamp).ToString();
                 }
                 Controller._PlaylistUpdated(null);
             });
@@ -1056,7 +1040,8 @@ namespace Gageas.Lutea.Core
             Logger.Log("preSync");
             var th = new Thread(() => {
                 var row = Controller.GetPlaylistRow(getSuccTrackIndex());
-                string filename = (string)row[(int)DBCol.file_name];
+                if (row == null) return;
+                string filename = (string)row[Controller.GetColumnIndexByDBText("file_name")];
                 List<KeyValuePair<string,object>> tag = null;
                 if (File.Exists(filename))
                 {

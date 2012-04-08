@@ -8,38 +8,31 @@ using System.Threading;
 using Gageas.Wrapper.BASS;
 using Gageas.Wrapper.SQLite3;
 using Gageas.Lutea.Util;
+using Gageas.Lutea.Library;
 
 namespace Gageas.Lutea.Core
 {
-    /// <summary>
-    /// Databaseに定義されているColumn
-    /// </summary>
-    public enum DBCol
-    {
-        file_name, file_title, file_ext, file_size,
-        tagTitle, tagArtist, tagAlbum, tagGenre, tagDate, tagComment, tagTracknumber, tagAPIC, tagLyrics,
-        statDuration, statChannels, statSamplingrate, statBitrate, statVBR,
-        infoCodec, infoCodec_sub, infoTagtype, gain, rating, playcount, lastplayed, modify
-    };
-
-    /// <summary>
-    /// クエリ実行モードの列挙体
-    /// </summary>
-    public enum SearchQueryMode
-    {
-        AUTO,
-        RAWSQL,
-        REGEXP,
-        MIGEMO,
-        LIKE
-    };
-
     /// <summary>
     /// アプリケーションのコントローラ
     /// AppCoreから公開インタフェースを分離したが、中途半端
     /// </summary>
     public static class Controller
     {
+        public static Column[] Columns {
+            get
+            {
+                return H2k6Library.Columns;
+            }
+        }
+        public static int GetColumnIndexByDBText(string DBText)
+        {
+            return Columns.ToList().IndexOf(Columns.First(_ => _.DBText == DBText));
+        }
+        public static int GetColumnIndex(Column column)
+        {
+            return Columns.ToList().IndexOf(Columns.First(_ => _.Equals(column)));
+        }
+
         public enum OutputModeEnum
         {
             STOP,
@@ -79,51 +72,6 @@ namespace Gageas.Lutea.Core
         public static event VOIDVOID onDatabaseUpdated;
         public delegate void PlaylistUpdatedEvent(string sql);
         public static event PlaylistUpdatedEvent PlaylistUpdated;
-        #endregion
-        /// <summary>
-        /// databaseのcolumnからテキストへのマッピングを表すDictionary
-        /// FIXME: 書き換えられるので後でなおす
-        /// </summary>
-        #region ColumnLocalStringMapping
-        private static Dictionary<DBCol, string> ColumnLocalStringMapping = new Dictionary<DBCol, string>()
-        {
-            {DBCol.file_name,"ファイルパス"},
-            {DBCol.file_title,"ファイル名"},
-            {DBCol.file_ext,"拡張子"},
-            {DBCol.file_size,"ファイルサイズ"},
-
-            {DBCol.statDuration,"長さ"},
-            {DBCol.statBitrate,"ビットレート"},
-            {DBCol.statSamplingrate,"サンプリング周波数"},
-            {DBCol.statChannels,"チャンネル"},
-            {DBCol.statVBR,"VBRフラグ(未使用)"},
-
-            {DBCol.lastplayed,"最終再生日"},
-            {DBCol.modify,"最終更新日"},
-            {DBCol.rating,"評価"},
-            {DBCol.playcount,"再生回数"},
-            {DBCol.gain,"ゲイン(未使用)"},
-
-            {DBCol.infoCodec,"コーデック"},
-            {DBCol.infoCodec_sub,"コーデック2"},
-            {DBCol.infoTagtype,"タグ形式(未使用)"},
-
-            {DBCol.tagTracknumber,"No"},
-            {DBCol.tagTitle,"タイトル"},
-            {DBCol.tagArtist,"アーティスト"},
-            {DBCol.tagAlbum,"アルバム"},
-            {DBCol.tagGenre,"ジャンル"},
-            {DBCol.tagComment,"コメント"},
-            {DBCol.tagDate,"年"},
-            {DBCol.tagAPIC,"カバーアート(未使用)"},
-            {DBCol.tagLyrics,"歌詞(未使用)"},
-
-        };
-        public static string GetColumnLocalString(DBCol col)
-        {
-            if (ColumnLocalStringMapping.ContainsKey(col)) return ColumnLocalStringMapping[col];
-            return col.ToString();
-        }
         #endregion
 
         #region elapsedTimeWatcher
@@ -311,17 +259,31 @@ namespace Gageas.Lutea.Core
                     AppCore.SetPosition(value);
                 }
             }
-            public static String MetaData(DBCol col)
+            public static String MetaData(Library.Column col)
             {
                 if (AppCore.currentStream == null) return null;
-                if ((int)col >= AppCore.currentStream.meta.Length) return null;
-                return AppCore.currentStream.meta[(int)col].ToString();
+                int idx = Columns.ToList().IndexOf(col);
+                if (idx < 0 || idx >= AppCore.currentStream.meta.Length) return null;
+                return AppCore.currentStream.meta[idx].ToString();
             }
+            public static String MetaData(int colidx)
+            {
+                if (colidx < 0 || colidx >= AppCore.currentStream.meta.Length) return null;
+                return AppCore.currentStream.meta[colidx].ToString();
+            }
+            public static String MetaData(string DBText)
+            {
+                if (AppCore.currentStream == null) return null;
+                int idx = Columns.ToList().IndexOf(Columns.First(_ => _.DBText == DBText));
+                if (idx < 0 || idx >= AppCore.currentStream.meta.Length) return null;
+                return AppCore.currentStream.meta[idx].ToString();
+            }
+
             public static int Rating
             {
                 get
                 {
-                    return int.Parse(MetaData(DBCol.rating));
+                    return int.Parse(MetaData(Columns.First(_ => _.type == LibraryColumnType.Rating)));
                 }
                 set
                 {
@@ -329,7 +291,8 @@ namespace Gageas.Lutea.Core
                     {
                         using (var db = GetDBConnection())
                         {
-                            using(var stmt = db.Prepare("UPDATE list SET rating = " + value + " WHERE file_name = '" + Filename.EscapeSingleQuotSQL() + "'")){
+                            using (var stmt = db.Prepare("UPDATE list SET " + LibraryDBColumnTextMinimum.rating + " = " + value + " WHERE " + LibraryDBColumnTextMinimum.file_name + " = '" + Filename.EscapeSingleQuotSQL() + "'"))
+                            {
                                 stmt.Evaluate(null);
                             }
                         
@@ -341,7 +304,7 @@ namespace Gageas.Lutea.Core
             {
                 get
                 {
-                    return MetaData(DBCol.file_name);
+                    return MetaData(Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name));
                 }
             }
             public static String StreamFilename
@@ -493,7 +456,7 @@ namespace Gageas.Lutea.Core
                 using (var db = GetDBConnection())
                 {
                     db.Exec("BEGIN;");
-                    using (var stmt = db.Prepare("UPDATE list SET rating = ? WHERE file_name = ? ;"))
+                    using (var stmt = db.Prepare("UPDATE list SET " + LibraryDBColumnTextMinimum.rating + " = ? WHERE " + LibraryDBColumnTextMinimum.file_name + " = ? ;"))
                     {
                         foreach (var file_name in filenames)
                         {
@@ -501,10 +464,10 @@ namespace Gageas.Lutea.Core
                             stmt.Bind(2, file_name);
                             stmt.Evaluate(null);
                             stmt.Reset();
-                            var row = AppCore.playlistCache.First(((o) => ((string)o[(int)DBCol.file_name]) == file_name));
+                            var row = AppCore.playlistCache.First(((o) => ((string)o[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)]) == file_name));
                             if (row != null)
                             {
-                                row[(int)DBCol.rating] = rate.ToString();
+                                row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.rating)] = rate.ToString();
                             }
                         }
                     }
@@ -556,7 +519,7 @@ namespace Gageas.Lutea.Core
             return value;
         }
 
-        public static string GetPlaylistRowColumn(int rowindex, DBCol column)
+        public static string GetPlaylistRowColumn(int rowindex, int column)
         {
             var row = GetPlaylistRow(rowindex);
             if(row == null)return null;
@@ -586,7 +549,7 @@ namespace Gageas.Lutea.Core
             List<string> dead_filenames = new List<string>();
             using (var db = GetDBConnection())
             {
-                using (var stmt = db.Prepare("SELECT file_name FROM list;"))
+                using (var stmt = db.Prepare("SELECT " + LibraryDBColumnTextMinimum.file_name + " FROM list;"))
                 {
                     file_names = stmt.EvaluateAll();
                     foreach (var _file_name in file_names)
@@ -607,7 +570,7 @@ namespace Gageas.Lutea.Core
             using (var db = GetDBConnection())
             {
                 db.Exec("BEGIN;");
-                using (var stmt = db.Prepare("DELETE FROM list WHERE file_name = ?;"))
+                using (var stmt = db.Prepare("DELETE FROM list WHERE " + LibraryDBColumnTextMinimum.file_name + " = ?;"))
                 {
                     foreach (var file_name in file_names)
                     {

@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Gageas.Wrapper.SQLite3;
 using Gageas.Lutea.Util;
+using Gageas.Lutea.Library;
 using KaoriYa.Migemo;
 
 namespace Gageas.Lutea
@@ -27,7 +28,6 @@ namespace Gageas.Lutea
         {
             get
             {
-//                return (new Regex(@"\.[^\.]+$")).Replace(this._file_name, "");
                 if (file_name == "") return "";
                 return System.IO.Path.GetFileNameWithoutExtension(file_name);
             }
@@ -36,8 +36,6 @@ namespace Gageas.Lutea
         {
             get
             {
-//                return (new Regex(@"\.(?<1>[^\.]+)$")).Match(this._file_name).Groups[1].Value.Trim();
-                if (file_name == "") return "";
                 return System.IO.Path.GetExtension(file_name).Trim().Substring(1).ToUpper();
             }
         }
@@ -132,11 +130,40 @@ namespace Gageas.Lutea
 
     public class H2k6Library
     {
+        public static readonly Column[] Columns = 
+        {
+           new Column(type:LibraryColumnType.FileName, DBText:"file_name", LocalText:"ファイルパス", IsPrimaryKey:true),
+           new Column(type:LibraryColumnType.Text, DBText:"file_title", LocalText:"ファイル名", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Text, DBText:"file_ext", LocalText:"拡張子", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Integer, DBText:"file_size", LocalText:"ファイルサイズ", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Text, DBText:"tagTitle", LocalText:"タイトル", IsPrimaryKey:false,IsTextSearchTarget:true, MappedTagField:"TITLE"),
+           new Column(type:LibraryColumnType.Text, DBText:"tagArtist", LocalText:"アーティスト", IsPrimaryKey:false,IsTextSearchTarget:true, MappedTagField:"ARTIST"),
+           new Column(type:LibraryColumnType.Text, DBText:"tagAlbum", LocalText:"アルバム", IsPrimaryKey:false, IsTextSearchTarget:true, MappedTagField:"ALBUM"),
+           new Column(type:LibraryColumnType.Text, DBText:"tagGenre", LocalText:"ジャンル", IsPrimaryKey:false, IsTextSearchTarget:true, MappedTagField:"GENRE"),
+           new Column(type:LibraryColumnType.Text, DBText:"tagDate", LocalText:"年", IsPrimaryKey:false, MappedTagField:"DATE"),
+           new Column(type:LibraryColumnType.Text, DBText:"tagComment", LocalText:"コメント", IsPrimaryKey:false, IsTextSearchTarget:true, MappedTagField:"COMMENT"),
+           new Column(type:LibraryColumnType.TrackNumber, DBText:"tagTracknumber", LocalText:"No", IsPrimaryKey:false, MappedTagField:"TRACK"),
+           new Column(type:LibraryColumnType.Text, DBText:"tagAPIC", LocalText:"カバーアート(未使用)", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Text, DBText:"tagLyrics", LocalText:"歌詞(未使用)", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Time, DBText:"statDuration", LocalText:"長さ", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Integer, DBText:"statChannels", LocalText:"チャンネル", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Integer, DBText:"statSamplingrate", LocalText:"サンプリング周波数", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Bitrate, DBText:"statBitrate", LocalText:"ビットレート", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Integer, DBText:"statVBR", LocalText:"VBRフラグ(未使用)", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Integer, DBText:"infoCodec", LocalText:"コーデック", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Text, DBText:"infoCodec_sub", LocalText:"コーデック2", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Integer, DBText:"infoTagtype", LocalText:"タグ形式(未使用)", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Integer, DBText:"gain", LocalText:"ゲイン(未使用)", IsPrimaryKey:false),
+           new Column(type:LibraryColumnType.Rating, DBText:"rating", LocalText:"評価", IsPrimaryKey:false, OmitOnImport:true),
+           new Column(type:LibraryColumnType.Integer, DBText:"playcount", LocalText:"再生回数", IsPrimaryKey:false, OmitOnImport:true),
+           new Column(type:LibraryColumnType.Timestamp64, DBText:"lastplayed", LocalText:"最終再生日", IsPrimaryKey:false, OmitOnImport:true),
+           new Column(type:LibraryColumnType.Timestamp64, DBText:"modify", LocalText:"最終更新日", IsPrimaryKey:false),
+        };
+
         class KVPool<K,V>{
             public delegate V ValueGenerator(K src);
 
             private Dictionary<K,V> pool = new Dictionary<K,V>();
-//            private RegexOptions options;
             private int poolLimit;
             private ValueGenerator valueGenerator;
 
@@ -155,7 +182,6 @@ namespace Gageas.Lutea
                 {
                     try
                     {
-//                        value = new Regex(src, options);
                         value = valueGenerator(src);
                     }
                     catch
@@ -167,7 +193,6 @@ namespace Gageas.Lutea
                 return value;
             }
         }
-        public static string[] basicColumn = { "file_name", "file_title", "file_ext", "file_size" };
         private static System.DateTime UnixEpoch = new System.DateTime(1970, 1, 1, 0, 0, 0);
         public bool MigemoEnabled
         {
@@ -188,7 +213,6 @@ namespace Gageas.Lutea
             return DateTime.FromFileTime((timestamp * 10000000 + UnixEpoch.ToFileTime()));
         }
 
-        public string[] Columns;
         private string dbPath;
         public H2k6Library(ICollection<string> customColumns,string dbPath)
         {
@@ -198,7 +222,6 @@ namespace Gageas.Lutea
                 migemoRePool = new KVPool<string,Regex>((src) => migemo.GetRegex(src,RegexOptions.IgnoreCase|RegexOptions.Multiline));
             }
             catch { }
-            Columns = basicColumn.Concat(customColumns).ToArray<string>();
             this.dbPath = dbPath;
         }
         public SQLite3DB Connect(bool lockable){
