@@ -13,6 +13,7 @@ namespace Gageas.Lutea.Tags
         public static CD Read(string filename)
         {
             var tag = MetaTag.readTagByFilename(filename, false);
+            var albumArtist = tag.Find(_ => _.Key == "ALBUM ARTIST");
             CD cd = CUEparser.fromString(tag.Find((e) => e.Key == "CUESHEET").Value.ToString(),filename,true);
             if (cd == null) return null;
             long bits = (new FileInfo(filename)).Length * 8;
@@ -28,6 +29,11 @@ namespace Gageas.Lutea.Tags
                 int trackindex = 0;
                 var trackIndex = tr.tag.Find((match) => match.Key == "TRACK" ? true : false);
                 trackindex = int.Parse(trackIndex.Value.ToString());
+
+                if (albumArtist.Value != null)
+                {
+                    tr.tag.Add(new KeyValuePair<string, object>("ALBUM ARTIST", albumArtist.Value.ToString()));
+                }
 
                 // InCUEの拡張タグ（？）をトラックのタグに付加
                 var customColumns = tag.FindAll((e) => e.Key.IndexOf(string.Format("CUE_TRACK{0:00}_", trackindex)) == 0);
