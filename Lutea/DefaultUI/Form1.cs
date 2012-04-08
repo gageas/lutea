@@ -16,6 +16,7 @@ using System.IO;
 using Gageas.Lutea.Tags;
 using Gageas.Lutea.Util;
 using Gageas.Lutea.Core;
+using Gageas.Lutea.Library;
 
 namespace Gageas.Lutea.DefaultUI
 {
@@ -73,29 +74,26 @@ namespace Gageas.Lutea.DefaultUI
         /// <summary>
         /// 各Columnのでデフォルトの幅を定義
         /// </summary>
-        Dictionary<DBCol, int> defaultColumnDisplayWidth = new Dictionary<DBCol, int>(){
-            {DBCol.tagTracknumber,130},
-            {DBCol.tagTitle,120},
-            {DBCol.tagArtist,120},
-            {DBCol.tagAlbum,80},
-            {DBCol.tagComment,120},
-            {DBCol.rating,84},
+        Dictionary<string, int> defaultColumnDisplayWidth = new Dictionary<string, int>(){
+            {"tagTracknumber",130},
+            {"tagTitle",120},
+            {"tagArtist",120},
+            {"tagAlbum",80},
+            {"tagComment",120},
+            {"rating",84},
         };
 
         /// <summary>
         /// playlistviewに表示するcolumnを定義
         /// </summary>
-        DBCol[] displayColumns = { DBCol.tagTracknumber, DBCol.tagTitle, DBCol.tagArtist, DBCol.tagAlbum, DBCol.tagComment, DBCol.tagDate, DBCol.tagGenre,
-                                     DBCol.statDuration, DBCol.statBitrate, DBCol.rating, DBCol.lastplayed, DBCol.playcount }; // DBCol.infoCodec, DBCol.infoCodec_sub, DBCol.modify, DBCol.statChannels, DBCol.statSamplingrate
-        //        int[] ColumnOrder = null;
-        //        int[] ColumnWidth = null;
-        Dictionary<DBCol, int> ColumnOrder = new Dictionary<DBCol, int>();
-        Dictionary<DBCol, int> ColumnWidth = new Dictionary<DBCol, int>();
+        string[] displayColumns = null; // DBCol.infoCodec, DBCol.infoCodec_sub, DBCol.modify, DBCol.statChannels, DBCol.statSamplingrate
+        Dictionary<string, int> ColumnOrder = new Dictionary<string, int>();
+        Dictionary<string, int> ColumnWidth = new Dictionary<string, int>();
 
         /// <summary>
         /// filter viewに表示するcolumnを定義
         /// </summary>
-        DBCol[] filterColumns = { DBCol.tagArtist, DBCol.tagAlbum, DBCol.tagDate, DBCol.tagGenre, DBCol.infoCodec_sub, DBCol.rating };
+        string[] filterColumns = { "tagArtist", "tagAlbum", "tagDate", "tagGenre", LibraryDBColumnTextMinimum.infoCodec_sub, LibraryDBColumnTextMinimum.rating,  };
 
         /// <summary>
         /// Ratingの☆を描画
@@ -151,30 +149,31 @@ namespace Gageas.Lutea.DefaultUI
                 ColumnWidth.Clear();
                 for (int i = 0; i < listView1.Columns.Count; i++)
                 {
-                    ColumnOrder[(DBCol)listView1.Columns[i].Tag] = listView1.Columns[i].DisplayIndex;
-                    ColumnWidth[(DBCol)listView1.Columns[i].Tag] = Math.Max(10, listView1.Columns[i].Width);
+                    ColumnOrder[Controller.Columns[(int)listView1.Columns[i].Tag].DBText] = listView1.Columns[i].DisplayIndex;
+                    ColumnWidth[Controller.Columns[(int)listView1.Columns[i].Tag].DBText] = Math.Max(10, listView1.Columns[i].Width);
                 }
             }
 
             listView1.Clear();
-            foreach (DBCol col in displayColumns)
+            foreach (string coltext in displayColumns)
             {
                 var colheader = new ColumnHeader();
-                colheader.Text = Controller.GetColumnLocalString(col);
+                var col = Controller.GetColumnIndexByDBText(coltext);
+                colheader.Text = Controller.Columns[col].LocalText;
                 colheader.Tag = col;
-                if (ColumnWidth.ContainsKey(col))
+                if (ColumnWidth.ContainsKey(coltext))
                 {
-                    colheader.Width = ColumnWidth[col];
+                    colheader.Width = ColumnWidth[coltext];
                 }
                 else
                 {
-                    if (defaultColumnDisplayWidth.ContainsKey(col))
+                    if (defaultColumnDisplayWidth.ContainsKey(Controller.Columns[col].DBText))
                     {
-                        colheader.Width = defaultColumnDisplayWidth[col];
+                        colheader.Width = defaultColumnDisplayWidth[Controller.Columns[col].DBText];
                     }
                 }
                 listView1.Columns.Add(colheader);
-                if (col == DBCol.statBitrate)
+                if (Controller.Columns[col].DBText == LibraryDBColumnTextMinimum.statBitrate)
                 {
                     colheader.TextAlign = HorizontalAlignment.Right;
                 }
@@ -182,12 +181,12 @@ namespace Gageas.Lutea.DefaultUI
 
             foreach (ColumnHeader colheader in listView1.Columns)
             {
-                var col = (DBCol)(colheader.Tag);
-                if (ColumnOrder.ContainsKey(col))
+                var col = (int)(colheader.Tag);
+                if (ColumnOrder.ContainsKey(Controller.Columns[col].DBText))
                 {
                     try
                     {
-                        colheader.DisplayIndex = ColumnOrder[col];
+                        colheader.DisplayIndex = ColumnOrder[Controller.Columns[col].DBText];
                     }
                     catch
                     {
@@ -224,9 +223,9 @@ namespace Gageas.Lutea.DefaultUI
         #region Application core event handler
         private void trackChange(int index)
         {
-            var album = Controller.Current.MetaData(DBCol.tagAlbum);
-            var artist = Controller.Current.MetaData(DBCol.tagArtist);
-            var genre = Controller.Current.MetaData(DBCol.tagGenre);
+            var album = Controller.Current.MetaData("tagAlbum");
+            var artist = Controller.Current.MetaData("tagArtist");
+            var genre = Controller.Current.MetaData("tagGenre");
             groupBox1.ContextMenuStrip = null;
             ContextMenuStrip cms = null;
             this.Invoke((MethodInvoker)(() =>
@@ -260,13 +259,13 @@ namespace Gageas.Lutea.DefaultUI
                 }
 
                 setStatusText("Playing " + Controller.Current.StreamFilename);
-                groupBox1.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData(DBCol.tagTracknumber))).Replace("&", "&&");
+                groupBox1.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData("tagTracknumber"))).Replace("&", "&&");
                 trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}",
-                    Controller.Current.MetaData(DBCol.tagTitle),
+                    Controller.Current.MetaData("tagTitle"),
                     Util.Util.FormatIfExists(" - {0}",
-                       Controller.Current.MetaData(DBCol.tagArtist))
+                       Controller.Current.MetaData("tagArtist"))
                     );
-                setFormTitle(Controller.Current.MetaData(DBCol.tagTitle) + Util.Util.FormatIfExists(" / {0}", Controller.Current.MetaData(DBCol.tagArtist)));
+                setFormTitle(Controller.Current.MetaData("tagTitle") + Util.Util.FormatIfExists(" / {0}", Controller.Current.MetaData("tagArtist")));
                 cms = new ContextMenuStrip();
                 listView2.Items.Clear();
             }));
@@ -426,15 +425,11 @@ namespace Gageas.Lutea.DefaultUI
             Controller.onVolumeChange += new Controller.VOIDVOID(changeVolume);
             Controller.onPlaybackOrderChange += new Controller.VOIDVOID(AppCore_onPlaybackOrderChange);
             Controller.onDatabaseUpdated += new Controller.VOIDVOID(RefreshAll);
-            //            AppCore.Init();
-
             treeView1.ImageList = new ImageList();
-            //            treeView1.ImageList.ImageSize = new System.Drawing.Size(12, 12);
             treeView1.ImageList.ColorDepth = ColorDepth.Depth32Bit;
             treeView1.ImageList.Images.Add(Shell32.GetShellIcon(3, false));
             treeView1.ImageList.Images.Add(Shell32.GetShellIcon(116, false)); //70
             reloadDynamicPlaylist();
-            //            queryTextBox_TextChanged(sender, e);
             toolStripComboBox2.GetControl.Items.AddRange(Enum.GetNames(typeof(Controller.PlaybackOrder)));
             toolStripComboBox2.GetControl.SelectedIndex = 0;
             toolStripComboBox2.GetControl.SelectedIndexChanged += new EventHandler(playbackOrderComboBox_SelectedIndexChanged);
@@ -544,9 +539,10 @@ namespace Gageas.Lutea.DefaultUI
             {
                 dummyFilterTab.TabPages.RemoveAt(0);
             }
-            foreach (DBCol col in filterColumns)
+            foreach (int colid in filterColumns.Select(_ => Controller.GetColumnIndexByDBText(_)))
             {
-                var page = new TabPage(Controller.GetColumnLocalString(col));
+                var col = Controller.Columns[colid];
+                var page = new TabPage(col.LocalText);
                 var list = new FilterViewListView();
                 list.SelectEvent += (c, vals) => {
                     if (SupplessFilterViewSelectChangeEvent)
@@ -564,7 +560,7 @@ namespace Gageas.Lutea.DefaultUI
                 page.Margin = new System.Windows.Forms.Padding(0);
                 page.BorderStyle = BorderStyle.None;
                 dummyFilterTab.TabPages.Add(page);
-                page.Tag = col;
+                page.Tag = colid;
             }
             dummyFilterTab.SelectedIndex = -1;
             dummyFilterTab.SelectedIndex = selected;
@@ -652,7 +648,7 @@ namespace Gageas.Lutea.DefaultUI
             string[] filenames = new string[listView1.SelectedIndices.Count];
             for (int i = 0; i < listView1.SelectedIndices.Count; i++)
             {
-                filenames[i] = Controller.GetPlaylistRowColumn(listView1.SelectedIndices[i], DBCol.file_name);
+                filenames[i] = Controller.GetPlaylistRowColumn(listView1.SelectedIndices[i], Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name));
             }
             Controller.SetRating(filenames, rate);
         }
@@ -1202,14 +1198,14 @@ namespace Gageas.Lutea.DefaultUI
 
                         if (idx != -1)
                         {
-                            prev_album = Controller.GetPlaylistRowColumn(idx, DBCol.tagAlbum);
+                            prev_album = Controller.GetPlaylistRowColumn(idx, Controller.GetColumnIndexByDBText("tagAlbum"));
                             do
                             {
                                 if((idx + 1 == listView1.Items.Count)){
                                     break;
                                 }
                                 idx++;
-                                album = Controller.GetPlaylistRowColumn(idx, DBCol.tagAlbum);
+                                album = Controller.GetPlaylistRowColumn(idx, Controller.GetColumnIndexByDBText("tagAlbum"));
                             } while (album == prev_album);
                             selectRow(idx);
                             listView1.EnsureVisible(Math.Min(idx + 5, listView1.Items.Count - 1));
@@ -1263,7 +1259,7 @@ namespace Gageas.Lutea.DefaultUI
 
                         if (idx > 0)
                         {
-                            prev_album = Controller.GetPlaylistRowColumn(idx - 1, DBCol.tagAlbum);
+                            prev_album = Controller.GetPlaylistRowColumn(idx - 1, Controller.GetColumnIndexByDBText("tagAlbum"));
                             do
                             {
                                 idx--;
@@ -1271,7 +1267,7 @@ namespace Gageas.Lutea.DefaultUI
                                 {
                                     break;
                                 }
-                                album = Controller.GetPlaylistRowColumn(idx - 1, DBCol.tagAlbum);
+                                album = Controller.GetPlaylistRowColumn(idx - 1, Controller.GetColumnIndexByDBText("tagAlbum"));
                             } while (album == prev_album);
                             selectRow(idx);
                         }
@@ -1506,19 +1502,20 @@ namespace Gageas.Lutea.DefaultUI
             }));
 
             ListViewItem selected = null;
-            DBCol col = (DBCol)list.Parent.Tag;
+            var colid = (int)list.Parent.Tag;
+            var col = Controller.Columns[colid];
             try
             {
                 object[][] cache_filter = null;
                 // ライブラリからfilterViewに表示する項目を取得
                 using (var db = Controller.GetDBConnection())
-                using (var stmt = db.Prepare("SELECT " + col.ToString() + " ,COUNT(*) FROM list GROUP BY " + col.ToString() + " ORDER BY COUNT(*) desc;"))
+                using (var stmt = db.Prepare("SELECT " + col.DBText + " ,COUNT(*) FROM list GROUP BY " + col.DBText + " ORDER BY COUNT(*) desc;"))
                 {
                     cache_filter = stmt.EvaluateAll();
                 }
 
                 Dictionary<char, ListViewGroup> groups = new Dictionary<char, ListViewGroup>();
-                groups.Add('\0', new ListViewGroup(" " + Controller.GetColumnLocalString(col)));
+                groups.Add('\0', new ListViewGroup(" " + col.LocalText));
 
                 int count_sum = 0;
                 List<ListViewItem> items = new List<ListViewItem>();
@@ -1528,7 +1525,7 @@ namespace Gageas.Lutea.DefaultUI
                     string count = e[1].ToString();
                     char leading_letter = '\0';
                     string header = "";
-                    if (col == DBCol.tagDate)
+                    if (col.type == Library.LibraryColumnType.Timestamp64)
                     {
                         int year = 0;
                         int.TryParse(name.Substring(0, Math.Min(4, name.Length)), out year);
@@ -1585,7 +1582,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             int pageIndex = dummyFilterTab.SelectedIndex;
             if (pageIndex < 0) return;
-            DBCol col = (DBCol)dummyFilterTab.TabPages[pageIndex].Tag;
+            int colid = (int)dummyFilterTab.TabPages[pageIndex].Tag;
             ListView list = (ListView)dummyFilterTab.TabPages[pageIndex].Controls[0];
             if (list.Items.Count == 0)
             {
@@ -1643,7 +1640,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (listView1.SelectedIndices.Count > 0)
             {
-                System.Diagnostics.Process.Start("explorer.exe", "/SELECT, \"" + Controller.GetPlaylistRowColumn(listView1.SelectedIndices[0], DBCol.file_name) + "\"");
+                System.Diagnostics.Process.Start("explorer.exe", "/SELECT, \"" + Controller.GetPlaylistRowColumn(listView1.SelectedIndices[0], Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)) + "\"");
             }
         }
 
@@ -1654,7 +1651,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 foreach (int i in listView1.SelectedIndices)
                 {
-                    file_names.Add(Controller.GetPlaylistRow(i)[(int)DBCol.file_name].ToString());
+                    file_names.Add(Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)));
                 }
             }
             var result = MessageBox.Show(String.Join("\n", file_names.ToArray()), "以下のファイルをライブラリから削除します", MessageBoxButtons.OKCancel);
@@ -1728,8 +1725,8 @@ namespace Gageas.Lutea.DefaultUI
         {
             Util.Util.TryAll(new MethodInvoker[]{
                 ()=>{
-                    ColumnOrder = (Dictionary<DBCol, int>)setting["PlaylistViewColumnOrder"];
-                    ColumnWidth = (Dictionary<DBCol, int>)setting["PlaylistViewColumnWidth"];
+                    ColumnOrder = (Dictionary<string, int>)setting["PlaylistViewColumnOrder"];
+                    ColumnWidth = (Dictionary<string, int>)setting["PlaylistViewColumnWidth"];
                 },
                 ()=>config_FormLocation = (Point)setting["WindowLocation"],
                 ()=>config_FormSize = (Size)setting["WindowSize"],
@@ -1747,7 +1744,7 @@ namespace Gageas.Lutea.DefaultUI
                 ()=>FFTNum = (DefaultUIPreference.FFTNum)setting["FFTNum"],
                 ()=>SpectrumColor1 = (Color)setting["SpectrumColor1"],
                 ()=>SpectrumColor2 = (Color)setting["SpectrumColor2"],
-                ()=>displayColumns = (DBCol[])setting["DisplayColumns"],
+                ()=>displayColumns = (string[])setting["DisplayColumns"],
                 ()=>listView1.Font = (System.Drawing.Font)setting["Font_PlaylistView"],
                 ()=>ShowCoverArtInPlaylistView = (Boolean)setting["ShowCoverArtInPlaylistView"],
                 ()=>CoverArtSizeInPlaylistView = (int)setting["CoverArtSizeInPlaylistView"],
@@ -1783,13 +1780,22 @@ namespace Gageas.Lutea.DefaultUI
 
         public void Init(object _setting)
         {
+            // プレファレンスを適用
             if (_setting != null)
             {
                 parseSetting((Dictionary<string, object>)_setting);
             }
 
+            // 表示するカラムが空の時、タグのカラムを表示することにする
+            if (displayColumns == null || displayColumns.Length == 0)
+            {
+                displayColumns = Controller.Columns.Where(_ => _.MappedTagField != null).OrderBy(_ => _.type).Select(_ => _.DBText).ToArray();
+            }
+
+            // レーティングの☆描画準備
             ratingRenderer = new RatingRenderer(@"components\rating_on.gif", @"components\rating_off.gif");
 
+            // プレイリストビュー初期化
             ResetPlaylistView();
             if (this.WindowState == FormWindowState.Normal)
             {
@@ -1811,24 +1817,24 @@ namespace Gageas.Lutea.DefaultUI
 
             // プレイリストビューの右クリックにColumn選択を生成
             var column_select = new ToolStripMenuItem("表示する項目");
-            foreach (DBCol col in Enum.GetValues(typeof(DBCol)))
+            foreach (Lutea.Library.Column col in Controller.Columns)
             {
-                ToolStripMenuItem item = new ToolStripMenuItem(Controller.GetColumnLocalString(col), null, (e, o) =>
+                ToolStripMenuItem item = new ToolStripMenuItem(col.LocalText, null, (e, o) =>
                 {
-                    List<DBCol> displayColumns_list = new List<DBCol>();
+                    List<string> displayColumns_list = new List<string>();
                     foreach (ToolStripMenuItem _ in column_select.DropDownItems)
                     {
                         if (_.Checked)
                         {
-                            displayColumns_list.Add((DBCol)_.Tag);
+                            displayColumns_list.Add(Controller.Columns[(int)_.Tag].DBText);
                         }
                     }
                     displayColumns = displayColumns_list.ToArray();
                     ResetPlaylistView();
                 });
                 item.CheckOnClick = true;
-                item.Tag = col;
-                if (displayColumns.Contains((DBCol)col))
+                item.Tag = Controller.GetColumnIndex(col);
+                if (displayColumns.Contains(col.DBText))
                 {
                     item.Checked = true;
                 }
@@ -1872,12 +1878,12 @@ namespace Gageas.Lutea.DefaultUI
             setting["splitContainer1.SplitterDistance"] = splitContainer1.SplitterDistance;
             setting["splitContainer2.SplitterDistance"] = splitContainer2.SplitterDistance;
             setting["splitContainer3.SplitterDistance"] = splitContainer3.SplitterDistance;
-            Dictionary<DBCol, int> PlaylistViewColumnOrder = new Dictionary<DBCol, int>();
-            Dictionary<DBCol, int> PlaylistViewColumnWidth = new Dictionary<DBCol, int>();
+            Dictionary<string, int> PlaylistViewColumnOrder = new Dictionary<string, int>();
+            Dictionary<string, int> PlaylistViewColumnWidth = new Dictionary<string, int>();
             for (int i = 0; i < listView1.Columns.Count; i++)
             {
-                PlaylistViewColumnOrder[(DBCol)listView1.Columns[i].Tag] = listView1.Columns[i].DisplayIndex;
-                PlaylistViewColumnWidth[(DBCol)listView1.Columns[i].Tag] = Math.Max(10, listView1.Columns[i].Width);
+                PlaylistViewColumnOrder[Controller.Columns[(int)listView1.Columns[i].Tag].DBText] = listView1.Columns[i].DisplayIndex;
+                PlaylistViewColumnWidth[Controller.Columns[(int)listView1.Columns[i].Tag].DBText] = Math.Max(10, listView1.Columns[i].Width);
             }
             setting["PlaylistViewColumnOrder"] = PlaylistViewColumnOrder;
             setting["PlaylistViewColumnWidth"] = PlaylistViewColumnWidth;
@@ -2070,7 +2076,7 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         return;
                     }
-                    var file_name = Controller.GetPlaylistRowColumn(task.Value[0], DBCol.file_name).ToString().Trim();
+                    var file_name = Controller.GetPlaylistRowColumn(task.Value[0], Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)).ToString().Trim();
                     var orig = Controller.CoverArtImageForFile(file_name);
                     if (orig != null)
                     {
@@ -2134,8 +2140,8 @@ namespace Gageas.Lutea.DefaultUI
             var isSelected = (e.State & ListViewItemStates.Selected) != 0;
 
             int indexInGroup = 0;
-            var album = row[(int)DBCol.tagAlbum].ToString();
-            while (album == Controller.GetPlaylistRowColumn(index - indexInGroup, DBCol.tagAlbum)) indexInGroup++;
+            var album = row[Controller.GetColumnIndexByDBText("tagAlbum")].ToString();
+            while (album == Controller.GetPlaylistRowColumn(index - indexInGroup, Controller.GetColumnIndexByDBText("tagAlbum"))) indexInGroup++;
             var isFirstTrack = indexInGroup == 1;
 
             using (var g = e.Graphics)
@@ -2253,14 +2259,16 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     GDI.MoveToEx(hDC, bounds_X + pc - 1, bounds_Y, IntPtr.Zero);
                     GDI.LineTo(hDC, bounds_X + pc - 1, bounds_Y + bounds_Height);
-                    DBCol col = (DBCol)head.Tag;
+                    int colidx = (int)head.Tag;
 
-                    if ((int)(col) >= row_Length) continue;
+                    if (colidx >= row_Length) continue;
 
-                    if (col == DBCol.rating)
+                    var col = Controller.Columns[colidx];
+
+                    if (col.type == Library.LibraryColumnType.Rating)
                     {
                         int stars = 0;
-                        int.TryParse(row[(int)col].ToString(), out stars);
+                        int.TryParse(row[colidx].ToString(), out stars);
                         stars /= 10;
                         g.ReleaseHdc(hDC);
                         ratingRenderer.Draw(stars, g, bounds_X + pc + 2, bounds_Y, head.Width - 2, bounds_Height);
@@ -2269,7 +2277,7 @@ namespace Gageas.Lutea.DefaultUI
                         continue;
                     }
 
-                    if (ShowCoverArtInPlaylistView && col == DBCol.tagTracknumber)
+                    if (ShowCoverArtInPlaylistView && col.type == Library.LibraryColumnType.TrackNumber)
                     {
                         if (coverArts.ContainsKey(album))
                         {
@@ -2291,20 +2299,19 @@ namespace Gageas.Lutea.DefaultUI
                     }
 
                     var w = head.Width - 2;
-                    var str = row[(int)col].ToString();
-                    switch (col)
+                    var str = row[colidx].ToString();
+                    switch (col.type)
                     {
-                        case DBCol.lastplayed:
-                        case DBCol.modify:
+                        case Library.LibraryColumnType.Timestamp64:
                             str = str == "0" ? "-" : Controller.timestamp2DateTime(long.Parse(str)).ToString();
                             break;
-                        case DBCol.statDuration:
+                        case Library.LibraryColumnType.Time:
                             str = Util.Util.getMinSec(int.Parse(str));
                             break;
-                        case DBCol.statBitrate:
-                            str = (int.Parse(str)) / 1000 + "kbps";
+                        case Library.LibraryColumnType.Bitrate:
+                            str = str==""?"":(int.Parse(str)) / 1000 + "kbps";
                             break;
-                        case DBCol.file_size:
+                        case Library.LibraryColumnType.FileSize:
                             int sz = int.Parse(str);
                             str = sz > 1024 * 1024 ? String.Format("{0:0.00}MB", sz / 1024.0 / 1024) : String.Format("{0}KB", sz / 1024);
                             break;
@@ -2313,7 +2320,7 @@ namespace Gageas.Lutea.DefaultUI
                     GDI.GetTextExtentPoint32(hDC, str, str.Length, out size);
                     if (size.Width < w)
                     {
-                        var padding = col == DBCol.tagTracknumber || col == DBCol.playcount || col == DBCol.lastplayed || col == DBCol.statBitrate || col == DBCol.statDuration ? (w - size.Width) - 1 : 1;
+                        var padding = col.type == Library.LibraryColumnType.TrackNumber || col.type == Library.LibraryColumnType.Timestamp64 || col.type == Library.LibraryColumnType.Bitrate || col.type == Library.LibraryColumnType.Time ? (w - size.Width) - 1 : 1;
                         GDI.TextOut(hDC, bounds_X + pc + padding, y, str, str.Length);
                     }
                     else
@@ -2356,31 +2363,31 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (displayColumns[item.SubItems.IndexOf(sub)] == DBCol.rating)
+            if (Controller.Columns[Controller.GetColumnIndexByDBText(displayColumns[item.SubItems.IndexOf(sub)])].type == Library.LibraryColumnType.Rating)
             {
                 if (item.GetSubItemAt(e.X - starwidth * 4, e.Y) == sub)
                 {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, DBCol.file_name), 50);
+                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)), 50);
                 }
                 else if (item.GetSubItemAt(e.X - starwidth * 3, e.Y) == sub)
                 {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, DBCol.file_name), 40);
+                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)), 40);
                 }
                 else if (item.GetSubItemAt(e.X - starwidth * 2, e.Y) == sub)
                 {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, DBCol.file_name), 30);
+                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)), 30);
                 }
                 else if (item.GetSubItemAt(e.X - starwidth * 1, e.Y) == sub)
                 {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, DBCol.file_name), 20);
+                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)), 20);
                 }
                 else if (item.GetSubItemAt(e.X - starwidth / 2, e.Y) == sub)
                 {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, DBCol.file_name), 10);
+                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)), 10);
                 }
                 else
                 {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, DBCol.file_name), 0);
+                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)), 0);
                 }
             }
         }
@@ -2391,7 +2398,7 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (displayColumns[item.SubItems.IndexOf(sub)] == DBCol.rating)
+            if (Controller.Columns[Controller.GetColumnIndexByDBText(displayColumns[item.SubItems.IndexOf(sub)])].type == Library.LibraryColumnType.Rating)
             {
                 return;
             }

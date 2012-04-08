@@ -7,6 +7,7 @@ using Gageas.Wrapper.BASS;
 using Gageas.Wrapper.SQLite3;
 using Gageas.Lutea.Tags;
 using Gageas.Lutea.Core;
+using Gageas.Lutea.Library;
 
 namespace Gageas.Lutea.Library
 {
@@ -27,6 +28,10 @@ namespace Gageas.Lutea.Library
         public delegate void Message_event(string msg);
         public event Message_event Message = new Message_event((s) => { });
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="path">インポート処理の検索対象</param>
         public Importer(string path)
         {
             this.importPath = path;
@@ -35,71 +40,81 @@ namespace Gageas.Lutea.Library
             th.Priority = ThreadPriority.BelowNormal;
             th.IsBackground = true;
         }
+
+        /// <summary>
+        /// インポート処理を開始
+        /// </summary>
         public void Start() {
             th.Start();
         }
+
+        /// <summary>
+        /// トラックの情報をSTMTにBINDする
+        /// </summary>
+        /// <param name="stmt"></param>
+        /// <param name="track"></param>
         private void BindTrackInfo(SQLite3DB.STMT stmt, H2k6LibraryTrack track)
         {
             stmt.Reset();
             string extension = (((track.file_ext == "CUE") && (track is CD.Track)) ? ((CD.Track)track).file_ext_CUESheet : track.file_ext).ToUpper();
-            string[] basicColumnValue = { track.file_name, track.file_title, extension, track.file_size.ToString() };
-            for (int i = 0; i < H2k6Library.basicColumn.Length; i++)
+            var cols = GetToBeImportColumn().ToArray();
+            for (int i = 0; i < cols.Length; i++)
             {
-                stmt.Bind(i + 1, basicColumnValue[i]);
-            }
+                var col = cols[i];
+                object value = 0;
+                switch (col.DBText)
+                {
+                    case LibraryDBColumnTextMinimum.file_name: value = track.file_name; break;
+                    case LibraryDBColumnTextMinimum.file_title: value = track.file_title; break;
+                    case LibraryDBColumnTextMinimum.file_ext: value = extension; break;
+                    case LibraryDBColumnTextMinimum.file_size: value = track.file_size; break;
 
-            for (int i = H2k6Library.basicColumn.Length; i < AppCore.Library.Columns.Length; i++)
-            {
-                string colstring = AppCore.Library.Columns[i];
-                KeyValuePair<string, object> tagEntry = track.tag.Find((e) => { return e.Key == colstring; });
-                if (tagEntry.Key != null)
-                {
-                    stmt.Bind(i + 1, tagEntry.Value.ToString());
-                }
-                else
-                {
-                    stmt.Bind(i + 1, "");
-                }
-            }
-            string[] stats = { track.duration.ToString(), track.channels.ToString(), track.freq.ToString(), track.bitrate.ToString(), ((int)track.codec).ToString(), extension, H2k6Library.currentTimestamp.ToString() };
-            for (int i = AppCore.Library.Columns.Length; i < AppCore.Library.Columns.Length + stats.Length; i++)
-            {
-                string stat = stats[i - AppCore.Library.Columns.Length];
-                if (stat != null)
-                {
-                    stmt.Bind(i + 1, stat);
-                }
-                else
-                {
-                    stmt.Bind(i + 1, "");
-                }
-            }
+                    case LibraryDBColumnTextMinimum.statDuration: value = track.duration; break;
+                    case LibraryDBColumnTextMinimum.statChannels: value = track.channels; break;
+                    case LibraryDBColumnTextMinimum.statSamplingrate: value = track.freq; break;
+                    case LibraryDBColumnTextMinimum.statBitrate: value = track.bitrate; break;
+                    case LibraryDBColumnTextMinimum.statVBR: value = 0; break;
 
+                    case LibraryDBColumnTextMinimum.infoCodec: value = track.codec; break;
+                    case LibraryDBColumnTextMinimum.infoCodec_sub: value = extension; break;
+                    case LibraryDBColumnTextMinimum.infoTagtype: value = 0; break;
+
+                    case LibraryDBColumnTextMinimum.gain: value = 0; break;
+                    case LibraryDBColumnTextMinimum.modify: value = H2k6Library.currentTimestamp; break;
+
+                    default:
+                        KeyValuePair<string, object> tagEntry = track.tag.Find((e) => { return e.Key == col.MappedTagField; });
+                        if (tagEntry.Key != null)
+                        {
+                            value = tagEntry.Value.ToString();
+                        }
+                        else
+                        {
+                            value = "";
+                        }
+                        break;
+
+                }
+                stmt.Bind(i + 1, value.ToString());
+            }
         }
         private SQLite3DB.STMT prepareInsert(SQLite3DB db)
         {
-
-            string insertFormat = "INSERT INTO list (" + 
-                "file_name,file_title,file_ext,file_size," +
-                "tagTitle, tagArtist, tagAlbum, tagGenre, tagDate, tagComment, tagTracknumber, tagAPIC, tagLyrics," +
-                "statDuration, statChannels, statSamplingrate, statBitrate, statVBR," +
-                "infoCodec, infoCodec_sub, infoTagtype,modify" + 
-                ") VALUES(?,?,?,?," + // file_name, file_title, file_ext, file_size,
-                "?,?,?,?,?,?,?,'',?," + // tagTitle, tagArtist, tagAlbum, tagGenre, tagDate, tagComment, tagTracknumber, tagAPIC, tagLyrics,
-                "?,?,?,?,0," + // statDuration, statChannels, statSamplingrate, statBitrate, statVBR,
-                "?,?,32,?);" // infoCodec, infoCodec_sub, infoTagtype,modify
-                // , gain, rating, playcount, lastplayed, 
-                ;
+            string[] cols = GetToBeImportColumn().Select(_ => _.DBText).ToArray();
+            string insertFormat = "INSERT INTO list ( " + String.Join(",", cols) + ") VALUES(" + String.Join(",", cols.Select(_=>"?").ToArray()) + ");";
             return db.Prepare(insertFormat);
         }
 
         private SQLite3DB.STMT prepareUpdate(SQLite3DB db)
         {
-            string updateFormat = "UPDATE list SET file_name = ?, file_title = ?, file_ext = ? , file_size = ?," +
-                "tagTitle = ?, tagArtist = ?, tagAlbum = ?, tagGenre = ?, tagDate = ?, tagComment = ?, tagTracknumber = ?, tagLyrics = ?," +
-                "statDuration = ?, statChannels = ?, statSamplingrate = ?, statBitrate = ?," +
-                "infoCodec = ?, infoCodec_sub = ?, modify = ? WHERE file_name = ?1";
+            string[] cols = GetToBeImportColumn().Select(_ => _.DBText + " = ?").ToArray();
+            string updateFormat = "UPDATE list SET " + String.Join(",", cols) + " WHERE file_name = ?1;";
             return db.Prepare(updateFormat);
+        }
+
+        private IEnumerable<Column> GetToBeImportColumn()
+        {
+            return Controller.Columns.Where(_ => !_.OmitOnImport);
         }
 
         private void runImport() // import thread

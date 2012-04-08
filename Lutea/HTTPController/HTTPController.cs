@@ -262,10 +262,10 @@ namespace Gageas.Lutea.HTTPController
                 {
                     var item = doc.CreateElement("item");
                     item.SetAttribute("index", i.ToString());
-                    item.SetAttribute("file_name", Controller.GetPlaylistRowColumn(i, DBCol.file_name));
-                    item.SetAttribute("tagAlbum", Controller.GetPlaylistRowColumn(i, DBCol.tagAlbum));
-                    item.SetAttribute("tagArtist", Controller.GetPlaylistRowColumn(i, DBCol.tagArtist));
-                    item.SetAttribute("tagTitle", Controller.GetPlaylistRowColumn(i, DBCol.tagTitle));
+                    item.SetAttribute("file_name", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("file_name")));
+                    item.SetAttribute("tagAlbum", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("tagAlbum")));
+                    item.SetAttribute("tagArtist", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("tagArtist")));
+                    item.SetAttribute("tagTitle", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("tagTitle")));
                     playlist.AppendChild(item);
                 }
 
@@ -308,7 +308,7 @@ namespace Gageas.Lutea.HTTPController
 
                 // 現在のトラックに関する情報をセット
                 var current = doc.CreateElement("current");
-                foreach (DBCol e in Enum.GetValues(typeof(DBCol)))
+                foreach (var e in Controller.Columns)
                 {
                     var ele = doc.CreateElement(e.ToString());
                     ele.InnerText = Controller.Current.MetaData(e);

@@ -13,7 +13,7 @@ namespace Gageas.Lutea.DefaultUI
 {
     public class FilterViewListView : ListView
     {
-        public delegate void SelectEventHandler(DBCol col, string[] items);
+        public delegate void SelectEventHandler(int colid, string[] items);
         public event SelectEventHandler SelectEvent;
         public FilterViewListView()
             : base()
@@ -68,7 +68,7 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         values[i] = this.SelectedItems[i].Text;
                     }
-                    SelectEvent.Invoke((DBCol)this.Parent.Tag, values);
+                    SelectEvent.Invoke((int)this.Parent.Tag, values);
                 }
             }
         }
@@ -89,8 +89,7 @@ namespace Gageas.Lutea.DefaultUI
                 values[i] = values[i].EscapeSingleQuotSQL();
             }
             var items_all = "'" + String.Join("' , '", values) + "'";
-            //            this.textBox1.Text = "SELECT * FROM list WHERE " + col.ToString() + " IN (" + items_all + ");";
-            return "SELECT * FROM list WHERE " + ((DBCol)this.Parent.Tag).ToString() + " IN (" + items_all + ");";
+            return "SELECT * FROM list WHERE " + Controller.Columns[(int)this.Parent.Tag].DBText + " IN (" + items_all + ");";
         }
     }
 }
