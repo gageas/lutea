@@ -605,7 +605,7 @@ namespace Gageas.Lutea.Core
                                     ()=>prepareForCreatePlaylistView(h2k6db, sql==""?"SELECT * FROM list":sql),
                                     ()=>prepareForCreatePlaylistView(h2k6db,GetRegexpSTMT(sql)),
                                     ()=>prepareForCreatePlaylistView(h2k6db,GetMigemoSTMT(sql)),
-                                    ()=>prepareForCreatePlaylistView(h2k6db,"SELECT * FROM list WHERE tagTitle||tagAlbum||tagArtist||tagComment like '%" + sql.EscapeSingleQuotSQL() + "%';"),
+                                    ()=>prepareForCreatePlaylistView(h2k6db,"SELECT * FROM list WHERE " + String.Join("||'\n'||", GetSearchTargetColumns()) + " like '%" + sql.EscapeSingleQuotSQL() + "%';"),
                                 }, null))
                 {
                     if (tmt == null) return;
