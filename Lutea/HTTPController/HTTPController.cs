@@ -262,7 +262,7 @@ namespace Gageas.Lutea.HTTPController
                 {
                     var item = doc.CreateElement("item");
                     item.SetAttribute("index", i.ToString());
-                    item.SetAttribute("file_name", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("file_name")));
+                    item.SetAttribute("file_name", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText(Library.LibraryDBColumnTextMinimum.file_name)));
                     item.SetAttribute("tagAlbum", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("tagAlbum")));
                     item.SetAttribute("tagArtist", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("tagArtist")));
                     item.SetAttribute("tagTitle", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("tagTitle")));
