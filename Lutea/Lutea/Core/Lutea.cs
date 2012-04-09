@@ -26,11 +26,11 @@ namespace Gageas.Lutea.Core
         }
         public static int GetColumnIndexByDBText(string DBText)
         {
-            return Columns.ToList().IndexOf(Columns.First(_ => _.DBText == DBText));
+            return Columns.ToList().IndexOf(Columns.FirstOrDefault(_ => _.DBText == DBText));
         }
         public static int GetColumnIndex(Column column)
         {
-            return Columns.ToList().IndexOf(Columns.First(_ => _.Equals(column)));
+            return Columns.ToList().IndexOf(Columns.FirstOrDefault(_ => _.Equals(column)));
         }
 
         public enum OutputModeEnum

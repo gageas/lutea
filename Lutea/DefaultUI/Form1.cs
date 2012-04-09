@@ -155,6 +155,7 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             listView1.Clear();
+            displayColumns = displayColumns.Where(_ => Controller.GetColumnIndexByDBText(_) > 0).ToArray();
             foreach (string coltext in displayColumns)
             {
                 var colheader = new ColumnHeader();
@@ -541,6 +542,7 @@ namespace Gageas.Lutea.DefaultUI
             }
             foreach (int colid in filterColumns.Select(_ => Controller.GetColumnIndexByDBText(_)))
             {
+                if (colid < 0) continue;
                 var col = Controller.Columns[colid];
                 var page = new TabPage(col.LocalText);
                 var list = new FilterViewListView();
