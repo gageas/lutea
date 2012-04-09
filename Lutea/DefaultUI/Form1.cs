@@ -1654,7 +1654,16 @@ namespace Gageas.Lutea.DefaultUI
                     file_names.Add(Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)));
                 }
             }
-            var result = MessageBox.Show(String.Join("\n", file_names.ToArray()), "以下のファイルをライブラリから削除します", MessageBoxButtons.OKCancel);
+            var msgText = "";
+            if (file_names.Count == 1)
+            {
+                msgText = "以下のトラックをライブラリから削除してもよろしいですか？\n(ディスク上のファイルは削除されません）\n\n" + file_names[0];
+            }
+            else
+            {
+                msgText = "選択中の" + file_names.Count + "個のトラックをライブラリから削除してもよろしいですか？\n(ディスク上のファイルは削除されません）";
+            }
+            var result = MessageBox.Show(msgText, "ライブラリからのトラックの削除" , MessageBoxButtons.OKCancel);
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 Controller.removeItem(file_names);
