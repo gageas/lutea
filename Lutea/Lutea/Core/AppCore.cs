@@ -927,7 +927,7 @@ namespace Gageas.Lutea.Core
                     return false;
                 }
                 object[] row = Controller.GetPlaylistRow(index);
-                string filename = (string)row[Controller.GetColumnIndexByDBText("file_name")];
+                string filename = (string)row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)];
                 BASS.Stream.StreamFlag flag = BASS.Stream.StreamFlag.BASS_STREAM_DECODE;
                 if (floatingPointOutput) flag |= BASS.Stream.StreamFlag.BASS_STREAM_FLOAT;
                 StreamObject nextStream = null;
@@ -987,8 +987,8 @@ namespace Gageas.Lutea.Core
             if (strm.playbackCounterUpdated) return;
             strm.playbackCounterUpdated = true;
             var currentIndexInPlaylist = Controller.Current.IndexInPlaylist;
-            int count = int.Parse(Controller.Current.MetaData(Controller.GetColumnIndexByDBText("playcount"))) + 1;
-            string file_name = Controller.Current.MetaData(Controller.GetColumnIndexByDBText("file_name"));
+            int count = int.Parse(Controller.Current.MetaData(Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.playcount))) + 1;
+            string file_name = Controller.Current.MetaData(Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name));
             Logger.Log("再生カウントを更新しまつ" + file_name + ",  " + count);
             CoreEnqueue(() =>
             {
@@ -996,7 +996,7 @@ namespace Gageas.Lutea.Core
                 CoreEnqueue(() =>
                 {
                     using (var db = library.Connect(false)) {
-                        using (var stmt = db.Prepare("UPDATE list SET lastplayed = current_timestamp64(), playcount = " + count + " WHERE file_name = '" + file_name.EscapeSingleQuotSQL() + "';"))
+                        using (var stmt = db.Prepare("UPDATE list SET " + LibraryDBColumnTextMinimum.lastplayed + " = current_timestamp64(), " + LibraryDBColumnTextMinimum.playcount + " = " + count + " WHERE " + LibraryDBColumnTextMinimum.file_name + " = '" + file_name.EscapeSingleQuotSQL() + "';"))
                         {
                             stmt.Evaluate(null);
                         }
@@ -1005,8 +1005,8 @@ namespace Gageas.Lutea.Core
                 var row = Controller.GetPlaylistRow(currentIndexInPlaylist);
                 if (row != null)
                 {
-                    row[Controller.GetColumnIndexByDBText("playcount")] = (int.Parse(row[Controller.GetColumnIndexByDBText("playcount")].ToString()) + 1).ToString();
-                    row[Controller.GetColumnIndexByDBText("lastplayed")] = (H2k6Library.currentTimestamp).ToString();
+                    row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.playcount)] = (int.Parse(row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.playcount)].ToString()) + 1).ToString();
+                    row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.lastplayed)] = (H2k6Library.currentTimestamp).ToString();
                 }
                 Controller._PlaylistUpdated(null);
             });
@@ -1041,7 +1041,7 @@ namespace Gageas.Lutea.Core
             var th = new Thread(() => {
                 var row = Controller.GetPlaylistRow(getSuccTrackIndex());
                 if (row == null) return;
-                string filename = (string)row[Controller.GetColumnIndexByDBText("file_name")];
+                string filename = (string)row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)];
                 List<KeyValuePair<string,object>> tag = null;
                 if (File.Exists(filename))
                 {
