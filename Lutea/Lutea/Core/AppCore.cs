@@ -69,6 +69,7 @@ namespace Gageas.Lutea.Core
         internal static bool enableWASAPIExclusive = true;
         internal static bool enableWASAPIVolume = false;
         internal static bool fadeInOutOnSkip = false;
+        internal static bool UseMigemo = true;
         internal static string preferredDeviceName = "";
         #endregion
 
@@ -535,7 +536,8 @@ namespace Gageas.Lutea.Core
 
         private static string GetMigemoSTMT(string sql)
         {
-            if (!Library.MigemoEnabled) throw new System.NotSupportedException("migemo is not enabled.");
+            if (!UseMigemo) throw new System.NotSupportedException("migemo is not enabled.");
+            if (!Library.MigemoAvailable) throw new System.NotSupportedException("migemo is not enabled.");
 
             string[] words = sql.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             string[] migemo_phrase = new string[words.Length];
