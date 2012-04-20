@@ -261,6 +261,7 @@ namespace Gageas.Lutea.Core
             AppCore.enableWASAPIExclusive = pref.EnableWASAPIExclusive;
             AppCore.enableWASAPIVolume = pref.EnableWASAPIVolume;
             AppCore.fadeInOutOnSkip = pref.FadeInOutOnSkip;
+            AppCore.UseMigemo = pref.UseMigemo;
             AppCore.preferredDeviceName = pref.PreferredDeviceName == PseudoDeviceNameForDefaultOutput ? "" : pref.PreferredDeviceName;
         }
 
