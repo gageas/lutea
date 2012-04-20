@@ -86,6 +86,7 @@
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearSortOrderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -594,6 +595,7 @@
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
             this.listView1.VirtualMode = true;
+            this.listView1.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listView1_ColumnClick);
             this.listView1.DrawColumnHeader += new System.Windows.Forms.DrawListViewColumnHeaderEventHandler(this.listView1_DrawColumnHeader);
             this.listView1.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listView1_DrawItem);
             this.listView1.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.playlistView_RetrieveVirtualItem);
@@ -608,9 +610,10 @@
             this.propertyToolStripMenuItem,
             this.deleteToolStripMenuItem,
             this.explorerToolStripMenuItem,
-            this.ratingToolStripMenuItem});
+            this.ratingToolStripMenuItem,
+            this.clearSortOrderToolStripMenuItem});
             this.playlistViewContextMenuStrip.Name = "playlistViewContextMenuStrip";
-            this.playlistViewContextMenuStrip.Size = new System.Drawing.Size(197, 92);
+            this.playlistViewContextMenuStrip.Size = new System.Drawing.Size(197, 136);
             // 
             // propertyToolStripMenuItem
             // 
@@ -687,6 +690,13 @@
             this.toolStripMenuItem7.Size = new System.Drawing.Size(136, 22);
             this.toolStripMenuItem7.Text = "★★★★★";
             this.toolStripMenuItem7.Click += new System.EventHandler(this.toolStripMenuItem7_Click);
+            // 
+            // clearSortOrderToolStripMenuItem
+            // 
+            this.clearSortOrderToolStripMenuItem.Name = "clearSortOrderToolStripMenuItem";
+            this.clearSortOrderToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.clearSortOrderToolStripMenuItem.Text = "ソート解除";
+            this.clearSortOrderToolStripMenuItem.Click += new System.EventHandler(this.clearSortOrderToolStripMenuItem_Click);
             // 
             // statusStrip1
             // 
@@ -878,6 +888,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem 名前の変更ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem clearSortOrderToolStripMenuItem;
     }
 }
 

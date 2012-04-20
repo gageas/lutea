@@ -62,7 +62,7 @@ namespace Gageas.Lutea.Library
             {
                 var col = cols[i];
                 object value = 0;
-                switch (col.DBText)
+                switch (col.Name)
                 {
                     case LibraryDBColumnTextMinimum.file_name: value = track.file_name; break;
                     case LibraryDBColumnTextMinimum.file_title: value = track.file_title; break;
@@ -100,14 +100,14 @@ namespace Gageas.Lutea.Library
         }
         private SQLite3DB.STMT prepareInsert(SQLite3DB db)
         {
-            string[] cols = GetToBeImportColumn().Select(_ => _.DBText).ToArray();
+            string[] cols = GetToBeImportColumn().Select(_ => _.Name).ToArray();
             string insertFormat = "INSERT INTO list ( " + String.Join(",", cols) + ") VALUES(" + String.Join(",", cols.Select(_=>"?").ToArray()) + ");";
             return db.Prepare(insertFormat);
         }
 
         private SQLite3DB.STMT prepareUpdate(SQLite3DB db)
         {
-            string[] cols = GetToBeImportColumn().Select(_ => _.DBText + " = ?").ToArray();
+            string[] cols = GetToBeImportColumn().Select(_ => _.Name + " = ?").ToArray();
             string updateFormat = "UPDATE list SET " + String.Join(",", cols) + " WHERE file_name = ?1;";
             return db.Prepare(updateFormat);
         }

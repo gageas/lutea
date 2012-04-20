@@ -29,7 +29,7 @@ namespace Gageas.Lutea.DefaultUI
             this.directory = directory_path;
             this.parent = parent;
             InitializeComponent();
-            this.textBox2.Text = Gageas.Lutea.Core.Controller.LatestPlaylistQuerySub.Replace("\n", @"\n");
+            this.textBox2.Text = Gageas.Lutea.Core.Controller.LatestPlaylistQueryExpanded.Replace("\n", @"\n");
         }
 
         private void button2_Click(object sender, EventArgs e)

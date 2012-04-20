@@ -102,26 +102,26 @@ namespace Gageas.Lutea.Library
                 switch (_.type)
                 {
                     case LibraryColumnType.FileName:
-                        return _.DBText + " TEXT UNIQUE";
+                        return _.Name + " TEXT UNIQUE";
                     case LibraryColumnType.Integer:
                     case LibraryColumnType.Bitrate:
                     case LibraryColumnType.Rating:
                     case LibraryColumnType.Time:
                     case LibraryColumnType.FileSize:
                     case LibraryColumnType.Timestamp64:
-                        return _.DBText + " INTEGER DEFAULT 0";
+                        return _.Name + " INTEGER DEFAULT 0";
                     case LibraryColumnType.Text:
                     case LibraryColumnType.TrackNumber:
                     default:
-                        return _.DBText + " TEXT";
+                        return _.Name + " TEXT";
                 }
             }).ToArray()) +
-            " , PRIMARY KEY(" + String.Join(",", Lutea.Core.Controller.Columns.Where(_ => _.PrimaryKey).Select(_ => _.DBText).ToArray()) + "));";
+            " , PRIMARY KEY(" + String.Join(",", Lutea.Core.Controller.Columns.Where(_ => _.PrimaryKey).Select(_ => _.Name).ToArray()) + "));";
         }
 
         public static String GetCreateIndexSchema()
         {
-            return String.Join(" ", Lutea.Core.Controller.Columns.Where(_ => _.DBText == LibraryDBColumnTextMinimum.rating || _.IsTextSearchTarget).Select(_ => "CREATE INDEX " + _.DBText + "_index ON list(" + _.DBText + ");").ToArray());
+            return String.Join(" ", Lutea.Core.Controller.Columns.Where(_ => _.Name == LibraryDBColumnTextMinimum.rating || _.IsTextSearchTarget).Select(_ => "CREATE INDEX " + _.Name + "_index ON list(" + _.Name + ");").ToArray());
         }
 
         public UserDirectory():this(System.Environment.GetEnvironmentVariable("USERNAME"))
