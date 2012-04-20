@@ -194,7 +194,7 @@ namespace Gageas.Lutea
             }
         }
         private static System.DateTime UnixEpoch = new System.DateTime(1970, 1, 1, 0, 0, 0);
-        public bool MigemoEnabled
+        public bool MigemoAvailable
         {
             get
             {

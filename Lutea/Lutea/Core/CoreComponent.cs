@@ -151,6 +151,25 @@ namespace Gageas.Lutea.Core
                     }
                 }
             }
+
+            /// <summary>
+            /// Migemo有効・無効
+            /// </summary>
+            bool useMigemo = AppCore.UseMigemo;
+            [Category("Query")]
+            [Description("あいまい検索にMigemoを使う（検索のレスポンスが遅くなります）")]
+            [DefaultValue(true)]
+            public bool UseMigemo
+            {
+                get
+                {
+                    return useMigemo;
+                }
+                set
+                {
+                    useMigemo = value;
+                }
+            }
         }
 
         /// <summary>
