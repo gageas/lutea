@@ -189,6 +189,8 @@ namespace Gageas.Lutea.Core
         private void ParseSetting(Dictionary<string,object> setting)
         {
             Util.Util.TryAll(new Controller.VOIDVOID[] { 
+                ()=>AppCore.PlaylistSortColumn = (string)setting["PlaylistSortColumn"],
+                ()=>AppCore.PlaylistSortOrder = (Controller.SortOrders)setting["PlaylistSortOrder"],
                 ()=>Controller.playbackOrder = (Controller.PlaybackOrder)setting["PlaybackOrder"],
                 ()=>AppCore.volume = (float)setting["Volume"],
                 ()=>AppCore.ReplaygainGainBoost = (double)setting["ReplaygainGainBoost"],
@@ -211,6 +213,8 @@ namespace Gageas.Lutea.Core
         public object GetSetting()
         {
             var setting = new Dictionary<string, object>();
+            setting["PlaylistSortColumn"] = AppCore.PlaylistSortColumn;
+            setting["PlaylistSortOrder"] = AppCore.PlaylistSortOrder;
             setting["PlaybackOrder"] = AppCore.playbackOrder;
             setting["Volume"] = AppCore.volume;
             setting["ReplaygainGainBoost"] = AppCore.ReplaygainGainBoost;

@@ -89,7 +89,7 @@ namespace Gageas.Lutea.DefaultUI
                 values[i] = values[i].EscapeSingleQuotSQL();
             }
             var items_all = "'" + String.Join("' , '", values) + "'";
-            return "SELECT * FROM list WHERE " + Controller.Columns[(int)this.Parent.Tag].DBText + " IN (" + items_all + ");";
+            return "SELECT * FROM list WHERE " + Controller.Columns[(int)this.Parent.Tag].Name + " IN (" + items_all + ");";
         }
     }
 }

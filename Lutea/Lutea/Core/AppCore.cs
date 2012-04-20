@@ -72,6 +72,9 @@ namespace Gageas.Lutea.Core
         internal static string preferredDeviceName = "";
         #endregion
 
+        internal static string PlaylistSortColumn = null;
+        internal static Controller.SortOrders PlaylistSortOrder = Controller.SortOrders.Asc;
+
         #region set/get Volume
         private static float _volume = 1.0F;
         internal static float volume
@@ -305,7 +308,7 @@ namespace Gageas.Lutea.Core
         {
             try
             {
-                var stmt = h2k6db.Prepare("SELECT ROWID FROM playlist WHERE file_name = ?;");
+                var stmt = h2k6db.Prepare("SELECT ROWID FROM " + GetPlaylistTableName() + " WHERE file_name = ?;");
                 stmt.Bind(1, file_name);
                 int ret = 0;
                 stmt.Evaluate((o) => ret = int.Parse(o[0].ToString()));
@@ -503,7 +506,7 @@ namespace Gageas.Lutea.Core
         private static String playlistQueryQueue = null;
         private static Boolean PlayOnCreate = false;
         internal static String latestPlaylistQuery = "SELECT * FROM list;";
-        internal static String latestPlaylistQuerySub = "";
+        internal static String LatestPlaylistQueryExpanded = "";
         private static readonly object playlistQueryQueueLock = new object();
         internal static void createPlaylist(String sql, bool playOnCreate = false)
         {
@@ -565,16 +568,67 @@ namespace Gageas.Lutea.Core
 
         private static string[] GetSearchTargetColumns()
         {
-            return Controller.Columns.Where(_ => _.IsTextSearchTarget).Select(_ => _.DBText).ToArray();
+            return Controller.Columns.Where(_ => _.IsTextSearchTarget).Select(_ => _.Name).ToArray();
         }
 
         private static SQLite3DB.STMT prepareForCreatePlaylistView(SQLite3DB db, string subquery)
         {
-            var stmt = db.Prepare("CREATE TEMP TABLE playlist AS " + subquery + " ;");
+            var stmt = db.Prepare("CREATE TEMP TABLE unordered_playlist AS " + subquery + " ;");
             // prepareが成功した場合のみ以下が実行される
-            latestPlaylistQuerySub = subquery;
+            LatestPlaylistQueryExpanded = subquery;
             return stmt;
         }
+
+        internal static void CreateOrderedPlaylist(string column, Controller.SortOrders sortOrder)
+        {
+            playlistCache = new object[playlistCache.Length][];
+            CreateOrderedPlaylistTableInDB();
+            Controller._PlaylistUpdated(null);
+        }
+
+        private static void CreateOrderedPlaylistTableInDB()
+        {
+            try
+            {
+                h2k6db.Exec("DROP TABLE IF EXISTS playlist;");
+            }
+            catch (SQLite3DB.SQLite3Exception ee)
+            {
+                Logger.Log(ee);
+            }
+
+            if (PlaylistSortColumn == null) return;
+
+            var orderPhrase = "";
+            orderPhrase = " ORDER BY ";
+            switch (Controller.Columns[Controller.GetColumnIndexByName(PlaylistSortColumn)].type)
+            {
+                case LibraryColumnType.Bitrate:
+                case LibraryColumnType.FileSize:
+                case LibraryColumnType.Integer:
+                case LibraryColumnType.Rating:
+                case LibraryColumnType.Timestamp64:
+                case LibraryColumnType.TrackNumber:
+                    orderPhrase += "list." + PlaylistSortColumn + "-0";
+                    break;
+                default:
+                    orderPhrase += "list." + PlaylistSortColumn + "||''";
+                    break;
+            }
+
+            orderPhrase += PlaylistSortOrder == Controller.SortOrders.Asc ? " ASC " : " DESC ";
+            for (int i = 0; i < 10; i++)
+            {
+                try
+                {
+                    h2k6db.Exec("CREATE TEMP TABLE playlist AS SELECT list.* FROM list, unordered_playlist WHERE list.file_name == unordered_playlist.file_name " + orderPhrase + " ;");
+                    break;
+                }
+                catch (SQLite3DB.SQLite3Exception) { }
+                Thread.Sleep(50);
+            }
+        }
+
         delegate SQLite3DB.STMT CreatePlaylistParser();
         private static void createPlaylistTableInDB(string sql)
         {
@@ -584,6 +638,7 @@ namespace Gageas.Lutea.Core
                 try
                 {
                     h2k6db.Exec("DROP TABLE IF EXISTS playlist;");
+                    h2k6db.Exec("DROP TABLE IF EXISTS unordered_playlist;");
                     Logger.Debug("playlist TABLE(Lutea type) DROPed");
                 }
                 catch (SQLite3DB.SQLite3Exception e) {
@@ -591,6 +646,7 @@ namespace Gageas.Lutea.Core
                     try
                     {
                         h2k6db.Exec("DROP VIEW IF EXISTS playlist;");
+                        h2k6db.Exec("DROP TABLE IF EXISTS unordered_playlist;");
                         Logger.Debug("playlist TABLE(H2k6 type) DROPed");
                     }
                     catch (SQLite3DB.SQLite3Exception ee)
@@ -617,21 +673,25 @@ namespace Gageas.Lutea.Core
                             break;
                         }
                         catch (SQLite3DB.SQLite3Exception) { }
-                        Thread.Sleep(200);
+                        Thread.Sleep(50);
                     }
 
                     //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
                     Thread.Sleep(10);
 
-                    using (SQLite3DB.STMT tmt2 = h2k6db.Prepare("SELECT COUNT(*) FROM playlist ;"))
+                    using (SQLite3DB.STMT tmt2 = h2k6db.Prepare("SELECT COUNT(*) FROM unordered_playlist ;"))
                     {
                         Logger.Debug("Creating new playlist " + sql);
                         tmt2.Evaluate((o) => currentPlaylistRows = int.Parse(o[0].ToString()));
                         Logger.Debug("Start Playlist Loader");
+                        if (PlaylistSortColumn != null)
+                        {
+                            CreateOrderedPlaylistTableInDB();
+                        }
 
                         // プレイリストの先頭一定数をキャッシュ
                         playlistCache = new object[currentPlaylistRows][];
-                        h2k6db.FetchRowRange("playlist", 0, PlaylistPreCacheCount, playlistCache);
+                        h2k6db.FetchRowRange(GetPlaylistTableName(), 0, PlaylistPreCacheCount, playlistCache);
                         latestPlaylistQuery = sql;
                     }
                 }
@@ -691,6 +751,27 @@ namespace Gageas.Lutea.Core
                 }
                 catch (ThreadInterruptedException) { }
             }
+        }
+
+        private static string GetPlaylistTableName()
+        {
+            return PlaylistSortColumn == null ? "unordered_playlist" : "playlist";
+        }
+
+
+        public static object[] GetPlaylistRow(int index)
+        {
+            if (index < 0) return null;
+            // このメソッドの呼び出し中にcacheの参照が変わる可能性があるので、最初に参照をコピーする
+            // 一時的に古いcacheの内容を吐いても問題ないので、mutexで固めるほどではない
+            var _cache = playlistCache;
+            if (_cache == null) return null;
+            if (_cache.Length <= index) return null;
+            object[] value = null;
+            if (_cache[index] == null) _cache[index] = h2k6db.FetchRow(GetPlaylistTableName(), index + 1);
+            value = _cache[index];
+            if (value == null || value.Length == 0) return null;
+            return value;
         }
 
         private const int PlaylistPreCacheCount = 40;
@@ -927,14 +1008,14 @@ namespace Gageas.Lutea.Core
                     return false;
                 }
                 object[] row = Controller.GetPlaylistRow(index);
-                string filename = (string)row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)];
+                string filename = (string)row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)];
                 BASS.Stream.StreamFlag flag = BASS.Stream.StreamFlag.BASS_STREAM_DECODE;
                 if (floatingPointOutput) flag |= BASS.Stream.StreamFlag.BASS_STREAM_FLOAT;
                 StreamObject nextStream = null;
                 try
                 {
                     int tr = 1;
-                    Util.Util.tryParseInt(row[Controller.GetColumnIndexByDBText("tagTracknumber")].ToString(), ref tr);
+                    Util.Util.tryParseInt(row[Controller.GetColumnIndexByName("tagTracknumber")].ToString(), ref tr);
                     nextStream = getStreamObject(filename, tr, flag, tags);
                     if (nextStream == null)
                     {
@@ -987,8 +1068,8 @@ namespace Gageas.Lutea.Core
             if (strm.playbackCounterUpdated) return;
             strm.playbackCounterUpdated = true;
             var currentIndexInPlaylist = Controller.Current.IndexInPlaylist;
-            int count = int.Parse(Controller.Current.MetaData(Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.playcount))) + 1;
-            string file_name = Controller.Current.MetaData(Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name));
+            int count = int.Parse(Controller.Current.MetaData(Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.playcount))) + 1;
+            string file_name = Controller.Current.MetaData(Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name));
             Logger.Log("再生カウントを更新しまつ" + file_name + ",  " + count);
             CoreEnqueue(() =>
             {
@@ -1005,8 +1086,8 @@ namespace Gageas.Lutea.Core
                 var row = Controller.GetPlaylistRow(currentIndexInPlaylist);
                 if (row != null)
                 {
-                    row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.playcount)] = (int.Parse(row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.playcount)].ToString()) + 1).ToString();
-                    row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.lastplayed)] = (H2k6Library.currentTimestamp).ToString();
+                    row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.playcount)] = (int.Parse(row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.playcount)].ToString()) + 1).ToString();
+                    row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.lastplayed)] = (H2k6Library.currentTimestamp).ToString();
                 }
                 Controller._PlaylistUpdated(null);
             });
@@ -1041,7 +1122,7 @@ namespace Gageas.Lutea.Core
             var th = new Thread(() => {
                 var row = Controller.GetPlaylistRow(getSuccTrackIndex());
                 if (row == null) return;
-                string filename = (string)row[Controller.GetColumnIndexByDBText(LibraryDBColumnTextMinimum.file_name)];
+                string filename = (string)row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)];
                 List<KeyValuePair<string,object>> tag = null;
                 if (File.Exists(filename))
                 {

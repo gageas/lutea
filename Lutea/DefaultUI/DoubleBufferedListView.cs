@@ -39,6 +39,13 @@ namespace Gageas.Lutea.DefaultUI
 
         public void SetSortArrow(int column, SortOrder sortOrder)
         {
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)(() => {
+                    this.SetSortArrow(column, sortOrder);
+                }));
+                return;
+            }
             var pHeader = SendMessage(this.Handle, LVM_GETHEADER, IntPtr.Zero, IntPtr.Zero);
 
             var pColumn = new IntPtr(column);

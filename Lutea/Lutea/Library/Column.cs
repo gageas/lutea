@@ -20,7 +20,7 @@ namespace Gageas.Lutea.Library
     public class Column
     {
         public Column(
-            string DBText,
+            string Name,
             string LocalText, 
             LibraryColumnType type = LibraryColumnType.Text,
             bool IsPrimaryKey = false,
@@ -29,7 +29,7 @@ namespace Gageas.Lutea.Library
             bool OmitOnImport = false
             )
         {
-            this.DBText = DBText;
+            this.Name = Name;
             this.LocalText = LocalText;
             this.type = type;
             this.PrimaryKey = IsPrimaryKey;
@@ -38,7 +38,7 @@ namespace Gageas.Lutea.Library
             this.OmitOnImport = OmitOnImport;
         }
         public readonly LibraryColumnType type = LibraryColumnType.Text;
-        public readonly string DBText = null;
+        public readonly string Name = null;
         public readonly string LocalText = null;
         public readonly bool PrimaryKey = false;
         public readonly string MappedTagField = null;

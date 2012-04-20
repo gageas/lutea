@@ -179,7 +179,7 @@ namespace Gageas.Lutea.HTTPController
                     Controller.PlayPlaylistItem(index);
                     break;
                 case "createPlaylist":
-                    Controller.createPlaylist(System.Web.HttpUtility.UrlDecode(req.QueryString["query"]));
+                    Controller.CreatePlaylist(System.Web.HttpUtility.UrlDecode(req.QueryString["query"]));
                     break;
                 case "quit":
                     Controller.Quit();
@@ -258,14 +258,14 @@ namespace Gageas.Lutea.HTTPController
                 lutea.AppendChild(comet_id);
 
                 var playlist = doc.CreateElement("playlist");
-                for (int i = 0; i < Controller.CurrentPlaylistRows; i++)
+                for (int i = 0; i < Controller.PlaylistRowCount; i++)
                 {
                     var item = doc.CreateElement("item");
                     item.SetAttribute("index", i.ToString());
-                    item.SetAttribute("file_name", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText(Library.LibraryDBColumnTextMinimum.file_name)));
-                    item.SetAttribute("tagAlbum", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("tagAlbum")));
-                    item.SetAttribute("tagArtist", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("tagArtist")));
-                    item.SetAttribute("tagTitle", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByDBText("tagTitle")));
+                    item.SetAttribute("file_name", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName(Library.LibraryDBColumnTextMinimum.file_name)));
+                    item.SetAttribute("tagAlbum", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName("tagAlbum")));
+                    item.SetAttribute("tagArtist", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName("tagArtist")));
+                    item.SetAttribute("tagTitle", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName("tagTitle")));
                     playlist.AppendChild(item);
                 }
 
