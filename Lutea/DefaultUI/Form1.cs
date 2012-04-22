@@ -1163,6 +1163,7 @@ namespace Gageas.Lutea.DefaultUI
             e.Item = dummyPlaylistViewItem;
         }
 
+        private KeyEventArgs previousPressedKey = null;
         private void playlistView_KeyDown(object sender, KeyEventArgs e)
         {
             Logger.Debug("Down" + e.KeyCode + e.KeyData + e.KeyValue);
@@ -1304,6 +1305,21 @@ namespace Gageas.Lutea.DefaultUI
                     e.Handled = true;
                     e.SuppressKeyPress = true;
                     break;
+                case Keys.G:
+                    if (e.Modifiers == Keys.Shift)
+                    {
+                        // 末尾へ移動
+                        goto case Keys.L;
+                    }
+                    else
+                    {
+                        if (previousPressedKey != null && previousPressedKey.KeyCode == Keys.G && previousPressedKey.Modifiers == 0)
+                        {
+                            // 先頭へ移動
+                            goto case Keys.H;
+                        }
+                    }
+                    break;
                 case Keys.Escape:
                     textBox1.Select();
                     e.Handled = true;
@@ -1362,6 +1378,7 @@ namespace Gageas.Lutea.DefaultUI
                     e.SuppressKeyPress = true;
                     break;
             }
+            previousPressedKey = e;
         }
 
         private void playlistView_DoubleClick(object sender, EventArgs e)
