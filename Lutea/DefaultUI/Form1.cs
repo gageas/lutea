@@ -1545,7 +1545,7 @@ namespace Gageas.Lutea.DefaultUI
                     string count = e[1].ToString();
                     char leading_letter = '\0';
                     string header = "";
-                    if (col.type == Library.LibraryColumnType.Timestamp64)
+                    if (col.MappedTagField == "DATE")
                     {
                         int year = 0;
                         int.TryParse(name.Substring(0, Math.Min(4, name.Length)), out year);
