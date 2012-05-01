@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Gageas.Wrapper.BASS;
 using Gageas.Wrapper.SQLite3;
@@ -86,7 +87,16 @@ namespace Gageas.Lutea.Library
                         KeyValuePair<string, object> tagEntry = track.tag.Find((e) => { return e.Key == col.MappedTagField; });
                         if (tagEntry.Key != null)
                         {
-                            value = tagEntry.Value.ToString();
+                            // DATEの表現形式を正規化して格納する
+                            if (col.MappedTagField == "DATE")
+                            {
+                                var regulated = RegulateTagDate(tagEntry.Value.ToString());
+                                value = regulated == null ? tagEntry.Value.ToString() : regulated;
+                            }
+                            else
+                            {
+                                value = tagEntry.Value.ToString();
+                            }
                         }
                         else
                         {
@@ -412,6 +422,35 @@ namespace Gageas.Lutea.Library
                 this.AbortWorkers();
                 Complete();
             }
+        }
+
+        private static readonly Regex regex_year = new Regex(@"(?<1>\d{4})");
+        private static readonly Regex regex_date = new Regex(@"(?<1>\d{4})[\-\/\.](?<2>\d+?)[\-\/\.](?<3>\d+?)");
+        /// <summary>
+        /// 日時っぽい文字列をYYYY/MM/DD形式に正規化する
+        /// </summary>
+        /// <param name="datestr"></param>
+        /// <returns>正規化した日時の文字列またはnull</returns>
+        private string RegulateTagDate(string datestr)
+        {
+            try
+            {
+                var result2 = regex_date.Match(datestr);
+                if (result2.Success)
+                {
+                    var month = int.Parse(result2.Groups[2].Value);
+                    var day = int.Parse(result2.Groups[3].Value);
+                    return result2.Groups[1].Value + "/" + (month > 9 ? month.ToString() : "0" + month.ToString()) + "/" + (day > 9 ? day.ToString() : "0" + day.ToString());
+                }
+
+                var result1 = regex_year.Match(datestr);
+                if (result1.Success)
+                {
+                    return result1.Groups[1].Value;
+                }
+            }
+            catch { };
+            return null;
         }
     }
 }
