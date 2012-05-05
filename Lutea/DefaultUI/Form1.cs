@@ -1119,39 +1119,60 @@ namespace Gageas.Lutea.DefaultUI
 
         private void pictureBox1_Resize(object sender, EventArgs e)
         {
+            if (!this.IsHandleCreated || !this.Created) return;
             Image composed = null;
             try
             {
                 m.WaitOne();
 
                 // pictureBoxの新しいサイズを取得
-                this.Invoke((MethodInvoker)(() =>
+                var lambda = (MethodInvoker)(() =>
                 {
                     CoverArtWidth = pictureBox1.Width;
                     CoverArtHeight = pictureBox1.Height;
                     composed = new Bitmap(CoverArtWidth, CoverArtHeight);
-                }));
+                });
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(lambda);
+                }
+                else
+                {
+                    lambda.Invoke();
+                }
 
+                // 新しいサイズでカバーアートを描画
                 if (CurrentCoverArt != null)
                 {
                     Image newSize = ImageUtil.GetResizedImageWithPadding(CurrentCoverArt, CoverArtWidth, CoverArtHeight);
                     CurrentCoverArt.Tag = newSize;
                     ImageUtil.AlphaComposedImage(composed, newSize, 1F);
                 }
-                this.Invoke((MethodInvoker)(() =>
+
+                // 描画したBitmapオブジェクトをpictureBoxに設定して再描画
+                var lambda2 = (MethodInvoker)(() =>
                 {
                     pictureBox1.Image = composed;
                     pictureBox1.Invalidate();
-                }));
+                });
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(lambda2);
+                }
+                else
+                {
+                    lambda2.Invoke();
+                }
             }
             finally
             {
                 m.ReleaseMutex();
-                this.Invoke((MethodInvoker)(() =>
+                try
                 {
-                }));
+                    listView1.Select();
+                }
+                catch { }
             }
-            listView1.Select();
         }
         #endregion
 
