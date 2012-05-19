@@ -2377,6 +2377,9 @@ namespace Gageas.Lutea.DefaultUI
                             int sz = int.Parse(str);
                             str = sz > 1024 * 1024 ? String.Format("{0:0.00}MB", sz / 1024.0 / 1024) : String.Format("{0}KB", sz / 1024);
                             break;
+                        default:
+                            str = str.Replace("\n", "; ");
+                            break;
                     }
                     Size size;
                     GDI.GetTextExtentPoint32(hDC, str, str.Length, out size);
