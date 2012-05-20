@@ -101,6 +101,11 @@ namespace Gageas.Lutea.DefaultUI
         RatingRenderer ratingRenderer;
 
         /// <summary>
+        /// ライブラリデータベースのカラム一覧のキャッシュ
+        /// </summary>
+        private Column[] Columns = null;
+
+        /// <summary>
         /// settingから読み出した値を保持、あるいはデフォルト値
         /// </summary>
         private Size config_FormSize;
@@ -130,6 +135,7 @@ namespace Gageas.Lutea.DefaultUI
             logview = new LogViewerForm();
             logview.Show();
 #endif
+            Columns = Controller.Columns;
             InitializeComponent();
             Thread.CurrentThread.Priority = ThreadPriority.Normal;
             trackInfoText.Text = "";
@@ -149,8 +155,8 @@ namespace Gageas.Lutea.DefaultUI
                 ColumnWidth.Clear();
                 for (int i = 0; i < listView1.Columns.Count; i++)
                 {
-                    ColumnOrder[Controller.Columns[(int)listView1.Columns[i].Tag].Name] = listView1.Columns[i].DisplayIndex;
-                    ColumnWidth[Controller.Columns[(int)listView1.Columns[i].Tag].Name] = Math.Max(10, listView1.Columns[i].Width);
+                    ColumnOrder[Columns[(int)listView1.Columns[i].Tag].Name] = listView1.Columns[i].DisplayIndex;
+                    ColumnWidth[Columns[(int)listView1.Columns[i].Tag].Name] = Math.Max(10, listView1.Columns[i].Width);
                 }
             }
 
@@ -160,7 +166,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 var colheader = new ColumnHeader();
                 var col = Controller.GetColumnIndexByName(coltext);
-                colheader.Text = Controller.Columns[col].LocalText;
+                colheader.Text = Columns[col].LocalText;
                 colheader.Tag = col;
                 if (ColumnWidth.ContainsKey(coltext))
                 {
@@ -168,13 +174,13 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 else
                 {
-                    if (defaultColumnDisplayWidth.ContainsKey(Controller.Columns[col].Name))
+                    if (defaultColumnDisplayWidth.ContainsKey(Columns[col].Name))
                     {
-                        colheader.Width = defaultColumnDisplayWidth[Controller.Columns[col].Name];
+                        colheader.Width = defaultColumnDisplayWidth[Columns[col].Name];
                     }
                 }
                 listView1.Columns.Add(colheader);
-                if (Controller.Columns[col].Name == LibraryDBColumnTextMinimum.statBitrate)
+                if (Columns[col].Name == LibraryDBColumnTextMinimum.statBitrate)
                 {
                     colheader.TextAlign = HorizontalAlignment.Right;
                 }
@@ -183,11 +189,11 @@ namespace Gageas.Lutea.DefaultUI
             foreach (ColumnHeader colheader in listView1.Columns)
             {
                 var col = (int)(colheader.Tag);
-                if (ColumnOrder.ContainsKey(Controller.Columns[col].Name))
+                if (ColumnOrder.ContainsKey(Columns[col].Name))
                 {
                     try
                     {
-                        colheader.DisplayIndex = ColumnOrder[Controller.Columns[col].Name];
+                        colheader.DisplayIndex = ColumnOrder[Columns[col].Name];
                     }
                     catch
                     {
@@ -544,7 +550,7 @@ namespace Gageas.Lutea.DefaultUI
             foreach (int colid in filterColumns.Select(_ => Controller.GetColumnIndexByName(_)))
             {
                 if (colid < 0) continue;
-                var col = Controller.Columns[colid];
+                var col = Columns[colid];
                 var page = new TabPage(col.LocalText);
                 var list = new FilterViewListView();
                 list.SelectEvent += (c, vals) => {
@@ -1544,7 +1550,7 @@ namespace Gageas.Lutea.DefaultUI
 
             ListViewItem selected = null;
             var colid = (int)list.Parent.Tag;
-            var col = Controller.Columns[colid];
+            var col = Columns[colid];
             try
             {
                 object[][] cache_filter = null;
@@ -1850,7 +1856,7 @@ namespace Gageas.Lutea.DefaultUI
             // 表示するカラムが空の時、タグのカラムを表示することにする
             if (displayColumns == null || displayColumns.Length == 0)
             {
-                displayColumns = Controller.Columns.Where(_ => _.MappedTagField != null).OrderBy(_ => _.type).Select(_ => _.Name).ToArray();
+                displayColumns = Columns.Where(_ => _.MappedTagField != null).OrderBy(_ => _.Type).Select(_ => _.Name).ToArray();
             }
 
             // レーティングの☆描画準備
@@ -1878,9 +1884,9 @@ namespace Gageas.Lutea.DefaultUI
 
             // プレイリストビューの右クリックにColumn選択を生成
             var column_select = new ToolStripMenuItem("表示する項目");
-            for (int i = 0; i < Controller.Columns.Length; i++)
+            for (int i = 0; i < Columns.Length; i++)
             {
-                var col = Controller.Columns[i];
+                var col = Columns[i];
                 ToolStripMenuItem item = new ToolStripMenuItem(col.LocalText, null, (e, o) =>
                 {
                     List<string> displayColumns_list = new List<string>();
@@ -1888,7 +1894,7 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         if (_.Checked)
                         {
-                            displayColumns_list.Add(Controller.Columns[(int)_.Tag].Name);
+                            displayColumns_list.Add(Columns[(int)_.Tag].Name);
                         }
                     }
                     displayColumns = displayColumns_list.ToArray();
@@ -1944,8 +1950,8 @@ namespace Gageas.Lutea.DefaultUI
             Dictionary<string, int> PlaylistViewColumnWidth = new Dictionary<string, int>();
             for (int i = 0; i < listView1.Columns.Count; i++)
             {
-                PlaylistViewColumnOrder[Controller.Columns[(int)listView1.Columns[i].Tag].Name] = listView1.Columns[i].DisplayIndex;
-                PlaylistViewColumnWidth[Controller.Columns[(int)listView1.Columns[i].Tag].Name] = Math.Max(10, listView1.Columns[i].Width);
+                PlaylistViewColumnOrder[Columns[(int)listView1.Columns[i].Tag].Name] = listView1.Columns[i].DisplayIndex;
+                PlaylistViewColumnWidth[Columns[(int)listView1.Columns[i].Tag].Name] = Math.Max(10, listView1.Columns[i].Width);
             }
             setting["PlaylistViewColumnOrder"] = PlaylistViewColumnOrder;
             setting["PlaylistViewColumnWidth"] = PlaylistViewColumnWidth;
@@ -2325,9 +2331,9 @@ namespace Gageas.Lutea.DefaultUI
 
                     if (colidx >= row_Length) continue;
 
-                    var col = Controller.Columns[colidx];
+                    var col = Columns[colidx];
 
-                    if (col.type == Library.LibraryColumnType.Rating)
+                    if (col.Type == Library.LibraryColumnType.Rating)
                     {
                         int stars = 0;
                         int.TryParse(row[colidx].ToString(), out stars);
@@ -2339,7 +2345,7 @@ namespace Gageas.Lutea.DefaultUI
                         continue;
                     }
 
-                    if (ShowCoverArtInPlaylistView && col.type == Library.LibraryColumnType.TrackNumber)
+                    if (ShowCoverArtInPlaylistView && col.Type == Library.LibraryColumnType.TrackNumber)
                     {
                         if (coverArts.ContainsKey(album))
                         {
@@ -2362,7 +2368,7 @@ namespace Gageas.Lutea.DefaultUI
 
                     var w = head.Width - 2;
                     var str = row[colidx].ToString();
-                    switch (col.type)
+                    switch (col.Type)
                     {
                         case Library.LibraryColumnType.Timestamp64:
                             str = str == "0" ? "-" : Util.Util.timestamp2DateTime(long.Parse(str)).ToString();
@@ -2385,7 +2391,7 @@ namespace Gageas.Lutea.DefaultUI
                     GDI.GetTextExtentPoint32(hDC, str, str.Length, out size);
                     if (size.Width < w)
                     {
-                        var padding = col.type == Library.LibraryColumnType.TrackNumber || col.type == Library.LibraryColumnType.Timestamp64 || col.type == Library.LibraryColumnType.Bitrate || col.type == Library.LibraryColumnType.Time ? (w - size.Width) - 1 : 1;
+                        var padding = col.Type == Library.LibraryColumnType.TrackNumber || col.Type == Library.LibraryColumnType.Timestamp64 || col.Type == Library.LibraryColumnType.Bitrate || col.Type == Library.LibraryColumnType.Time ? (w - size.Width) - 1 : 1;
                         GDI.TextOut(hDC, bounds_X + pc + padding, y, str, str.Length);
                     }
                     else
@@ -2428,7 +2434,7 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (Controller.Columns[Controller.GetColumnIndexByName(displayColumns[item.SubItems.IndexOf(sub)])].type == Library.LibraryColumnType.Rating)
+            if (Columns[Controller.GetColumnIndexByName(displayColumns[item.SubItems.IndexOf(sub)])].Type == Library.LibraryColumnType.Rating)
             {
                 if (item.GetSubItemAt(e.X - starwidth * 4, e.Y) == sub)
                 {
@@ -2463,7 +2469,7 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (Controller.Columns[Controller.GetColumnIndexByName(displayColumns[item.SubItems.IndexOf(sub)])].type == Library.LibraryColumnType.Rating)
+            if (Columns[Controller.GetColumnIndexByName(displayColumns[item.SubItems.IndexOf(sub)])].Type == Library.LibraryColumnType.Rating)
             {
                 return;
             }
@@ -2472,7 +2478,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-            Controller.SetSortColumn(Controller.Columns[(int)listView1.Columns[e.Column].Tag].Name);
+            Controller.SetSortColumn(Columns[(int)listView1.Columns[e.Column].Tag].Name);
         }
 
         private void OnPlaylistSortOrderChange(string columnText, Controller.SortOrders sortOrder)

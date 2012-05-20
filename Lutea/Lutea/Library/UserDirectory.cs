@@ -41,14 +41,6 @@ namespace Gageas.Lutea.Library
             }
         }
 
-/*        public string QueryDir
-        {
-            get
-            {
-                return UserDir + sep + "query";
-            }
-        }*/
-
         public UserDirectory(string username)
         {
             userName = username;
@@ -66,62 +58,11 @@ namespace Gageas.Lutea.Library
             {
                 Directory.CreateDirectory(UserDir);
             }
-
-/*            if (!Directory.Exists(QueryDir))
-            {
-                Directory.CreateDirectory(QueryDir);
-                // TODO: デフォルトのqファイルを書きだし
-            }*/
         }
 
-        public H2k6Library OpenLibrary(ICollection<string> customColumns){
-            bool isNew = !File.Exists(LibraryDBPath);
-            var lib = new H2k6Library(customColumns, LibraryDBPath);
-            if (isNew)
-            {
-                try
-                {
-                    using (var db = lib.Connect(true))
-                    {
-                        db.Exec(GetCreateSchema());
-                        db.Exec(GetCreateIndexSchema());
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e.ToString());
-                }
-            }
+        public MusicLibrary OpenLibrary(){
+            var lib = new MusicLibrary(LibraryDBPath);
             return lib;
-        }
-
-        public static String GetCreateSchema()
-        {
-            return "CREATE TABLE IF NOT EXISTS list(" + String.Join(" , ", Lutea.Core.Controller.Columns.Select(_ =>
-            {
-                switch (_.type)
-                {
-                    case LibraryColumnType.FileName:
-                        return _.Name + " TEXT UNIQUE";
-                    case LibraryColumnType.Integer:
-                    case LibraryColumnType.Bitrate:
-                    case LibraryColumnType.Rating:
-                    case LibraryColumnType.Time:
-                    case LibraryColumnType.FileSize:
-                    case LibraryColumnType.Timestamp64:
-                        return _.Name + " INTEGER DEFAULT 0";
-                    case LibraryColumnType.Text:
-                    case LibraryColumnType.TrackNumber:
-                    default:
-                        return _.Name + " TEXT";
-                }
-            }).ToArray()) +
-            " , PRIMARY KEY(" + String.Join(",", Lutea.Core.Controller.Columns.Where(_ => _.PrimaryKey).Select(_ => _.Name).ToArray()) + "));";
-        }
-
-        public static String GetCreateIndexSchema()
-        {
-            return String.Join(" ", Lutea.Core.Controller.Columns.Where(_ => _.Name == LibraryDBColumnTextMinimum.rating || _.IsTextSearchTarget).Select(_ => "CREATE INDEX " + _.Name + "_index ON list(" + _.Name + ");").ToArray());
         }
 
         public UserDirectory():this(System.Environment.GetEnvironmentVariable("USERNAME"))

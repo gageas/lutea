@@ -179,8 +179,8 @@ namespace Gageas.Lutea.Core
         #endregion
 
         internal static UserDirectory userDirectory;
-        private static H2k6Library library;
-        internal static H2k6Library Library
+        private static MusicLibrary library;
+        internal static MusicLibrary Library
         {
             get
             {
@@ -336,7 +336,7 @@ namespace Gageas.Lutea.Core
             userDirectory = new UserDirectory();
 
             // ライブラリ準備
-            library = userDirectory.OpenLibrary(new string[]{});
+            library = userDirectory.OpenLibrary();
 
             // コンポーネントの読み込み
             // Core Componentをロード
@@ -570,7 +570,7 @@ namespace Gageas.Lutea.Core
 
         private static string[] GetSearchTargetColumns()
         {
-            return Controller.Columns.Where(_ => _.IsTextSearchTarget).Select(_ => _.Name).ToArray();
+            return Library.Columns.Where(_ => _.IsTextSearchTarget).Select(_ => _.Name).ToArray();
         }
 
         private static SQLite3DB.STMT prepareForCreatePlaylistView(SQLite3DB db, string subquery)
@@ -603,7 +603,7 @@ namespace Gageas.Lutea.Core
 
             var orderPhrase = "";
             orderPhrase = " ORDER BY ";
-            switch (Controller.Columns[Controller.GetColumnIndexByName(PlaylistSortColumn)].type)
+            switch (Library.Columns[Controller.GetColumnIndexByName(PlaylistSortColumn)].Type)
             {
                 case LibraryColumnType.Bitrate:
                 case LibraryColumnType.FileSize:
@@ -1089,7 +1089,7 @@ namespace Gageas.Lutea.Core
                 if (row != null)
                 {
                     row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.playcount)] = (int.Parse(row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.playcount)].ToString()) + 1).ToString();
-                    row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.lastplayed)] = (H2k6Library.currentTimestamp).ToString();
+                    row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.lastplayed)] = (MusicLibrary.currentTimestamp).ToString();
                 }
                 Controller._PlaylistUpdated(null);
             });

@@ -308,7 +308,7 @@ namespace Gageas.Lutea.Core
             public static String MetaData(Library.Column col)
             {
                 if (AppCore.currentStream == null) return null;
-                int idx = Columns.ToList().IndexOf(col);
+                int idx = AppCore.Library.Columns.ToList().IndexOf(col);
                 if (idx < 0 || idx >= AppCore.currentStream.meta.Length) return null;
                 return AppCore.currentStream.meta[idx].ToString();
             }
@@ -321,7 +321,7 @@ namespace Gageas.Lutea.Core
             public static String MetaData(string DBText)
             {
                 if (AppCore.currentStream == null) return null;
-                int idx = Columns.ToList().IndexOf(Columns.First(_ => _.Name == DBText));
+                int idx = AppCore.Library.Columns.ToList().IndexOf(AppCore.Library.Columns.First(_ => _.Name == DBText));
                 if (idx < 0 || idx >= AppCore.currentStream.meta.Length) return null;
                 return AppCore.currentStream.meta[idx].ToString();
             }
@@ -330,7 +330,7 @@ namespace Gageas.Lutea.Core
             {
                 get
                 {
-                    return int.Parse(MetaData(Columns.First(_ => _.type == LibraryColumnType.Rating)));
+                    return int.Parse(MetaData(AppCore.Library.Columns.First(_ => _.Type == LibraryColumnType.Rating)));
                 }
                 set
                 {
@@ -563,12 +563,22 @@ namespace Gageas.Lutea.Core
 
         /// <summary>
         /// ライブラリのカラム一覧を返す．
+        /// Cloneするのでちょっと重いのであんまり呼ばない．
+        /// プラグインのインスタンス内でキャッシュしてよいので．
         /// </summary>
         public static Column[] Columns
         {
             get
             {
-                return H2k6Library.Columns;
+                return (Column[])AppCore.Library.Columns.Clone();
+            }
+        }
+
+        public static Column[] ExtraColumns
+        {
+            get
+            {
+                return AppCore.Library.GetExtraColumns();
             }
         }
 
@@ -580,7 +590,7 @@ namespace Gageas.Lutea.Core
         /// <returns>カラム番号．0オリジン，エラー時は-1</returns>
         public static int GetColumnIndexByName(string Name)
         {
-            return Columns.ToList().IndexOf(Columns.FirstOrDefault(_ => _.Name == Name));
+            return AppCore.Library.Columns.ToList().IndexOf(AppCore.Library.Columns.FirstOrDefault(_ => _.Name == Name));
         }
         #endregion
 
