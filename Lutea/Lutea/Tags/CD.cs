@@ -11,7 +11,7 @@ namespace Gageas.Lutea.Tags
 {
     class CD
     {
-        public class Track : H2k6LibraryTrack
+        public class Track : LuteaAudioTrack
         {
             public int _start;
             public int _end;
@@ -256,7 +256,7 @@ namespace Gageas.Lutea.Tags
                                 cd.tracks[lastIndex].file_name_CUESheet = last_filename;
                                 cd.tracks[lastIndex].bitrate = last_bitrate;
                                 cd.tracks[lastIndex].end = last_length;
-                                cd.tracks[lastIndex].modify = H2k6Library.currentTimestamp;
+                                cd.tracks[lastIndex].modify = MusicLibrary.currentTimestamp;
                                 cd.tracks[lastIndex].tag.Add(new KeyValuePair<string, object>("ALBUM", cd.album));
                                 //                                cd.tracks[lastIndex].tag.Add(new KeyValuePair<string, object>("ARTIST", cd.artist));
                                 cd.tracks[lastIndex].tag.Add(new KeyValuePair<string, object>("TRACK", lastIndex + 1));

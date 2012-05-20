@@ -24,7 +24,7 @@ namespace Gageas.Lutea.Util
 
         public static DateTime timestamp2DateTime(Int64 timestamp)
         {
-            return H2k6Library.timestamp2DateTime(timestamp);
+            return MusicLibrary.timestamp2DateTime(timestamp);
         }
 
         public static String Repeat(this string src, int count)

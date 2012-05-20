@@ -19,7 +19,7 @@ namespace Gageas.Lutea.Library
 
         string importPath;
         Thread th;
-        Queue<H2k6LibraryTrack> SQLQue = new Queue<H2k6LibraryTrack>();
+        Queue<LuteaAudioTrack> SQLQue = new Queue<LuteaAudioTrack>();
 
         public event Controller.VOIDINT SetMaximum_read = new Controller.VOIDINT((i) => { });
         public event Controller.VOIDVOID Step_read = new Controller.VOIDVOID(() => { });
@@ -54,7 +54,7 @@ namespace Gageas.Lutea.Library
         /// </summary>
         /// <param name="stmt"></param>
         /// <param name="track"></param>
-        private void BindTrackInfo(SQLite3DB.STMT stmt, H2k6LibraryTrack track)
+        private void BindTrackInfo(SQLite3DB.STMT stmt, LuteaAudioTrack track)
         {
             stmt.Reset();
             string extension = (((track.file_ext == "CUE") && (track is CD.Track)) ? ((CD.Track)track).file_ext_CUESheet : track.file_ext).ToUpper();
@@ -81,7 +81,7 @@ namespace Gageas.Lutea.Library
                     case LibraryDBColumnTextMinimum.infoTagtype: value = 0; break;
 
                     case LibraryDBColumnTextMinimum.gain: value = 0; break;
-                    case LibraryDBColumnTextMinimum.modify: value = H2k6Library.currentTimestamp; break;
+                    case LibraryDBColumnTextMinimum.modify: value = MusicLibrary.currentTimestamp; break;
 
                     default:
                         KeyValuePair<string, object> tagEntry = track.tag.Find((e) => { return e.Key == col.MappedTagField; });
@@ -140,7 +140,7 @@ namespace Gageas.Lutea.Library
                 Logger.Error("library.dbへのインポートを開始できませんでした");
                 return;
             }
-            H2k6LibraryTrack currentCD;
+            LuteaAudioTrack currentCD;
 
             SetMaximum_import(SQLQue.Count);
 
@@ -262,7 +262,7 @@ namespace Gageas.Lutea.Library
             return;
         }
 
-        private void importFileReadThreadProc_Stream(string file_name, Queue<H2k6LibraryTrack> localQueue)
+        private void importFileReadThreadProc_Stream(string file_name, Queue<LuteaAudioTrack> localQueue)
         {
             if (processedFile.ContainsKey(file_name)) return;
             lock (processedFile)
@@ -286,7 +286,7 @@ namespace Gageas.Lutea.Library
             }
             else
             {
-                H2k6LibraryTrack tr = new H2k6LibraryTrack();
+                LuteaAudioTrack tr = new LuteaAudioTrack();
                 tr.file_name = file_name;
                 tr.file_size = new System.IO.FileInfo(file_name).Length;
                 try
@@ -312,7 +312,7 @@ namespace Gageas.Lutea.Library
             while (importFilenameQueue.Count > 0)
             {
                 string directory_name;
-                Queue<H2k6LibraryTrack> localQueue = new Queue<H2k6LibraryTrack>();
+                Queue<LuteaAudioTrack> localQueue = new Queue<LuteaAudioTrack>();
                 lock (importFilenameQueue)
                 {
                     if (importFilenameQueue.Count == 0) continue;
