@@ -829,6 +829,7 @@ namespace Gageas.Lutea.Core
                     Logger.Log("Playback Error");
                     stop();
                     Controller._OnPlaybackErrorOccured();
+                    AppCore.CoreEnqueue(() => { System.Threading.Thread.Sleep(500); Controller.NextTrack(); });
                     return;
                 }
 

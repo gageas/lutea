@@ -210,6 +210,7 @@ namespace Gageas.Lutea.Core
         {
             AppCore.CoreEnqueue((VOIDVOID)(() =>
             {
+                icache = index;
                 AppCore.PlayPlaylistItem(index);
             }));
         }
@@ -226,7 +227,7 @@ namespace Gageas.Lutea.Core
         {
             Logger.Log("next Track");
             AppCore.CoreEnqueue((VOIDVOID)(() => {
-                int i = (icache > 0 ? icache : Current.IndexInPlaylist);
+                int i = (icache > 0 ? icache : icache = Current.IndexInPlaylist);
                 int id;
                 if (playbackOrder == Controller.PlaybackOrder.Random)
                 {
