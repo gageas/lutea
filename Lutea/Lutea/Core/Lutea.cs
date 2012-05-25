@@ -426,7 +426,7 @@ namespace Gageas.Lutea.Core
         private static System.Drawing.Image GetExternalCoverArt(string path)
         {
             String name = System.IO.Path.GetDirectoryName(path);
-            String[] searchPatterns = { "folder.jpg", "folder.jpeg", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp" };
+            String[] searchPatterns = { "folder.jpg", "*.jpg", "*.jpeg", "*.png"};
             foreach (String searchPattern in searchPatterns)
             {
                 try
