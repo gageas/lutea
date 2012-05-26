@@ -35,7 +35,7 @@ namespace Gageas.Lutea.Library
         /// <param name="path">インポート処理の検索対象</param>
         public Importer(string path)
         {
-            this.importPath = path;
+            this.importPath = path.Trim();
 
             th = new Thread(importThreadProc);
             th.Priority = ThreadPriority.BelowNormal;
@@ -385,33 +385,52 @@ namespace Gageas.Lutea.Library
                         worker.Abort();
                     }
                 }
-                //                this.Invoke((MethodInvoker)(() => { progressBar1.Value = 0; progressBar1.Step = 1; }));
-                Message("ディレクトリを検索しています");
 
                 processedFile.Clear();
 
-                string[] directories = null;
-                try
+                if (System.IO.File.Exists(importPath))
                 {
-                    directories = System.IO.Directory.GetDirectories(importPath, "*", System.IO.SearchOption.AllDirectories);
+                    if (System.IO.Path.GetExtension(importPath).ToUpper() == ".CUE")
+                    {
+                        importFileReadThreadProc_CUE(importPath);
+                    }
+                    else
+                    {
+                        var localQueue = new Queue<LuteaAudioTrack>();
+                        importFileReadThreadProc_Stream(importPath, localQueue);
+                        while (localQueue.Count() > 0)
+                        {
+                            SQLQue.Enqueue(localQueue.Dequeue());
+                        }
+                    }
                 }
-                catch (Exception e) { Message(e.ToString()); return; }
-                SetMaximum_read(directories.Length);
+                else
+                {
 
-                workers = new List<Thread>();
-                importFilenameQueue = new Queue<string>(directories);
-                importFilenameQueue.Enqueue(importPath);
-                for (int i = 0; i < N; i++)
-                {
-                    Thread th = new Thread(importFileReadThreadProc);
-                    th.Priority = ThreadPriority.BelowNormal;
-                    th.IsBackground = true;
-                    th.Start();
-                    workers.Add(th);
-                }
-                foreach (var th in workers)
-                {
-                    th.Join();
+                    Message("ディレクトリを検索しています");
+                    string[] directories = null;
+                    try
+                    {
+                        directories = System.IO.Directory.GetDirectories(importPath, "*", System.IO.SearchOption.AllDirectories);
+                    }
+                    catch (Exception e) { Message(e.ToString()); return; }
+                    SetMaximum_read(directories.Length);
+
+                    workers = new List<Thread>();
+                    importFilenameQueue = new Queue<string>(directories);
+                    importFilenameQueue.Enqueue(importPath);
+                    for (int i = 0; i < N; i++)
+                    {
+                        Thread th = new Thread(importFileReadThreadProc);
+                        th.Priority = ThreadPriority.BelowNormal;
+                        th.IsBackground = true;
+                        th.Start();
+                        workers.Add(th);
+                    }
+                    foreach (var th in workers)
+                    {
+                        th.Join();
+                    }
                 }
 
                 workers = null;
