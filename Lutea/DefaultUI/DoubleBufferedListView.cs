@@ -37,6 +37,15 @@ namespace Gageas.Lutea.DefaultUI
             this.DoubleBuffered = true;
         }
 
+        [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
+        public static extern Int32 SetWindowTheme(IntPtr hWnd, String pszSubAppName, String pszSubIdList);
+
+        public void SetExplorerStyle()
+        {
+            SetWindowTheme(this.Handle, "Explorer", null);
+        }
+
+
         public void SetSortArrow(int column, SortOrder sortOrder)
         {
             if (this.InvokeRequired)
