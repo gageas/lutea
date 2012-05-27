@@ -37,6 +37,16 @@ namespace Gageas.Lutea.DefaultUI
             this.DoubleBuffered = true;
         }
 
+        protected override void WndProc(ref Message m)
+        {
+            // VirtualModeかつViewがSmallIcon or LargeIconのときShift+SPで落ちるのでSPキー入力を握りつぶす
+            if (this.VirtualMode == true && (View == System.Windows.Forms.View.SmallIcon || View == System.Windows.Forms.View.LargeIcon) && m.Msg == 256 && m.WParam == (IntPtr)0x20)
+            {
+                return;
+            }
+            base.WndProc(ref m);
+        }
+
         [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
         public static extern Int32 SetWindowTheme(IntPtr hWnd, String pszSubAppName, String pszSubIdList);
 
