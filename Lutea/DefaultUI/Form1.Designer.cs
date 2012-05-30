@@ -641,6 +641,7 @@
             this.listView1.View = System.Windows.Forms.View.Details;
             this.listView1.VirtualMode = true;
             this.listView1.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listView1_ColumnClick);
+            this.listView1.DrawColumnHeader += new System.Windows.Forms.DrawListViewColumnHeaderEventHandler(this.listView1_DrawColumnHeader);
             this.listView1.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listView1_DrawItem);
             this.listView1.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.playlistView_RetrieveVirtualItem);
             this.listView1.DoubleClick += new System.EventHandler(this.playlistView_DoubleClick);
