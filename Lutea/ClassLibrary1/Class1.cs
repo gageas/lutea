@@ -89,6 +89,16 @@ namespace ClassLibrary1
                     return class1.TotalUpTime;
                 }
             }
+
+            [Description("起動時間カウンタ")]
+            public List<Gageas.Lutea.Library.Column> cols //TimeSpan TotalUpTime
+            {
+                get
+                {
+                    return Controller.ExtraColumns.ToList();
+//                    return class1.TotalUpTime;
+                }
+            }
         }
     }
 }

@@ -461,6 +461,11 @@ namespace Gageas.Lutea.Core
         {
             return AppCore.plugins.ToArray();
         }
+
+        public static void Reload(Column[] extraColumns)
+        {
+            AppCore.Reload(extraColumns);
+        }
         #endregion
 
         #region Database operation

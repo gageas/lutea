@@ -33,6 +33,7 @@ namespace Gageas.Lutea.Core
                 {
                     Logger.Debug("MainForm is " + mainform.GetType().ToString());
                     Application.Run(mainform);
+
                 }
                 else
                 {

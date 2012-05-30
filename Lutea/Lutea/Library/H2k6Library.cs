@@ -354,6 +354,32 @@ namespace Gageas.Lutea
             db.Exec(GetCreateIndexSchema(columns));
         }
 
+        internal void AlternateLibraryDB(Column[] extraColumns)
+        {
+            using (var db = this.Connect(true))
+            {
+                try
+                {
+                    db.Exec("CREATE TEMP TABLE __list_backup AS SELECT list.* FROM list;");
+                    var NewColumns = LuteaMinimumColumns.Concat(extraColumns).ToArray();
+
+                    db.Exec("DROP TABLE list;");
+                    db.Exec("DROP TABLE IF EXISTS library_definition;");
+
+                    InitializeLibraryDB(db, NewColumns);
+
+                    string[] cols = NewColumns.Select(_ => _.Name).ToArray();
+                    string[] colsx = NewColumns.Select(_ => Columns.Select((__) => __.Name).Contains(_.Name) ? _.Name : "''").ToArray();
+
+                    db.Exec("INSERT INTO list ( " + String.Join(",", cols) + ") SELECT " + String.Join(",", colsx) + " FROM __list_backup;");
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e);
+                }
+            }
+        }
+
         private Column[] LoadColumnDefinitionFromDB()
         {
             using (var db = this.Connect(false))
