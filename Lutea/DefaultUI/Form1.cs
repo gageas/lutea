@@ -1426,6 +1426,10 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private void listView1_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
         #endregion
 
         #region PlaybackOrderComboBox event
