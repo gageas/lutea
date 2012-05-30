@@ -44,6 +44,7 @@
             this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.removeDeadLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.libraryDBのカスタマイズToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.listView2 = new System.Windows.Forms.ListView();
@@ -74,11 +75,14 @@
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.splitContainer4 = new System.Windows.Forms.SplitContainer();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
             this.listView1 = new Gageas.Lutea.DefaultUI.DoubleBufferedListView();
             this.playlistViewContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.propertyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.explorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.再読み込みToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ratingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
@@ -87,6 +91,10 @@
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
             this.clearSortOrderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.albumArtListViewSearchTextBox = new System.Windows.Forms.TextBox();
+            this.albumArtListView = new Gageas.Lutea.DefaultUI.DoubleBufferedListView();
+            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -114,7 +122,10 @@
             this.splitContainer4.Panel2.SuspendLayout();
             this.splitContainer4.SuspendLayout();
             this.panel1.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.playlistViewContextMenuStrip.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.toolStripContainer2.ContentPanel.SuspendLayout();
@@ -185,7 +196,8 @@
             // 
             this.importToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.importToolStripMenuItem1,
-            this.removeDeadLinkToolStripMenuItem});
+            this.removeDeadLinkToolStripMenuItem,
+            this.libraryDBのカスタマイズToolStripMenuItem});
             this.importToolStripMenuItem.Name = "importToolStripMenuItem";
             this.importToolStripMenuItem.Size = new System.Drawing.Size(99, 22);
             this.importToolStripMenuItem.Text = "ライブラリ(&D)";
@@ -193,16 +205,23 @@
             // importToolStripMenuItem1
             // 
             this.importToolStripMenuItem1.Name = "importToolStripMenuItem1";
-            this.importToolStripMenuItem1.Size = new System.Drawing.Size(220, 22);
+            this.importToolStripMenuItem1.Size = new System.Drawing.Size(230, 22);
             this.importToolStripMenuItem1.Text = "ディレクトリの追加...";
             this.importToolStripMenuItem1.Click += new System.EventHandler(this.importToolStripMenuItem1_Click);
             // 
             // removeDeadLinkToolStripMenuItem
             // 
             this.removeDeadLinkToolStripMenuItem.Name = "removeDeadLinkToolStripMenuItem";
-            this.removeDeadLinkToolStripMenuItem.Size = new System.Drawing.Size(220, 22);
+            this.removeDeadLinkToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
             this.removeDeadLinkToolStripMenuItem.Text = "存在しないファイルの削除";
             this.removeDeadLinkToolStripMenuItem.Click += new System.EventHandler(this.removeDeadLinkToolStripMenuItem_Click);
+            // 
+            // libraryDBのカスタマイズToolStripMenuItem
+            // 
+            this.libraryDBのカスタマイズToolStripMenuItem.Name = "libraryDBのカスタマイズToolStripMenuItem";
+            this.libraryDBのカスタマイズToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
+            this.libraryDBのカスタマイズToolStripMenuItem.Text = "LibraryDBのカスタマイズ...";
+            this.libraryDBのカスタマイズToolStripMenuItem.Click += new System.EventHandler(this.libraryDBのカスタマイズToolStripMenuItem_Click);
             // 
             // pictureBox1
             // 
@@ -442,7 +461,7 @@
             this.削除ToolStripMenuItem,
             this.名前の変更ToolStripMenuItem});
             this.queryTreeViewContextMenuStrip1.Name = "queryTreeViewContextMenuStrip1";
-            this.queryTreeViewContextMenuStrip1.Size = new System.Drawing.Size(173, 170);
+            this.queryTreeViewContextMenuStrip1.Size = new System.Drawing.Size(173, 148);
             // 
             // クエリ作成ToolStripMenuItem
             // 
@@ -512,7 +531,7 @@
             this.dummyFilterTab.SelectedIndex = 0;
             this.dummyFilterTab.Size = new System.Drawing.Size(223, 183);
             this.dummyFilterTab.TabIndex = 25;
-            this.dummyFilterTab.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
+            this.dummyFilterTab.SelectedIndexChanged += new System.EventHandler(this.filterViewTabControl_SelectedIndexChanged);
             // 
             // tabPage1
             // 
@@ -538,7 +557,7 @@
             // 
             // splitContainer3.Panel2
             // 
-            this.splitContainer3.Panel2.Controls.Add(this.listView1);
+            this.splitContainer3.Panel2.Controls.Add(this.tabControl1);
             this.splitContainer3.Size = new System.Drawing.Size(574, 376);
             this.splitContainer3.SplitterDistance = 120;
             this.splitContainer3.TabIndex = 0;
@@ -575,6 +594,32 @@
             this.panel1.Size = new System.Drawing.Size(450, 120);
             this.panel1.TabIndex = 26;
             // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl1.Location = new System.Drawing.Point(0, 0);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(0);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.Padding = new System.Drawing.Point(0, 0);
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(574, 252);
+            this.tabControl1.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+            this.tabControl1.TabIndex = 0;
+            this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.playlistViewTabControl_SelectedIndexChanged);
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.listView1);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Margin = new System.Windows.Forms.Padding(0);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Size = new System.Drawing.Size(566, 226);
+            this.tabPage2.TabIndex = 0;
+            this.tabPage2.Text = "Playlist";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
             // listView1
             // 
             this.listView1.Activation = System.Windows.Forms.ItemActivation.OneClick;
@@ -590,13 +635,12 @@
             this.listView1.Name = "listView1";
             this.listView1.OwnerDraw = true;
             this.listView1.ShowGroups = false;
-            this.listView1.Size = new System.Drawing.Size(574, 252);
+            this.listView1.Size = new System.Drawing.Size(566, 226);
             this.listView1.TabIndex = 26;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
             this.listView1.VirtualMode = true;
             this.listView1.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listView1_ColumnClick);
-            this.listView1.DrawColumnHeader += new System.Windows.Forms.DrawListViewColumnHeaderEventHandler(this.listView1_DrawColumnHeader);
             this.listView1.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listView1_DrawItem);
             this.listView1.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.playlistView_RetrieveVirtualItem);
             this.listView1.DoubleClick += new System.EventHandler(this.playlistView_DoubleClick);
@@ -610,6 +654,7 @@
             this.propertyToolStripMenuItem,
             this.deleteToolStripMenuItem,
             this.explorerToolStripMenuItem,
+            this.再読み込みToolStripMenuItem,
             this.ratingToolStripMenuItem,
             this.clearSortOrderToolStripMenuItem});
             this.playlistViewContextMenuStrip.Name = "playlistViewContextMenuStrip";
@@ -635,6 +680,12 @@
             this.explorerToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.explorerToolStripMenuItem.Text = "エクスプローラで表示";
             this.explorerToolStripMenuItem.Click += new System.EventHandler(this.explorerToolStripMenuItem_Click);
+            // 
+            // 再読み込みToolStripMenuItem
+            // 
+            this.再読み込みToolStripMenuItem.Name = "再読み込みToolStripMenuItem";
+            this.再読み込みToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.再読み込みToolStripMenuItem.Text = "再読み込み";
             // 
             // ratingToolStripMenuItem
             // 
@@ -697,6 +748,52 @@
             this.clearSortOrderToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.clearSortOrderToolStripMenuItem.Text = "ソート解除";
             this.clearSortOrderToolStripMenuItem.Click += new System.EventHandler(this.clearSortOrderToolStripMenuItem_Click);
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.albumArtListViewSearchTextBox);
+            this.tabPage3.Controls.Add(this.albumArtListView);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(0);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(566, 226);
+            this.tabPage3.TabIndex = 1;
+            this.tabPage3.Text = "Albums";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // albumArtListViewSearchTextBox
+            // 
+            this.albumArtListViewSearchTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.albumArtListViewSearchTextBox.Location = new System.Drawing.Point(449, 0);
+            this.albumArtListViewSearchTextBox.Name = "albumArtListViewSearchTextBox";
+            this.albumArtListViewSearchTextBox.Size = new System.Drawing.Size(100, 19);
+            this.albumArtListViewSearchTextBox.TabIndex = 25;
+            this.albumArtListViewSearchTextBox.TextChanged += new System.EventHandler(this.albumArtListViewSearchTextBox_TextChanged);
+            this.albumArtListViewSearchTextBox.Leave += new System.EventHandler(this.albumArtListViewSearchTextBox_Leave);
+            this.albumArtListViewSearchTextBox.MouseHover += new System.EventHandler(this.albumArtListViewSearchTextBox_MouseHover);
+            // 
+            // albumArtListView
+            // 
+            this.albumArtListView.BackColor = System.Drawing.Color.Black;
+            this.albumArtListView.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.albumArtListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader3});
+            this.albumArtListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.albumArtListView.ImeMode = System.Windows.Forms.ImeMode.Disable;
+            this.albumArtListView.Location = new System.Drawing.Point(0, 0);
+            this.albumArtListView.Margin = new System.Windows.Forms.Padding(0);
+            this.albumArtListView.MultiSelect = false;
+            this.albumArtListView.Name = "albumArtListView";
+            this.albumArtListView.OwnerDraw = true;
+            this.albumArtListView.ShowGroups = false;
+            this.albumArtListView.Size = new System.Drawing.Size(566, 226);
+            this.albumArtListView.TabIndex = 0;
+            this.albumArtListView.UseCompatibleStateImageBehavior = false;
+            this.albumArtListView.View = System.Windows.Forms.View.SmallIcon;
+            this.albumArtListView.VirtualMode = true;
+            this.albumArtListView.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.albumArtListView_DrawItem);
+            this.albumArtListView.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.albumArtListView_RetrieveVirtualItem);
+            this.albumArtListView.DoubleClick += new System.EventHandler(this.albumArtListView_DoubleClick);
             // 
             // statusStrip1
             // 
@@ -815,7 +912,11 @@
             this.splitContainer4.Panel2.ResumeLayout(false);
             this.splitContainer4.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
             this.playlistViewContextMenuStrip.ResumeLayout(false);
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -845,7 +946,6 @@
         private System.Windows.Forms.TreeView treeView1;
         private System.Windows.Forms.ContextMenuStrip queryTreeViewContextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem reloadToolStripMenuItem;
-        private DoubleBufferedListView listView1;
         private System.Windows.Forms.ContextMenuStrip playlistViewContextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem propertyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
@@ -889,6 +989,15 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem 名前の変更ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem clearSortOrderToolStripMenuItem;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private DoubleBufferedListView listView1;
+        private System.Windows.Forms.TabPage tabPage3;
+        private DoubleBufferedListView albumArtListView;
+        private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.ToolStripMenuItem 再読み込みToolStripMenuItem;
+        private System.Windows.Forms.TextBox albumArtListViewSearchTextBox;
+        private System.Windows.Forms.ToolStripMenuItem libraryDBのカスタマイズToolStripMenuItem;
     }
 }
 

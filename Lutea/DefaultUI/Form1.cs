@@ -21,7 +21,7 @@ using Gageas.Lutea.Library;
 namespace Gageas.Lutea.DefaultUI
 {
     [GuidAttribute("406AB8D9-F6CF-4234-8B32-4D0064DA0200")]
-    [LuteaComponentInfo("DefaultUI", "Gageas", 0.089, "標準GUI Component")]
+    [LuteaComponentInfo("DefaultUI", "Gageas", 0.100, "標準GUI Component")]
     public partial class DefaultUIForm : Form, Lutea.Core.LuteaUIComponentInterface
     {
         #region General-purpose delegates
@@ -387,6 +387,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 dummyFilterTab.TabPages.Clear();
                 InitFilterView();
+                InitAlbumArtList();
             }));
         }
 
@@ -447,14 +448,23 @@ namespace Gageas.Lutea.DefaultUI
             textBox1.Select();
         }
 
+        private bool quitFromCore = false;
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Controller.Quit();
+            if (!quitFromCore)
+            {
+                Controller.Quit();
+            }
         }
 
         private void DefaultUIForm_Activated(object sender, EventArgs e)
         {
-            listView1.Select();
+            if (tabControl1.SelectedIndex == 0)
+            {
+                listView1.Select();
+            }else if(tabControl1.SelectedIndex == 1){
+                albumArtListView.Select();
+            }
         }
 
         private const int WM_COMMAND = 0x0111;
@@ -1621,11 +1631,20 @@ namespace Gageas.Lutea.DefaultUI
             catch (Exception e) { Logger.Log(e.ToString()); }
             yomigana.Flush();
         }
-
         #endregion
 
-        #region Tab event
-        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        #region relatedAlbumListView event
+        private void listView2_DoubleClick(object sender, EventArgs e)
+        {
+            if (listView2.SelectedItems.Count > 0 && listView2.SelectedItems[0].Tag != null)
+            {
+                Controller.CreatePlaylist(listView2.SelectedItems[0].Tag.ToString());
+            }
+        }
+        #endregion
+
+        #region filterViewTab event
+        private void filterViewTabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             int pageIndex = dummyFilterTab.SelectedIndex;
             if (pageIndex < 0) return;
@@ -1639,6 +1658,24 @@ namespace Gageas.Lutea.DefaultUI
                 th.Priority = ThreadPriority.Lowest;
             }
         }
+        #endregion
+
+        #region playlistViewTab event
+        private void playlistViewTabControl_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (tabControl1.SelectedIndex)
+            {
+                case 0:
+                    listView1.Refresh();
+                    break;
+                case 1:
+                    InitAlbumArtList();
+                    break;
+            }
+        }
+        #endregion
+
+        #region PlaylistView Tab event
         #endregion
 
         #region splitContainer3 event
@@ -1673,6 +1710,11 @@ namespace Gageas.Lutea.DefaultUI
                     iform.Start();
                 }
             }
+        }
+
+        private void libraryDBのカスタマイズToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            (new DBCustomize()).Show();
         }
         #endregion
 
@@ -1782,6 +1824,168 @@ namespace Gageas.Lutea.DefaultUI
                 var correctdialog = new YomiCorrect(lv.SelectedItems[0].Tag.ToString(), yomigana);
                 correctdialog.ShowDialog();
             }
+        }
+        #endregion
+
+        #region album art list view event
+        private void albumArtListView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
+        {
+            e.Item = dummyPlaylistViewItem;
+        }
+        private void albumArtListView_DrawItem(object sender, DrawListViewItemEventArgs e)
+        {
+            var albums = AlbumsFiltered;
+            if (e.ItemIndex >= albums.Length) return;
+            var g = e.Graphics;
+            var index = e.ItemIndex;
+            var x = e.Bounds.X;
+            var y = e.Bounds.Y;
+            var album = albums[index][0].ToString();
+            var file_name = albums[index][1].ToString();
+            var hasCoverArtPic = false;
+            var xp = x + 3;
+            var yp = y + 3;
+            var w = e.Bounds.Width - 4 - 3;
+            var h = e.Bounds.Width - 4 - 3;
+
+            // background
+            if (coverArts.ContainsKey(album))
+            {
+                var coverArt = coverArts[album];
+                if (coverArt != null && coverArt.Width != 1)
+                {
+                    hasCoverArtPic = true;
+                    var hdc = g.GetHdc();
+                    xp = x + 3 + (CoverArtSizeInPlaylistView - coverArt.Width) / 2;
+                    yp = y + 3 + (CoverArtSizeInPlaylistView - coverArt.Height) / 2;
+                    w = coverArt.Width - 4;
+                    h = coverArt.Height - 4;
+                    GDI.BitBlt(hdc, xp, yp, CoverArtSizeInPlaylistView + 2, CoverArtSizeInPlaylistView + 2, coverArt.HDC, 0, 0, 0x00CC0020);
+                    g.ReleaseHdc(hdc);
+                }
+                else
+                {
+                    g.DrawRectangle(Pens.Silver, x + 2, y + 2, e.Bounds.Width - 4, e.Bounds.Height - 4);
+                }
+            }
+            else
+            {
+                g.DrawRectangle(Pens.Silver, x + 2, y + 2, e.Bounds.Width - 4, e.Bounds.Height - 4);
+                if (!string.IsNullOrEmpty(album))
+                {
+                    lock (playlistViewImageLoadQueue)
+                    {
+                        if (playlistViewImageLoadQueue.Exists((_) => _.Key == album))
+                        {
+                            playlistViewImageLoadQueue.First((_) => _.Key == album).redrawIndexesAlbumlist = index;
+                        }
+                        else
+                        {
+                            playlistViewImageLoadQueue.Add(new ImageLoaderQueueEntry(album, file_name, new List<int>(new int[] { }), index));
+                        }
+                    }
+                    if (playlistViewImageLoader == null)
+                    {
+                        playlistViewImageLoader = new Thread(playlistViewImageLoadProc);
+                        playlistViewImageLoader.Priority = ThreadPriority.Lowest;
+                        playlistViewImageLoader.Start();
+                    }
+                    if (playlistViewImageLoaderInSleep)
+                    {
+                        playlistViewImageLoader.Interrupt();
+                    }
+                }
+            }
+
+            // selection
+            if ((e.State & ListViewItemStates.Selected) != 0)
+            {
+                var blush = new SolidBrush(Color.FromArgb(80, 0, 0, 128));
+                g.FillRectangle(blush, e.Bounds);
+            }
+
+            // overlay
+            if (((e.State & ListViewItemStates.Selected) != 0) || !hasCoverArtPic)
+            {
+                g.DrawString(album, listView1.Font, System.Drawing.Brushes.White, new RectangleF(xp + 2, yp + 2, w - 20, h));
+            }
+            double rate = 0;
+            double.TryParse(albums[index][3].ToString(), out rate);
+            g.FillEllipse(new SolidBrush(Color.FromArgb(128, 255, 0, 0)), xp + w - 20, yp + 2, 18, 15);
+            g.DrawEllipse(new Pen(Color.FromArgb(128, 255, 255, 255)), xp + w - 20, yp + 2, 18, 15);
+            var sf = new StringFormat();
+            sf.Trimming = StringTrimming.None;
+            sf.Alignment = StringAlignment.Center;
+            sf.LineAlignment = StringAlignment.Center;
+            sf.FormatFlags = StringFormatFlags.NoWrap;
+            g.DrawString(albums[index][2].ToString(), listView1.Font, System.Drawing.Brushes.White, new RectangleF(xp + w - 18, yp + 2, 15, 15), sf);
+        }
+
+        private void albumArtListView_DoubleClick(object sender, EventArgs e)
+        {
+            if (albumArtListView.SelectedIndices.Count > 0)
+            {
+                Controller.CreatePlaylist("SELECT * FROM list WHERE tagAlbum IN ('" + AlbumsFiltered[albumArtListView.SelectedIndices[0]][0].ToString().EscapeSingleQuotSQL() + "')", true);
+            }
+        }
+        #endregion
+
+        #region album art list view search text box event
+        private void albumArtListViewSearchTextBox_MouseHover(object sender, EventArgs e)
+        {
+            if (albumArtListViewSearchTextBox.Width < 20)
+            {
+                var w = albumArtListViewSearchTextBox.Width;
+                albumArtListViewSearchTextBox.Width = 100;
+                albumArtListViewSearchTextBox.Left -= (100 - w);
+                albumArtListViewSearchTextBox.Select();
+            }
+        }
+
+        private void albumArtListViewSearchTextBox_Leave(object sender, EventArgs e)
+        {
+            var w = albumArtListViewSearchTextBox.Width;
+            albumArtListViewSearchTextBox.Width = 15;
+            albumArtListViewSearchTextBox.Left += (w - 15);
+        }
+
+        private void albumArtListViewSearchTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (migemo == null)
+            {
+                migemo = new KaoriYa.Migemo.Migemo(@"dict\migemo-dict");
+            }
+
+            var search = albumArtListViewSearchTextBox.Text;
+
+            albumArtListView.BeginUpdate();
+            if (search == "")
+            {
+                AlbumsFiltered = Albums;
+                albumArtListView.VirtualListSize = Albums.Length;
+            }
+            else
+            {
+                if (migemo != null)
+                {
+                    Regex re = null;
+                    try
+                    {
+                        re = migemo.GetRegex(search, RegexOptions.IgnoreCase);
+                    }
+                    catch
+                    {
+                        re = new Regex(search, RegexOptions.IgnoreCase);
+                    }
+                    AlbumsFiltered = Albums.Where((_) => re.IsMatch(_[0].ToString())).ToArray();
+                }
+                else
+                {
+                    AlbumsFiltered = Albums.Where((_) => _[0].ToString().IndexOf(search) >= 0).ToArray();
+                }
+                albumArtListView.VirtualListSize = AlbumsFiltered.Length;
+            }
+            albumArtListView.EndUpdate();
         }
         #endregion
         #endregion
@@ -2023,7 +2227,14 @@ namespace Gageas.Lutea.DefaultUI
                 this.CoverArtSizeInPlaylistView = pref.CoverArtSizeInPlaylistView;
                 lock (coverArts)
                 {
+                    playlistViewImageLoader.Interrupt();
+                    playlistViewImageLoader = null;
+                    playlistViewImageLoaderInSleep = false;
                     coverArts.Clear();
+                    if (tabControl1.SelectedIndex == 1)
+                    {
+                        InitAlbumArtList();
+                    }
                 }
             }
             this.ColoredAlbum = pref.ColoredAlbum;
@@ -2044,6 +2255,7 @@ namespace Gageas.Lutea.DefaultUI
 
         public void Quit()
         {
+            quitFromCore = true;
             this.Invoke((MethodInvoker)(() =>
             {
                 if (logview != null)
@@ -2058,38 +2270,19 @@ namespace Gageas.Lutea.DefaultUI
 
                 try
                 {
-                    if (coverArtImageLoaderThread != null) coverArtImageLoaderThread.Abort();
+//                    if (coverArtImageLoaderThread != null) coverArtImageLoaderThread.Abort();
+//                    coverArtImageLoaderThread.Join();
                 }
                 catch { }
 
                 yomigana.Dispose();
             }));
             coverArtImageLoaderThread.Abort();
+            coverArtImageLoaderThread.Join();
 
             this.Close();
         }
         #endregion
-
-        private void listView2_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (listView2.SelectedItems.Count > 0)
-            {
-                Controller.CreatePlaylist(listView2.SelectedItems[0].Tag.ToString());
-            }
-        }
-
-        private void listView2_DoubleClick(object sender, EventArgs e)
-        {
-            if (listView2.SelectedItems.Count > 0 && listView2.SelectedItems[0].Tag != null)
-            {
-                Controller.CreatePlaylist(listView2.SelectedItems[0].Tag.ToString());
-            }
-        }
-
-        private void listView1_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
-        {
-            e.DrawDefault = true;
-        }
 
         private Thread playlistViewImageLoader = null;
         private bool playlistViewImageLoaderInSleep = false;
@@ -2102,7 +2295,7 @@ namespace Gageas.Lutea.DefaultUI
                     while (true)
                     {
                         // キューの先頭の要素を取得
-                        KeyValuePair<string, List<int>> task = new KeyValuePair<string, List<int>>();
+                        ImageLoaderQueueEntry task;
                         lock (playlistViewImageLoadQueue)
                         {
                             if (playlistViewImageLoadQueue.Count > 0)
@@ -2118,7 +2311,7 @@ namespace Gageas.Lutea.DefaultUI
 
                         playlistViewImageLoadQueueItemConsume(task);
 
-                        Thread.Sleep(50);
+//                        Thread.Sleep(50);
                     }
                     playlistViewImageLoaderInSleep = true;
                     Thread.Sleep(Timeout.Infinite);
@@ -2133,18 +2326,33 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private void playlistViewImageLoadQueueItemConsume(KeyValuePair<string, List<int>> task)
+        private class ImageLoaderQueueEntry
+        {
+            public ImageLoaderQueueEntry(string key, string file_name, List<int> redrawIndexesPlaylist, int redrawIndexesAlbumlist = -1)
+            {
+                this.Key = key;
+                this.file_name = file_name;
+                this.redrawIndexesPlaylist = redrawIndexesPlaylist;
+                this.redrawIndexesAlbumlist = redrawIndexesAlbumlist;
+            }
+            public string Key;
+            public string file_name;
+            public List<int> redrawIndexesPlaylist;
+            public int redrawIndexesAlbumlist = -1;
+        }
+
+        private void playlistViewImageLoadQueueItemConsume(ImageLoaderQueueEntry tasks)
         {
             try
             {
-                if (task.Key != null)
+                if (tasks.Key != null)
                 {
-                    var album = task.Key;
+                    var album = tasks.Key;
                     if (coverArts.ContainsKey(album))
                     {
                         return;
                     }
-                    var file_name = Controller.GetPlaylistRowColumn(task.Value[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)).ToString().Trim();
+                    var file_name = tasks.file_name.Trim(); //Controller.GetPlaylistRowColumn(task.Value[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)).ToString().Trim();
                     var orig = Controller.CoverArtImageForFile(file_name);
                     if (orig != null)
                     {
@@ -2169,18 +2377,20 @@ namespace Gageas.Lutea.DefaultUI
                     }
                     else
                     {
-                        coverArts[album] = new GDI.GDIBitmap(dummyEmptyBitmap);
+                        coverArts[album] = dummyEmptyBitmapGDI;
                     }
                 }
             }
             finally
             {
                 List<int> rowsToUpdate = null;
+                int rowToUpdateAlbumList = -1;
 
                 lock (playlistViewImageLoadQueue)
                 {
-                    rowsToUpdate = task.Value;
-                    playlistViewImageLoadQueue.Remove(task);
+                    rowsToUpdate = tasks.redrawIndexesPlaylist;
+                    rowToUpdateAlbumList = tasks.redrawIndexesAlbumlist;
+                    playlistViewImageLoadQueue.Remove(tasks);
                 }
 
                 listView1.Invoke((MethodInvoker)(() =>
@@ -2192,13 +2402,21 @@ namespace Gageas.Lutea.DefaultUI
                             listView1.RedrawItems(index, index, true);
                         }
                     }
+                    if (rowToUpdateAlbumList != -1)
+                    {
+                        if (rowToUpdateAlbumList < albumArtListView.VirtualListSize)
+                        {
+                            albumArtListView.RedrawItems(rowToUpdateAlbumList, rowToUpdateAlbumList, true);
+
+                        }
+                    }
                 }));
             }
         }
-        private List<KeyValuePair<string, List<int>>> playlistViewImageLoadQueue = new List<KeyValuePair<string, List<int>>>();
+        private List<ImageLoaderQueueEntry> playlistViewImageLoadQueue = new List<ImageLoaderQueueEntry>();
         private Dictionary<string, GDI.GDIBitmap> coverArts = new Dictionary<string, GDI.GDIBitmap>();
         WorkerThread worker = new WorkerThread(true);
-        private readonly Bitmap dummyEmptyBitmap = new Bitmap(1, 1);
+        private readonly GDI.GDIBitmap dummyEmptyBitmapGDI = new GDI.GDIBitmap(new Bitmap(1, 1));
         private void listView1_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
             var index = e.ItemIndex;
@@ -2209,6 +2427,7 @@ namespace Gageas.Lutea.DefaultUI
 
             int indexInGroup = 0;
             var album = row[Controller.GetColumnIndexByName("tagAlbum")].ToString();
+            var file_name = row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)].ToString();
             while (album == Controller.GetPlaylistRowColumn(index - indexInGroup, Controller.GetColumnIndexByName("tagAlbum"))) indexInGroup++;
             var isFirstTrack = indexInGroup == 1;
 
@@ -2263,11 +2482,11 @@ namespace Gageas.Lutea.DefaultUI
                             {
                                 if (playlistViewImageLoadQueue.Exists((_) => _.Key == album))
                                 {
-                                    playlistViewImageLoadQueue.First((_) => _.Key == album).Value.Add(index);
+                                    playlistViewImageLoadQueue.First((_) => _.Key == album).redrawIndexesPlaylist.Add(index);
                                 }
                                 else
                                 {
-                                    playlistViewImageLoadQueue.Add(new KeyValuePair<string, List<int>>(album, new List<int>(new int[] { index })));
+                                    playlistViewImageLoadQueue.Add(new ImageLoaderQueueEntry(album, file_name, new List<int>(new int[] { index })));
                                 }
                             }
                             if (playlistViewImageLoader == null)
@@ -2420,13 +2639,6 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private void listView1_MouseDown(object sender, MouseEventArgs e)
-        {
-
-            //                Logger.Log(item.SubItems.IndexOf(sub).ToString());
-            //           }
-        }
-
         private void listView1_MouseClick(object sender, MouseEventArgs e)
         {
             int starwidth = 16;
@@ -2495,5 +2707,73 @@ namespace Gageas.Lutea.DefaultUI
                 }
             }
         }
+
+
+        private object[][] Albums = null;
+        private object[][] AlbumsFiltered = null;
+        private void InitAlbumArtList()
+        {
+            albumArtListView.BeginUpdate();
+            albumArtListView.Enabled = false;
+            albumArtListView.SmallImageList = new ImageList();
+	        albumArtListView.SmallImageList.ImageSize = new System.Drawing.Size(CoverArtSizeInPlaylistView+7, CoverArtSizeInPlaylistView+7);
+            albumArtListView.Columns[0].Width = CoverArtSizeInPlaylistView + 7;
+            Albums = null;
+            AlbumsFiltered = null;
+            using (var db = Controller.GetDBConnection())
+            {
+                using (var stmt = db.Prepare("SELECT tagAlbum,file_name,COUNT(*),AVG(rating) FROM list WHERE tagAlbum != '' GROUP BY tagAlbum ORDER BY tagAlbum ASC;"))
+                {
+                    Albums = stmt.EvaluateAll();
+                    AlbumsFiltered = Albums;
+                }
+            }
+            albumArtListView.VirtualListSize = Albums.Length;
+            albumArtListView.Enabled = true;
+            albumArtListView.Dock = DockStyle.None;
+            albumArtListView.Dock = DockStyle.Fill;
+            albumArtListView.EndUpdate();
+
+            albumArtListViewSearchTextBox_Leave(null, null);
+
+            var th = new Thread(() => {
+                int index = 0;
+                var albums = Albums;
+                while (index < albums.Length)
+                {
+                    if (albums != Albums) return;
+                    var e = albums[index];
+                    var album = e[0].ToString();
+                    var file_name = e[1].ToString();
+                    if (playlistViewImageLoadQueue.Count == 0)
+                    {
+                        if (coverArts.ContainsKey(album))
+                        {
+                            index++;
+                            continue;
+                        }
+                        lock (playlistViewImageLoadQueue)
+                        {
+                            playlistViewImageLoadQueue.Add(new ImageLoaderQueueEntry(album, file_name, new List<int>(new int[] { }), index));
+                        }
+
+                        if (playlistViewImageLoaderInSleep)
+                        {
+                            playlistViewImageLoader.Interrupt();
+                        }
+                        index++;
+                    }
+                    else
+                    {
+                        Thread.Sleep(50);
+                    }
+                }
+            });
+            th.Priority = ThreadPriority.BelowNormal;
+            th.Start();
+        }
+
+
+        private KaoriYa.Migemo.Migemo migemo = null;
     }
 }

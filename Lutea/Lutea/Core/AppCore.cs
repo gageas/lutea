@@ -340,6 +340,7 @@ namespace Gageas.Lutea.Core
 
             // コンポーネントの読み込み
             // Core Componentをロード
+            plugins.Clear();
             plugins.Add(new Core.CoreComponent());
             try
             {
@@ -444,6 +445,17 @@ namespace Gageas.Lutea.Core
             return componentAsMainForm;
         }
 
+        internal static void Reload(Column[] extraColumns)
+        {
+            coreWorker.AddTask(() =>
+            {
+                FinalizeApp();
+                library.AlternateLibraryDB(extraColumns);
+                System.Diagnostics.Process.Start(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                Quit();
+            });
+        }
+
         public void SetLibraryColumns(Library.Column[] columns)
         {
         }
@@ -451,36 +463,12 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// アプリケーション全体の終了
         /// </summary>
-        private static bool QuitProcess = false;
+        private static bool FinalizeProcess = false;
         internal static void Quit()
         {
-            if (QuitProcess) return;
-            QuitProcess = true;
             try
             {
-                isPlaying = false;
-                outputManager.KillOutputChannel();
-
-                if (currentStream != null && currentStream.stream != null)
-                {
-                    currentStream.stream.Dispose();
-                }
-
-                // Quit plugins and save setting
-                using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite))
-                {
-                    Dictionary<Guid, object> pluginSettings = new Dictionary<Guid, object>();
-                    foreach (var p in plugins)
-                    {
-                        try
-                        {
-                            pluginSettings.Add(p.GetType().GUID, p.GetSetting());
-                        }
-                        catch { }
-                        finally { p.Quit(); }
-                    }
-                    (new BinaryFormatter()).Serialize(fs, pluginSettings);
-                }
+                FinalizeApp();
             }
             catch (Exception ex)
             {
@@ -489,6 +477,36 @@ namespace Gageas.Lutea.Core
             finally
             {
                 Environment.Exit(0);
+            }
+        }
+
+        private static void FinalizeApp()
+        {
+            if (FinalizeProcess) return;
+            FinalizeProcess = true;
+            isPlaying = false;
+            initialized = false;
+            outputManager.KillOutputChannel();
+
+            if (currentStream != null && currentStream.stream != null)
+            {
+                currentStream.stream.Dispose();
+            }
+
+            // Quit plugins and save setting
+            using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite))
+            {
+                Dictionary<Guid, object> pluginSettings = new Dictionary<Guid, object>();
+                foreach (var p in plugins)
+                {
+                    try
+                    {
+                        pluginSettings.Add(p.GetType().GUID, p.GetSetting());
+                    }
+                    catch { }
+                    finally { p.Quit(); }
+                }
+                (new BinaryFormatter()).Serialize(fs, pluginSettings);
             }
         }
 
