@@ -145,7 +145,7 @@ namespace Gageas.Lutea.Util
             }
         }
 
-        private static readonly System.Text.RegularExpressions.Regex intRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+?");
+        private static readonly System.Text.RegularExpressions.Regex intRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+");
         private static readonly System.Text.RegularExpressions.Regex doubleRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+(\.)?(\d+)?");
         public static double parseDouble(string src)
         {
@@ -162,7 +162,7 @@ namespace Gageas.Lutea.Util
             var match = intRe.Match(src);
             if (match.Success)
             {
-                return int.TryParse(src, out result);
+                return int.TryParse(match.Value, out result);
             }
             return false;
         }
