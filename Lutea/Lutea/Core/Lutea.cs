@@ -83,7 +83,11 @@ namespace Gageas.Lutea.Core
                     if (t != elapsedtime)
                     {
                         elapsedtime = t;
-                        onElapsedTimeChange.BeginInvoke(t, (_ => { onElapsedTimeChange.EndInvoke(_); }), null);
+                        foreach (var dlg in onElapsedTimeChange.GetInvocationList())
+                        {
+                            var _dlg = (VOIDINT)dlg;
+                            _dlg.BeginInvoke(t, (_ => { _dlg.EndInvoke(_); }), null);
+                        }
                     }
                     if (t > 0) icache = -1;
                 }
