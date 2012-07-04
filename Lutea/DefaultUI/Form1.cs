@@ -2072,19 +2072,25 @@ namespace Gageas.Lutea.DefaultUI
 
             // プレイリストビュー初期化
             ResetPlaylistView();
-            if (this.WindowState == FormWindowState.Normal)
+
+            // ウィンドウ位置を復元
+            if (!config_FormLocation.IsEmpty)
             {
-                if (!config_FormLocation.IsEmpty) {
-                    var locationBackup = this.Location;
-                    this.StartPosition = FormStartPosition.Manual;
-                    this.Location = config_FormLocation;
-                    if (System.Windows.Forms.Screen.GetWorkingArea(this).IntersectsWith(this.Bounds) == false)
-                    {
-                        this.Location = locationBackup;
-                    }
+                var locationBackup = this.Location;
+                this.StartPosition = FormStartPosition.Manual;
+                this.Location = config_FormLocation;
+                if (System.Windows.Forms.Screen.GetWorkingArea(this).IntersectsWith(this.Bounds) == false)
+                {
+                    this.Location = locationBackup;
                 }
-                if (!config_FormSize.IsEmpty) this.ClientSize = config_FormSize;
             }
+
+            // ウィンドウサイズを復元
+            if(this.WindowState == FormWindowState.Normal && !config_FormSize.IsEmpty){
+                this.ClientSize = config_FormSize;
+            }
+
+            // ウィンドウ表示
             this.Show();
             pictureBox1.Width = pictureBox1.Height = splitContainer4.SplitterDistance = splitContainer3.SplitterDistance = settingCoverArtSize;
             splitContainer3_SplitterMoved(null, null);
@@ -2164,14 +2170,13 @@ namespace Gageas.Lutea.DefaultUI
             setting["PlaylistViewColumnOrder"] = PlaylistViewColumnOrder;
             setting["PlaylistViewColumnWidth"] = PlaylistViewColumnWidth;
             setting["WindowState"] = this.WindowState;
+            setting["WindowLocation"] = this.Location;
             if (this.WindowState == FormWindowState.Normal)
             {
-                setting["WindowLocation"] = this.Location;
                 setting["WindowSize"] = this.ClientSize;
             }
             else
             {
-                setting["WindowLocation"] = this.config_FormLocation;
                 setting["WindowSize"] = this.config_FormSize;
             }
             setting["LastExecutedSQL"] = textBox1.Text;
