@@ -2277,13 +2277,6 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 catch { }
 
-                try
-                {
-//                    if (coverArtImageLoaderThread != null) coverArtImageLoaderThread.Abort();
-//                    coverArtImageLoaderThread.Join();
-                }
-                catch { }
-
                 yomigana.Dispose();
             }));
             coverArtImageLoaderThread.Abort();
