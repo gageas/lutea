@@ -106,11 +106,6 @@
     <Compile Include="Library\H2k6Library.cs" />
     <Compile Include="External\Migemo.cs" />
     <Compile Include="Library\Importer.cs" />
-    <Compile Include="Library\Library.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Library.resx</DependentUpon>
-    </Compile>
     <Compile Include="Library\LibraryDBColumnTextMinimum.cs" />
     <Compile Include="Library\UserDirectory.cs" />
     <Compile Include="NativeWrapper\BASS\BASSWASAPIOutput.cs" />
@@ -132,11 +127,6 @@
     <Compile Include="Util\ImageUtil.cs" />
     <Compile Include="Util\StreamUtil.cs" />
     <Compile Include="Util\Util.cs" />
-    <EmbeddedResource Include="Library\Library.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Library.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
