@@ -420,11 +420,14 @@ namespace Gageas.Lutea.Core
             if (BASS.isAvailable)
             {
                 BASS.BASS_Init(0);
-                String[] dllList = System.IO.Directory.GetFiles(userDirectory.PluginDir, "*.dll");
-                foreach (String dllFilename in dllList)
+                if (System.IO.Directory.Exists(userDirectory.PluginDir))
                 {
-                    bool success = BASS.Plugin.Load(dllFilename, 0);
-                    Logger.Log("Loading " + dllFilename + (success ? " OK" : " Failed"));
+                    String[] dllList = System.IO.Directory.GetFiles(userDirectory.PluginDir, "*.dll");
+                    foreach (String dllFilename in dllList)
+                    {
+                        bool success = BASS.Plugin.Load(dllFilename, 0);
+                        Logger.Log("Loading " + dllFilename + (success ? " OK" : " Failed"));
+                    }
                 }
                 if (BASS.Floatable)
                 {
