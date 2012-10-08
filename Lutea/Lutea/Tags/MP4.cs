@@ -89,25 +89,31 @@ namespace Gageas.Lutea.Tags
                         return (tr_total == 0 ? tr.ToString() : (tr + "/" + tr_total));
                     }
 
-                case 0x000000000D000000: // Image
-                case 0x000000000E000000: // Image
+                case 0x0000000001000000: // Text
+                    buf = new byte[length - 8];
+                    strm.Read(buf, 0, buf.Length);
+                    return Encoding.UTF8.GetString(buf, 0, buf.Length);
+
+//                case 0x000000000D000000: // Image
+//                case 0x000000000E000000: // Image
+//                case 0x0D0000000D000000: // Image moraで見つけた
+                default: // 画像データになる場合のtype値が色々あって把握できないのでdefaultで画像として読んでみるようにする
                     if (createImageObject)
                     {
                         buf = new byte[length - 8];
                         strm.Read(buf, 0, buf.Length);
-                        return System.Drawing.Image.FromStream(new MemoryStream(buf, 0, buf.Length));
+                        try
+                        {
+                            return System.Drawing.Image.FromStream(new MemoryStream(buf, 0, buf.Length));
+                        }
+                        catch (Exception) {
+                            return null;
+                        }
                     }
                     else
                     {
                         strm.Seek(length - 8, SeekOrigin.Current);
                     }
-                    break;
-
-                case 0x0000000001000000: // Text
-                    buf = new byte[length - 8];
-                    strm.Read(buf, 0, buf.Length);
-                    return Encoding.UTF8.GetString(buf, 0, buf.Length);
-                default:
                     strm.Seek(length - 8, SeekOrigin.Current);
                     break;
             }
@@ -218,8 +224,11 @@ namespace Gageas.Lutea.Tags
                             case 0x796164A9: // .dat Date
                                 ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "DATE");
                                 break;
-                            case 0x746D63A9: // .cmt Date
+                            case 0x746D63A9: // .cmt Comment
                                 ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "COMMENT");
+                                break;
+                            case 0x747277A9: // .wrt Writer
+                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "COMPOSER");
                                 break;
                             default:
                                 break;
