@@ -140,7 +140,6 @@ namespace Gageas.Lutea.Library
                 Logger.Error("library.dbへのインポートを開始できませんでした");
                 return;
             }
-            LuteaAudioTrack currentCD;
 
             SetMaximum_import(SQLQue.Count);
 
@@ -150,36 +149,42 @@ namespace Gageas.Lutea.Library
                 using (var stmt_update = prepareUpdate(libraryDB))
                 using (var stmt_test = libraryDB.Prepare("SELECT rowid FROM list WHERE file_name = ?;"))
                 {
-                    while (SQLQue.Count > 0)
+                    SQLQue.OrderBy(_ => {
+                        int tr = 0;
+                        Util.Util.tryParseInt((_.getTagValue("TRACK") ?? "0").ToString(), ref tr);
+                        return (_.getTagValue("ALBUM") ?? "") + tr.ToString("0000");
+                    }).ToList().ForEach(track =>
                     {
-                        currentCD = SQLQue.Dequeue();
                         Step_import();
 
-                        if (currentCD.duration == 0) continue;
-                        // Titleが無かったらfile_titleを付与
-                        if (currentCD.tag.Find((e) => e.Key == "TITLE").Key == null) currentCD.tag.Add(new KeyValuePair<string, object>("TITLE", currentCD.file_title));
-                        try
+                        if (track.duration != 0)
                         {
-                            stmt_test.Reset();
-                            stmt_test.Bind(1, currentCD.file_name);
-                            if (stmt_test.EvaluateAll().Length > 0)
+                            // Titleが無かったらfile_titleを付与
+                            if (track.tag.Find((e) => e.Key == "TITLE").Key == null) track.tag.Add(new KeyValuePair<string, object>("TITLE", track.file_title));
+                            try
                             {
-                                stmt_update.Reset();
-                                BindTrackInfo(stmt_update, currentCD);
-                                stmt_update.Evaluate(null);
+                                stmt_test.Reset();
+                                stmt_test.Bind(1, track.file_name);
+                                if (stmt_test.EvaluateAll().Length > 0)
+                                {
+                                    stmt_update.Reset();
+                                    BindTrackInfo(stmt_update, track);
+                                    stmt_update.Evaluate(null);
+                                }
+                                else
+                                {
+                                    stmt_insert.Reset();
+                                    BindTrackInfo(stmt_insert, track);
+                                    stmt_insert.Evaluate(null);
+                                }
                             }
-                            else
+                            catch (SQLite3DB.SQLite3Exception e)
                             {
-                                stmt_insert.Reset();
-                                BindTrackInfo(stmt_insert, currentCD);
-                                stmt_insert.Evaluate(null);
+                                Logger.Error(e.ToString());
                             }
                         }
-                        catch (SQLite3DB.SQLite3Exception e)
-                        {
-                            Logger.Error(e.ToString());
-                        }
-                    }
+                    });
+                    SQLQue.Clear();
                 }
                 try
                 {
