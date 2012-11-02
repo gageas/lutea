@@ -21,36 +21,32 @@ namespace Gageas.Lutea.DefaultUI
             lcomponents = Controller.GetComponents();
             foreach (var component in lcomponents)
             {
-                var info = component.GetType().GetCustomAttributes(typeof(LuteaComponentInfo), false);
+                LuteaComponentInfo[] info = (LuteaComponentInfo[])component.GetType().GetCustomAttributes(typeof(LuteaComponentInfo), false);
                 if (info.Length > 0)
                 {
-                    this.comboBox1.Items.Add(info[0]);
-//                    LuteaComponentInfo cominfo = (LuteaComponentInfo)info[0];
-//                    Logger.Log(cominfo.name);
+                    var item = new ListViewItem(info[0].name);
+                    item.ToolTipText = info[0].ToString();
+                    this.listView1.Items.Add(item);
                 }
             }
-            this.comboBox1.SelectedIndex = 0;
+            this.listView1.Items[0].Selected = true;
         }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (comboBox1.SelectedItem != null)
-            {
-                LuteaComponentInterface component = lcomponents[this.comboBox1.SelectedIndex];
-                var pref = component.GetPreferenceObject();
-                this.propertyGrid1.SelectedObject = component.GetPreferenceObject();
-            }
-        }
-
+        
         private void button1_Click(object sender, EventArgs e)
         {
-            LuteaComponentInterface component = lcomponents[this.comboBox1.SelectedIndex];
+            LuteaComponentInterface component = lcomponents[listView1.SelectedIndices[0]];
             component.SetPreferenceObject(this.propertyGrid1.SelectedObject);
         }
 
-        private void Close_Click(object sender, EventArgs e)
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            this.Close();
+            if (listView1.SelectedItems.Count > 0)
+            {
+                LuteaComponentInterface component = lcomponents[listView1.SelectedIndices[0]];
+                var pref = component.GetPreferenceObject();
+                groupBox1.Text = listView1.SelectedItems[0].ToolTipText;
+                this.propertyGrid1.SelectedObject = component.GetPreferenceObject();
+            }
         }
     }
 }
