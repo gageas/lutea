@@ -176,6 +176,13 @@ namespace Gageas.Lutea.Core
                 return outputManager.OutputMode;
             }
         }
+        internal static Controller.Resolutions OutputResolution
+        {
+            get
+            {
+                return outputManager.OutputResolution;
+            }
+        }
         #endregion
 
         internal static UserDirectory userDirectory;
