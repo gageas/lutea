@@ -49,6 +49,34 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        public int OutputFreq
+        {
+            get
+            {
+                if (!Available) return -1;
+                return (int)outputChannel.GetFreq();
+            }
+        }
+
+        public Controller.Resolutions OutputResolution
+        {
+            get
+            {
+                if (!Available) return Controller.Resolutions.Unknown;
+                if(outputChannel is BASSWASAPIOutput){
+                    switch(((BASSWASAPIOutput)outputChannel).Info.Format){
+                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_FLOAT: return Controller.Resolutions.Float_32Bit;
+                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_8BIT: return Controller.Resolutions.Integer_8bit;
+                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_16BIT: return Controller.Resolutions.Integer_16bit;
+                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_24BIT: return Controller.Resolutions.Integer_24bit;
+                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_32BIT: return Controller.Resolutions.Integer_32bit;
+                        default: return Controller.Resolutions.Unknown;
+                    }
+                }
+                return Controller.Resolutions.Unknown;
+            }
+        }
+
         #region set/get Volume
         private Object volumeLock = new Object();
         internal float Volume
@@ -234,7 +262,7 @@ namespace Gageas.Lutea.Core
             var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.InitFlags.Buffer | BASSWASAPIOutput.InitFlags.Exclusive, AppCore.enableWASAPIVolume, deviceid);
             if (outputChannel == null) throw new Exception();
             outputMode = Controller.OutputModeEnum.WASAPIEx;
-            Logger.Debug("Use WASAPI Exclusive Output");
+            Logger.Log("Use WASAPI Exclusive Output: freq=" + outputChannel.Info.Freq + ", format=" + outputChannel.Info.Format);
             return outputChannel;
         }
 
@@ -271,7 +299,7 @@ namespace Gageas.Lutea.Core
             var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.InitFlags.Buffer, AppCore.enableWASAPIVolume, deviceid);
             if (outputChannel == null) throw new Exception();
             outputMode = Controller.OutputModeEnum.WASAPI;
-            Logger.Debug("Use WASAPI Shared Output");
+            Logger.Log("Use WASAPI Exclusive Output: freq=" + outputChannel.Info.Freq + ", format=" + outputChannel.Info.Format);
             return outputChannel;
         }
 

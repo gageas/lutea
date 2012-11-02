@@ -44,6 +44,20 @@ namespace Gageas.Lutea.Core
         }
 
         /// <summary>
+        /// 出力ビット深度列挙体
+        /// </summary>
+        public enum Resolutions
+        {
+            Unknown,
+            Float_32Bit,
+            Integer_8bit,
+            Integer_16bit,
+            Integer_24bit,
+            Integer_32bit,
+        }
+
+
+        /// <summary>
         /// 再生モード列挙体
         /// </summary>
         public enum PlaybackOrder { Default, Track, Random };
@@ -111,6 +125,13 @@ namespace Gageas.Lutea.Core
             get
             {
                 return AppCore.OutputMode;
+            }
+        }
+        public static Resolutions OutputResolution
+        {
+            get
+            {
+                return AppCore.OutputResolution;
             }
         }
         #endregion
