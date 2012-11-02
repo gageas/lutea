@@ -41,6 +41,8 @@
             // 
             resources.ApplyResources(this.propertyGrid1, "propertyGrid1");
             this.propertyGrid1.Name = "propertyGrid1";
+            this.propertyGrid1.ToolbarVisible = false;
+            this.propertyGrid1.PropertyValueChanged += new System.Windows.Forms.PropertyValueChangedEventHandler(this.propertyGrid1_PropertyValueChanged);
             // 
             // button1
             // 
@@ -72,7 +74,6 @@
             // 
             resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Controls.Add(this.propertyGrid1);
-            this.groupBox1.Controls.Add(this.button1);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
@@ -82,6 +83,7 @@
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.listView1);
             this.Name = "ComponentManager";
             this.groupBox1.ResumeLayout(false);
