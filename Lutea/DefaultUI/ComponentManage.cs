@@ -75,5 +75,10 @@ namespace Gageas.Lutea.DefaultUI
         {
             button1.Enabled = true;
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
     }
 }
