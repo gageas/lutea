@@ -72,6 +72,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="DynamicPlaylist.cs" />
+    <Compile Include="ExtToolStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="FilterViewListView.cs">
       <SubType>Component</SubType>
     </Compile>
