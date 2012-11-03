@@ -150,6 +150,7 @@
             // 
             // menuStrip1
             // 
+            this.menuStrip1.EnableClickThrough = true;
             this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(0);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
@@ -319,6 +320,7 @@
             // toolStrip1
             // 
             this.toolStrip1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.toolStrip1.EnableClickThrough = true;
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButton1,
@@ -798,6 +800,7 @@
             this.albumArtListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader3});
             this.albumArtListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.albumArtListView.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.albumArtListView.ImeMode = System.Windows.Forms.ImeMode.Disable;
             this.albumArtListView.Location = new System.Drawing.Point(0, 0);
             this.albumArtListView.Margin = new System.Windows.Forms.Padding(0);
@@ -952,7 +955,6 @@
 
         private System.Windows.Forms.TextBox textBox1;
         private XTrackBar xTrackBar1;
-        private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.PictureBox pictureBox1;
@@ -968,7 +970,6 @@
         private System.Windows.Forms.ContextMenuStrip playlistViewContextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem propertyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
-        private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.ToolStripButton toolStripButton2;
         private System.Windows.Forms.ToolStripButton toolStripButton3;
@@ -1019,6 +1020,8 @@
         private System.Windows.Forms.ToolStripMenuItem componentToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pluginsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private ExtMenuStrip menuStrip1;
+        private ExtToolStrip toolStrip1;
     }
 }
 
