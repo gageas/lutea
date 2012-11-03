@@ -2438,6 +2438,7 @@ namespace Gageas.Lutea.DefaultUI
             var album = row[Controller.GetColumnIndexByName("tagAlbum")].ToString();
             var file_name = row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)].ToString();
             while (album == Controller.GetPlaylistRowColumn(index - indexInGroup, Controller.GetColumnIndexByName("tagAlbum"))) indexInGroup++;
+            var isCont = album == Controller.GetPlaylistRowColumn(index + 1, Controller.GetColumnIndexByName("tagAlbum"));
             var isFirstTrack = indexInGroup == 1;
 
             using (var g = e.Graphics)
@@ -2588,7 +2589,7 @@ namespace Gageas.Lutea.DefaultUI
                                     bounds_Height - (indexInGroup == 1 ? margin : 0),
                                     img.HDC,
                                     0,
-                                    (indexInGroup - 1) * bounds_Height - (indexInGroup != 1 ? margin : 0),
+                                    (indexInGroup - 1) * bounds_Height - (indexInGroup != 1 ? margin : 0) + ((isFirstTrack && !isCont) ? (int)(img.Height*0.30-(bounds_Height/2)) : 0),
                                     0x00CC0020);
                             }
                         }
