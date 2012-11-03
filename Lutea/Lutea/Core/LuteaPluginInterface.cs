@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.Serialization;
+using System.ComponentModel;
 
 namespace Gageas.Lutea.Core
 {
@@ -13,6 +14,41 @@ namespace Gageas.Lutea.Core
         object GetPreferenceObject();
         void SetPreferenceObject(object pref);
         void Quit();
+        bool CanSetEnable();
+        void SetEnable(bool enable);
+        bool GetEnable();
+    }
+
+    class LuteaComponentPreferenceTypeConverter : TypeConverter
+    {
+        public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes)
+        {
+            var pdc = TypeDescriptor.GetProperties(value, attributes);
+            if (value is LuteaPreference)
+            {
+                LuteaPreference lpref = (LuteaPreference)value;
+                var sortorder = lpref.GetSortOrder();
+                if (sortorder != null)
+                {
+                    return pdc.Sort(sortorder);
+                }
+            }
+            return base.GetProperties(context, value, attributes);
+        }
+
+        public override bool GetPropertiesSupported(ITypeDescriptorContext context)
+        {
+            return true;
+        }
+    }
+
+    [TypeConverter(typeof(LuteaComponentPreferenceTypeConverter))]
+    public abstract class LuteaPreference
+    {
+        public virtual string[] GetSortOrder()
+        {
+            return null;
+        }
     }
 
     public interface LuteaUIComponentInterface : LuteaComponentInterface

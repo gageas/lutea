@@ -2777,5 +2777,20 @@ namespace Gageas.Lutea.DefaultUI
 
 
         private KaoriYa.Migemo.Migemo migemo = null;
+
+
+        public bool CanSetEnable()
+        {
+            return false;
+        }
+
+        public void SetEnable(bool enable)
+        {
+        }
+
+        public bool GetEnable()
+        {
+            return true;
+        }
     }
 }
