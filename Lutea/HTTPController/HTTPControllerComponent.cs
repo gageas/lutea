@@ -111,5 +111,21 @@ namespace Gageas.Lutea.HTTPController
                 }
             }
         }
+
+
+        public bool CanSetEnable()
+        {
+            return true;
+        }
+
+        public void SetEnable(bool enable)
+        {
+            this.enabled = enable;
+        }
+
+        public bool GetEnable()
+        {
+            return this.enabled;
+        }
     }
 }

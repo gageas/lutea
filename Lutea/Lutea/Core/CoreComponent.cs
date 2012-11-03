@@ -268,5 +268,20 @@ namespace Gageas.Lutea.Core
         public void Quit()
         {
         }
+
+
+        public bool CanSetEnable()
+        {
+            return false;
+        }
+
+        public void SetEnable(bool enable)
+        {
+        }
+
+        public bool GetEnable()
+        {
+            return true;
+        }
     }
 }
