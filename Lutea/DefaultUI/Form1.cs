@@ -93,7 +93,7 @@ namespace Gageas.Lutea.DefaultUI
         /// <summary>
         /// filter viewに表示するcolumnを定義
         /// </summary>
-        string[] filterColumns = { "tagArtist", "tagAlbum", "tagDate", "tagGenre", LibraryDBColumnTextMinimum.infoCodec_sub, LibraryDBColumnTextMinimum.rating,  };
+        string[] filterColumns = { "tagArtist", "tagAlbum", "tagDate", "tagGenre", LibraryDBColumnTextMinimum.infoCodec_sub, LibraryDBColumnTextMinimum.rating, };
 
         /// <summary>
         /// Ratingの☆を描画
@@ -283,7 +283,7 @@ namespace Gageas.Lutea.DefaultUI
             var item_splitter = new char[] { '；', ';', '，', ',', '／', '/', '＆', '&', '・', '･', '、', '､', '（', '(', '）', ')', '\n', '\t' };
             var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList();
             var subGenre = genre.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList().FindAll(e => e.Length > 1);
-            var q = String.Join(" OR ",(from __ in from _ in subArtists select _.LCMapUpper().Trim() select String.Format(__.Length>1?@" LCMapUpper(tagArtist) LIKE '%{0}%' ":@" LCMapUpper(tagArtist) = '{0}' ",__.EscapeSingleQuotSQL())).ToArray());
+            var q = String.Join(" OR ", (from __ in from _ in subArtists select _.LCMapUpper().Trim() select String.Format(__.Length > 1 ? @" LCMapUpper(tagArtist) LIKE '%{0}%' " : @" LCMapUpper(tagArtist) = '{0}' ", __.EscapeSingleQuotSQL())).ToArray());
             object[][] related_albums = null;
             object[][] multi_disc_albums = null;
             using (var db = Controller.GetDBConnection())
@@ -462,7 +462,9 @@ namespace Gageas.Lutea.DefaultUI
             if (tabControl1.SelectedIndex == 0)
             {
                 listView1.Select();
-            }else if(tabControl1.SelectedIndex == 1){
+            }
+            else if (tabControl1.SelectedIndex == 1)
+            {
                 albumArtListView.Select();
             }
         }
@@ -496,7 +498,7 @@ namespace Gageas.Lutea.DefaultUI
                 switch (m.Msg)
                 {
                     case WM_COMMAND:
-                        if (((int)m.WParam & 0xffff0000)>>16 == THBN_CLICKED)
+                        if (((int)m.WParam & 0xffff0000) >> 16 == THBN_CLICKED)
                         {
                             switch ((int)m.WParam & 0xffff)
                             {
@@ -531,7 +533,7 @@ namespace Gageas.Lutea.DefaultUI
                         break;
                 }
             }
-            if(!omitBaseProc)base.WndProc(ref m);
+            if (!omitBaseProc) base.WndProc(ref m);
         }
         #endregion
 
@@ -563,13 +565,14 @@ namespace Gageas.Lutea.DefaultUI
                 var col = Columns[colid];
                 var page = new TabPage(col.LocalText);
                 var list = new FilterViewListView();
-                list.SelectEvent += (c, vals) => {
+                list.SelectEvent += (c, vals) =>
+                {
                     if (SupplessFilterViewSelectChangeEvent)
                     {
                         SupplessFilterViewSelectChangeEvent = false;
                         return;
                     }
-                    Controller.CreatePlaylist(list.getQueryString()); 
+                    Controller.CreatePlaylist(list.getQueryString());
                 };
                 list.DoubleClick += (o, arg) => { Controller.CreatePlaylist(list.getQueryString(), true); };
                 list.KeyDown += (o, arg) => { if (arg.KeyCode == Keys.Return)Controller.PlayPlaylistItem(0); };
@@ -733,7 +736,7 @@ namespace Gageas.Lutea.DefaultUI
         /// mutexの取得解放およびpictureBoxへの操作は全てメインスレッドから行う
         /// </summary>
         Mutex m = new Mutex();
-        
+
         /// <summary>
         /// CoverArt画像をバックグラウンドで読み込むスレッドとして動作。
         /// 常に起動したままで、平常時はsleepしている。
@@ -791,7 +794,8 @@ namespace Gageas.Lutea.DefaultUI
                             // xpだとこちらからSETICONしないといけないっぽいので
                             SendMessage(this.Handle, WM_SETICON, (IntPtr)1, hIconForWindowIcon_Large);
                         }
-                        else {
+                        else
+                        {
                             SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
                         }
                         if (oldhIcon_Large != IntPtr.Zero)
@@ -1013,7 +1017,7 @@ namespace Gageas.Lutea.DefaultUI
                                     item.Enabled = false;
                                 }
                             }
- 
+
                             // ルートノード("クエリ"フォルダ)の場合
                             if (node.Level == 0)
                             {
@@ -1104,7 +1108,7 @@ namespace Gageas.Lutea.DefaultUI
             try
             {
                 textBox1.BackColor = statusColor[(int)QueryStatus.Waiting];
-                Controller.CreatePlaylist(textBox1.Text.Replace(@"\n","\n"));
+                Controller.CreatePlaylist(textBox1.Text.Replace(@"\n", "\n"));
             }
             catch (Exception)
             {
@@ -1242,7 +1246,8 @@ namespace Gageas.Lutea.DefaultUI
                             prev_album = Controller.GetPlaylistRowColumn(idx, Controller.GetColumnIndexByName("tagAlbum"));
                             do
                             {
-                                if((idx + 1 == listView1.Items.Count)){
+                                if ((idx + 1 == listView1.Items.Count))
+                                {
                                     break;
                                 }
                                 idx++;
@@ -1527,7 +1532,7 @@ namespace Gageas.Lutea.DefaultUI
                 var item = grp.Items[0];
                 var last = grps.Last().Items[grps.Last().Items.Count - 1].Index; // 最後のグループの最後の項目
                 target.Enabled = true;
-                if(target.OwnerItem != null) 
+                if (target.OwnerItem != null)
                     target.OwnerItem.Enabled = true;
                 target.DropDownItems.Add(grp.Header, null, (e, obj) =>
                 {
@@ -1549,7 +1554,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             FilterViewListView list = (FilterViewListView)(o != null ? o : dummyFilterTab.SelectedTab.Controls[0]);
 
-            list.MouseClick += (oo, e) => { if(e.Button == System.Windows.Forms.MouseButtons.Right){SupplessFilterViewSelectChangeEvent = true;} };
+            list.MouseClick += (oo, e) => { if (e.Button == System.Windows.Forms.MouseButtons.Right) { SupplessFilterViewSelectChangeEvent = true; } };
 
             list.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
             list.ContextMenuStrip.Items.Add("読み修正", null, correctToolStripMenuItem_Click);
@@ -1756,7 +1761,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 msgText = "選択中の" + file_names.Count + "個のトラックをライブラリから削除してもよろしいですか？\n(ディスク上のファイルは削除されません）";
             }
-            var result = MessageBox.Show(msgText, "ライブラリからのトラックの削除" , MessageBoxButtons.OKCancel);
+            var result = MessageBox.Show(msgText, "ライブラリからのトラックの削除", MessageBoxButtons.OKCancel);
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 Controller.removeItem(file_names);
@@ -2086,7 +2091,8 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             // ウィンドウサイズを復元
-            if(this.WindowState == FormWindowState.Normal && !config_FormSize.IsEmpty){
+            if (this.WindowState == FormWindowState.Normal && !config_FormSize.IsEmpty)
+            {
                 this.ClientSize = config_FormSize;
             }
 
@@ -2137,7 +2143,7 @@ namespace Gageas.Lutea.DefaultUI
                 taskbarImageList = new ImageList();
                 taskbarImageList.ImageSize = new System.Drawing.Size(16, 16);
                 taskbarImageList.ColorDepth = ColorDepth.Depth32Bit;
-                var images = new Bitmap[] { Properties.Resources.stop, Properties.Resources.prev, Properties.Resources.pause, Properties.Resources.next};
+                var images = new Bitmap[] { Properties.Resources.stop, Properties.Resources.prev, Properties.Resources.pause, Properties.Resources.next };
                 foreach (var img in images)
                 {
                     img.MakeTransparent(Color.Magenta);
@@ -2313,7 +2319,7 @@ namespace Gageas.Lutea.DefaultUI
 
                         playlistViewImageLoadQueueItemConsume(task);
 
-//                        Thread.Sleep(50);
+                        //                        Thread.Sleep(50);
                     }
                     playlistViewImageLoaderInSleep = true;
                     Thread.Sleep(Timeout.Infinite);
@@ -2322,7 +2328,8 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     playlistViewImageLoaderInSleep = false;
                 }
-                catch(Exception e) {
+                catch (Exception e)
+                {
                     Logger.Log(e);
                 }
             }
@@ -2463,9 +2470,9 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 else
                 {
-                    var fillcolor = ((SolidBrush)(isSelected 
+                    var fillcolor = ((SolidBrush)(isSelected
                             ? SystemBrushes.Highlight
-                            : index % 2 == 0 
+                            : index % 2 == 0
                                 ? SystemBrushes.Window
                                 : SystemBrushes.ControlLight)).Color;
                     GDI.SetDCBrushColor(hDC, fillcolor);
@@ -2576,10 +2583,10 @@ namespace Gageas.Lutea.DefaultUI
                             {
                                 GDI.BitBlt(hDC,
                                     bounds_X + pc + (CoverArtSizeInPlaylistView - img.Width) / 2 + margin,
-                                    bounds_Y + (indexInGroup == 1 ? margin : 0), 
+                                    bounds_Y + (indexInGroup == 1 ? margin : 0),
                                     img.Width,
-                                    bounds_Height - (indexInGroup == 1 ? margin : 0), 
-                                    img.HDC, 
+                                    bounds_Height - (indexInGroup == 1 ? margin : 0),
+                                    img.HDC,
                                     0,
                                     (indexInGroup - 1) * bounds_Height - (indexInGroup != 1 ? margin : 0),
                                     0x00CC0020);
@@ -2598,7 +2605,7 @@ namespace Gageas.Lutea.DefaultUI
                             str = Util.Util.getMinSec(int.Parse(str));
                             break;
                         case Library.LibraryColumnType.Bitrate:
-                            str = str==""?"":(int.Parse(str)) / 1000 + "kbps";
+                            str = str == "" ? "" : (int.Parse(str)) / 1000 + "kbps";
                             break;
                         case Library.LibraryColumnType.FileSize:
                             int sz = int.Parse(str);
@@ -2718,7 +2725,7 @@ namespace Gageas.Lutea.DefaultUI
             albumArtListView.BeginUpdate();
             albumArtListView.Enabled = false;
             albumArtListView.SmallImageList = new ImageList();
-	        albumArtListView.SmallImageList.ImageSize = new System.Drawing.Size(CoverArtSizeInPlaylistView+7, CoverArtSizeInPlaylistView+7);
+            albumArtListView.SmallImageList.ImageSize = new System.Drawing.Size(CoverArtSizeInPlaylistView + 7, CoverArtSizeInPlaylistView + 7);
             albumArtListView.Columns[0].Width = CoverArtSizeInPlaylistView + 7;
             Albums = null;
             AlbumsFiltered = null;
@@ -2738,7 +2745,8 @@ namespace Gageas.Lutea.DefaultUI
 
             albumArtListViewSearchTextBox_Leave(null, null);
 
-            var th = new Thread(() => {
+            var th = new Thread(() =>
+            {
                 int index = 0;
                 var albums = Albums;
                 while (index < albums.Length)
@@ -2791,6 +2799,36 @@ namespace Gageas.Lutea.DefaultUI
         public bool GetEnable()
         {
             return true;
+        }
+
+        private void componentToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            for (var i = componentToolStripMenuItem.DropDownItems.Count - 1; i >= 0; i--)
+            {
+                if (componentToolStripMenuItem.DropDownItems[i].Tag == null) continue;
+                if (componentToolStripMenuItem.DropDownItems[i].Tag is LuteaComponentInterface)
+                {
+                    componentToolStripMenuItem.DropDownItems.RemoveAt(i);
+                }
+            }
+            var components = Lutea.Core.Controller.GetComponents();
+            foreach (var component in components)
+            {
+                LuteaComponentInfo[] info = (LuteaComponentInfo[])component.GetType().GetCustomAttributes(typeof(LuteaComponentInfo), false);
+                var menuitem = new ToolStripMenuItem(info.Length > 0 ? info[0].name : component.ToString());
+                menuitem.Enabled = component.CanSetEnable();
+                menuitem.Checked = component.GetEnable();
+                menuitem.Tag = component;
+                if (menuitem.Enabled)
+                {
+                    menuitem.Click += (o, ea) =>
+                    {
+                        var com = (LuteaComponentInterface)((ToolStripMenuItem)o).Tag;
+                        com.SetEnable(!com.GetEnable());
+                    };
+                }
+                componentToolStripMenuItem.DropDownItems.Add(menuitem);
+            }
         }
     }
 }
