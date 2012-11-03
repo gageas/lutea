@@ -1927,7 +1927,7 @@ namespace Gageas.Lutea.DefaultUI
             sf.Alignment = StringAlignment.Center;
             sf.LineAlignment = StringAlignment.Center;
             sf.FormatFlags = StringFormatFlags.NoWrap;
-            g.DrawString(albums[index][2].ToString(), listView1.Font, System.Drawing.Brushes.White, new RectangleF(xp + w - 18, yp + 2, 15, 15), sf);
+            g.DrawString(albums[index][2].ToString(), albumArtListView.Font, System.Drawing.Brushes.White, new RectangleF(xp + w - 18, yp + 2, 15, 15), sf);
         }
 
         private void albumArtListView_DoubleClick(object sender, EventArgs e)
