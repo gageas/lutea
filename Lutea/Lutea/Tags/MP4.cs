@@ -199,10 +199,7 @@ namespace Gageas.Lutea.Tags
 
                     case "name":
                         string name = ReadName(strm, (int)atom_size);
-                        if (name == "iTunSMPB")
-                        {
-                            lastTagKeyName = "ITUNSMPB";
-                        }
+                        lastTagKeyName = name.ToUpper();
                         break;
 
                     // Non-Text node name. Read as hex.
