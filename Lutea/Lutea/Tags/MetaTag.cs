@@ -106,6 +106,13 @@ namespace Gageas.Lutea.Tags
                 tag.Add(new KeyValuePair<string, object>("ALBUM ARTIST", band.Value));
             }
 
+            // TRACKNUMBERをTRACKとして扱う
+            var tracknumber = tag.Find((e) => { return e.Key == "TRACKNUMBER"; });
+            if (tracknumber.Value != null)
+            {
+                tag.Add(new KeyValuePair<string, object>("TRACK", tracknumber.Value));
+            }
+
             // ARTISTがないとき、ALBUM ARTISTをARTISTとして扱う
             if (tag.Find((e) => { return e.Key == "ARTIST"; }).Value == null)
             {
