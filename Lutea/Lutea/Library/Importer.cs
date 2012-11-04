@@ -294,16 +294,25 @@ namespace Gageas.Lutea.Library
                 LuteaAudioTrack tr = new LuteaAudioTrack();
                 tr.file_name = file_name;
                 tr.file_size = new System.IO.FileInfo(file_name).Length;
-                try
+                if (tag.Exists((_) => _.Key == "__X-LUTEA-CHANS__") && tag.Exists((_) => _.Key == "__X-LUTEA-FREQ__") && tag.Exists((_) => _.Key == "__X-LUTEA-DURATION__"))
                 {
-                    using (var strm = new BASS.FileStream(file_name,BASS.Stream.StreamFlag.BASS_STREAM_DECODE))
-                    {
-                        tr.duration = (int)strm.length;
-                        tr.channels = (int)strm.Info.chans;
-                        tr.freq = (int)strm.Info.freq;
-                    }
+                    tr.duration = int.Parse(tag.Find((_) => _.Key == "__X-LUTEA-DURATION__").Value.ToString());
+                    tr.channels = int.Parse(tag.Find((_) => _.Key == "__X-LUTEA-CHANS__").Value.ToString());
+                    tr.freq = int.Parse(tag.Find((_) => _.Key == "__X-LUTEA-FREQ__").Value.ToString());
                 }
-                catch { }
+                else
+                {
+                    try
+                    {
+                        using (var strm = new BASS.FileStream(file_name,BASS.Stream.StreamFlag.BASS_STREAM_DECODE))
+                        {
+                            tr.duration = (int)strm.length;
+                            tr.channels = (int)strm.Info.chans;
+                            tr.freq = (int)strm.Info.freq;
+                        }
+                    }
+                    catch { }
+                }
                 tr.tag = tag;
                 localQueue.Enqueue(tr);
             }

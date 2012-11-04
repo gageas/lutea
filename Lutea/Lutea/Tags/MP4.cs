@@ -14,6 +14,17 @@ namespace Gageas.Lutea.Tags
         private const int NODE_LIST_HEADER_SIZE = NODE_LENGTH_FIELD_SIZE + NODE_NAME_FIELD_SIZE;
 
         /// <summary>
+        /// Read byte array as BIG-ENDIAN-UInt16(2bytes).
+        /// </summary>
+        /// <param name="buf">Bite array to read</param>
+        /// <param name="offset">Data offset in buffer</param>
+        /// <returns>Read UInt16 value</returns>
+        private static UInt16 BEUInt16(byte[] buf, int offset)
+        {
+            return (UInt16)(((UInt16)buf[0 + offset] << 8) + (UInt16)buf[1 + offset]);
+        }
+
+        /// <summary>
         /// Read byte array as BIG-ENDIAN-UInt32(4bytes).
         /// </summary>
         /// <param name="buf">Bite array to read</param>
@@ -22,6 +33,18 @@ namespace Gageas.Lutea.Tags
         private static UInt32 BEUInt32(byte[] buf, int offset)
         {
             return ((UInt32)buf[0 + offset] << 24) + ((UInt32)buf[1 + offset] << 16) + ((UInt32)buf[2 + offset] << 8) + (UInt32)buf[3 + offset];
+        }
+
+        /// <summary>
+        /// Read byte array as BIG-ENDIAN-UInt64(8bytes).
+        /// </summary>
+        /// <param name="buf">Bite array to read</param>
+        /// <param name="offset">Data offset in buffer</param>
+        /// <returns>Read UInt64 value</returns>
+        private static UInt64 BEUInt64(byte[] buf, int offset)
+        {
+            return ((UInt64)buf[0 + offset] << 56) + ((UInt64)buf[1 + offset] << 48) + ((UInt64)buf[2 + offset] << 40) + ((UInt64)buf[3 + offset] << 32) + 
+                   ((UInt64)buf[4 + offset] << 24) + ((UInt64)buf[5 + offset] << 16) + ((UInt64)buf[6 + offset] << 8) + ((UInt64)buf[7 + offset]);
         }
 
         /// <summary>
@@ -110,11 +133,6 @@ namespace Gageas.Lutea.Tags
                             return null;
                         }
                     }
-                    else
-                    {
-                        strm.Seek(length - 8, SeekOrigin.Current);
-                    }
-                    strm.Seek(length - 8, SeekOrigin.Current);
                     break;
             }
             return null;
@@ -150,12 +168,55 @@ namespace Gageas.Lutea.Tags
                     case "ilst":
                     case "disk":
                     case "----":
+                    case "trak":
+                    case "mdia":
+                    case "minf":
+                    case "stbl":
                         ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject);
                         break;
 
                     case "meta":
                         strm.Seek(4, SeekOrigin.Current);
                         ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE - 4, tags, createImageObject);
+                        break;
+
+                    case "stsd":
+                        strm.Seek(8, SeekOrigin.Current);
+                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE - 8, tags, createImageObject);
+                        break;
+
+                    case "mvhd":
+                        byte[] buf = new byte[4];
+                        strm.Read(buf, 0, 4);
+                        UInt32 version = BEUInt32(buf, 0);
+                        if(version == 0){
+                            byte[] buf2 = new byte[4 * 4];
+                            strm.Read(buf2, 0, 4*4);
+                            UInt32 creation_time = BEUInt32(buf2, 0);
+                            UInt32 modification_time = BEUInt32(buf2, 0);
+                            UInt32 timescale = BEUInt32(buf2, 8);
+                            UInt32 duration = BEUInt32(buf2, 12);
+                            tags.Add(new KeyValuePair<string,object>("__X-LUTEA-DURATION__", ((int)(duration / timescale)).ToString()));
+                        }else if(version == 1){
+                            byte[] buf2 = new byte[8+8+4+8];
+                            strm.Read(buf2, 0, 8 + 8 + 4 + 8);
+                            UInt64 creation_time = BEUInt64(buf2, 0);
+                            UInt64 modification_time = BEUInt64(buf2, 8);
+                            UInt32 timescale = BEUInt32(buf2, 16);
+                            UInt64 duration = BEUInt64(buf2, 20);
+                            tags.Add(new KeyValuePair<string, object>("__X-LUTEA-DURATION__", ((int)(duration / timescale)).ToString()));
+                        }
+                        break;
+
+                    case "mp4a":
+                        byte[] buf_audio_sample_entry = new byte[8 + 8 + 2 + 2 + 2 + 2 + 4];
+                        strm.Read(buf_audio_sample_entry, 0, 8 + 8 + 2 + 2 + 2 + 2 + 4);
+                        UInt16 channelcount = BEUInt16(buf_audio_sample_entry, 8 + 8);
+                        UInt16 samplesize = BEUInt16(buf_audio_sample_entry, 8 + 8 + 2);
+                        UInt32 samplerate = BEUInt32(buf_audio_sample_entry, 8 + 8 + 2 + 2 + 2 + 2);
+                        tags.Add(new KeyValuePair<string, object>("__X-LUTEA-CHANS__", channelcount.ToString()));
+                        tags.Add(new KeyValuePair<string, object>("__X-LUTEA-BITS__", samplesize.ToString()));
+                        tags.Add(new KeyValuePair<string, object>("__X-LUTEA-FREQ__", (samplerate>>16).ToString()));
                         break;
 
                     case "data":
