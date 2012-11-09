@@ -39,7 +39,7 @@ namespace Gageas.Lutea.Tags
                     switch (System.IO.Path.GetExtension(filename).ToLower())
                     {
                         case ".flac":
-                            tag = FlacTag.Read(fs);
+                            tag = FlacTag.Read(fs, createImageObject);
                             break;
 
                         case ".ogg":
