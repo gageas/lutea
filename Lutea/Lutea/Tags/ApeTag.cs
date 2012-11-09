@@ -65,7 +65,7 @@ namespace Gageas.Lutea.Tags
                 }
                 else
                 {
-                    data.Add(new KeyValuePair<string, object>(key, enc.GetString(buffer, p, frameSize)));
+                    data.Add(new KeyValuePair<string, object>(key, enc.GetString(buffer, p, frameSize).TrimEnd(new char[]{'\0'})));
                 }
                 p += frameSize;
             }
