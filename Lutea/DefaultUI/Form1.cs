@@ -161,7 +161,7 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             listView1.Clear();
-            displayColumns = displayColumns.Where(_ => Controller.GetColumnIndexByName(_) > 0).ToArray();
+            displayColumns = displayColumns.Where(_ => Controller.GetColumnIndexByName(_) >= 0).ToArray();
             foreach (string coltext in displayColumns)
             {
                 var colheader = new ColumnHeader();
