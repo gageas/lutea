@@ -639,6 +639,7 @@ namespace Gageas.Lutea.Core
                 case LibraryColumnType.Rating:
                 case LibraryColumnType.Timestamp64:
                 case LibraryColumnType.TrackNumber:
+                case LibraryColumnType.Time:
                     orderPhrase += "list." + PlaylistSortColumn + "-0";
                     break;
                 default:
