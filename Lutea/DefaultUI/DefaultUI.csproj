@@ -12,6 +12,7 @@
     <AssemblyName>DefaultUI</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -71,6 +72,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="DynamicPlaylist.cs" />
+    <Compile Include="ExtToolStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="FilterViewListView.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -140,6 +144,9 @@
       <DependentUpon>YomiCorrect.cs</DependentUpon>
     </Compile>
     <Compile Include="Yomigana.cs" />
+    <EmbeddedResource Include="ComponentManage.ja.resx">
+      <DependentUpon>ComponentManage.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ComponentManage.resx">
       <DependentUpon>ComponentManage.cs</DependentUpon>
     </EmbeddedResource>

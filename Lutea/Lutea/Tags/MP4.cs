@@ -162,8 +162,9 @@ namespace Gageas.Lutea.Tags
                         if (lastTagKeyName == null) lastTagKeyName = tagKey;
                         if (lastTagKeyName == null) break;
                         object data = ReadData(strm, (int)atom_size, createImageObject);
-                        if(data == null){
-                           lastTagKeyName = null;                            
+                        if (data == null)
+                        {
+                            lastTagKeyName = null;
                             break;
                         }
                         if (tagKey == "GENRE" && data is int)
@@ -176,7 +177,17 @@ namespace Gageas.Lutea.Tags
                         }
                         else
                         {
-                            tags.Add(new KeyValuePair<string, object>(lastTagKeyName, data));
+                            var alreadyExisting = tags.Find(_ => _.Key == lastTagKeyName && _.Value is string);
+                            /* 同じフィールド名のstringのフィールドが存在するとき，\0をセパレータとして連結する */
+                            if ((data is string) && (alreadyExisting.Key != null))
+                            {
+                                tags.Remove(alreadyExisting);
+                                tags.Add(new KeyValuePair<string, object>(lastTagKeyName, (string)(alreadyExisting.Value) + "\0" + data));
+                            }
+                            else
+                            {
+                                tags.Add(new KeyValuePair<string, object>(lastTagKeyName, data));
+                            }
                         }
                         lastTagKeyName = null;
                         break;
@@ -199,10 +210,7 @@ namespace Gageas.Lutea.Tags
 
                     case "name":
                         string name = ReadName(strm, (int)atom_size);
-                        if (name == "iTunSMPB")
-                        {
-                            lastTagKeyName = "ITUNSMPB";
-                        }
+                        lastTagKeyName = name.ToUpper();
                         break;
 
                     // Non-Text node name. Read as hex.
