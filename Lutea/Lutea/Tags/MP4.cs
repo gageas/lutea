@@ -156,9 +156,35 @@ namespace Gageas.Lutea.Tags
             while (p < length)
             {
                 strm.Read(header, 0, NODE_LIST_HEADER_SIZE);
-                UInt32 atom_size = BEUInt32(header, 0) - NODE_LIST_HEADER_SIZE;
+                Int64 atom_size = BEUInt32(header, 0);
+                if (atom_size > length)
+                {
+                    throw new System.IO.FileFormatException("atom size greater than parents size");
+                }
                 string atom_name = Encoding.ASCII.GetString(header, NODE_LENGTH_FIELD_SIZE, NODE_NAME_FIELD_SIZE);
-                p += atom_size + NODE_LIST_HEADER_SIZE;
+                if (atom_size == 1)
+                {
+                    byte[] large_size_buf = new byte[sizeof(UInt64)];
+                    strm.Read(large_size_buf, 0, sizeof(UInt64));
+                    var large_size = BEUInt64(large_size_buf, 0);
+                    if (large_size > ulong.MaxValue || large_size > (ulong)(length-p))
+                    {
+                        throw new System.IO.FileFormatException("atom size greater than parents size");
+                    }
+                    atom_size = (long)large_size;
+                    p += atom_size;
+                    atom_size -= (NODE_LIST_HEADER_SIZE + sizeof(UInt64));
+                }else if(atom_size == 0){
+                    p = length;
+                    atom_size = (length - p) - NODE_LIST_HEADER_SIZE;
+                }else{
+                    p += atom_size;
+                    atom_size -= NODE_LIST_HEADER_SIZE;
+                }
+                if (atom_size < 0)
+                {
+                    throw new System.IO.FileFormatException("atom size greater than parents size");
+                }
 
                 long initial_pos = strm.Position;
                 switch (atom_name)
@@ -172,17 +198,17 @@ namespace Gageas.Lutea.Tags
                     case "mdia":
                     case "minf":
                     case "stbl":
-                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject);
+                        ReadRecurse(strm, atom_size, tags, createImageObject);
                         break;
 
                     case "meta":
                         strm.Seek(4, SeekOrigin.Current);
-                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE - 4, tags, createImageObject);
+                        ReadRecurse(strm, atom_size - 4, tags, createImageObject);
                         break;
 
                     case "stsd":
                         strm.Seek(8, SeekOrigin.Current);
-                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE - 8, tags, createImageObject);
+                        ReadRecurse(strm, atom_size - 8, tags, createImageObject);
                         break;
 
                     case "mvhd":
@@ -254,19 +280,19 @@ namespace Gageas.Lutea.Tags
                         break;
 
                     case "trkn":
-                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "TRACK");
+                        ReadRecurse(strm, atom_size, tags, createImageObject, "TRACK");
                         break;
 
                     case "aART":
-                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "ALBUM ARTIST");
+                        ReadRecurse(strm, atom_size, tags, createImageObject, "ALBUM ARTIST");
                         break;
 
                     case "gnre":
-                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "GENRE");
+                        ReadRecurse(strm, atom_size, tags, createImageObject, "GENRE");
                         break;
 
                     case "covr":
-                        ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "COVER ART");
+                        ReadRecurse(strm, atom_size, tags, createImageObject, "COVER ART");
                         break;
 
                     case "name":
@@ -279,25 +305,25 @@ namespace Gageas.Lutea.Tags
                         switch (BitConverter.ToUInt32(header, NODE_NAME_FIELD_SIZE)) // NOTICE: for Little Endian
                         {
                             case 0x545241A9: // .ART Artist
-                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "ARTIST");
+                                ReadRecurse(strm, atom_size, tags, createImageObject, "ARTIST");
                                 break;
                             case 0x6D616EA9: // .nam Track
-                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "TITLE");
+                                ReadRecurse(strm, atom_size, tags, createImageObject, "TITLE");
                                 break;
                             case 0x626C61A9: // .alb Album
-                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "ALBUM");
+                                ReadRecurse(strm, atom_size, tags, createImageObject, "ALBUM");
                                 break;
                             case 0x6E6567A9: // .gen Genre
-                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "GENRE");
+                                ReadRecurse(strm, atom_size, tags, createImageObject, "GENRE");
                                 break;
                             case 0x796164A9: // .dat Date
-                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "DATE");
+                                ReadRecurse(strm, atom_size, tags, createImageObject, "DATE");
                                 break;
                             case 0x746D63A9: // .cmt Comment
-                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "COMMENT");
+                                ReadRecurse(strm, atom_size, tags, createImageObject, "COMMENT");
                                 break;
                             case 0x747277A9: // .wrt Writer
-                                ReadRecurse(strm, atom_size - NODE_LIST_HEADER_SIZE, tags, createImageObject, "COMPOSER");
+                                ReadRecurse(strm, atom_size, tags, createImageObject, "COMPOSER");
                                 break;
                             default:
                                 break;
