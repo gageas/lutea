@@ -167,7 +167,7 @@ namespace Gageas.Lutea.Tags
                     byte[] large_size_buf = new byte[sizeof(UInt64)];
                     strm.Read(large_size_buf, 0, sizeof(UInt64));
                     var large_size = BEUInt64(large_size_buf, 0);
-                    if (large_size > ulong.MaxValue || large_size > (ulong)(length-p))
+                    if (large_size > ulong.MaxValue || large_size > (ulong)(length - p))
                     {
                         throw new System.IO.FileFormatException("atom size greater than parents size");
                     }
@@ -185,6 +185,7 @@ namespace Gageas.Lutea.Tags
                 {
                     throw new System.IO.FileFormatException("atom size greater than parents size");
                 }
+                Logger.Log(atom_name);
 
                 long initial_pos = strm.Position;
                 switch (atom_name)
@@ -288,7 +289,11 @@ namespace Gageas.Lutea.Tags
                         break;
 
                     case "gnre":
-                        ReadRecurse(strm, atom_size, tags, createImageObject, "GENRE");
+                        try
+                        {
+                            ReadRecurse(strm, atom_size, tags, createImageObject, "GENRE");
+                        }
+                        catch { }
                         break;
 
                     case "covr":
