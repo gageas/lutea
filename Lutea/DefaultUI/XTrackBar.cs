@@ -75,7 +75,28 @@ namespace Gageas.Lutea.DefaultUI
                 }
             }
         }
+        public int ThumbWidth
+        {
+            get
+            {
+                return thumbwidth;
+            }
+            set
+            {
+                thumbwidth = value;
+                padx = 2 + value / 2;
+            }
+        }
+        public string ThumbText { get; set; }
         #endregion
+        
+        static readonly StringFormat sf = new StringFormat();
+
+        static XTrackBar()
+        {
+            sf.Alignment = StringAlignment.Center;
+            sf.LineAlignment = StringAlignment.Center;
+        }
 
         public XTrackBar()
         {
@@ -130,6 +151,10 @@ namespace Gageas.Lutea.DefaultUI
                 g.DrawLine(SystemPens.ButtonShadow, thumb.Right, thumb.Bottom, thumb.Right, thumb.Top);
                 g.DrawLine(SystemPens.ButtonShadow, thumb.Right, thumb.Bottom, thumb.Left, thumb.Bottom);
             }
+            if (ThumbText != null)
+            {
+                g.DrawString(ThumbText, this.Font, Brushes.Black, thumb, sf);
+            }
         }
 
         private void XTrackBar_MouseMove(object sender, MouseEventArgs e)
@@ -154,7 +179,6 @@ namespace Gageas.Lutea.DefaultUI
                     thumbState = TrackBarThumbState.Normal;
                 }
             }
-//            Logger.Log(""+this.Value);
             this.Invalidate();
         }
 
