@@ -13,7 +13,7 @@ namespace Gageas.Lutea.Tags
         private const int FLAC_BLOCK_TYPE_VORBIS_COMMENT = 4;
         private const int FLAC_BLOCK_TYPE_METADATA_BLOCK_PICTURE = 6;
 
-        new public static List<KeyValuePair<string, object>> Read(System.IO.Stream stream, bool createImageObject)
+        public static List<KeyValuePair<string, object>> Read(System.IO.Stream stream, bool createImageObject)
         {
             stream.Seek(0, System.IO.SeekOrigin.Begin);
             byte[] flacHeaderBuffer = new byte[FLACTAG_MARK.Length];
