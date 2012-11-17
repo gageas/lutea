@@ -16,6 +16,8 @@ namespace Gageas.Lutea.DefaultUI
         public const UInt32 HDM_SETITEM = 0x120c;
         public const UInt32 LVM_GETHEADER = 0x101f;
 
+        private const int WM_SETFONT = 0x0030;
+
         struct HDITEM
         {
             public UInt32 mask;
@@ -45,6 +47,12 @@ namespace Gageas.Lutea.DefaultUI
                 return;
             }
             base.WndProc(ref m);
+        }
+
+        public void SetHeaderFont(System.Drawing.Font font)
+        {
+            IntPtr hwndHdr = SendMessage(this.Handle, (0x1000 + 31), IntPtr.Zero, IntPtr.Zero);
+            SendMessage(hwndHdr, WM_SETFONT, font.ToHfont(), (IntPtr)1);
         }
 
         [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]

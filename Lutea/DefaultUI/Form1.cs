@@ -121,6 +121,8 @@ namespace Gageas.Lutea.DefaultUI
         private bool ColoredAlbum = true;
         private Boolean ShowCoverArtInPlaylistView = true;
         private int CoverArtSizeInPlaylistView = 80;
+        private Font PlaylistViewFont = null;
+        private int PlaylistViewLineHeightAdjustment = 0;
 
         private bool UseMediaKey = false;
         private Keys hotkey_PlayPause = Keys.None;
@@ -141,6 +143,7 @@ namespace Gageas.Lutea.DefaultUI
             trackInfoText.Text = "";
             textBox1.ForeColor = System.Drawing.SystemColors.WindowText;
             toolStripStatusLabel1.Text = "";
+            PlaylistViewFont = this.listView1.Font;
         }
 
         private void ResetPlaylistView()
@@ -161,6 +164,13 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             listView1.Clear();
+
+            // set "dummy" font
+            listView1.Font = new Font(this.Font.FontFamily, PlaylistViewFont.Height + PlaylistViewLineHeightAdjustment, GraphicsUnit.Pixel);
+
+            // set "real" font
+            listView1.SetHeaderFont(PlaylistViewFont);
+
             displayColumns = displayColumns.Where(_ => Controller.GetColumnIndexByName(_) >= 0).ToArray();
             foreach (string coltext in displayColumns)
             {
@@ -1916,7 +1926,7 @@ namespace Gageas.Lutea.DefaultUI
             // overlay
             if (((e.State & ListViewItemStates.Selected) != 0) || !hasCoverArtPic)
             {
-                g.DrawString(album, listView1.Font, System.Drawing.Brushes.White, new RectangleF(xp + 2, yp + 2, w - 20, h));
+                g.DrawString(album, PlaylistViewFont, System.Drawing.Brushes.White, new RectangleF(xp + 2, yp + 2, w - 20, h));
             }
             double rate = 0;
             double.TryParse(albums[index][3].ToString(), out rate);
@@ -2025,7 +2035,8 @@ namespace Gageas.Lutea.DefaultUI
                 ()=>SpectrumColor1 = (Color)setting["SpectrumColor1"],
                 ()=>SpectrumColor2 = (Color)setting["SpectrumColor2"],
                 ()=>displayColumns = (string[])setting["DisplayColumns"],
-                ()=>listView1.Font = (System.Drawing.Font)setting["Font_PlaylistView"],
+                ()=>PlaylistViewFont = (System.Drawing.Font)setting["Font_PlaylistView"],
+                ()=>PlaylistViewLineHeightAdjustment = (int)setting["PlaylistViewLineHeightAdjustment"],
                 ()=>ShowCoverArtInPlaylistView = (Boolean)setting["ShowCoverArtInPlaylistView"],
                 ()=>CoverArtSizeInPlaylistView = (int)setting["CoverArtSizeInPlaylistView"],
                 ()=>ColoredAlbum = (bool)setting["ColoredAlbum"],
@@ -2194,7 +2205,8 @@ namespace Gageas.Lutea.DefaultUI
             setting["SpectrumColor1"] = SpectrumColor1;
             setting["SpectrumColor2"] = SpectrumColor2;
             setting["DisplayColumns"] = displayColumns;
-            setting["Font_PlaylistView"] = listView1.Font;
+            setting["Font_PlaylistView"] = PlaylistViewFont;
+            setting["PlaylistViewLineHeightAdjustment"] = PlaylistViewLineHeightAdjustment;
             setting["ShowCoverArtInPlaylistView"] = ShowCoverArtInPlaylistView;
             setting["CoverArtSizeInPlaylistView"] = CoverArtSizeInPlaylistView;
             setting["ColoredAlbum"] = ColoredAlbum;
@@ -2214,7 +2226,8 @@ namespace Gageas.Lutea.DefaultUI
             pref.FFTNumber = this.FFTNum;
             pref.SpectrumColor1 = this.SpectrumColor1;
             pref.SpectrumColor2 = this.SpectrumColor2;
-            pref.Font_playlistView = new Font(this.listView1.Font, 0);
+            pref.Font_playlistView = new Font(PlaylistViewFont, 0); // styleが設定されていないcloneを作る
+            pref.PlaylistViewLineHeightAdjustment = this.PlaylistViewLineHeightAdjustment;
             pref.ColoredAlbum = this.ColoredAlbum;
             pref.ShowCoverArtInPlaylistView = this.ShowCoverArtInPlaylistView;
             pref.CoverArtSizeInPlaylistView = this.CoverArtSizeInPlaylistView;
@@ -2235,7 +2248,8 @@ namespace Gageas.Lutea.DefaultUI
             this.SpectrumColor1 = pref.SpectrumColor1;
             this.SpectrumColor2 = pref.SpectrumColor2;
             this.SpectrumMode = (int)pref.SpectrumMode;
-            this.listView1.Font = pref.Font_playlistView;
+            this.PlaylistViewFont = pref.Font_playlistView;
+            this.PlaylistViewLineHeightAdjustment = pref.PlaylistViewLineHeightAdjustment;
             this.ShowCoverArtInPlaylistView = pref.ShowCoverArtInPlaylistView;
             if (this.CoverArtSizeInPlaylistView != pref.CoverArtSizeInPlaylistView)
             {
@@ -2530,7 +2544,7 @@ namespace Gageas.Lutea.DefaultUI
 
                 // 各column描画準備
                 int pc = 0;
-                IntPtr hFont = (emphasizedRowId == index ? new Font(listView1.Font, FontStyle.Bold) : listView1.Font).ToHfont();
+                IntPtr hFont = (emphasizedRowId == index ? new Font(PlaylistViewFont, FontStyle.Bold) : PlaylistViewFont).ToHfont();
                 IntPtr hOldFont = GDI.SelectObject(hDC, hFont);
 
                 // 強調枠描画

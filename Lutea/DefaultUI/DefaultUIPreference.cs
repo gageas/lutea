@@ -35,6 +35,29 @@ namespace Gageas.Lutea.DefaultUI
             Mode4 = 4
         }
 
+        /// <summary>
+        /// PropertyGridに行間調整用intを表示するTypeConverter
+        /// </summary>
+        class LineHeightAdjustmentConverter : Int32Converter
+        {
+            readonly int[] intlist = {-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+
+            public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+            {
+                return true;
+            }
+
+            public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+            {
+                return new StandardValuesCollection(intlist);
+            }
+
+            public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
+            {
+                return true;
+            }
+        }
+
         private SpectrumModes spectrumMode;
         [Description("スペクトラムアナライザ描画モード\n0～4")]
         [DefaultValue(SpectrumModes.Mode0)]
@@ -127,6 +150,22 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private int playlistViewLineHeightAdjustment;
+        [Description("プレイリストの行間調整")]
+        [DefaultValue(0)]
+        [TypeConverter(typeof(LineHeightAdjustmentConverter))]
+        [Category("Playlist View")]
+        public int PlaylistViewLineHeightAdjustment
+        {
+            get
+            {
+                return playlistViewLineHeightAdjustment;
+            }
+            set
+            {
+                playlistViewLineHeightAdjustment = value;
+            }
+        }
 
         private Boolean showCoverArtInPlaylistView;
         [Description("プレイリストにカバーアートを表示する")]
