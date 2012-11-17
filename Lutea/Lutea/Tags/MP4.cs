@@ -185,7 +185,6 @@ namespace Gageas.Lutea.Tags
                 {
                     throw new System.IO.FileFormatException("atom size greater than parents size");
                 }
-                Logger.Log(atom_name);
 
                 long initial_pos = strm.Position;
                 switch (atom_name)
