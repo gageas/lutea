@@ -390,6 +390,7 @@
             this.trackInfoText.Size = new System.Drawing.Size(284, 31);
             this.trackInfoText.TabIndex = 99;
             this.trackInfoText.Text = "trackInfoText";
+            this.trackInfoText.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.trackInfoText.UseMnemonic = false;
             // 
             // pictureBox2
