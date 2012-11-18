@@ -2594,7 +2594,7 @@ namespace Gageas.Lutea.DefaultUI
                         {
                             var img = coverArts[album];
                             var margin = 2;
-                            if (img != null)
+                            if (img != null && img.Width > 1)
                             {
                                 GDI.BitBlt(hDC,
                                     bounds_X + pc + (CoverArtSizeInPlaylistView - img.Width) / 2 + margin,
