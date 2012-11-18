@@ -247,7 +247,6 @@ namespace Gageas.Lutea.DefaultUI
             ContextMenuStrip cms = null;
             this.Invoke((MethodInvoker)(() =>
             {
-                toolStripButton3.Checked = false;
                 xTrackBar1.Max = Controller.Current.Length;
                 selectRow(index);
                 emphasizeRow(index);
@@ -273,6 +272,8 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         DestroyIcon(hIcon);
                     }
+                    xTrackBar1.Value = 0;
+                    xTrackBar1.ThumbText = null;
                 }
 
                 setStatusText("Playing " + Controller.Current.StreamFilename);
@@ -409,6 +410,7 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     ulong len = (ulong)Controller.Current.Length;
                     xTrackBar1.Value = second;
+                    xTrackBar1.ThumbText = Util.Util.getMinSec(second);
                     toolStripStatusLabel1.Text = (Util.Util.getMinSec(second) + "/" + Util.Util.getMinSec(len));
                     if (TaskbarExt != null)
                     {
@@ -453,6 +455,16 @@ namespace Gageas.Lutea.DefaultUI
             toolStripComboBox2.GetControl.SelectedIndex = 0;
             toolStripComboBox2.GetControl.SelectedIndexChanged += new EventHandler(playbackOrderComboBox_SelectedIndexChanged);
 
+            var items = menuStrip1.Items;
+            var widthSum = menuStrip1.Padding.Left + menuStrip1.Margin.Left;
+            for (int i = 0; i < items.Count; i++)
+            {
+                widthSum += items[i].Width;
+            }
+            xTrackBar1.Left = widthSum;
+            xTrackBar1.Width = this.ClientSize.Width - widthSum;
+            xTrackBar1.Height = menuStrip1.Height; 
+ 
             yomigana = new Yomigana(Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "yomiCache", this);
             InitFilterView();
             textBox1.Select();
