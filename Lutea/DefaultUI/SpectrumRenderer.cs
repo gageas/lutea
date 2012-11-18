@@ -57,7 +57,7 @@ namespace Gageas.Lutea.DefaultUI
             int w = 0;
             int h = 0;
             Bitmap b = null;
-            SolidBrush opacityBackgroundBlush = new SolidBrush(Color.FromArgb(70, SystemColors.Control));
+            SolidBrush opacityBackgroundBlush = new SolidBrush(Color.FromArgb(70, DestPictureBox.Parent.BackColor));
             while (true)
             {
                 DestPictureBox.Invoke((MethodInvoker)(() =>
@@ -73,7 +73,7 @@ namespace Gageas.Lutea.DefaultUI
                             b = new Bitmap(DestPictureBox.Width, DestPictureBox.Height);
                             using (var g = Graphics.FromImage(b))
                             {
-                                g.Clear(SystemColors.Control);
+                                g.Clear(DestPictureBox.Parent.BackColor);
                             }
                             DestPictureBox.Image = (Bitmap)b.Clone();
                             barPosition = null;
