@@ -52,7 +52,6 @@ namespace Gageas.Lutea.Tags
                     tags.Add(new KeyValuePair<string, object>("__X-LUTEA-BITS__", Bits.ToString()));
                     tags.Add(new KeyValuePair<string, object>("__X-LUTEA-FREQ__", Freq.ToString()));
                     tags.Add(new KeyValuePair<string, object>("__X-LUTEA-DURATION__", ((int)(Samples / Freq)).ToString()));
-                    Logger.Log(Freq + Chans + Bits + Samples);
                 }
                 else if (createImageObject && blockType == FLAC_BLOCK_TYPE_METADATA_BLOCK_PICTURE)
                 {
