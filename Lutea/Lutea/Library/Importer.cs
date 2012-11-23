@@ -311,7 +311,10 @@ namespace Gageas.Lutea.Library
                             tr.freq = (int)strm.Info.freq;
                         }
                     }
-                    catch { }
+                    catch(Exception ex) {
+                        Logger.Error("cannot open file (by BASS)" + file_name);
+                        Logger.Debug(ex);
+                    }
                 }
                 tr.tag = tag;
                 localQueue.Enqueue(tr);
