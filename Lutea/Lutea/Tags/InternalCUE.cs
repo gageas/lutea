@@ -17,9 +17,16 @@ namespace Gageas.Lutea.Tags
             if (cd == null) return null;
             long bits = (new FileInfo(filename)).Length * 8;
             int bitrate = 1410*1000;
-            using (var strm = new BASS.FileStream(filename,BASS.Stream.StreamFlag.BASS_STREAM_DECODE))
+            try
             {
-                bitrate = (int)(bits / strm.length);
+                using (var strm = new BASS.FileStream(filename, BASS.Stream.StreamFlag.BASS_STREAM_DECODE))
+                {
+                    bitrate = (int)(bits / strm.length);
+                }
+            }
+            catch (Exception ex) {
+                Logger.Error("cannot open file (by BASS)" + filename);
+                Logger.Debug(ex);
             }
 
             foreach (var tr in cd.tracks)
