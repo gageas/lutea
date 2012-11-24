@@ -8,7 +8,8 @@ namespace Gageas.Lutea.DefaultUI
 {
     class RatingRenderer
     {
-        private Bitmap[] StarImages = new Bitmap[6];
+        private const int RatesN = 5;
+        private Bitmap[] StarImages = new Bitmap[RatesN + 1];
         public int Height
         {
             get { return StarImages[0].Height; }
@@ -17,6 +18,11 @@ namespace Gageas.Lutea.DefaultUI
         public int Width
         {
             get { return StarImages[0].Width; }
+        }
+
+        public int EachWidth
+        {
+            get { return Width / RatesN; }
         }
 
         public RatingRenderer(string filename_on, string filename_off)
@@ -50,12 +56,12 @@ namespace Gageas.Lutea.DefaultUI
                 }
             }
 
-            for (int i = 0; i <= 5; i++)
+            for (int i = 0; i <= RatesN; i++)
             {
-                StarImages[i] = new Bitmap(StarImage_on.Width * 5, StarImage_on.Height);
+                StarImages[i] = new Bitmap(StarImage_on.Width * RatesN, StarImage_on.Height);
                 using (var g = Graphics.FromImage(StarImages[i]))
                 {
-                    for (int j = 0; j < 5; j++)
+                    for (int j = 0; j < RatesN; j++)
                     {
                         g.DrawImage(i > j ? StarImage_on : StarImage_off, j * StarImage_on.Width, 0);
                     }
@@ -69,7 +75,7 @@ namespace Gageas.Lutea.DefaultUI
         }
         public void Draw(int rate, Graphics g, int x, int y, int width, int height)
         {
-            if (rate < 0 || rate > 5) return;
+            if (rate < 0 || rate > RatesN) return;
             int _y = (Height - height) / 2;
             g.DrawImage(StarImages[rate], x, y, new Rectangle(0, _y, Math.Min(width, Width), height), GraphicsUnit.Pixel);
         }
@@ -80,11 +86,11 @@ namespace Gageas.Lutea.DefaultUI
         }
         public void Draw(double rate, Graphics g, int x, int y, int width, int height)
         {
-            if (rate < 0 || rate > 5) return;
+            if (rate < 0 || rate > RatesN) return;
             int _y = (Height - height) / 2;
             g.DrawImage(StarImages[0], x, y, new Rectangle(0, _y, Math.Min(width, Width), height), GraphicsUnit.Pixel);
-            int xn = (int)(StarImages[0].Width * rate / 5);
-            g.DrawImage(StarImages[5], x, y, new Rectangle(0, _y, Math.Min(width, xn), height), GraphicsUnit.Pixel);
+            int xn = (int)(StarImages[0].Width * rate / RatesN);
+            g.DrawImage(StarImages[RatesN], x, y, new Rectangle(0, _y, Math.Min(width, xn), height), GraphicsUnit.Pixel);
         }
     }
 }
