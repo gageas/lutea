@@ -1752,8 +1752,10 @@ namespace Gageas.Lutea.DefaultUI
         #region playlistView ToolStripMenu event
         private void propertyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listView1.SelectedIndices.Count < 1) return;
-            // TODO 
+            if (listView1.SelectedIndices.Count > 0)
+            {
+                Shell32.OpenPropertiesDialog(this.Handle, Controller.GetPlaylistRowColumn(listView1.SelectedIndices[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)).Trim());
+            }
         }
 
         private void explorerToolStripMenuItem_Click(object sender, EventArgs e)
