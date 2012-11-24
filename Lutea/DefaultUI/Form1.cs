@@ -2861,5 +2861,14 @@ namespace Gageas.Lutea.DefaultUI
                 componentToolStripMenuItem.DropDownItems.Add(menuitem);
             }
         }
+
+        private void ScrollToPlayingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var index = Controller.Current.IndexInPlaylist;
+            if (index >= 0)
+            {
+                listView1.EnsureVisible(index);
+            }
+        }
     }
 }

@@ -30,11 +30,11 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DefaultUIForm));
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("ノード1");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("ノード2");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("folder", new System.Windows.Forms.TreeNode[] {
-            treeNode1,
-            treeNode2});
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("ノード1");
+            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("ノード2");
+            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("folder", new System.Windows.Forms.TreeNode[] {
+            treeNode4,
+            treeNode5});
             this.xTrackBar1 = new Gageas.Lutea.DefaultUI.XTrackBar();
             this.queryTreeViewContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.クエリ作成ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -109,6 +109,8 @@
             this.albumArtListViewSearchTextBox = new System.Windows.Forms.TextBox();
             this.albumArtListView = new Gageas.Lutea.DefaultUI.DoubleBufferedListView();
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ScrollToPlayingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.queryTreeViewContextMenuStrip1.SuspendLayout();
             this.playlistViewContextMenuStrip.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -226,6 +228,8 @@
             // playlistViewContextMenuStrip
             // 
             this.playlistViewContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ScrollToPlayingToolStripMenuItem,
+            this.toolStripSeparator6,
             this.propertyToolStripMenuItem,
             this.explorerToolStripMenuItem,
             this.toolStripSeparator4,
@@ -235,7 +239,7 @@
             this.toolStripSeparator5,
             this.clearSortOrderToolStripMenuItem});
             this.playlistViewContextMenuStrip.Name = "playlistViewContextMenuStrip";
-            this.playlistViewContextMenuStrip.Size = new System.Drawing.Size(209, 148);
+            this.playlistViewContextMenuStrip.Size = new System.Drawing.Size(209, 198);
             // 
             // propertyToolStripMenuItem
             // 
@@ -648,14 +652,14 @@
             this.treeView1.Indent = 14;
             this.treeView1.Location = new System.Drawing.Point(0, 0);
             this.treeView1.Name = "treeView1";
-            treeNode1.Name = "ノード1";
-            treeNode1.Text = "ノード1";
-            treeNode2.Name = "ノード2";
-            treeNode2.Text = "ノード2";
-            treeNode3.Name = "ノード0";
-            treeNode3.Text = "folder";
+            treeNode4.Name = "ノード1";
+            treeNode4.Text = "ノード1";
+            treeNode5.Name = "ノード2";
+            treeNode5.Text = "ノード2";
+            treeNode6.Name = "ノード0";
+            treeNode6.Text = "folder";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode3});
+            treeNode6});
             this.treeView1.Size = new System.Drawing.Size(223, 189);
             this.treeView1.TabIndex = 24;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.queryView1_AfterSelect);
@@ -925,6 +929,18 @@
             this.albumArtListView.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.albumArtListView_RetrieveVirtualItem);
             this.albumArtListView.DoubleClick += new System.EventHandler(this.albumArtListView_DoubleClick);
             // 
+            // 再生中にスクロールToolStripMenuItem
+            // 
+            this.ScrollToPlayingToolStripMenuItem.Name = "再生中にスクロールToolStripMenuItem";
+            this.ScrollToPlayingToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.ScrollToPlayingToolStripMenuItem.Text = "再生中にスクロール";
+            this.ScrollToPlayingToolStripMenuItem.Click += new System.EventHandler(this.ScrollToPlayingToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(205, 6);
+            // 
             // DefaultUIForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1051,6 +1067,8 @@
         private System.Windows.Forms.TextBox albumArtListViewSearchTextBox;
         private DoubleBufferedListView albumArtListView;
         private System.Windows.Forms.ColumnHeader columnHeader3;
+        private System.Windows.Forms.ToolStripMenuItem ScrollToPlayingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
     }
 }
 
