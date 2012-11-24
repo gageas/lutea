@@ -153,7 +153,7 @@ namespace Gageas.Lutea.DefaultUI
             }
             if (ThumbText != null)
             {
-                g.DrawString(ThumbText, this.Font, Brushes.Black, thumb, sf);
+                g.DrawString(ThumbText, this.Font, SystemBrushes.ControlText, thumb, sf);
             }
         }
 
