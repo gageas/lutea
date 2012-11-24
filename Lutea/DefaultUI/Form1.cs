@@ -463,7 +463,9 @@ namespace Gageas.Lutea.DefaultUI
             }
             xTrackBar1.Left = widthSum;
             xTrackBar1.Width = this.ClientSize.Width - widthSum;
-            xTrackBar1.Height = menuStrip1.Height; 
+            xTrackBar1.Height = menuStrip1.Height;
+
+            menuStrip1.SetBackgroundColorSolid(SystemColors.Control);
  
             yomigana = new Yomigana(Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "yomiCache", this);
             InitFilterView();
