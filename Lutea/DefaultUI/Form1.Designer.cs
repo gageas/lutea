@@ -664,39 +664,39 @@
             // 
             this.playlistViewContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.propertyToolStripMenuItem,
-            this.deleteToolStripMenuItem,
             this.explorerToolStripMenuItem,
+            this.deleteToolStripMenuItem,
             this.再読み込みToolStripMenuItem,
             this.ratingToolStripMenuItem,
             this.clearSortOrderToolStripMenuItem});
             this.playlistViewContextMenuStrip.Name = "playlistViewContextMenuStrip";
-            this.playlistViewContextMenuStrip.Size = new System.Drawing.Size(197, 136);
+            this.playlistViewContextMenuStrip.Size = new System.Drawing.Size(209, 158);
             // 
             // propertyToolStripMenuItem
             // 
             this.propertyToolStripMenuItem.Name = "propertyToolStripMenuItem";
-            this.propertyToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.propertyToolStripMenuItem.Text = "プロパティ";
+            this.propertyToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.propertyToolStripMenuItem.Text = "プロパティ...";
             this.propertyToolStripMenuItem.Click += new System.EventHandler(this.propertyToolStripMenuItem_Click);
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.deleteToolStripMenuItem.Text = "ライブラリから削除";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // explorerToolStripMenuItem
             // 
             this.explorerToolStripMenuItem.Name = "explorerToolStripMenuItem";
-            this.explorerToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.explorerToolStripMenuItem.Text = "エクスプローラで表示";
+            this.explorerToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.explorerToolStripMenuItem.Text = "エクスプローラで表示...";
             this.explorerToolStripMenuItem.Click += new System.EventHandler(this.explorerToolStripMenuItem_Click);
             // 
             // 再読み込みToolStripMenuItem
             // 
             this.再読み込みToolStripMenuItem.Name = "再読み込みToolStripMenuItem";
-            this.再読み込みToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.再読み込みToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.再読み込みToolStripMenuItem.Text = "再読み込み";
             // 
             // ratingToolStripMenuItem
@@ -709,55 +709,55 @@
             this.toolStripMenuItem6,
             this.toolStripMenuItem7});
             this.ratingToolStripMenuItem.Name = "ratingToolStripMenuItem";
-            this.ratingToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.ratingToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.ratingToolStripMenuItem.Text = "評価";
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem2.Text = "☆☆☆☆☆";
             this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem3.Text = "★☆☆☆☆";
             this.toolStripMenuItem3.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
             // 
             // toolStripMenuItem4
             // 
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem4.Text = "★★☆☆☆";
             this.toolStripMenuItem4.Click += new System.EventHandler(this.toolStripMenuItem4_Click);
             // 
             // toolStripMenuItem5
             // 
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem5.Text = "★★★☆☆";
             this.toolStripMenuItem5.Click += new System.EventHandler(this.toolStripMenuItem5_Click);
             // 
             // toolStripMenuItem6
             // 
             this.toolStripMenuItem6.Name = "toolStripMenuItem6";
-            this.toolStripMenuItem6.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem6.Text = "★★★★☆";
             this.toolStripMenuItem6.Click += new System.EventHandler(this.toolStripMenuItem6_Click);
             // 
             // toolStripMenuItem7
             // 
             this.toolStripMenuItem7.Name = "toolStripMenuItem7";
-            this.toolStripMenuItem7.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItem7.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItem7.Text = "★★★★★";
             this.toolStripMenuItem7.Click += new System.EventHandler(this.toolStripMenuItem7_Click);
             // 
             // clearSortOrderToolStripMenuItem
             // 
             this.clearSortOrderToolStripMenuItem.Name = "clearSortOrderToolStripMenuItem";
-            this.clearSortOrderToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.clearSortOrderToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.clearSortOrderToolStripMenuItem.Text = "ソート解除";
             this.clearSortOrderToolStripMenuItem.Click += new System.EventHandler(this.clearSortOrderToolStripMenuItem_Click);
             // 
