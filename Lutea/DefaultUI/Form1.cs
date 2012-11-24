@@ -2679,7 +2679,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void listView1_MouseClick(object sender, MouseEventArgs e)
         {
-            int starwidth = 16;
+            int starwidth = ratingRenderer.EachWidth;
             var item = listView1.GetItemAt(e.X, e.Y);
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
