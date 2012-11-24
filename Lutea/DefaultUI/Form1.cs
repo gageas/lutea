@@ -1719,6 +1719,36 @@ namespace Gageas.Lutea.DefaultUI
         #endregion
 
         #region Form ToolStripMenu event
+        private void componentToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            for (var i = componentToolStripMenuItem.DropDownItems.Count - 1; i >= 0; i--)
+            {
+                if (componentToolStripMenuItem.DropDownItems[i].Tag == null) continue;
+                if (componentToolStripMenuItem.DropDownItems[i].Tag is LuteaComponentInterface)
+                {
+                    componentToolStripMenuItem.DropDownItems.RemoveAt(i);
+                }
+            }
+            var components = Lutea.Core.Controller.GetComponents();
+            foreach (var component in components)
+            {
+                LuteaComponentInfo[] info = (LuteaComponentInfo[])component.GetType().GetCustomAttributes(typeof(LuteaComponentInfo), false);
+                var menuitem = new ToolStripMenuItem(info.Length > 0 ? info[0].name : component.ToString());
+                menuitem.Enabled = component.CanSetEnable();
+                menuitem.Checked = component.GetEnable();
+                menuitem.Tag = component;
+                if (menuitem.Enabled)
+                {
+                    menuitem.Click += (o, ea) =>
+                    {
+                        var com = (LuteaComponentInterface)((ToolStripMenuItem)o).Tag;
+                        com.SetEnable(!com.GetEnable());
+                    };
+                }
+                componentToolStripMenuItem.DropDownItems.Add(menuitem);
+            }
+        }
+        
         private void pluginsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var componentManage = new ComponentManager();
@@ -1752,6 +1782,15 @@ namespace Gageas.Lutea.DefaultUI
         #endregion
 
         #region playlistView ToolStripMenu event
+        private void ScrollToPlayingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var index = Controller.Current.IndexInPlaylist;
+            if (index >= 0)
+            {
+                listView1.EnsureVisible(index);
+            }
+        }
+        
         private void propertyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listView1.SelectedIndices.Count > 0)
@@ -2830,45 +2869,6 @@ namespace Gageas.Lutea.DefaultUI
         public bool GetEnable()
         {
             return true;
-        }
-
-        private void componentToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
-        {
-            for (var i = componentToolStripMenuItem.DropDownItems.Count - 1; i >= 0; i--)
-            {
-                if (componentToolStripMenuItem.DropDownItems[i].Tag == null) continue;
-                if (componentToolStripMenuItem.DropDownItems[i].Tag is LuteaComponentInterface)
-                {
-                    componentToolStripMenuItem.DropDownItems.RemoveAt(i);
-                }
-            }
-            var components = Lutea.Core.Controller.GetComponents();
-            foreach (var component in components)
-            {
-                LuteaComponentInfo[] info = (LuteaComponentInfo[])component.GetType().GetCustomAttributes(typeof(LuteaComponentInfo), false);
-                var menuitem = new ToolStripMenuItem(info.Length > 0 ? info[0].name : component.ToString());
-                menuitem.Enabled = component.CanSetEnable();
-                menuitem.Checked = component.GetEnable();
-                menuitem.Tag = component;
-                if (menuitem.Enabled)
-                {
-                    menuitem.Click += (o, ea) =>
-                    {
-                        var com = (LuteaComponentInterface)((ToolStripMenuItem)o).Tag;
-                        com.SetEnable(!com.GetEnable());
-                    };
-                }
-                componentToolStripMenuItem.DropDownItems.Add(menuitem);
-            }
-        }
-
-        private void ScrollToPlayingToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var index = Controller.Current.IndexInPlaylist;
-            if (index >= 0)
-            {
-                listView1.EnsureVisible(index);
-            }
         }
     }
 }
