@@ -48,14 +48,15 @@ namespace Gageas.Lutea.DefaultUI
 
         public void Clear()
         {
-            if(DestPictureBox != null && DestPictureBox.Image != null){
-                DestPictureBox.Invoke((MethodInvoker)(() =>
+            if (DestPictureBox != null)
+            {
+                var img = new Bitmap(DestPictureBox.Width, DestPictureBox.Height);
+                using (var g = Graphics.FromImage(img))
                 {
-                    using (var g = Graphics.FromImage(DestPictureBox.Image))
-                    {
-                        g.FillRectangle(new SolidBrush(DestPictureBox.Parent.BackColor), 0, 0, DestPictureBox.Image.Width, DestPictureBox.Image.Height);
-                    }
-                }));
+                    g.Clear(DestPictureBox.Parent.BackColor);
+                }
+                DestPictureBox.Image = img;
+                DestPictureBox.Refresh();
             }
         }
 
@@ -105,7 +106,7 @@ namespace Gageas.Lutea.DefaultUI
                             b = null;
                         }
                     }
-                    if (DestPictureBox.Image != null)
+                    if (DestPictureBox.Image != null && spectrumAnalyzerThread != null)
                     {
                         using (var g = Graphics.FromImage(DestPictureBox.Image))
                         {
@@ -115,6 +116,7 @@ namespace Gageas.Lutea.DefaultUI
                     }
                 }));
 
+                Thread.Sleep(20);
                 if (SpectrumMode < 0 || SpectrumMode > 4 || !Controller.IsPlaying)
                 {
                     Thread.Sleep(200);
@@ -212,7 +214,6 @@ namespace Gageas.Lutea.DefaultUI
                     }
                 }
 
-                Thread.Sleep(20);
             }
         }
     }

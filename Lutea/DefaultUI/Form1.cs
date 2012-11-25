@@ -253,9 +253,11 @@ namespace Gageas.Lutea.DefaultUI
                 coverArtImageLoaderThread.Interrupt();
                 if (index < 0)
                 {
-                    trackInfoText.Text = "Stop";
+                    trackInfoText.Text = "";
+                    groupBox1.Text = "";
                     setFormTitle(null);
                     setStatusText("Ready ");
+                    toolStripStatusLabel1.Text = "";
                     if (SpectrumRenderer != null)
                     {
                         SpectrumRenderer.Abort();
@@ -275,23 +277,27 @@ namespace Gageas.Lutea.DefaultUI
                     }
                     xTrackBar1.Value = 0;
                     xTrackBar1.ThumbText = null;
+                    xTrackBar1.Enabled = false;
                 }
+                else
+                {
+                    setStatusText("Playing " + Controller.Current.StreamFilename);
+                    groupBox1.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData("tagTracknumber"))).Replace("&", "&&");
+                    trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}",
+                        Controller.Current.MetaData("tagTitle"),
+                        Util.Util.FormatIfExists(" - {0}",
+                           Controller.Current.MetaData("tagArtist"))
+                        );
+                    setFormTitle(Controller.Current.MetaData("tagTitle") + Util.Util.FormatIfExists(" / {0}", Controller.Current.MetaData("tagArtist")));
+                    cms = new ContextMenuStrip();
 
-                setStatusText("Playing " + Controller.Current.StreamFilename);
-                groupBox1.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData("tagTracknumber"))).Replace("&", "&&");
-                trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}",
-                    Controller.Current.MetaData("tagTitle"),
-                    Util.Util.FormatIfExists(" - {0}",
-                       Controller.Current.MetaData("tagArtist"))
-                    );
-                setFormTitle(Controller.Current.MetaData("tagTitle") + Util.Util.FormatIfExists(" / {0}", Controller.Current.MetaData("tagArtist")));
-                cms = new ContextMenuStrip();
+                    xTrackBar1.Enabled = true;
+                }
                 listView2.Items.Clear();
             }));
             if (index < 0) return;
 
             ResetSpectrumRenderer();
-
             var item_splitter = new char[] { '；', ';', '，', ',', '／', '/', '＆', '&', '・', '･', '、', '､', '（', '(', '）', ')', '\n', '\t' };
             var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList();
             var subGenre = genre.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList().FindAll(e => e.Length > 1);
