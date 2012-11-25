@@ -136,7 +136,10 @@ namespace Gageas.Lutea.DefaultUI
             if (TrackBarRenderer.IsSupported)
             {
                 TrackBarRenderer.DrawHorizontalTrack(g, track);
-                TrackBarRenderer.DrawHorizontalThumb(g, thumb, thumbState);
+                if (Enabled)
+                {
+                    TrackBarRenderer.DrawHorizontalThumb(g, thumb, thumbState);
+                }
             }
             else
             {
@@ -145,13 +148,16 @@ namespace Gageas.Lutea.DefaultUI
                 g.DrawLine(SystemPens.ButtonHighlight, track.Right, track.Bottom, track.Right, track.Top);
                 g.DrawLine(SystemPens.ButtonHighlight, track.Right, track.Bottom, track.Left, track.Bottom);
 
-                g.FillRectangle(thumbState == TrackBarThumbState.Normal ? SystemBrushes.ButtonFace : SystemBrushes.ButtonHighlight, thumb);
-                g.DrawLine(SystemPens.ButtonHighlight, thumb.Left, thumb.Top, thumb.Right, thumb.Top);
-                g.DrawLine(SystemPens.ButtonHighlight, thumb.Left, thumb.Top, thumb.Left, thumb.Bottom);
-                g.DrawLine(SystemPens.ButtonShadow, thumb.Right, thumb.Bottom, thumb.Right, thumb.Top);
-                g.DrawLine(SystemPens.ButtonShadow, thumb.Right, thumb.Bottom, thumb.Left, thumb.Bottom);
+                if (Enabled)
+                {
+                    g.FillRectangle(thumbState == TrackBarThumbState.Normal ? SystemBrushes.ButtonFace : SystemBrushes.ButtonHighlight, thumb);
+                    g.DrawLine(SystemPens.ButtonHighlight, thumb.Left, thumb.Top, thumb.Right, thumb.Top);
+                    g.DrawLine(SystemPens.ButtonHighlight, thumb.Left, thumb.Top, thumb.Left, thumb.Bottom);
+                    g.DrawLine(SystemPens.ButtonShadow, thumb.Right, thumb.Bottom, thumb.Right, thumb.Top);
+                    g.DrawLine(SystemPens.ButtonShadow, thumb.Right, thumb.Bottom, thumb.Left, thumb.Bottom);
+                }
             }
-            if (ThumbText != null)
+            if (Enabled && ThumbText != null)
             {
                 g.DrawString(ThumbText, this.Font, SystemBrushes.ControlText, thumb, sf);
             }
