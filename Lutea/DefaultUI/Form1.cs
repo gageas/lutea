@@ -259,6 +259,7 @@ namespace Gageas.Lutea.DefaultUI
                     if (SpectrumRenderer != null)
                     {
                         SpectrumRenderer.Abort();
+                        SpectrumRenderer.Clear();
                         SpectrumRenderer = null;
                     }
                     if (TaskbarExt != null)
