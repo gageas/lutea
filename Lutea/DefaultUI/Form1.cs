@@ -171,7 +171,7 @@ namespace Gageas.Lutea.DefaultUI
             // set "real" font
             listView1.SetHeaderFont(PlaylistViewFont);
 
-            displayColumns = displayColumns.Where(_ => Controller.GetColumnIndexByName(_) >= 0).OrderBy((_) => ColumnOrder[_]).ToArray();
+            displayColumns = displayColumns.Where(_ => Controller.GetColumnIndexByName(_) >= 0).OrderBy((_) => ColumnOrder.ContainsKey(_) ? ColumnOrder[_] : ColumnOrder.Count).ToArray();
             foreach (string coltext in displayColumns)
             {
                 var colheader = new ColumnHeader();
