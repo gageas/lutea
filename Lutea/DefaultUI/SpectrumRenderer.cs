@@ -46,6 +46,19 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        public void Clear()
+        {
+            if(DestPictureBox != null && DestPictureBox.Image != null){
+                DestPictureBox.Invoke((MethodInvoker)(() =>
+                {
+                    using (var g = Graphics.FromImage(DestPictureBox.Image))
+                    {
+                        g.FillRectangle(new SolidBrush(DestPictureBox.Parent.BackColor), 0, 0, DestPictureBox.Image.Width, DestPictureBox.Image.Height);
+                    }
+                }));
+            }
+        }
+
         private void SpectrumAnalyzerProc()
         {
             float[] fftdata = null;
