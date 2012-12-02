@@ -21,7 +21,7 @@ using Gageas.Lutea.Library;
 namespace Gageas.Lutea.DefaultUI
 {
     [GuidAttribute("406AB8D9-F6CF-4234-8B32-4D0064DA0200")]
-    [LuteaComponentInfo("DefaultUI", "Gageas", 0.110, "標準GUI Component")]
+    [LuteaComponentInfo("DefaultUI", "Gageas", 0.130, "標準GUI Component")]
     public partial class DefaultUIForm : Form, Lutea.Core.LuteaUIComponentInterface
     {
         #region General-purpose delegates
@@ -1895,6 +1895,21 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private void ReImportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int n = listView1.SelectedIndices.Count;
+            if (n > 0)
+            {
+                List<string> filenames = new List<string>();
+                for (int i = 0; i < n; i++)
+                {
+                    filenames.Add(Controller.GetPlaylistRowColumn(listView1.SelectedIndices[i], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
+                }
+                var importer = new Importer(filenames);
+                importer.Start();
+            }
+        }
+
         /// <summary>
         /// プレイリストのソート条件をクリアする
         /// PlaylistView→ContextMenuStrip→ソート解除を選択したときのハンドラ
@@ -2896,21 +2911,6 @@ namespace Gageas.Lutea.DefaultUI
         public bool GetEnable()
         {
             return true;
-        }
-
-        private void ReImportToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            int n = listView1.SelectedIndices.Count;
-            if (n > 0)
-            {
-                List<string> filenames = new List<string>();
-                for (int i = 0; i < n; i++)
-                {
-                    filenames.Add(Controller.GetPlaylistRowColumn(listView1.SelectedIndices[i], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
-                }
-                var importer = new Importer(filenames);
-                importer.Start();
-            }
         }
     }
 }
