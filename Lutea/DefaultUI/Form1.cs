@@ -122,6 +122,7 @@ namespace Gageas.Lutea.DefaultUI
         private Boolean ShowCoverArtInPlaylistView = true;
         private int CoverArtSizeInPlaylistView = 80;
         private Font PlaylistViewFont = null;
+        private Font TrackInfoViewFont = null;
         private int PlaylistViewLineHeightAdjustment = 0;
 
         private bool UseMediaKey = false;
@@ -144,6 +145,7 @@ namespace Gageas.Lutea.DefaultUI
             textBox1.ForeColor = System.Drawing.SystemColors.WindowText;
             toolStripStatusLabel1.Text = "";
             PlaylistViewFont = this.listView1.Font;
+            TrackInfoViewFont = this.trackInfoText.Font;
         }
 
         private void ResetPlaylistView()
@@ -235,6 +237,16 @@ namespace Gageas.Lutea.DefaultUI
                 SpectrumRenderer = new SpectrumRenderer(this.pictureBox2, FFTLogarithmic, FFTNum, SpectrumColor1, SpectrumColor2, SpectrumMode);
                 SpectrumRenderer.Start();
             }
+        }
+
+        private void ResetTrackInfoView()
+        {
+            trackInfoText.Font = TrackInfoViewFont;
+            trackInfoText.Height = trackInfoText.Font.Height;
+            pictureBox2.Top = trackInfoText.Top + trackInfoText.Height;
+            pictureBox2.Height = groupBox1.Height - pictureBox2.Top-2;
+            groupBox1.Font = new Font(TrackInfoViewFont.FontFamily, (float)Math.Max(this.Font.Size, TrackInfoViewFont.Size*0.6));
+            ResetSpectrumRenderer();
         }
 
         #region Application core event handler
@@ -2098,6 +2110,7 @@ namespace Gageas.Lutea.DefaultUI
                 ()=>SpectrumColor2 = (Color)setting["SpectrumColor2"],
                 ()=>displayColumns = (string[])setting["DisplayColumns"],
                 ()=>PlaylistViewFont = (System.Drawing.Font)setting["Font_PlaylistView"],
+                ()=>TrackInfoViewFont = (System.Drawing.Font)setting["Font_TrackInfoView"],
                 ()=>PlaylistViewLineHeightAdjustment = (int)setting["PlaylistViewLineHeightAdjustment"],
                 ()=>ShowCoverArtInPlaylistView = (Boolean)setting["ShowCoverArtInPlaylistView"],
                 ()=>CoverArtSizeInPlaylistView = (int)setting["CoverArtSizeInPlaylistView"],
@@ -2231,6 +2244,7 @@ namespace Gageas.Lutea.DefaultUI
             catch { }
 
             ResetHotKeys();
+            ResetTrackInfoView();
         }
 
         public object GetSetting()
@@ -2268,6 +2282,7 @@ namespace Gageas.Lutea.DefaultUI
             setting["SpectrumColor2"] = SpectrumColor2;
             setting["DisplayColumns"] = displayColumns;
             setting["Font_PlaylistView"] = PlaylistViewFont;
+            setting["Font_TrackInfoView"] = TrackInfoViewFont;
             setting["PlaylistViewLineHeightAdjustment"] = PlaylistViewLineHeightAdjustment;
             setting["ShowCoverArtInPlaylistView"] = ShowCoverArtInPlaylistView;
             setting["CoverArtSizeInPlaylistView"] = CoverArtSizeInPlaylistView;
@@ -2289,6 +2304,7 @@ namespace Gageas.Lutea.DefaultUI
             pref.SpectrumColor1 = this.SpectrumColor1;
             pref.SpectrumColor2 = this.SpectrumColor2;
             pref.Font_playlistView = new Font(PlaylistViewFont, 0); // styleが設定されていないcloneを作る
+            pref.Font_trackInfoView = new Font(TrackInfoViewFont, 0);
             pref.PlaylistViewLineHeightAdjustment = this.PlaylistViewLineHeightAdjustment;
             pref.ColoredAlbum = this.ColoredAlbum;
             pref.ShowCoverArtInPlaylistView = this.ShowCoverArtInPlaylistView;
@@ -2311,6 +2327,7 @@ namespace Gageas.Lutea.DefaultUI
             this.SpectrumColor2 = pref.SpectrumColor2;
             this.SpectrumMode = (int)pref.SpectrumMode;
             this.PlaylistViewFont = pref.Font_playlistView;
+            this.TrackInfoViewFont = pref.Font_trackInfoView;
             this.PlaylistViewLineHeightAdjustment = pref.PlaylistViewLineHeightAdjustment;
             this.ShowCoverArtInPlaylistView = pref.ShowCoverArtInPlaylistView;
             if (this.CoverArtSizeInPlaylistView != pref.CoverArtSizeInPlaylistView)
@@ -2337,6 +2354,7 @@ namespace Gageas.Lutea.DefaultUI
             ResetHotKeys();
             ResetPlaylistView();
             ResetSpectrumRenderer(true);
+            ResetTrackInfoView();
         }
 
         public void LibraryInitializeRequired()

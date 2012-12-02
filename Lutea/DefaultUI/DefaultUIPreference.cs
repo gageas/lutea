@@ -135,6 +135,22 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+
+        private Font font_trackInfoView;
+        [Description("再生中の曲名のフォント")]
+        [Category("TrackInfo View")]
+        public Font Font_trackInfoView
+        {
+            get
+            {
+                return font_trackInfoView;
+            }
+            set
+            {
+                font_trackInfoView = value;
+            }
+        }
+
         private Font font_playlistView;
         [Description("プレイリストのフォント")]
         [Category("Playlist View")]
