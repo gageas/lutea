@@ -219,6 +219,7 @@ namespace Gageas.Lutea.Core
                 ()=>AppCore.enableWASAPIVolume = (bool)setting["enableWASAPIVolume"],
                 ()=>AppCore.fadeInOutOnSkip = (bool)setting["fadeInOutOnSkip"],
                 ()=>AppCore.preferredDeviceName = (string)setting["preferredDeviceName"],
+                ()=>AppCore.UseMigemo = (bool)setting["useMigemo"],
             }, null);
         }
         public void Init(object setting)
@@ -243,6 +244,7 @@ namespace Gageas.Lutea.Core
             setting["enableWASAPIVolume"] = AppCore.enableWASAPIVolume;
             setting["fadeInOutOnSkip"] = AppCore.fadeInOutOnSkip;
             setting["preferredDeviceName"] = AppCore.preferredDeviceName;
+            setting["useMigemo"] = AppCore.UseMigemo;
             return setting;
         }
 
