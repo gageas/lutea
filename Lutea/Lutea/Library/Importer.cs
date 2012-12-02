@@ -14,12 +14,14 @@ namespace Gageas.Lutea.Library
 {
     public sealed class Importer
     {
+        private const int WORKER_THREADS_N = 8;
         private static object lockobj = new object();
         private readonly string[] supportedExtensions = new string[] { ".MP3", ".MP2", ".M4A", ".MP4", ".TAK", ".FLAC", ".TTA", ".OGG", ".APE", ".WV", ".WMA", ".ASF"};
 
-        string importPath;
-        Thread th;
-        Queue<LuteaAudioTrack> SQLQue = new Queue<LuteaAudioTrack>();
+        private string importPath;
+        private IEnumerable<string> importFilenames;
+        private Thread th;
+        private Queue<LuteaAudioTrack> SQLQue = new Queue<LuteaAudioTrack>();
 
         public event Controller.VOIDINT SetMaximum_read = new Controller.VOIDINT((i) => { });
         public event Controller.VOIDVOID Step_read = new Controller.VOIDVOID(() => { });
@@ -30,22 +32,32 @@ namespace Gageas.Lutea.Library
         public event Message_event Message = new Message_event((s) => { });
 
         /// <summary>
-        /// Constructor
+        /// ディレクトリに対するインポートを行うImporterを作成する
         /// </summary>
         /// <param name="path">インポート処理の検索対象</param>
-        public Importer(string path)
+        public Importer(string directoryPath)
         {
-            this.importPath = path.Trim();
-
-            th = new Thread(importThreadProc);
-            th.Priority = ThreadPriority.BelowNormal;
-            th.IsBackground = true;
+            this.importPath = directoryPath.Trim();
+            this.th = new Thread(ImportDirectoryThreadProc);
         }
+
+        /// <summary>
+        /// 複数のファイルのインポート処理を行うImporterを作成する
+        /// </summary>
+        /// <param name="filenames"></param>
+        public Importer(IEnumerable<string> filenames)
+        {
+            this.importFilenames = filenames;
+            this.th = new Thread(ImportMultipleFilesThreadProc);
+        }
+
 
         /// <summary>
         /// インポート処理を開始
         /// </summary>
         public void Start() {
+            th.Priority = ThreadPriority.BelowNormal;
+            th.IsBackground = true; 
             th.Start();
         }
 
@@ -127,7 +139,7 @@ namespace Gageas.Lutea.Library
             return Controller.Columns.Where(_ => !_.OmitOnImport);
         }
 
-        private void runImport() // import thread
+        private void runImport(bool OptimizeDB)
         {
             SQLite3DB libraryDB = AppCore.Library.Connect(true);
             try
@@ -149,49 +161,63 @@ namespace Gageas.Lutea.Library
                 using (var stmt_update = prepareUpdate(libraryDB))
                 using (var stmt_test = libraryDB.Prepare("SELECT rowid FROM list WHERE file_name = ?;"))
                 {
-                    SQLQue.OrderBy(_ => {
-                        int tr = 0;
-                        Util.Util.tryParseInt((_.getTagValue("TRACK") ?? "0").ToString(), ref tr);
-                        return (_.getTagValue("ALBUM") ?? "") + tr.ToString("0000");
-                    }).ToList().ForEach(track =>
+                    try
                     {
-                        Step_import();
-
-                        if (track.duration != 0)
+                        SQLQue.OrderBy(_ =>
                         {
-                            // Titleが無かったらfile_titleを付与
-                            if (track.tag.Find((e) => e.Key == "TITLE").Key == null) track.tag.Add(new KeyValuePair<string, object>("TITLE", track.file_title));
-                            try
+                            int tr = 0;
+                            Util.Util.tryParseInt((_.getTagValue("TRACK") ?? "0").ToString(), ref tr);
+                            return (_.getTagValue("ALBUM") ?? "") + tr.ToString("0000");
+                        }).ToList().ForEach(track =>
+                        {
+                            Step_import();
+
+                            if (track.duration != 0)
                             {
-                                stmt_test.Reset();
-                                stmt_test.Bind(1, track.file_name);
-                                if (stmt_test.EvaluateAll().Length > 0)
+                                // Titleが無かったらfile_titleを付与
+                                if (track.tag.Find((e) => e.Key == "TITLE").Key == null) track.tag.Add(new KeyValuePair<string, object>("TITLE", track.file_title));
+                                try
                                 {
-                                    stmt_update.Reset();
-                                    BindTrackInfo(stmt_update, track);
-                                    stmt_update.Evaluate(null);
+                                    stmt_test.Reset();
+                                    stmt_test.Bind(1, track.file_name);
+                                    if (stmt_test.EvaluateAll().Length > 0)
+                                    {
+                                        stmt_update.Reset();
+                                        BindTrackInfo(stmt_update, track);
+                                        stmt_update.Evaluate(null);
+                                    }
+                                    else
+                                    {
+                                        stmt_insert.Reset();
+                                        BindTrackInfo(stmt_insert, track);
+                                        stmt_insert.Evaluate(null);
+                                    }
                                 }
-                                else
+                                catch (SQLite3DB.SQLite3Exception e)
                                 {
-                                    stmt_insert.Reset();
-                                    BindTrackInfo(stmt_insert, track);
-                                    stmt_insert.Evaluate(null);
+                                    Logger.Error(e.ToString());
                                 }
                             }
-                            catch (SQLite3DB.SQLite3Exception e)
-                            {
-                                Logger.Error(e.ToString());
-                            }
-                        }
-                    });
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log(ex);
+                    }
                     SQLQue.Clear();
                 }
                 try
                 {
-                    Message("ライブラリを最適化しています");
+                    if (OptimizeDB)
+                    {
+                        Message("ライブラリを最適化しています");
+                    }
                     libraryDB.Exec("COMMIT;");
-                    libraryDB.Exec("VACUUM;");
-                    libraryDB.Exec("REINDEX;");
+                    if (OptimizeDB)
+                    {
+                        libraryDB.Exec("VACUUM;");
+                        libraryDB.Exec("REINDEX;");
+                    }
                 }
                 catch
                 {
@@ -377,7 +403,7 @@ namespace Gageas.Lutea.Library
             AbortWorkers();
         }
 
-        public void AbortWorkers()
+        private void AbortWorkers()
         {
             if (workers != null)
             {
@@ -386,78 +412,94 @@ namespace Gageas.Lutea.Library
                     worker.Abort();
                 }
             }
+            workers = null;
         }
 
         private Dictionary<string, bool> processedFile = new Dictionary<string, bool>();
         List<Thread> workers;
-        private void importThreadProc()
+        private void ImportDirectoryThreadProc()
         {
-            int N = 8;
             lock (lockobj)
             {
-                if (workers != null)
-                {
-                    foreach (var worker in workers)
-                    {
-                        worker.Abort();
-                    }
-                }
-
+                AbortWorkers();
                 processedFile.Clear();
 
-                if (System.IO.File.Exists(importPath))
+                Message("ディレクトリを検索しています");
+                string[] directories = null;
+                try
                 {
-                    if (System.IO.Path.GetExtension(importPath).ToUpper() == ".CUE")
+                    directories = System.IO.Directory.GetDirectories(importPath, "*", System.IO.SearchOption.AllDirectories);
+                }
+                catch (Exception e) { Message(e.ToString()); return; }
+                SetMaximum_read(directories.Length);
+
+                workers = new List<Thread>();
+                importFilenameQueue = new Queue<string>(directories);
+                importFilenameQueue.Enqueue(importPath);
+                DoAnalysisAndImportByWorkerThreads();
+                ImportToDB(true);
+            }
+        }
+
+        private void ImportMultipleFilesThreadProc()
+        {
+            lock (lockobj)
+            {
+                AbortWorkers();
+                processedFile.Clear();
+
+                var filenames = importFilenames.Select((_) => _.Trim()).Distinct().ToArray();
+                foreach (var filename in filenames)
+                {
+                    if (System.IO.File.Exists(filename))
                     {
-                        importFileReadThreadProc_CUE(importPath);
-                    }
-                    else
-                    {
-                        var localQueue = new Queue<LuteaAudioTrack>();
-                        importFileReadThreadProc_Stream(importPath, localQueue);
-                        while (localQueue.Count() > 0)
+                        try
                         {
-                            SQLQue.Enqueue(localQueue.Dequeue());
+                            if (System.IO.Path.GetExtension(filename).ToUpper() == ".CUE")
+                            {
+                                importFileReadThreadProc_CUE(filename);
+                            }
+                            else
+                            {
+                                // シングルスレッドで回すのでスレッドローカルのキューは不要（スレッドローカルキューとしてSQLQueを与える）
+                                importFileReadThreadProc_Stream(filename, SQLQue);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error(e);
                         }
                     }
                 }
-                else
-                {
-
-                    Message("ディレクトリを検索しています");
-                    string[] directories = null;
-                    try
-                    {
-                        directories = System.IO.Directory.GetDirectories(importPath, "*", System.IO.SearchOption.AllDirectories);
-                    }
-                    catch (Exception e) { Message(e.ToString()); return; }
-                    SetMaximum_read(directories.Length);
-
-                    workers = new List<Thread>();
-                    importFilenameQueue = new Queue<string>(directories);
-                    importFilenameQueue.Enqueue(importPath);
-                    for (int i = 0; i < N; i++)
-                    {
-                        Thread th = new Thread(importFileReadThreadProc);
-                        th.Priority = ThreadPriority.BelowNormal;
-                        th.IsBackground = true;
-                        th.Start();
-                        workers.Add(th);
-                    }
-                    foreach (var th in workers)
-                    {
-                        th.Join();
-                    }
-                }
-
-                workers = null;
-
-                Message("インポート中");
-                runImport();
-                processedFile.Clear();
-                this.AbortWorkers();
-                Complete();
+                ImportToDB(false);
             }
+        }
+
+        private void DoAnalysisAndImportByWorkerThreads()
+        {
+            for (int i = 0; i < WORKER_THREADS_N; i++)
+            {
+                Thread th = new Thread(importFileReadThreadProc);
+                th.Priority = ThreadPriority.BelowNormal;
+                th.IsBackground = true;
+                th.Start();
+                workers.Add(th);
+            }
+            foreach (var th in workers)
+            {
+                th.Join();
+            }
+
+            workers = null;
+        }
+
+        private void ImportToDB(bool OptimizeDB = true)
+        {
+            Message("インポート中");
+            runImport(OptimizeDB);
+            processedFile.Clear();
+            this.AbortWorkers();
+            Complete();
         }
 
         private static readonly Regex regex_year = new Regex(@"(?<1>\d{4})");

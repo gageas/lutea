@@ -240,7 +240,7 @@
             this.toolStripSeparator5,
             this.clearSortOrderToolStripMenuItem});
             this.playlistViewContextMenuStrip.Name = "playlistViewContextMenuStrip";
-            this.playlistViewContextMenuStrip.Size = new System.Drawing.Size(209, 176);
+            this.playlistViewContextMenuStrip.Size = new System.Drawing.Size(209, 198);
             // 
             // ScrollToPlayingToolStripMenuItem
             // 
@@ -333,6 +333,7 @@
             this.再読み込みToolStripMenuItem.Name = "再読み込みToolStripMenuItem";
             this.再読み込みToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.再読み込みToolStripMenuItem.Text = "再読み込み";
+            this.再読み込みToolStripMenuItem.Click += new System.EventHandler(this.ReImportToolStripMenuItem_Click);
             // 
             // deleteToolStripMenuItem
             // 

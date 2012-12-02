@@ -2897,5 +2897,20 @@ namespace Gageas.Lutea.DefaultUI
         {
             return true;
         }
+
+        private void ReImportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int n = listView1.SelectedIndices.Count;
+            if (n > 0)
+            {
+                List<string> filenames = new List<string>();
+                for (int i = 0; i < n; i++)
+                {
+                    filenames.Add(Controller.GetPlaylistRowColumn(listView1.SelectedIndices[i], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
+                }
+                var importer = new Importer(filenames);
+                importer.Start();
+            }
+        }
     }
 }
