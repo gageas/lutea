@@ -438,7 +438,10 @@ namespace Gageas.Lutea.DefaultUI
                     }
                 }));
             }
-            catch (ObjectDisposedException) { }
+            catch (Exception e)
+            {
+                Logger.Log(e);
+            }
         }
 
         public void changeVolume()
