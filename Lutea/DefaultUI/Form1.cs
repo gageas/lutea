@@ -234,6 +234,8 @@ namespace Gageas.Lutea.DefaultUI
 
             if (SpectrumRenderer == null)
             {
+                pictureBox2.Top = trackInfoText.Top + trackInfoText.Height;
+                pictureBox2.Height = groupBox1.Height - pictureBox2.Top - 2;
                 SpectrumRenderer = new SpectrumRenderer(this.pictureBox2, FFTLogarithmic, FFTNum, SpectrumColor1, SpectrumColor2, SpectrumMode);
                 SpectrumRenderer.Start();
             }
@@ -243,10 +245,8 @@ namespace Gageas.Lutea.DefaultUI
         {
             trackInfoText.Font = TrackInfoViewFont;
             trackInfoText.Height = trackInfoText.Font.Height;
-            pictureBox2.Top = trackInfoText.Top + trackInfoText.Height;
-            pictureBox2.Height = groupBox1.Height - pictureBox2.Top-2;
             groupBox1.Font = new Font(TrackInfoViewFont.FontFamily, (float)Math.Max(this.Font.Size, TrackInfoViewFont.Size*0.6));
-            ResetSpectrumRenderer();
+            ResetSpectrumRenderer(true);
         }
 
         #region Application core event handler
@@ -2356,7 +2356,6 @@ namespace Gageas.Lutea.DefaultUI
             this.hotkey_PrevTrack = pref.Hotkey_PrevTrack;
             ResetHotKeys();
             ResetPlaylistView();
-            ResetSpectrumRenderer(true);
             ResetTrackInfoView();
         }
 
