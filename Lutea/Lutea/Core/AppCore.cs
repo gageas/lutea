@@ -236,18 +236,9 @@ namespace Gageas.Lutea.Core
             uint read_size = read & 0x7fffffff;
             if (EnableReplayGain)
             {
-                ApplyGain(buffer, read_size, gaindB);
+                LuteaHelper.ApplyGain(buffer, read_size, gaindB);
             }
             return read;
-        }
-        private unsafe static void ApplyGain(IntPtr buffer, uint length, double gaindB)
-        {
-            double gain_l = Math.Pow(10.0, gaindB / 20.0);
-            float* dest = (float*)buffer;
-            for (int i = 0, l = (int)(length / sizeof(float)); i < l; i++)
-            {
-                dest[i] *= (float)gain_l;
-            }
         }
 
         /// <summary>
