@@ -140,8 +140,7 @@
             // 
             // xTrackBar1
             // 
-            this.xTrackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.xTrackBar1.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.xTrackBar1.Enabled = false;
             this.xTrackBar1.Location = new System.Drawing.Point(483, 0);
             this.xTrackBar1.Margin = new System.Windows.Forms.Padding(0);
@@ -240,7 +239,7 @@
             this.toolStripSeparator5,
             this.clearSortOrderToolStripMenuItem});
             this.playlistViewContextMenuStrip.Name = "playlistViewContextMenuStrip";
-            this.playlistViewContextMenuStrip.Size = new System.Drawing.Size(209, 198);
+            this.playlistViewContextMenuStrip.Size = new System.Drawing.Size(209, 176);
             // 
             // ScrollToPlayingToolStripMenuItem
             // 
