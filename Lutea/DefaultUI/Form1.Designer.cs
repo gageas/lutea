@@ -951,6 +951,7 @@
             this.Controls.Add(this.xTrackBar1);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.statusStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "DefaultUIForm";
             this.Text = "Form1";
