@@ -42,8 +42,8 @@ namespace Gageas{
 					delete [] buffer;
 					return;
 				}
-				delete [] buffer;
 				sqlite3_result_text16(ctx, buffer, maplen*2, SQLITE_TRANSIENT);
+				delete [] buffer;
 			};
 
 			/* H2k6 current_timestamp64‘Š“–‚ÌSQLŠÖ” */
