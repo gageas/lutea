@@ -249,6 +249,22 @@ namespace Gageas.Lutea.DefaultUI
             ResetSpectrumRenderer(true);
         }
 
+        private void ResetProgressBar()
+        {
+            xTrackBar1.Anchor = AnchorStyles.None;
+            var items = menuStrip1.Items;
+            var widthSum = menuStrip1.Padding.Left + menuStrip1.Margin.Left;
+            for (int i = 0; i < items.Count; i++)
+            {
+                widthSum += items[i].Width;
+            }
+            xTrackBar1.Left = widthSum;
+            xTrackBar1.Width = this.ClientSize.Width - widthSum;
+            xTrackBar1.Height = menuStrip1.Height;
+            xTrackBar1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            xTrackBar1.Update();
+        }
+
         #region Application core event handler
         private void trackChange(int index)
         {
@@ -477,17 +493,8 @@ namespace Gageas.Lutea.DefaultUI
             toolStripComboBox2.GetControl.SelectedIndex = 0;
             toolStripComboBox2.GetControl.SelectedIndexChanged += new EventHandler(playbackOrderComboBox_SelectedIndexChanged);
 
-            var items = menuStrip1.Items;
-            var widthSum = menuStrip1.Padding.Left + menuStrip1.Margin.Left;
-            for (int i = 0; i < items.Count; i++)
-            {
-                widthSum += items[i].Width;
-            }
-            xTrackBar1.Left = widthSum;
-            xTrackBar1.Width = this.ClientSize.Width - widthSum;
-            xTrackBar1.Height = menuStrip1.Height;
-
             menuStrip1.SetBackgroundColorSolid(SystemColors.Control);
+            ResetProgressBar();
  
             yomigana = new Yomigana(Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "yomiCache", this);
             InitFilterView();
