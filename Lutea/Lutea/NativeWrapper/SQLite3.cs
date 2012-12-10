@@ -28,6 +28,11 @@ namespace Gageas.Wrapper.SQLite3
         private IntPtr dbPtrForLock = (IntPtr)0;
         bool locked = false;
 
+        internal IntPtr GetHandle()
+        {
+            return dbPtr;
+        }
+
         private static string ReadStringFromLPWSTR(IntPtr lpwstr)
         {
             return (lpwstr == IntPtr.Zero ? null : Marshal.PtrToStringUni(lpwstr));
@@ -371,81 +376,6 @@ namespace Gageas.Wrapper.SQLite3
                 return o;
             }
         }
-        #region ユーザ定義関数(create_function)関係
-        /*
-         * 
-         * sqlite側に直接登録するのはproxy関数である。
-         * proxy関数はuser_dataをもとにユーザ定義関数の実体を呼び出す。
-         * ユーザ定義関数の引数はstringの配列
-         * 戻り値は任意のオブジェクトである。
-         * 戻り値は型によって適当なデータ型としてSQLite側に返される。
-         * 
-         */
-        // Userが追加した関数を表す構造体
-        struct SQLite3UserDefineFunctionObject
-        {
-            public SQLite3UserDefineFunction func;
-            public _XFunc proxy;
-            public string name;
-        }
-        // Userが追加した関数を保持(GC対策)
-        private List<SQLite3UserDefineFunctionObject> userDefinedFunctions = new List<SQLite3UserDefineFunctionObject>();
-
-        // ネイティブライブラリからのコールバック関数のためのデリゲート(内部用)
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate void _XFunc(IntPtr sqlite3_context, int n, IntPtr sqlite3_value);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate void _XStep(IntPtr sqlite3_context, int n, IntPtr sqlite3_value);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate void _XFinal(IntPtr sqlite3_context);
-
-        // ユーザ定義関数のデリゲート
-        public delegate object SQLite3UserDefineFunction(string[] arg);
-
-        public int createFunction(string name, int args, SQLite3.TextEncoding encoding, SQLite3UserDefineFunction xFunc)
-        {
-            _XFunc proxy = new _XFunc(xFuncProxy);
-            SQLite3UserDefineFunctionObject strt = new SQLite3UserDefineFunctionObject { func = xFunc, proxy = proxy, name = name };
-            userDefinedFunctions.Add(strt);
-            return _sqlite3_create_function16(dbPtr, name, args, (int)encoding, (IntPtr)userDefinedFunctions.IndexOf(strt), proxy, null, null);
-        }
-
-        // ユーザ定義関数の実行を中継する
-        void xFuncProxy(IntPtr sqlite3_context, int n, IntPtr sqlite3_value)
-        {
-            // 引数を取得
-            string[] arg = new string[n];
-            for (int i = 0; i < n; i++)
-            {
-                String str = ReadStringFromLPWSTR(sqlite3_value_text16(Marshal.ReadIntPtr(sqlite3_value, i * IntPtr.Size)));
-                arg[i] = str;
-            }
-
-            // ユーザ定義関数の実体を取得し、実行
-            int id = sqlite3_user_data(sqlite3_context).ToInt32();
-            object ret = userDefinedFunctions[id].func(arg);
-            if (ret == null)
-            {
-                sqlite3_result_null(sqlite3_context);
-            }
-            else if ((ret is double) || (ret is float))
-            {
-                sqlite3_result_double(sqlite3_context, (double)ret);
-            }
-            else if (ret is Int64)
-            {
-                sqlite3_result_int64(sqlite3_context, (Int64)ret);
-            }
-            else if (ret is Int32)
-            {
-                sqlite3_result_int(sqlite3_context, (int)ret);
-            }
-            else if (ret is string)
-            {
-                sqlite3_result_text16(sqlite3_context, (string)ret, -1, SQLite3.SQLITE_TRANSIENT);
-            }
-        }
-        #endregion
 
         #region DLL Import
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_open16", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
@@ -516,10 +446,6 @@ namespace Gageas.Wrapper.SQLite3
         
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_errmsg16", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr sqlite3_errmsg16(IntPtr db);
-
-        [DllImport("sqlite3.dll", EntryPoint = "sqlite3_create_function16", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
-        private static extern int _sqlite3_create_function16(IntPtr db, string zFunctionName, int nArg, int eTextRep, IntPtr pApp, _XFunc xfunc, _XStep xStep, _XFinal xFinal);
-
         #endregion
     }
 }

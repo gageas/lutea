@@ -131,6 +131,8 @@ namespace Gageas.Lutea
 
     public class MusicLibrary
     {
+        private Migemo migemo = null;
+
         public static String GetCreateSchema(Column[] columns)
         {
             return "CREATE TABLE IF NOT EXISTS list(" + String.Join(" , ", columns.Select(_ =>
@@ -232,46 +234,11 @@ namespace Gageas.Lutea
                 return null;
             }
 
-            // FIXME:なんかExpectがうまくうごかないので
             return Columns.Where(_ => { return !LuteaMinimumColumns.Select((e) => e.Name).Contains(_.Name); }).ToArray();
-//            return Columns.Except(LuteaMinimumColumns).ToArray();
         }
 
         public readonly Column[] Columns = null;
 
-        class KVPool<K,V>{
-            public delegate V ValueGenerator(K src);
-
-            private Dictionary<K,V> pool = new Dictionary<K,V>();
-            private int poolLimit;
-            private ValueGenerator valueGenerator;
-
-            public KVPool(ValueGenerator valueGenerator,int poolLimit = 16) // TODO: poolが一定数を超えたら全クリアだが、ちゃんと古いものから消すとかするといいかもね
-            {
-                this.poolLimit = poolLimit;
-                this.valueGenerator = valueGenerator;
-            }
-            public V Get(K src){
-                V value = default(V);
-                if (pool.ContainsKey(src))
-                {
-                    value = pool[src];
-                }
-                else
-                {
-                    try
-                    {
-                        value = valueGenerator(src);
-                    }
-                    catch
-                    {
-                    }
-                    if (pool.Count > poolLimit) pool.Clear();
-                    pool[src] = value;
-                }
-                return value;
-            }
-        }
         private static System.DateTime UnixEpoch = new System.DateTime(1970, 1, 1, 0, 0, 0);
         public bool MigemoAvailable
         {
@@ -298,7 +265,6 @@ namespace Gageas.Lutea
             try
             {
                 migemo = new Migemo(@"dict\migemo-dict");
-                migemoRePool = new KVPool<string, Regex>((src) => migemo.GetRegex(src, RegexOptions.IgnoreCase | RegexOptions.Multiline));
             }
             catch { }
             this.dbPath = dbPath;
@@ -411,18 +377,31 @@ namespace Gageas.Lutea
             return null;
         }
 
+        private ValueType migemoGenerator(ValueType srcu8, Int32 length)
+        {
+            if (migemo == null) return IntPtr.Zero;
+
+            byte[] buffer = new byte[length+1];
+            System.Runtime.InteropServices.Marshal.Copy((IntPtr)srcu8, buffer, 0,(int)length);
+            var src = Encoding.UTF8.GetString(buffer);
+            var query = migemo.Query(src);
+            var destbytes = Encoding.UTF8.GetBytes(query);
+            var destbuf = System.Runtime.InteropServices.Marshal.AllocHGlobal(destbytes.Count() + 1);
+            System.Runtime.InteropServices.Marshal.WriteByte(destbuf, destbytes.Count(), 0);
+            System.Runtime.InteropServices.Marshal.Copy(destbytes, 0, destbuf, destbytes.Count());
+            return destbuf;
+        }
+
+        // ネイティブ側から呼び出されるデリゲート．GCに回収されないように参照を保持する．
+        private Core.LuteaHelper.MigemoGenerator migemoGeneratorDlg;
+
         public SQLite3DB Connect(bool lockable){
             SQLite3DB db = new SQLite3DB(dbPath, lockable);
             db.EnableLoadExtension = true;
             db.Exec("PRAGMA temp_store = MEMORY;");
             db.Exec("PRAGMA encoding = \"UTF-8\"; ");
-            db.createFunction("regexp", 2, SQLite3.TextEncoding.SQLITE_UTF16, sqlite_regexp);
-            db.createFunction("current_timestamp64", 0, SQLite3.TextEncoding.SQLITE_ANY, (o) => currentTimestamp);
-            db.createFunction("LCMapUpper", 1, SQLite3.TextEncoding.SQLITE_UTF16, (o) => o[0] == null ? "" : o[0].ToString().LCMapUpper());
-            if (migemo != null)
-            {
-                db.createFunction("migemo", 2, SQLite3.TextEncoding.SQLITE_UTF16, sqlite_migemo);
-            }
+            migemoGeneratorDlg = migemoGenerator;
+            Lutea.Core.LuteaHelper.RegisterSQLiteUserFunctions(db.GetHandle(), new Core.LuteaHelper.MigemoGenerator(migemoGeneratorDlg));
             return db;
         }
 
@@ -430,42 +409,6 @@ namespace Gageas.Lutea
         {
             SQLite3DB db = this.Connect(true);
             return db.Prepare("");
-        }
-
-        // SQLiteから使えるmigemo関数の定義
-        private Migemo migemo = null;
-        KVPool<string,Regex> migemoRePool;
-        public object sqlite_migemo(string[] args)
-        {
-            if (args[0] == null || args[1] == null) return 0;
-            if (args[1].LCMapUpper().Contains(args[0].LCMapUpper())) return 1;
-            if (migemo == null) return 0;
-            var re = migemoRePool.Get(args[0]);
-            if (re == null) return 0;
-            return re.Match(args[1]).Success ? 1 : 0;
-        }
-
-
-        // SQLiteから使えるregexp関数の定義
-        KVPool<string, Regex> regexRePool = new KVPool<string, Regex>((src) => {
-            try
-            {
-                Match match = new Regex(@"^\/(?<1>.+)\/(?<2>[a-z]*)$").Match(src);
-                RegexOptions op = RegexOptions.Multiline;
-                if (match.Groups[2].Value.IndexOf('i') >= 0)
-                {
-                    op |= RegexOptions.IgnoreCase;
-                }
-                return new Regex(match.Groups[1].Value,op);
-            }catch(Exception){}
-            return null;
-        });
-        public object sqlite_regexp(string[] args)
-        {
-            if (args[0] == null || args[1] == null) return 0;
-            var re = regexRePool.Get(args[0]);
-            if (re == null) return 0;
-            return re.Match(args[1]).Success ? 1 : 0;
         }
     }
 }
