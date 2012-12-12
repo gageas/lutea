@@ -226,6 +226,11 @@ namespace Gageas.Lutea.DefaultUI
 
         private void ResetSpectrumRenderer(bool forceReset = false)
         {
+            if (InvokeRequired)
+            {
+                this.Invoke((Action)(() => { ResetSpectrumRenderer(forceReset); }));
+                return;
+            }
             if (forceReset && SpectrumRenderer != null)
             {
                 SpectrumRenderer.Abort();
@@ -236,8 +241,11 @@ namespace Gageas.Lutea.DefaultUI
             {
                 pictureBox2.Top = trackInfoText.Top + trackInfoText.Height;
                 pictureBox2.Height = groupBox1.Height - pictureBox2.Top - 2;
-                SpectrumRenderer = new SpectrumRenderer(this.pictureBox2, FFTLogarithmic, FFTNum, SpectrumColor1, SpectrumColor2, SpectrumMode);
-                SpectrumRenderer.Start();
+                if (pictureBox2.Height > 0)
+                {
+                    SpectrumRenderer = new SpectrumRenderer(this.pictureBox2, FFTLogarithmic, FFTNum, SpectrumColor1, SpectrumColor2, SpectrumMode);
+                    SpectrumRenderer.Start();
+                }
             }
         }
 
@@ -273,139 +281,146 @@ namespace Gageas.Lutea.DefaultUI
             var genre = Controller.Current.MetaData("tagGenre");
             groupBox1.ContextMenuStrip = null;
             ContextMenuStrip cms = null;
-            this.Invoke((MethodInvoker)(() =>
+            try
             {
-                xTrackBar1.Max = Controller.Current.Length;
-                selectRow(index);
-                emphasizeRow(index);
-                coverArtImageLoaderThread.Interrupt();
-                if (index < 0)
+                this.Invoke((MethodInvoker)(() =>
                 {
-                    trackInfoText.Text = "";
-                    groupBox1.Text = "";
-                    setFormTitle(null);
-                    setStatusText("Ready ");
-                    toolStripStatusLabel1.Text = "";
-                    if (SpectrumRenderer != null)
+                    xTrackBar1.Max = Controller.Current.Length;
+                    selectRow(index);
+                    emphasizeRow(index);
+                    coverArtImageLoaderThread.Interrupt();
+                    if (index < 0)
                     {
-                        SpectrumRenderer.Abort();
-                        SpectrumRenderer.Clear();
-                        SpectrumRenderer = null;
+                        trackInfoText.Text = "";
+                        groupBox1.Text = "";
+                        setFormTitle(null);
+                        setStatusText("Ready ");
+                        toolStripStatusLabel1.Text = "";
+                        if (SpectrumRenderer != null)
+                        {
+                            SpectrumRenderer.Abort();
+                            SpectrumRenderer.Clear();
+                            SpectrumRenderer = null;
+                        }
+                        if (TaskbarExt != null)
+                        {
+                            TaskbarExt.Taskbar.SetProgressState(this.Handle, TaskbarExtension.TbpFlag.NoProgress);
+                        }
+                        var hIcon = hIconForWindowIcon_Large;
+                        SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
+                        hIconForWindowIcon_Large = IntPtr.Zero;
+                        if (hIcon != IntPtr.Zero)
+                        {
+                            DestroyIcon(hIcon);
+                        }
+                        xTrackBar1.Value = 0;
+                        xTrackBar1.ThumbText = null;
+                        xTrackBar1.Enabled = false;
                     }
-                    if (TaskbarExt != null)
+                    else
                     {
-                        TaskbarExt.Taskbar.SetProgressState(this.Handle, TaskbarExtension.TbpFlag.NoProgress);
-                    }
-                    var hIcon = hIconForWindowIcon_Large;
-                    SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
-                    hIconForWindowIcon_Large = IntPtr.Zero;
-                    if (hIcon != IntPtr.Zero)
-                    {
-                        DestroyIcon(hIcon);
-                    }
-                    xTrackBar1.Value = 0;
-                    xTrackBar1.ThumbText = null;
-                    xTrackBar1.Enabled = false;
-                }
-                else
-                {
-                    setStatusText("Playing " + Controller.Current.StreamFilename);
-                    groupBox1.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData("tagTracknumber"))).Replace("&", "&&");
-                    trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}",
-                        Controller.Current.MetaData("tagTitle"),
-                        Util.Util.FormatIfExists(" - {0}",
-                           Controller.Current.MetaData("tagArtist"))
-                        );
-                    setFormTitle(Controller.Current.MetaData("tagTitle") + Util.Util.FormatIfExists(" / {0}", Controller.Current.MetaData("tagArtist")));
-                    cms = new ContextMenuStrip();
+                        setStatusText("Playing " + Controller.Current.StreamFilename);
+                        groupBox1.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData("tagTracknumber"))).Replace("&", "&&");
+                        trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}",
+                            Controller.Current.MetaData("tagTitle"),
+                            Util.Util.FormatIfExists(" - {0}",
+                               Controller.Current.MetaData("tagArtist"))
+                            );
+                        setFormTitle(Controller.Current.MetaData("tagTitle") + Util.Util.FormatIfExists(" / {0}", Controller.Current.MetaData("tagArtist")));
+                        cms = new ContextMenuStrip();
 
-                    xTrackBar1.Enabled = true;
-                }
-                listView2.Items.Clear();
-            }));
-            if (index < 0) return;
+                        xTrackBar1.Enabled = true;
+                    }
+                    listView2.Items.Clear();
+                }));
+                if (index < 0) return;
 
-            ResetSpectrumRenderer();
-            var item_splitter = new char[] { '；', ';', '，', ',', '／', '/', '＆', '&', '・', '･', '、', '､', '（', '(', '）', ')', '\n', '\t' };
-            var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList();
-            var subGenre = genre.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList().FindAll(e => e.Length > 1);
-            var q = String.Join(" OR ", (from __ in from _ in subArtists select _.LCMapUpper().Trim() select String.Format(__.Length > 1 ? @" LCMapUpper(tagArtist) LIKE '%{0}%' " : @" LCMapUpper(tagArtist) = '{0}' ", __.EscapeSingleQuotSQL())).ToArray());
-            object[][] related_albums = null;
-            object[][] multi_disc_albums = null;
-            using (var db = Controller.GetDBConnection())
-            {
-                // 関連アルバムを引っ張ってくる
-                if (subArtists.Count > 0)
+                ResetSpectrumRenderer();
+                var item_splitter = new char[] { '；', ';', '，', ',', '／', '/', '＆', '&', '・', '･', '、', '､', '（', '(', '）', ')', '\n', '\t' };
+                var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var subGenre = genre.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList().FindAll(e => e.Length > 1);
+                var q = String.Join(" OR ", (from __ in from _ in subArtists select _.LCMapUpper().Trim() select String.Format(__.Length > 1 ? @" LCMapUpper(tagArtist) LIKE '%{0}%' " : @" LCMapUpper(tagArtist) = '{0}' ", __.EscapeSingleQuotSQL())).ToArray());
+                object[][] related_albums = null;
+                object[][] multi_disc_albums = null;
+                using (var db = Controller.GetDBConnection())
                 {
-                    using (var stmt = db.Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE tagAlbum IN (SELECT tagAlbum FROM list WHERE " + q + " ) GROUP BY tagAlbum ORDER BY COUNT(*) DESC;"))
+                    // 関連アルバムを引っ張ってくる
+                    if (subArtists.Count > 0)
                     {
-                        related_albums = stmt.EvaluateAll();
+                        using (var stmt = db.Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE tagAlbum IN (SELECT tagAlbum FROM list WHERE " + q + " ) GROUP BY tagAlbum ORDER BY COUNT(*) DESC;"))
+                        {
+                            related_albums = stmt.EvaluateAll();
+                        }
+                    }
+                    // ディスクnに分かれてる感じのアルバムを引っ張ってくる
+                    using (var stmt = db.Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE LCMapUpper(tagAlbum) LIKE '" + new Regex(@"\d").Replace(album.LCMapUpper(), "_").EscapeSingleQuotSQL() + "' GROUP BY LCMapUpper(tagAlbum);"))
+                    {
+                        multi_disc_albums = stmt.EvaluateAll();
                     }
                 }
-                // ディスクnに分かれてる感じのアルバムを引っ張ってくる
-                using (var stmt = db.Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE LCMapUpper(tagAlbum) LIKE '" + new Regex(@"\d").Replace(album.LCMapUpper(), "_").EscapeSingleQuotSQL() + "' GROUP BY LCMapUpper(tagAlbum);"))
+
+                this.Invoke((MethodInvoker)(() =>
                 {
-                    multi_disc_albums = stmt.EvaluateAll();
-                }
+                    var cms_album = new ToolStripMenuItem("Album: " + album.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagAlbum = '" + album.EscapeSingleQuotSQL() + "';"); });
+                    var cms_artist = new ToolStripMenuItem("Artist: " + artist.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagArtist = '" + artist.EscapeSingleQuotSQL() + "';"); });
+                    var cms_genre = new ToolStripMenuItem("Genre: " + genre.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagGenre = '" + genre.EscapeSingleQuotSQL() + "';"); });
+                    cms.Items.Add(cms_album);
+                    cms.Items.Add(cms_artist);
+                    cms.Items.Add(cms_genre);
+                    cms.Items.Add(new ToolStripSeparator());
+
+                    // 関連アルバムを登録
+                    if (related_albums != null)
+                    {
+                        foreach (var _ in related_albums)
+                        {
+                            var album_title = _[0].ToString();
+                            if (string.IsNullOrEmpty(album_title)) continue;
+                            var query = "SELECT * FROM list WHERE tagAlbum = '" + album_title.EscapeSingleQuotSQL() + "';";
+                            cms.Items.Add("Album: [" + _[1].ToString() + "]" + album_title.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist(query); });
+                            var item = new ListViewItem(new string[] { "", _[0].ToString() });
+                            item.Tag = query;
+                            listView2.Items.Add(item);
+                        }
+                    }
+
+                    if (multi_disc_albums.Length > 1)
+                    {
+                        foreach (var _ in multi_disc_albums)
+                        {
+                            var album_title = _[0].ToString();
+                            if (string.IsNullOrEmpty(album_title)) continue;
+                            cms_album.DropDownItems.Add("Album: [" + _[1].ToString() + "]" + album_title.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagAlbum = '" + album_title + "';"); });
+                        }
+                    }
+
+                    // 各サブアーティストごとのクエリを作る
+                    if (subArtists.Count > 1)
+                    {
+                        foreach (var _ in subArtists)
+                        {
+                            var artist_title = _;
+                            cms_artist.DropDownItems.Add(artist_title.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagArtist) like '%" + artist_title.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); });
+                        }
+                    }
+                    groupBox1.ContextMenuStrip = cms;
+
+                    // 各サブジャンルごとのクエリを作る
+                    if (subGenre.Count > 1)
+                    {
+                        foreach (var _ in subGenre)
+                        {
+                            var genre_title = _;
+                            cms_genre.DropDownItems.Add(genre_title.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagGenre) like '%" + genre_title.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); });
+                        }
+                    }
+                    groupBox1.ContextMenuStrip = cms;
+                }));
             }
-
-            this.Invoke((MethodInvoker)(() =>
+            catch (Exception e)
             {
-                var cms_album = new ToolStripMenuItem("Album: " + album.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagAlbum = '" + album.EscapeSingleQuotSQL() + "';"); });
-                var cms_artist = new ToolStripMenuItem("Artist: " + artist.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagArtist = '" + artist.EscapeSingleQuotSQL() + "';"); });
-                var cms_genre = new ToolStripMenuItem("Genre: " + genre.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagGenre = '" + genre.EscapeSingleQuotSQL() + "';"); });
-                cms.Items.Add(cms_album);
-                cms.Items.Add(cms_artist);
-                cms.Items.Add(cms_genre);
-                cms.Items.Add(new ToolStripSeparator());
-
-                // 関連アルバムを登録
-                if (related_albums != null)
-                {
-                    foreach (var _ in related_albums)
-                    {
-                        var album_title = _[0].ToString();
-                        if (string.IsNullOrEmpty(album_title)) continue;
-                        var query = "SELECT * FROM list WHERE tagAlbum = '" + album_title.EscapeSingleQuotSQL() + "';";
-                        cms.Items.Add("Album: [" + _[1].ToString() + "]" + album_title.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist(query); });
-                        var item = new ListViewItem(new string[] { "", _[0].ToString() });
-                        item.Tag = query;
-                        listView2.Items.Add(item);
-                    }
-                }
-
-                if (multi_disc_albums.Length > 1)
-                {
-                    foreach (var _ in multi_disc_albums)
-                    {
-                        var album_title = _[0].ToString();
-                        if (string.IsNullOrEmpty(album_title)) continue;
-                        cms_album.DropDownItems.Add("Album: [" + _[1].ToString() + "]" + album_title.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagAlbum = '" + album_title + "';"); });
-                    }
-                }
-
-                // 各サブアーティストごとのクエリを作る
-                if (subArtists.Count > 1)
-                {
-                    foreach (var _ in subArtists)
-                    {
-                        var artist_title = _;
-                        cms_artist.DropDownItems.Add(artist_title.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagArtist) like '%" + artist_title.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); });
-                    }
-                }
-                groupBox1.ContextMenuStrip = cms;
-
-                // 各サブジャンルごとのクエリを作る
-                if (subGenre.Count > 1)
-                {
-                    foreach (var _ in subGenre)
-                    {
-                        var genre_title = _;
-                        cms_genre.DropDownItems.Add(genre_title.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagGenre) like '%" + genre_title.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); });
-                    }
-                }
-                groupBox1.ContextMenuStrip = cms;
-            }));
+                Logger.Log(e);
+            }
         }
 
         private void playbackErrorOccured()
@@ -1201,8 +1216,8 @@ namespace Gageas.Lutea.DefaultUI
                 // pictureBoxの新しいサイズを取得
                 var lambda = (MethodInvoker)(() =>
                 {
-                    CoverArtWidth = pictureBox1.Width;
-                    CoverArtHeight = pictureBox1.Height;
+                    CoverArtWidth = Math.Max(1, pictureBox1.Width);
+                    CoverArtHeight = Math.Max(1, pictureBox1.Height);
                     composed = new Bitmap(CoverArtWidth, CoverArtHeight);
                 });
                 if (this.InvokeRequired)
@@ -1744,6 +1759,7 @@ namespace Gageas.Lutea.DefaultUI
         private void splitContainer3_SplitterMoved(object sender, SplitterEventArgs e)
         {
             splitContainer4.SplitterDistance = splitContainer3.SplitterDistance;
+            ResetSpectrumRenderer();
         }
         #endregion
 
@@ -2475,7 +2491,7 @@ namespace Gageas.Lutea.DefaultUI
                 if (tasks.Key != null)
                 {
                     var album = tasks.Key;
-                    if (coverArts.ContainsKey(album))
+                    if ((CoverArtSizeInPlaylistView == 0) || (coverArts.ContainsKey(album)))
                     {
                         return;
                     }

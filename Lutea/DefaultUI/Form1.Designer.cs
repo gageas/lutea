@@ -626,10 +626,12 @@
             // splitContainer1.Panel1
             // 
             this.splitContainer1.Panel1.Controls.Add(this.splitContainer2);
+            this.splitContainer1.Panel1MinSize = 0;
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer3);
+            this.splitContainer1.Panel2MinSize = 0;
             this.splitContainer1.Size = new System.Drawing.Size(801, 401);
             this.splitContainer1.SplitterDistance = 223;
             this.splitContainer1.TabIndex = 99;
@@ -715,10 +717,12 @@
             // splitContainer3.Panel1
             // 
             this.splitContainer3.Panel1.Controls.Add(this.splitContainer4);
+            this.splitContainer3.Panel1MinSize = 0;
             // 
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.tabControl1);
+            this.splitContainer3.Panel2MinSize = 0;
             this.splitContainer3.Size = new System.Drawing.Size(574, 401);
             this.splitContainer3.SplitterDistance = 120;
             this.splitContainer3.TabIndex = 0;
