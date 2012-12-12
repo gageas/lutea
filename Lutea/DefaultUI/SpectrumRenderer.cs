@@ -50,7 +50,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (DestPictureBox != null)
             {
-                var img = new Bitmap(DestPictureBox.Width, DestPictureBox.Height);
+                var img = new Bitmap(Math.Max(1, DestPictureBox.Width), Math.Max(1, DestPictureBox.Height));
                 using (var g = Graphics.FromImage(img))
                 {
                     g.Clear(DestPictureBox.Parent.BackColor);
@@ -213,7 +213,6 @@ namespace Gageas.Lutea.DefaultUI
                         }
                     }
                 }
-
             }
         }
     }
