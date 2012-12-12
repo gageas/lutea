@@ -78,12 +78,12 @@ namespace Gageas{
 					if((pattern.size() >= 2) && (pattern[pattern.size()-1] == '/')){
 						re2::RE2::Options ops;
 						ops.set_case_sensitive(true);
-						re2::RE2* re = new re2::RE2(pattern.substr(1, pattern.size()-2), ops);
+						re2::RE2* re = new re2::RE2("(?m)" + pattern.substr(1, pattern.size()-2), ops);
 						regex_cache[pattern] = re;
 					}else if((pattern.size() >= 3) && (pattern[pattern.size()-2] == '/') && (pattern[pattern.size()-1] == 'i')) {
 						re2::RE2::Options ops;
 						ops.set_case_sensitive(false);
-						re2::RE2* re = new re2::RE2(pattern.substr(1, pattern.size()-3), ops);
+						re2::RE2* re = new re2::RE2("(?m)" + pattern.substr(1, pattern.size()-3), ops);
 						regex_cache[pattern] = re;
 					}else{
 						sqlite3_result_int( ctx, 0 );
