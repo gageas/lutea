@@ -142,7 +142,7 @@ namespace Gageas.Lutea.DefaultUI
             InitializeComponent();
             Thread.CurrentThread.Priority = ThreadPriority.Normal;
             trackInfoText.Text = "";
-            textBox1.ForeColor = System.Drawing.SystemColors.WindowText;
+            queryComboBox.ForeColor = System.Drawing.SystemColors.WindowText;
             toolStripStatusLabel1.Text = "";
             PlaylistViewFont = this.listView1.Font;
             TrackInfoViewFont = this.trackInfoText.Font;
@@ -513,7 +513,7 @@ namespace Gageas.Lutea.DefaultUI
  
             yomigana = new Yomigana(Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "yomiCache", this);
             InitFilterView();
-            textBox1.Select();
+            queryComboBox.Select();
         }
 
         private bool quitFromCore = false;
@@ -700,17 +700,27 @@ namespace Gageas.Lutea.DefaultUI
             int index = Controller.Current.IndexInPlaylist;
             if (sql != null)
             {
-                if (sql == textBox1.Text.Replace(@"\n", "\n"))
+                if (sql == queryComboBox.Text.Replace(@"\n", "\n"))
                 {
                     if (itemCount > 0)
                     {
-                        textBox1.BackColor = statusColor[(int)QueryStatus.Normal];
+                        queryComboBox.BackColor = statusColor[(int)QueryStatus.Normal];
                         setStatusText("Found " + itemCount + " Tracks.");
+
                     }
                     else
                     {
-                        textBox1.BackColor = statusColor[(int)QueryStatus.Error];
+                        queryComboBox.BackColor = statusColor[(int)QueryStatus.Error];
                     }
+                }
+                queryComboBox.Items.Remove(sql);
+                if (sql.Length > 0)
+                {
+                    queryComboBox.Items.Add(sql);
+                }
+                while (queryComboBox.Items.Count > 3)
+                {
+                    queryComboBox.Items.RemoveAt(0);
                 }
             }
 
@@ -779,8 +789,8 @@ namespace Gageas.Lutea.DefaultUI
             if (node.Tag is PlaylistEntryFile)
             {
                 var ent = (PlaylistEntryFile)node.Tag;
-                textBox1.Text = null;
-                textBox1.Text = ent.sql.Replace("\n", @"\n");
+                queryComboBox.Text = null;
+                queryComboBox.Text = ent.sql.Replace("\n", @"\n");
             }
         }
         #endregion
@@ -1175,8 +1185,8 @@ namespace Gageas.Lutea.DefaultUI
         {
             try
             {
-                textBox1.BackColor = statusColor[(int)QueryStatus.Waiting];
-                Controller.CreatePlaylist(textBox1.Text.Replace(@"\n", "\n"));
+                queryComboBox.BackColor = statusColor[(int)QueryStatus.Waiting];
+                Controller.CreatePlaylist(queryComboBox.Text.Replace(@"\n", "\n"));
             }
             catch (Exception)
             {
@@ -1431,7 +1441,7 @@ namespace Gageas.Lutea.DefaultUI
                     }
                     break;
                 case Keys.Escape:
-                    textBox1.Select();
+                    queryComboBox.Select();
                     e.Handled = true;
                     e.SuppressKeyPress = true;
                     break;
@@ -1452,8 +1462,8 @@ namespace Gageas.Lutea.DefaultUI
                     e.SuppressKeyPress = true;
                     break;
                 case Keys.OemQuestion: // FIXME: / キーはこれでいいの？
-                    textBox1.Select();
-                    textBox1.SelectAll();
+                    queryComboBox.Select();
+                    queryComboBox.SelectAll();
                     e.Handled = true;
                     e.SuppressKeyPress = true;
                     break;
@@ -2313,7 +2323,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 setting["WindowSize"] = this.config_FormSize;
             }
-            setting["LastExecutedSQL"] = textBox1.Text;
+            setting["LastExecutedSQL"] = queryComboBox.Text;
             setting["LibraryLatestDir"] = LibraryLatestDir;
 
             setting["SpectrumMode"] = SpectrumMode;

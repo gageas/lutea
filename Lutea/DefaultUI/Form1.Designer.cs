@@ -88,7 +88,7 @@
             this.LeftToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.ContentPanel = new System.Windows.Forms.ToolStripContentPanel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.queryComboBox = new System.Windows.Forms.ComboBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.treeView1 = new System.Windows.Forms.TreeView();
@@ -587,7 +587,7 @@
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.textBox1, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.queryComboBox, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.splitContainer1, 0, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 25);
@@ -600,19 +600,19 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(801, 423);
             this.tableLayoutPanel1.TabIndex = 25;
             // 
-            // textBox1
+            // queryComboBox
             // 
-            this.textBox1.BackColor = System.Drawing.SystemColors.Window;
-            this.tableLayoutPanel1.SetColumnSpan(this.textBox1, 2);
-            this.textBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox1.Location = new System.Drawing.Point(0, 404);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(0);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(801, 19);
-            this.textBox1.TabIndex = 3;
-            this.textBox1.Text = "SELECT * FROM list ";
-            this.textBox1.TextChanged += new System.EventHandler(this.queryTextBox_TextChanged);
-            this.textBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.queryTextBox_KeyDown);
+            this.queryComboBox.BackColor = System.Drawing.SystemColors.Window;
+            this.tableLayoutPanel1.SetColumnSpan(this.queryComboBox, 2);
+            this.queryComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.queryComboBox.Location = new System.Drawing.Point(0, 404);
+            this.queryComboBox.Margin = new System.Windows.Forms.Padding(0);
+            this.queryComboBox.Name = "textBox1";
+            this.queryComboBox.Size = new System.Drawing.Size(801, 19);
+            this.queryComboBox.TabIndex = 3;
+            this.queryComboBox.Text = "SELECT * FROM list ";
+            this.queryComboBox.TextChanged += new System.EventHandler(this.queryTextBox_TextChanged);
+            this.queryComboBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.queryTextBox_KeyDown);
             // 
             // splitContainer1
             // 
@@ -1050,7 +1050,7 @@
         private System.Windows.Forms.ToolStripPanel LeftToolStripPanel;
         private System.Windows.Forms.ToolStripContentPanel ContentPanel;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.ComboBox queryComboBox;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.TreeView treeView1;
