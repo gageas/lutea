@@ -713,14 +713,13 @@ namespace Gageas.Lutea.DefaultUI
                         queryComboBox.BackColor = statusColor[(int)QueryStatus.Error];
                     }
                 }
-                queryComboBox.Items.Remove(sql);
-                if (sql.Length > 0)
+                if (!queryComboBox.Items.Contains(sql))
                 {
+                    while (queryComboBox.Items.Count > 20)
+                    {
+                        queryComboBox.Items.RemoveAt(0);
+                    }
                     queryComboBox.Items.Add(sql);
-                }
-                while (queryComboBox.Items.Count > 3)
-                {
-                    queryComboBox.Items.RemoveAt(0);
                 }
             }
 
@@ -757,10 +756,8 @@ namespace Gageas.Lutea.DefaultUI
         #region queryView utility methods
         internal void reloadDynamicPlaylist()
         {
-            char sep = System.IO.Path.DirectorySeparatorChar;
-            treeView1.Nodes.Clear();
             TreeNode folder = new TreeNode("クエリ");
-            string querydir = Controller.UserDirectory + sep + "query";
+            string querydir = Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "query";
             if (!Directory.Exists(querydir))
             {
                 Directory.CreateDirectory(querydir);
@@ -776,6 +773,7 @@ namespace Gageas.Lutea.DefaultUI
             }
             folder.Tag = new PlaylistEntryDirectory(querydir);
             folder.ImageIndex = 0;
+            treeView1.Nodes.Clear();
             DynamicPlaylist.Load(querydir, folder, null);
             treeView1.Nodes.Add(folder);
             treeView1.ExpandAll();
@@ -1031,16 +1029,6 @@ namespace Gageas.Lutea.DefaultUI
 
         #region QueryView event
         private TreeNode previouslyClicked;
-
-        private void queryView1_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (e.Button != System.Windows.Forms.MouseButtons.Left) return;
-            TreeNode node = treeView1.GetNodeAt(e.X, e.Y);
-            if (node == null) return;
-            ExecQueryViewQuery(node);
-            previouslyClicked = node;
-        }
-
         private void queryView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (e.Node != previouslyClicked)
@@ -1074,6 +1062,8 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="e"></param>
         private void treeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
+            previouslyClicked = null;
+
             //　右クリックの場合
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
@@ -1109,10 +1099,63 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 // クエリの実行を抑制する
                 previouslyClicked = e.Node;
-            };
+            }
+            else if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                ExecQueryViewQuery(e.Node);
+                // クエリの実行を抑制する
+                previouslyClicked = e.Node;
+            }
 
             // クリックされたノードをSelectedNodeに設定。
             treeView1.SelectedNode = e.Node;
+        }
+
+        private void treeView1_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            DragDropEffects dde = treeView1.DoDragDrop(e.Item, DragDropEffects.All);
+        }
+
+        private void treeView1_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(TreeNode)))
+            {
+                TreeNode target = treeView1.GetNodeAt(treeView1.PointToClient(new Point(e.X, e.Y)));
+                if (target != null && target.Tag != null && target.Tag is PlaylistEntryDirectory)
+                {
+                    e.Effect = DragDropEffects.Move;
+                    treeView1.SelectedNode = target;
+                    return;
+                }
+            }
+            e.Effect = DragDropEffects.None;
+        }
+
+        private void treeView1_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(TreeNode)))
+            {
+                TreeNode target = treeView1.GetNodeAt(treeView1.PointToClient(new Point(e.X, e.Y)));
+                if (target != null && target.Tag != null && target.Tag is PlaylistEntryDirectory)
+                {
+                    PlaylistEntryDirectory ped = (PlaylistEntryDirectory)target.Tag;
+                    var tomove = (TreeNode)e.Data.GetData(typeof(TreeNode));
+                    PlaylistEntry src_pe = (PlaylistEntry)tomove.Tag;
+                    if (target == tomove) return;
+                    if (tomove.Parent == target) return;
+                    System.IO.Directory.Move(src_pe.Path, ped.Path + System.IO.Path.DirectorySeparatorChar + System.IO.Path.GetFileName(src_pe.Path));
+                    reloadDynamicPlaylist();
+                }
+            }
+        }
+
+        private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            var tn = e.Node;
+            if (tn != null && tn.Tag is PlaylistEntryFile)
+            {
+                Controller.CreatePlaylist(((PlaylistEntryFile)tn.Tag).sql, true);
+            }
         }
 
         private void newDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1159,7 +1202,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 parent = (PlaylistEntryDirectory)treeView1.SelectedNode.Tag;
             }
-            new QueryEditor(parent.path, this).ShowDialog();
+            new QueryEditor(parent.Path, this).ShowDialog();
         }
         #endregion
 

@@ -22,7 +22,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void button1_Click(object sender, EventArgs e)
         {
-            System.IO.Directory.CreateDirectory(parent.path + System.IO.Path.DirectorySeparatorChar + textBox1.Text);
+            System.IO.Directory.CreateDirectory(parent.Path + System.IO.Path.DirectorySeparatorChar + textBox1.Text);
             this.Close();
             form.reloadDynamicPlaylist();
         }
