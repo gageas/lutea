@@ -605,10 +605,10 @@
             this.queryComboBox.BackColor = System.Drawing.SystemColors.Window;
             this.tableLayoutPanel1.SetColumnSpan(this.queryComboBox, 2);
             this.queryComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.queryComboBox.Location = new System.Drawing.Point(0, 404);
+            this.queryComboBox.Location = new System.Drawing.Point(0, 403);
             this.queryComboBox.Margin = new System.Windows.Forms.Padding(0);
-            this.queryComboBox.Name = "textBox1";
-            this.queryComboBox.Size = new System.Drawing.Size(801, 19);
+            this.queryComboBox.Name = "queryComboBox";
+            this.queryComboBox.Size = new System.Drawing.Size(801, 20);
             this.queryComboBox.TabIndex = 3;
             this.queryComboBox.Text = "SELECT * FROM list ";
             this.queryComboBox.TextChanged += new System.EventHandler(this.queryTextBox_TextChanged);
@@ -632,7 +632,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer3);
             this.splitContainer1.Panel2MinSize = 0;
-            this.splitContainer1.Size = new System.Drawing.Size(801, 401);
+            this.splitContainer1.Size = new System.Drawing.Size(801, 400);
             this.splitContainer1.SplitterDistance = 223;
             this.splitContainer1.TabIndex = 99;
             this.splitContainer1.TabStop = false;
@@ -652,13 +652,14 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.dummyFilterTab);
-            this.splitContainer2.Size = new System.Drawing.Size(223, 401);
+            this.splitContainer2.Size = new System.Drawing.Size(223, 400);
             this.splitContainer2.SplitterDistance = 189;
             this.splitContainer2.TabIndex = 0;
             this.splitContainer2.TabStop = false;
             // 
             // treeView1
             // 
+            this.treeView1.AllowDrop = true;
             this.treeView1.BackColor = System.Drawing.SystemColors.Window;
             this.treeView1.ContextMenuStrip = this.queryTreeViewContextMenuStrip1;
             this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -677,9 +678,12 @@
             treeNode3});
             this.treeView1.Size = new System.Drawing.Size(223, 189);
             this.treeView1.TabIndex = 24;
+            this.treeView1.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView1_ItemDrag);
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.queryView1_AfterSelect);
             this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseClick);
-            this.treeView1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.queryView1_MouseUp);
+            this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
+            this.treeView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView1_DragDrop);
+            this.treeView1.DragOver += new System.Windows.Forms.DragEventHandler(this.treeView1_DragOver);
             // 
             // dummyFilterTab
             // 
@@ -692,7 +696,7 @@
             this.dummyFilterTab.Name = "dummyFilterTab";
             this.dummyFilterTab.Padding = new System.Drawing.Point(0, 0);
             this.dummyFilterTab.SelectedIndex = 0;
-            this.dummyFilterTab.Size = new System.Drawing.Size(223, 208);
+            this.dummyFilterTab.Size = new System.Drawing.Size(223, 207);
             this.dummyFilterTab.TabIndex = 25;
             this.dummyFilterTab.SelectedIndexChanged += new System.EventHandler(this.filterViewTabControl_SelectedIndexChanged);
             // 
@@ -701,7 +705,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 25);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(215, 179);
+            this.tabPage1.Size = new System.Drawing.Size(215, 178);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -723,7 +727,7 @@
             // 
             this.splitContainer3.Panel2.Controls.Add(this.tabControl1);
             this.splitContainer3.Panel2MinSize = 0;
-            this.splitContainer3.Size = new System.Drawing.Size(574, 401);
+            this.splitContainer3.Size = new System.Drawing.Size(574, 400);
             this.splitContainer3.SplitterDistance = 120;
             this.splitContainer3.TabIndex = 0;
             this.splitContainer3.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer3_SplitterMoved);
@@ -853,7 +857,7 @@
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.Padding = new System.Drawing.Point(0, 0);
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(574, 277);
+            this.tabControl1.Size = new System.Drawing.Size(574, 276);
             this.tabControl1.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControl1.TabIndex = 0;
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.playlistViewTabControl_SelectedIndexChanged);
@@ -864,7 +868,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Size = new System.Drawing.Size(566, 251);
+            this.tabPage2.Size = new System.Drawing.Size(566, 250);
             this.tabPage2.TabIndex = 0;
             this.tabPage2.Text = "Playlist";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -885,7 +889,7 @@
             this.listView1.Name = "listView1";
             this.listView1.OwnerDraw = true;
             this.listView1.ShowGroups = false;
-            this.listView1.Size = new System.Drawing.Size(566, 251);
+            this.listView1.Size = new System.Drawing.Size(566, 250);
             this.listView1.TabIndex = 26;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -906,7 +910,7 @@
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(566, 251);
+            this.tabPage3.Size = new System.Drawing.Size(566, 250);
             this.tabPage3.TabIndex = 1;
             this.tabPage3.Text = "Albums";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -937,7 +941,7 @@
             this.albumArtListView.Name = "albumArtListView";
             this.albumArtListView.OwnerDraw = true;
             this.albumArtListView.ShowGroups = false;
-            this.albumArtListView.Size = new System.Drawing.Size(566, 251);
+            this.albumArtListView.Size = new System.Drawing.Size(566, 250);
             this.albumArtListView.TabIndex = 0;
             this.albumArtListView.UseCompatibleStateImageBehavior = false;
             this.albumArtListView.View = System.Windows.Forms.View.SmallIcon;
@@ -969,7 +973,6 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.ResumeLayout(false);

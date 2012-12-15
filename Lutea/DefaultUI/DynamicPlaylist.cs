@@ -11,6 +11,7 @@ namespace Gageas.Lutea.DefaultUI
         public abstract void Delete();
         public abstract void Rename(string newName);
         public abstract string Name { get; }
+        public abstract string Path { get; }
         protected string replaceInvalidChar(string src)
         {
             foreach (var c in System.IO.Path.GetInvalidFileNameChars())
@@ -22,10 +23,14 @@ namespace Gageas.Lutea.DefaultUI
     }
     public class PlaylistEntryDirectory : PlaylistEntry
     {
-        public string path;
+        private string path;
         public PlaylistEntryDirectory(string path)
         {
             this.path = path;
+        }
+        public override string Path
+        {
+            get { return this.path; }
         }
         public override void Delete()
         {
@@ -64,29 +69,29 @@ namespace Gageas.Lutea.DefaultUI
             sb.AppendLine("SortOrder=" + sortOrder);
             try
             {
-                System.IO.File.WriteAllText(filename, sb.ToString(), Encoding.Default);
+                System.IO.File.WriteAllText(Path, sb.ToString(), Encoding.Default);
             }
             catch (Exception e)
             {
-                Logger.Log(e);
+                Logger.Error(e);
             }
         }
         public override void Delete()
         {
-            if (System.IO.File.Exists(filename))
+            if (System.IO.File.Exists(Path))
             {
-                System.IO.File.Delete(filename);
+                System.IO.File.Delete(Path);
             }
         }
         public override void Rename(string newName)
         {
-            System.IO.File.Move(filename, directory + System.IO.Path.DirectorySeparatorChar + replaceInvalidChar(newName) + ".q");
+            System.IO.File.Move(Path, directory + System.IO.Path.DirectorySeparatorChar + replaceInvalidChar(newName) + ".q");
         }
         public override string Name
         {
             get { return this.name; }
         }
-        public string filename
+        public override string Path
         {
             get
             {
@@ -99,9 +104,6 @@ namespace Gageas.Lutea.DefaultUI
         // 再帰的にTreeNodeに読み込む
         public static void Load(string appPath, TreeNode parent, ContextMenuStrip folderContextMenuStrip)
         {
-//            List<PlaylistEntry> list = new List<PlaylistEntry>();
-            char sep = System.IO.Path.DirectorySeparatorChar;
-
             String[] subdirs = System.IO.Directory.GetDirectories(appPath);
             foreach (string dir in subdirs)
             {
@@ -121,7 +123,6 @@ namespace Gageas.Lutea.DefaultUI
                     string sql = lines[1].Replace("SQL=", "").Replace(@"\n", "\n");
                     int sortBy = int.Parse(lines[2].Replace("SortBy=", ""));
                     int sortOrder = int.Parse(lines[3].Replace("SortOrder=", ""));
-                    Logger.Debug(sql);
                     if (lines.Length > 0)
                     {
                         string playlistname = System.IO.Path.GetFileNameWithoutExtension(filename);
