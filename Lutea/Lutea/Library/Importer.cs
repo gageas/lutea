@@ -503,7 +503,7 @@ namespace Gageas.Lutea.Library
         }
 
         private static readonly Regex regex_year = new Regex(@"(?<1>\d{4})");
-        private static readonly Regex regex_date = new Regex(@"(?<1>\d{4})[\-\/\.](?<2>\d+?)[\-\/\.](?<3>\d+?)");
+        private static readonly Regex regex_date = new Regex(@"(?<1>\d{4})[\-\/\.](?<2>\d+)[\-\/\.](?<3>\d+)");
         /// <summary>
         /// 日時っぽい文字列をYYYY/MM/DD形式に正規化する
         /// </summary>
