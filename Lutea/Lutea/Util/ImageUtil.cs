@@ -18,7 +18,7 @@ namespace Gageas.Lutea.Util
         /// <returns></returns>
         public static Image GetResizedImageWithPadding(Image image, int width, int height)
         {
-            return GetResizedImageWithPadding(image, width, height, Color.White);
+            return GetResizedImageWithPadding(image, Math.Max(width,1), Math.Max(height,1), Color.White);
         }
 
         public static Image GetResizedImageWithPadding(Image image, int width, int height, Color backgroundColor)
