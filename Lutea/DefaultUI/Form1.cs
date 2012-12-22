@@ -2905,6 +2905,29 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private void listView1_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            try
+            {
+                var count = listView1.SelectedIndices.Count;
+                if (count < 1) return;
+                List<string> filenames = new List<string>();
+                int[] indices = new int[count];
+                listView1.SelectedIndices.CopyTo(indices, 0);
+                var colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
+                for (int i = 0; i < count; i++)
+                {
+                    var s = Controller.GetPlaylistRowColumn(indices[i], colIndexOfFilename).Trim();
+                    filenames.Add(s);
+                }
+                DataObject dataObj = new DataObject(DataFormats.FileDrop, filenames.Distinct().ToArray());
+                DoDragDrop(dataObj, DragDropEffects.Copy);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+        }
 
         private object[][] Albums = null;
         private object[][] AlbumsFiltered = null;
