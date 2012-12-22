@@ -2626,10 +2626,11 @@ namespace Gageas.Lutea.DefaultUI
             var isSelected = (e.State & ListViewItemStates.Selected) != 0;
 
             int indexInGroup = 0;
-            var album = row[Controller.GetColumnIndexByName("tagAlbum")].ToString();
+            var colIdOfAlbum = Controller.GetColumnIndexByName("tagAlbum");
+            var album = row[colIdOfAlbum].ToString();
             var file_name = row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)].ToString();
-            while (album == Controller.GetPlaylistRowColumn(index - indexInGroup, Controller.GetColumnIndexByName("tagAlbum"))) indexInGroup++;
-            var isCont = album == Controller.GetPlaylistRowColumn(index + 1, Controller.GetColumnIndexByName("tagAlbum"));
+            while (album == Controller.GetPlaylistRowColumn(index - indexInGroup, colIdOfAlbum)) indexInGroup++;
+            var isCont = album == Controller.GetPlaylistRowColumn(index + 1, colIdOfAlbum);
             var isFirstTrack = indexInGroup == 1;
 
             using (var g = e.Graphics)
