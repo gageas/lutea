@@ -744,12 +744,15 @@ namespace Gageas.Lutea.DefaultUI
 
         private void SetRatingForSelected(int rate)
         {
-            string[] filenames = new string[listView1.SelectedIndices.Count];
-            for (int i = 0; i < listView1.SelectedIndices.Count; i++)
+            if (listView1.SelectedIndices.Count > 0)
             {
-                filenames[i] = Controller.GetPlaylistRowColumn(listView1.SelectedIndices[i], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name));
+                List<string> filenames = new List<string>();
+                foreach (int i in listView1.SelectedIndices)
+                {
+                    filenames.Add(Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
+                }
+                Controller.SetRating(filenames.ToArray(), rate);
             }
-            Controller.SetRating(filenames, rate);
         }
         #endregion
 
@@ -1977,9 +1980,10 @@ namespace Gageas.Lutea.DefaultUI
             if (n > 0)
             {
                 List<string> filenames = new List<string>();
-                for (int i = 0; i < n; i++)
+                int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
+                foreach(int i in listView1.SelectedIndices)
                 {
-                    filenames.Add(Controller.GetPlaylistRowColumn(listView1.SelectedIndices[i], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
+                    filenames.Add(Controller.GetPlaylistRowColumn(i, colIndexOfFilename));
                 }
                 var importer = new Importer(filenames);
                 importer.Start();
@@ -2912,13 +2916,10 @@ namespace Gageas.Lutea.DefaultUI
                 var count = listView1.SelectedIndices.Count;
                 if (count < 1) return;
                 List<string> filenames = new List<string>();
-                int[] indices = new int[count];
-                listView1.SelectedIndices.CopyTo(indices, 0);
                 var colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                for (int i = 0; i < count; i++)
+                foreach(int i in listView1.SelectedIndices)
                 {
-                    var s = Controller.GetPlaylistRowColumn(indices[i], colIndexOfFilename).Trim();
-                    filenames.Add(s);
+                    filenames.Add(Controller.GetPlaylistRowColumn(i, colIndexOfFilename).Trim());
                 }
                 DataObject dataObj = new DataObject(DataFormats.FileDrop, filenames.Distinct().ToArray());
                 DoDragDrop(dataObj, DragDropEffects.Copy);
