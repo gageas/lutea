@@ -616,12 +616,25 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// ライブラリのカラム名からカラム番号を取得する．
         /// カラム番号は0オリジン．
+        /// 今の構造では動作中にライブラリのカラムが変更されることはないため、
+        /// ディクショナリにキャッシュしている．
         /// </summary>
         /// <param name="Name">カラム名</param>
         /// <returns>カラム番号．0オリジン，エラー時は-1</returns>
+        private static Dictionary<string, int> columnIndexCache = null;
         public static int GetColumnIndexByName(string Name)
         {
-            return AppCore.Library.Columns.ToList().IndexOf(AppCore.Library.Columns.FirstOrDefault(_ => _.Name == Name));
+            if (string.IsNullOrEmpty(Name)) return -1;
+            if (columnIndexCache == null)
+            {
+                var tmp = new Dictionary<string, int>();
+                for (int i = 0; i < AppCore.Library.Columns.Length; i++)
+                {
+                    tmp.Add(AppCore.Library.Columns[i].Name, i);
+                }
+                columnIndexCache = tmp;
+            }
+            return columnIndexCache.ContainsKey(Name) ? columnIndexCache[Name] : -1;
         }
         #endregion
 
