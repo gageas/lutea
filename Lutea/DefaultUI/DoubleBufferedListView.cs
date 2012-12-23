@@ -9,13 +9,16 @@ namespace Gageas.Lutea.DefaultUI
 {
     class DoubleBufferedListView : ListView
     {
-        public const Int32 HDF_SORTDOWN = 0x0200;
-        public const Int32 HDF_SORTUP = 0x0400;
-        public const UInt32 HDI_FORMAT = 0x0004;
-        public const UInt32 HDM_GETITEM = 0x120b;
-        public const UInt32 HDM_SETITEM = 0x120c;
-        public const UInt32 LVM_GETHEADER = 0x101f;
-
+        private const Int32 HDF_SORTDOWN = 0x0200;
+        private const Int32 HDF_SORTUP = 0x0400;
+        private const UInt32 HDI_FORMAT = 0x0004;
+        private const UInt32 HDM_GETITEM = 0x120b;
+        private const UInt32 HDM_SETITEM = 0x120c;
+        private const UInt32 LVM_FIRST = 0x1000;
+        private const UInt32 LVM_GETHEADER = 0x101f;
+        private const UInt32 LVM_SETITEMSTATE = (LVM_FIRST + 43);
+        private const UInt32 LVIF_STATE = 0x0008;
+        private const UInt32 LVIS_SELECTED = 0x0002;
         private const int WM_SETFONT = 0x0030;
 
         struct HDITEM
@@ -32,6 +35,21 @@ namespace Gageas.Lutea.DefaultUI
             public UInt32 type;
             public IntPtr pvFilter;
             public UInt32 state;
+        }
+
+
+        struct LVITEM
+        {
+            public UInt32 mask;
+            public Int32 iItem;
+            public Int32 iSubItem;
+            public UInt32 state;
+            public UInt32 stateMask;
+            public string pszText;
+            public Int32 cchTextMax;
+            public Int32 iImage;
+            public IntPtr lParam;
+            /* 以下略 */
         }
 
         public DoubleBufferedListView()
@@ -97,6 +115,22 @@ namespace Gageas.Lutea.DefaultUI
 
             SendMessage(pHeader, HDM_SETITEM, pColumn, ref headerItem);
         }
+
+        /// <summary>
+        /// 全てのアイテムを選択状態にする
+        /// ループで1つずつ設定すると遅いのでこれを使う
+        /// </summary>
+        public void SelectAllItems()
+        {
+            LVITEM lvitem = new LVITEM();
+            lvitem.mask = LVIF_STATE;
+            lvitem.state = LVIS_SELECTED;
+            lvitem.stateMask = LVIS_SELECTED;
+            SendMessage(this.Handle, LVM_SETITEMSTATE, (IntPtr)(-1), ref lvitem);
+        }
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern IntPtr SendMessage(IntPtr hWnd, UInt32 uMsg, IntPtr wParam, ref LVITEM lParam);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         static extern IntPtr SendMessage(IntPtr hWnd, UInt32 uMsg, IntPtr wParam, ref HDITEM lParam);

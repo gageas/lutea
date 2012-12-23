@@ -1507,6 +1507,14 @@ namespace Gageas.Lutea.DefaultUI
                     e.Handled = true;
                     e.SuppressKeyPress = true;
                     break;
+                case Keys.A:
+                    if (e.Modifiers == Keys.Control)
+                    {
+                        listView1.SelectAllItems();
+                    }
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    break;
                 case Keys.OemQuestion: // FIXME: / キーはこれでいいの？
                     queryComboBox.Select();
                     queryComboBox.SelectAll();
