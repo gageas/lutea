@@ -46,6 +46,21 @@ namespace Gageas.Lutea.Util
             return getMinSec(roundedsec);
         }
 
+        private static readonly System.Text.RegularExpressions.Regex TimetagPattern = new System.Text.RegularExpressions.Regex(@"(\[[\d-:]+\])|(\\([^_]|(_.)))");
+        public static String[] StripLyricsTimetag(string[] lyrics)
+        {
+            if (lyrics == null) return null;
+
+            return lyrics.SelectMany(_ =>
+            {
+                if (_.Length > 0 && _[0] == '@')
+                {
+                    return new string[] { };
+                }
+                return new string[] { TimetagPattern.Replace(_, "") };
+            }).ToArray();
+        }
+
         public static IEnumerable<int> IntegerCounterIterator(int start, int end, int step = 1)
         {
             for (int i = start; i <= end; i += 1) yield return i;

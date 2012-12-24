@@ -329,6 +329,9 @@ namespace Gageas.Lutea.Tags
                             case 0x747277A9: // .wrt Writer
                                 ReadRecurse(strm, atom_size, tags, createImageObject, "COMPOSER");
                                 break;
+                            case 0x72796CA9: // .lyr Lyrics
+                                ReadRecurse(strm, atom_size, tags, createImageObject, "LYRICS");
+                                break;
                             default:
                                 break;
                         }
