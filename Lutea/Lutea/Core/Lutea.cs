@@ -404,17 +404,17 @@ namespace Gageas.Lutea.Core
             /// FIXME?: この機能はCoreに移すかも
             /// </summary>
             /// <returns></returns>
-            internal static bool coverArtImageIsInvalid = false;
+            internal static bool CacheIsOutdated = false;
             private static System.Drawing.Image coverArtImage = null;
             private static readonly object GetCoverArtImageLock = new object();
             public static System.Drawing.Image CoverArtImage()
             {
                 lock (GetCoverArtImageLock)
                 {
-                    if (coverArtImageIsInvalid)
+                    if (CacheIsOutdated)
                     {
                         coverArtImage = CoverArtImageForFile(StreamFilename);
-                        coverArtImageIsInvalid = false;
+                        CacheIsOutdated = false;
                     }
                     if (coverArtImage == null) return null;
                     lock (coverArtImage)
@@ -422,6 +422,76 @@ namespace Gageas.Lutea.Core
                         return new System.Drawing.Bitmap(coverArtImage);
                     }
                 }
+            }
+
+            public static string[] GetLyrics()
+            {
+                var _filename = Filename;
+                if (_filename == null) return null;
+                _filename = _filename.Trim();
+                // Internal cueから検索
+                try
+                {
+                    var cue = Tags.InternalCUE.Read(_filename);
+                    if (cue != null)
+                    {
+                        int track = 1;
+                        Util.Util.tryParseInt(MetaData("tagTracknumber"), ref track);
+                        if (cue.tracks.Count >= track)
+                        {
+                            track--;
+                            if (cue.tracks[track].tag.Exists(_ => _.Key == "LYRICS"))
+                            {
+                                return cue.tracks[track].tag.First(_ => _.Key == "LYRICS").Value.ToString().Replace("\r", "").Split('\n');
+                            }
+                        }
+                    }
+                }
+                catch { }
+
+                // タグから検索
+                try
+                {
+                    var tag = Tags.MetaTag.readTagByFilename(_filename, false);
+                    if (tag != null && tag.Exists(_ => _.Key == "LYRICS"))
+                    {
+                        return tag.First(_ => _.Key == "LYRICS").Value.ToString().Replace("\r\n", "\n").Replace("\r","\n").Split('\n');
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+
+                // lrcファイルから検索
+                try
+                {
+                    var asLrc = System.IO.Path.ChangeExtension(_filename, "lrc");
+                    if (System.IO.File.Exists(asLrc))
+                    {
+                        return System.IO.File.ReadAllLines(asLrc, Encoding.Default);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+
+                // txtファイルから検索
+                try
+                {
+                    var asTxt = System.IO.Path.ChangeExtension(_filename, "txt");
+                    if (System.IO.File.Exists(asTxt))
+                    {
+                        return System.IO.File.ReadAllLines(asTxt, Encoding.Default);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+
+                return null;
             }
         }
 
@@ -783,7 +853,7 @@ namespace Gageas.Lutea.Core
         internal static void _OnTrackChange(int index)
         {
             elapsedtime = -1;
-            Current.coverArtImageIsInvalid = true;
+            Current.CacheIsOutdated = true;
             if (onTrackChange == null) return;
             onTrackChange.Invoke(index);
         }

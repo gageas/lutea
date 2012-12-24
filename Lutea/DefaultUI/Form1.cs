@@ -285,6 +285,18 @@ namespace Gageas.Lutea.DefaultUI
             {
                 this.Invoke((MethodInvoker)(() =>
                 {
+                    richTextBox1.Clear();
+                    var lyrics = Controller.Current.GetLyrics();
+                    if (lyrics != null)
+                    {
+                        tabPage4.ImageIndex = 2;
+                        richTextBox1.Font = this.Font;
+                        richTextBox1.AppendText(string.Join("\n", Util.Util.StripLyricsTimetag(lyrics)));
+                    }
+                    else
+                    {
+                        tabPage4.ImageIndex = -1;
+                    }
                     xTrackBar1.Max = Controller.Current.Length;
                     selectRow(index);
                     emphasizeRow(index);
@@ -504,6 +516,11 @@ namespace Gageas.Lutea.DefaultUI
             treeView1.ImageList.Images.Add(Shell32.GetShellIcon(3, false));
             treeView1.ImageList.Images.Add(Shell32.GetShellIcon(116, false)); //70
             reloadDynamicPlaylist();
+            tabControl1.ImageList.Images.Add(Shell32.GetShellIcon(116, true));
+            tabControl1.ImageList.Images.Add(Shell32.GetShellIcon(40, true));
+            tabControl1.ImageList.Images.Add(Shell32.GetShellIcon(70, true));
+            tabPage2.ImageIndex = 0;
+            tabPage3.ImageIndex = 1;
             toolStripComboBox2.GetControl.Items.AddRange(Enum.GetNames(typeof(Controller.PlaybackOrder)));
             toolStripComboBox2.GetControl.SelectedIndex = 0;
             toolStripComboBox2.GetControl.SelectedIndexChanged += new EventHandler(playbackOrderComboBox_SelectedIndexChanged);

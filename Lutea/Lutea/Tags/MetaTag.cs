@@ -21,6 +21,10 @@ namespace Gageas.Lutea.Tags
                 {
                     tag.Add(new KeyValuePair<string, object>(x.extid, x.extvalue));
                 }
+                else if (ID3V2Tag.FRAMES[x.id_x].name4 == "USLT" && !string.IsNullOrEmpty(x.extid))
+                {
+                    tag.Add(new KeyValuePair<string, object>(ID3V2Tag.FRAMES[x.id_x].asApe, x.extvalue));
+                }
                 else
                 {
                     tag.Add(new KeyValuePair<string, object>(ID3V2Tag.FRAMES[x.id_x].asApe, x.value));

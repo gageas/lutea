@@ -30,11 +30,11 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DefaultUIForm));
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("ノード1");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("ノード2");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("folder", new System.Windows.Forms.TreeNode[] {
-            treeNode1,
-            treeNode2});
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("ノード1");
+            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("ノード2");
+            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("folder", new System.Windows.Forms.TreeNode[] {
+            treeNode4,
+            treeNode5});
             this.xTrackBar1 = new Gageas.Lutea.DefaultUI.XTrackBar();
             this.queryTreeViewContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.クエリ作成ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -111,6 +111,9 @@
             this.albumArtListViewSearchTextBox = new System.Windows.Forms.TextBox();
             this.albumArtListView = new Gageas.Lutea.DefaultUI.DoubleBufferedListView();
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.mainTabPanelImageList = new System.Windows.Forms.ImageList(this.components);
             this.queryTreeViewContextMenuStrip1.SuspendLayout();
             this.playlistViewContextMenuStrip.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -136,6 +139,7 @@
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
             // xTrackBar1
@@ -668,14 +672,14 @@
             this.treeView1.Indent = 14;
             this.treeView1.Location = new System.Drawing.Point(0, 0);
             this.treeView1.Name = "treeView1";
-            treeNode1.Name = "ノード1";
-            treeNode1.Text = "ノード1";
-            treeNode2.Name = "ノード2";
-            treeNode2.Text = "ノード2";
-            treeNode3.Name = "ノード0";
-            treeNode3.Text = "folder";
+            treeNode4.Name = "ノード1";
+            treeNode4.Text = "ノード1";
+            treeNode5.Name = "ノード2";
+            treeNode5.Text = "ノード2";
+            treeNode6.Name = "ノード0";
+            treeNode6.Text = "folder";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode3});
+            treeNode6});
             this.treeView1.Size = new System.Drawing.Size(223, 189);
             this.treeView1.TabIndex = 24;
             this.treeView1.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView1_ItemDrag);
@@ -851,24 +855,27 @@
             // 
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl1.Font = new System.Drawing.Font("MS UI Gothic", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.tabControl1.ImageList = this.mainTabPanelImageList;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(0);
+            this.tabControl1.Multiline = true;
             this.tabControl1.Name = "tabControl1";
-            this.tabControl1.Padding = new System.Drawing.Point(0, 0);
+            this.tabControl1.Padding = new System.Drawing.Point(5, 3);
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(574, 276);
-            this.tabControl1.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControl1.TabIndex = 0;
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.playlistViewTabControl_SelectedIndexChanged);
             // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.listView1);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Location = new System.Drawing.Point(4, 39);
             this.tabPage2.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Size = new System.Drawing.Size(566, 250);
+            this.tabPage2.Size = new System.Drawing.Size(566, 233);
             this.tabPage2.TabIndex = 0;
             this.tabPage2.Text = "Playlist";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -889,7 +896,7 @@
             this.listView1.Name = "listView1";
             this.listView1.OwnerDraw = true;
             this.listView1.ShowGroups = false;
-            this.listView1.Size = new System.Drawing.Size(566, 250);
+            this.listView1.Size = new System.Drawing.Size(566, 233);
             this.listView1.TabIndex = 26;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -908,10 +915,10 @@
             // 
             this.tabPage3.Controls.Add(this.albumArtListViewSearchTextBox);
             this.tabPage3.Controls.Add(this.albumArtListView);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Location = new System.Drawing.Point(4, 39);
             this.tabPage3.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(566, 250);
+            this.tabPage3.Size = new System.Drawing.Size(566, 233);
             this.tabPage3.TabIndex = 1;
             this.tabPage3.Text = "Albums";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -921,7 +928,7 @@
             this.albumArtListViewSearchTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.albumArtListViewSearchTextBox.Location = new System.Drawing.Point(449, 0);
             this.albumArtListViewSearchTextBox.Name = "albumArtListViewSearchTextBox";
-            this.albumArtListViewSearchTextBox.Size = new System.Drawing.Size(100, 19);
+            this.albumArtListViewSearchTextBox.Size = new System.Drawing.Size(100, 20);
             this.albumArtListViewSearchTextBox.TabIndex = 25;
             this.albumArtListViewSearchTextBox.TextChanged += new System.EventHandler(this.albumArtListViewSearchTextBox_TextChanged);
             this.albumArtListViewSearchTextBox.Leave += new System.EventHandler(this.albumArtListViewSearchTextBox_Leave);
@@ -942,7 +949,7 @@
             this.albumArtListView.Name = "albumArtListView";
             this.albumArtListView.OwnerDraw = true;
             this.albumArtListView.ShowGroups = false;
-            this.albumArtListView.Size = new System.Drawing.Size(566, 250);
+            this.albumArtListView.Size = new System.Drawing.Size(566, 233);
             this.albumArtListView.TabIndex = 0;
             this.albumArtListView.UseCompatibleStateImageBehavior = false;
             this.albumArtListView.View = System.Windows.Forms.View.SmallIcon;
@@ -950,6 +957,36 @@
             this.albumArtListView.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.albumArtListView_DrawItem);
             this.albumArtListView.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.albumArtListView_RetrieveVirtualItem);
             this.albumArtListView.DoubleClick += new System.EventHandler(this.albumArtListView_DoubleClick);
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.richTextBox1);
+            this.tabPage4.Location = new System.Drawing.Point(4, 39);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(566, 233);
+            this.tabPage4.TabIndex = 2;
+            this.tabPage4.Text = "Lyrics";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // richTextBox1
+            // 
+            this.richTextBox1.BackColor = System.Drawing.SystemColors.Window;
+            this.richTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richTextBox1.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBox1.Location = new System.Drawing.Point(3, 3);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.ReadOnly = true;
+            this.richTextBox1.Size = new System.Drawing.Size(560, 227);
+            this.richTextBox1.TabIndex = 0;
+            this.richTextBox1.Text = "";
+            // 
+            // mainTabPanelImageList
+            // 
+            this.mainTabPanelImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit;
+            this.mainTabPanelImageList.ImageSize = new System.Drawing.Size(32, 32);
+            this.mainTabPanelImageList.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // DefaultUIForm
             // 
@@ -996,6 +1033,7 @@
             this.tabPage2.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1079,6 +1117,9 @@
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.ToolStripMenuItem ScrollToPlayingToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.ImageList mainTabPanelImageList;
     }
 }
 
