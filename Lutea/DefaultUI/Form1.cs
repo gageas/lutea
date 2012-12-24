@@ -279,6 +279,7 @@ namespace Gageas.Lutea.DefaultUI
             var album = Controller.Current.MetaData("tagAlbum");
             var artist = Controller.Current.MetaData("tagArtist");
             var genre = Controller.Current.MetaData("tagGenre");
+            var lyrics = Controller.Current.GetLyrics();
             groupBox1.ContextMenuStrip = null;
             ContextMenuStrip cms = null;
             try
@@ -286,16 +287,21 @@ namespace Gageas.Lutea.DefaultUI
                 this.Invoke((MethodInvoker)(() =>
                 {
                     richTextBox1.Clear();
-                    var lyrics = Controller.Current.GetLyrics();
                     if (lyrics != null)
                     {
-                        tabPage4.ImageIndex = 2;
+                        if (tabPage4.ImageIndex != 2)
+                        {
+                            tabPage4.ImageIndex = 2;
+                        }
                         richTextBox1.Font = this.Font;
                         richTextBox1.AppendText(string.Join("\n", Util.Util.StripLyricsTimetag(lyrics)));
                     }
                     else
                     {
-                        tabPage4.ImageIndex = -1;
+                        if (tabPage4.ImageIndex != -1)
+                        {
+                            tabPage4.ImageIndex = -1;
+                        }
                     }
                     xTrackBar1.Max = Controller.Current.Length;
                     selectRow(index);
