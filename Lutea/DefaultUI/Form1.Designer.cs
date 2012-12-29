@@ -1004,6 +1004,9 @@
             this.Activated += new System.EventHandler(this.DefaultUIForm_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.SizeChanged += new System.EventHandler(this.DefaultUIForm_SizeChanged);
+            this.Move += new System.EventHandler(this.DefaultUIForm_Move);
+            this.Resize += new System.EventHandler(this.DefaultUIForm_Resize);
             this.queryTreeViewContextMenuStrip1.ResumeLayout(false);
             this.playlistViewContextMenuStrip.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
