@@ -24,13 +24,6 @@ namespace Gageas.Lutea.DefaultUI
     [LuteaComponentInfo("DefaultUI", "Gageas", 0.140, "標準GUI Component")]
     public partial class DefaultUIForm : Form, Lutea.Core.LuteaUIComponentInterface
     {
-        #region General-purpose delegates
-        private delegate void VOIDINT(int x);
-        private delegate void VOIDBOOL(bool b);
-        private delegate void VOIDSTRING(String str);
-        private delegate void VOIDVOID();
-        #endregion
-
         /// <summary>
         /// 発行中のクエリのステータス
         /// </summary>
@@ -625,6 +618,49 @@ namespace Gageas.Lutea.DefaultUI
                 }
             }
             if (!omitBaseProc) base.WndProc(ref m);
+        }
+
+        private FormWindowState prevWindowsState = FormWindowState.Minimized;
+        private void DefaultUIForm_SizeChanged(object sender, EventArgs e)
+        {
+            if (prevWindowsState == FormWindowState.Minimized)
+            {
+                // ウィンドウ位置を復元
+                if (!config_FormLocation.IsEmpty)
+                {
+                    var locationBackup = this.Location;
+                    this.StartPosition = FormStartPosition.Manual;
+                    this.Location = config_FormLocation;
+                    if (System.Windows.Forms.Screen.GetWorkingArea(this).IntersectsWith(this.Bounds) == false)
+                    {
+                        this.Location = locationBackup;
+                    }
+                }
+
+                // ウィンドウサイズを復元
+                if (this.WindowState != FormWindowState.Maximized && !config_FormSize.IsEmpty)
+                {
+                    this.ClientSize = config_FormSize;
+                }
+                ResetProgressBar();
+            }
+            prevWindowsState = this.WindowState;
+        }
+
+        private void DefaultUIForm_Move(object sender, EventArgs e)
+        {
+            if (this.IsHandleCreated && this.WindowState == FormWindowState.Normal)
+            {
+                this.config_FormLocation = this.Location;
+            }
+        }
+
+        private void DefaultUIForm_Resize(object sender, EventArgs e)
+        {
+            if (this.IsHandleCreated && this.WindowState == FormWindowState.Normal)
+            {
+                this.config_FormSize = this.ClientSize;
+            }
         }
         #endregion
 
@@ -2306,7 +2342,7 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             // ウィンドウサイズを復元
-            if (this.WindowState == FormWindowState.Normal && !config_FormSize.IsEmpty)
+            if (this.WindowState != FormWindowState.Maximized && !config_FormSize.IsEmpty)
             {
                 this.ClientSize = config_FormSize;
             }
@@ -2392,7 +2428,14 @@ namespace Gageas.Lutea.DefaultUI
             setting["PlaylistViewColumnOrder"] = PlaylistViewColumnOrder;
             setting["PlaylistViewColumnWidth"] = PlaylistViewColumnWidth;
             setting["WindowState"] = this.WindowState;
-            setting["WindowLocation"] = this.Location;
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                setting["WindowLocation"] = this.config_FormLocation;
+            }
+            else
+            {
+                setting["WindowLocation"] = this.Location;
+            }
             if (this.WindowState == FormWindowState.Normal)
             {
                 setting["WindowSize"] = this.ClientSize;
@@ -3044,5 +3087,6 @@ namespace Gageas.Lutea.DefaultUI
         {
             return true;
         }
+
     }
 }
