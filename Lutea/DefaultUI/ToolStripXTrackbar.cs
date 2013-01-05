@@ -12,7 +12,6 @@ namespace Gageas.Lutea.DefaultUI
         {
             XTrackBar self = GetControl;
             self.OnScroll += new Core.Controller.VOIDVOID(() => this.onScroll.Invoke());
-//            self.DropDownStyle = ComboBoxStyle.DropDownList;
         }
         public XTrackBar GetControl
         {
