@@ -130,7 +130,6 @@ namespace Gageas.Wrapper.BASS
         private bool running = false;
         private BASS.StreamProc originalStreamProc;
         private bool disposed = true;
-        private bool volumeAdjust = false;
         private static List<int> bassThreadIDs = new List<int>();
         
         #region Static Constructor
@@ -147,12 +146,12 @@ namespace Gageas.Wrapper.BASS
         }
         #endregion
 
-        public BASSWASAPIOutput(uint freq, uint chans, BASS.StreamProc proc, bool volumeAdjust = false, int device = -1)
-            : this(freq, chans, proc, InitFlags.Buffer, volumeAdjust, device)
+        public BASSWASAPIOutput(uint freq, uint chans, BASS.StreamProc proc, int device = -1)
+            : this(freq, chans, proc, InitFlags.Buffer, device)
         {
         }
 
-        public BASSWASAPIOutput(uint freq, uint chans, BASS.StreamProc proc, InitFlags flag, bool volumeAdjust = false, int device = -1)
+        public BASSWASAPIOutput(uint freq, uint chans, BASS.StreamProc proc, InitFlags flag, int device = -1)
         {
             bool success = false;
             if (lastConstructed != null)
@@ -187,7 +186,6 @@ namespace Gageas.Wrapper.BASS
                 throw new BASSWASAPIException();
             }
             disposed = false;
-            this.volumeAdjust = volumeAdjust;
             lastConstructed = this;
         }
 
@@ -258,21 +256,16 @@ namespace Gageas.Wrapper.BASS
         }
         public override bool SetVolume(float vol)
         {
-            if (!volumeAdjust)
+            if (vol == -1)
             {
-                if (vol == -1)
-                {
-                    BASS_WASAPI_Stop(true);
-                }
+                BASS_WASAPI_Stop(true);
             }
-            if (!volumeAdjust) return false;
-            return BASS_WASAPI_SetVolume(true, vol);
+            return false;
         }
 
         public override float GetVolume()
         {
-            if (!volumeAdjust) return 1.0F;
-            return BASS_WASAPI_GetVolume(true);
+            return 1.0F;
         }
 
         public override bool SetMute(bool mute)

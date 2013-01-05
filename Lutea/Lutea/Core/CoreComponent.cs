@@ -86,22 +86,6 @@ namespace Gageas.Lutea.Core
                 }
             }
 
-            bool enableWASAPIVolume = AppCore.enableWASAPIVolume;
-            [Category("Output")]
-            [Description("WASAPIでボリュームコントロールを使用する\n※ OSのボリューム設定を操作してしまいワケ分からなくなるのでfalse推奨")]
-            [DefaultValue(false)]
-            public bool EnableWASAPIVolume
-            {
-                get
-                {
-                    return enableWASAPIVolume;
-                }
-                set
-                {
-                    enableWASAPIVolume = value;
-                }
-            }
-
             /// <summary>
             /// 曲間プチノイズ対策
             /// </summary>
@@ -216,7 +200,6 @@ namespace Gageas.Lutea.Core
                 ()=>AppCore.NoReplaygainGainBoost = (double)setting["NoReplaygainGainBoost"],
                 ()=>AppCore.createPlaylist((string)setting["latestPlaylistQuery"]),
                 ()=>AppCore.enableWASAPIExclusive = (bool)setting["enableWASAPIExclusive"],
-                ()=>AppCore.enableWASAPIVolume = (bool)setting["enableWASAPIVolume"],
                 ()=>AppCore.fadeInOutOnSkip = (bool)setting["fadeInOutOnSkip"],
                 ()=>AppCore.preferredDeviceName = (string)setting["preferredDeviceName"],
                 ()=>AppCore.UseMigemo = (bool)setting["useMigemo"],
@@ -241,7 +224,6 @@ namespace Gageas.Lutea.Core
             setting["NoReplaygainGainBoost"] = AppCore.NoReplaygainGainBoost;
             setting["latestPlaylistQuery"] = AppCore.latestPlaylistQuery;
             setting["enableWASAPIExclusive"] = AppCore.enableWASAPIExclusive;
-            setting["enableWASAPIVolume"] = AppCore.enableWASAPIVolume;
             setting["fadeInOutOnSkip"] = AppCore.fadeInOutOnSkip;
             setting["preferredDeviceName"] = AppCore.preferredDeviceName;
             setting["useMigemo"] = AppCore.UseMigemo;
@@ -261,7 +243,6 @@ namespace Gageas.Lutea.Core
             AppCore.ReplaygainGainBoost = pref.ReplaygainGainBoost;
             AppCore.NoReplaygainGainBoost = pref.NoReplaygainGainBoost;
             AppCore.enableWASAPIExclusive = pref.EnableWASAPIExclusive;
-            AppCore.enableWASAPIVolume = pref.EnableWASAPIVolume;
             AppCore.fadeInOutOnSkip = pref.FadeInOutOnSkip;
             AppCore.UseMigemo = pref.UseMigemo;
             AppCore.preferredDeviceName = pref.PreferredDeviceName == PseudoDeviceNameForDefaultOutput ? "" : pref.PreferredDeviceName;
