@@ -67,7 +67,6 @@ namespace Gageas.Lutea.Core
         internal static double ReplaygainGainBoost = 5.0;
         internal static double NoReplaygainGainBoost = 0.0;
         internal static bool enableWASAPIExclusive = true;
-        internal static bool enableWASAPIVolume = false;
         internal static bool fadeInOutOnSkip = false;
         internal static bool UseMigemo = true;
         internal static string preferredDeviceName = "";
@@ -236,7 +235,7 @@ namespace Gageas.Lutea.Core
             uint read_size = read & 0x7fffffff;
             if (EnableReplayGain)
             {
-                LuteaHelper.ApplyGain(buffer, read_size, gaindB);
+                LuteaHelper.ApplyGain(buffer, read_size, gaindB, OutputMode == Controller.OutputModeEnum.WASAPI || OutputMode == Controller.OutputModeEnum.WASAPIEx ? volume : 1.0);
             }
             return read;
         }

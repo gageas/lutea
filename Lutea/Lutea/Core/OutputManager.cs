@@ -259,7 +259,7 @@ namespace Gageas.Lutea.Core
                     break;
                 }
             }
-            var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.InitFlags.Buffer | BASSWASAPIOutput.InitFlags.Exclusive, AppCore.enableWASAPIVolume, deviceid);
+            var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.InitFlags.Buffer | BASSWASAPIOutput.InitFlags.Exclusive, deviceid);
             if (outputChannel == null) throw new Exception();
             outputMode = Controller.OutputModeEnum.WASAPIEx;
             Logger.Log("Use WASAPI Exclusive Output: freq=" + outputChannel.Info.Freq + ", format=" + outputChannel.Info.Format);
@@ -296,7 +296,7 @@ namespace Gageas.Lutea.Core
                     break;
                 }
             }
-            var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.InitFlags.Buffer, AppCore.enableWASAPIVolume, deviceid);
+            var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.InitFlags.Buffer, deviceid);
             if (outputChannel == null) throw new Exception();
             outputMode = Controller.OutputModeEnum.WASAPI;
             Logger.Log("Use WASAPI Exclusive Output: freq=" + outputChannel.Info.Freq + ", format=" + outputChannel.Info.Format);
