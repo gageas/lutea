@@ -139,6 +139,7 @@ namespace Gageas.Lutea.DefaultUI
             toolStripStatusLabel1.Text = "";
             PlaylistViewFont = this.listView1.Font;
             TrackInfoViewFont = this.trackInfoText.Font;
+            toolStripXTrackbar1.GetControl.ThumbWidth = 30;
         }
 
         private void ResetPlaylistView()
@@ -488,7 +489,10 @@ namespace Gageas.Lutea.DefaultUI
 
         public void changeVolume()
         {
-            this.Invoke((MethodInvoker)(() => toolStripXTrackbar1.GetControl.Value = (int)(Controller.Volume * 100)));
+            this.Invoke((MethodInvoker)(() => {
+                toolStripXTrackbar1.GetControl.Value = (int)(Controller.Volume * 100);
+                toolStripXTrackbar1.GetControl.ThumbText = ((int)(Controller.Volume * 100)).ToString();
+            }));
         }
 
         public void playbackOrderChange()
