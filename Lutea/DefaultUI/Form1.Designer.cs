@@ -378,7 +378,7 @@
             this.toolStripStatusLabel2.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.toolStripStatusLabel2.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Size = new System.Drawing.Size(500, 24);
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(540, 24);
             this.toolStripStatusLabel2.Spring = true;
             this.toolStripStatusLabel2.Text = "toolStripStatusLabel2";
             this.toolStripStatusLabel2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -395,15 +395,16 @@
             // 
             // toolStripXTrackbar1
             // 
+            this.toolStripXTrackbar1.AutoSize = false;
             this.toolStripXTrackbar1.Name = "toolStripXTrackbar1";
-            this.toolStripXTrackbar1.Size = new System.Drawing.Size(70, 27);
+            this.toolStripXTrackbar1.Size = new System.Drawing.Size(100, 27);
             this.toolStripXTrackbar1.Text = "toolStripXTrackbar1";
             this.toolStripXTrackbar1.onScroll += new Gageas.Lutea.Core.Controller.VOIDVOID(this.trackBar1_ValueChanged);
             // 
             // toolStripComboBox2
             // 
             this.toolStripComboBox2.Name = "toolStripComboBox2";
-            this.toolStripComboBox2.Size = new System.Drawing.Size(70, 27);
+            this.toolStripComboBox2.Size = new System.Drawing.Size(70, 26);
             // 
             // fileToolStripMenuItem
             // 
