@@ -747,6 +747,7 @@ namespace Gageas.Lutea.DefaultUI
                 try
                 {
                     listView1.Items[index].Selected = true;
+                    listView1.FocusedItem = listView1.Items[index];
                     listView1.EnsureVisible(index);
                 }
                 catch { }
@@ -2959,9 +2960,16 @@ namespace Gageas.Lutea.DefaultUI
             if (sub == null) return;
             if (Columns[Controller.GetColumnIndexByName(displayColumns[item.SubItems.IndexOf(sub)])].Type == Library.LibraryColumnType.Rating)
             {
+                if (listView1.Cursor != Cursors.Hand)
+                {
+                    listView1.Cursor = Cursors.Hand;
+                }
                 return;
             }
-            listView1.Cursor = Cursors.Arrow;
+            if (listView1.Cursor != Cursors.Arrow)
+            {
+                listView1.Cursor = Cursors.Arrow;
+            }
         }
 
         private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
