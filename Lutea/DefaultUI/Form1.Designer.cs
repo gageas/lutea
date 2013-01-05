@@ -30,11 +30,11 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DefaultUIForm));
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("ノード1");
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("ノード2");
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("folder", new System.Windows.Forms.TreeNode[] {
-            treeNode4,
-            treeNode5});
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("ノード1");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("ノード2");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("folder", new System.Windows.Forms.TreeNode[] {
+            treeNode1,
+            treeNode2});
             this.xTrackBar1 = new Gageas.Lutea.DefaultUI.XTrackBar();
             this.queryTreeViewContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.クエリ作成ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,6 +72,7 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.importFullToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.removeDeadLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.libraryDBのカスタマイズToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.componentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -439,10 +440,19 @@
             // 
             // importToolStripMenuItem1
             // 
+            this.importToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.importFullToolStripMenuItem1});
             this.importToolStripMenuItem1.Name = "importToolStripMenuItem1";
             this.importToolStripMenuItem1.Size = new System.Drawing.Size(230, 22);
-            this.importToolStripMenuItem1.Text = "ディレクトリの追加...";
+            this.importToolStripMenuItem1.Text = "ディレクトリの追加(高速)...";
             this.importToolStripMenuItem1.Click += new System.EventHandler(this.importToolStripMenuItem1_Click);
+            // 
+            // importFullToolStripMenuItem1
+            // 
+            this.importFullToolStripMenuItem1.Name = "importFullToolStripMenuItem1";
+            this.importFullToolStripMenuItem1.Size = new System.Drawing.Size(230, 22);
+            this.importFullToolStripMenuItem1.Text = "ディレクトリの追加(完全)...";
+            this.importFullToolStripMenuItem1.Click += new System.EventHandler(this.importToolStripMenuItem1_Click);
             // 
             // removeDeadLinkToolStripMenuItem
             // 
@@ -672,14 +682,14 @@
             this.treeView1.Indent = 14;
             this.treeView1.Location = new System.Drawing.Point(0, 0);
             this.treeView1.Name = "treeView1";
-            treeNode4.Name = "ノード1";
-            treeNode4.Text = "ノード1";
-            treeNode5.Name = "ノード2";
-            treeNode5.Text = "ノード2";
-            treeNode6.Name = "ノード0";
-            treeNode6.Text = "folder";
+            treeNode1.Name = "ノード1";
+            treeNode1.Text = "ノード1";
+            treeNode2.Name = "ノード2";
+            treeNode2.Text = "ノード2";
+            treeNode3.Name = "ノード0";
+            treeNode3.Text = "folder";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode6});
+            treeNode3});
             this.treeView1.Size = new System.Drawing.Size(223, 189);
             this.treeView1.TabIndex = 24;
             this.treeView1.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView1_ItemDrag);
@@ -796,8 +806,8 @@
             // listView2
             // 
             this.listView2.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.listView2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listView2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.listView2.BackColor = System.Drawing.SystemColors.ControlLight;
             this.listView2.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listView2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -827,8 +837,8 @@
             // 
             // trackInfoText
             // 
-            this.trackInfoText.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.trackInfoText.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.trackInfoText.AutoEllipsis = true;
             this.trackInfoText.BackColor = System.Drawing.Color.Transparent;
             this.trackInfoText.Font = new System.Drawing.Font("メイリオ", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
@@ -842,9 +852,9 @@
             // 
             // pictureBox2
             // 
-            this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox2.Location = new System.Drawing.Point(6, 45);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(281, 66);
@@ -1123,6 +1133,7 @@
         private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.ImageList mainTabPanelImageList;
+        private System.Windows.Forms.ToolStripMenuItem importFullToolStripMenuItem1;
     }
 }
 

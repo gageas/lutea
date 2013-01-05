@@ -14,10 +14,10 @@ namespace Gageas.Lutea.DefaultUI
     public partial class ImportForm : Form
     {
         Importer myImporter;
-        public ImportForm(string path)
+        public ImportForm(string path, bool fastMode)
         {
             InitializeComponent();
-            myImporter = new Importer(path);
+            myImporter = new Importer(path, fastMode);
             myImporter.SetMaximum_import += new Controller.VOIDINT((i) => { if(!this.IsDisposed)this.Invoke((MethodInvoker)(() => { progressBar2.Maximum = i; })); });
             myImporter.SetMaximum_read += new Controller.VOIDINT((i) => { if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { progressBar1.Maximum = i; })); });
             myImporter.Step_import += new Controller.VOIDVOID(() => { if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { progressBar2.PerformStep(); })); });

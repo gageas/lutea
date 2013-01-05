@@ -1936,7 +1936,7 @@ namespace Gageas.Lutea.DefaultUI
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
                     LibraryLatestDir = dlg.SelectedPath;
-                    iform = new ImportForm(dlg.SelectedPath);
+                    iform = new ImportForm(dlg.SelectedPath, sender == importToolStripMenuItem1 ? true : false);
                     iform.Show();
                     iform.Start();
                 }
@@ -3087,6 +3087,5 @@ namespace Gageas.Lutea.DefaultUI
         {
             return true;
         }
-
     }
 }
