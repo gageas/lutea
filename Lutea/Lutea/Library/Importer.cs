@@ -15,13 +15,20 @@ namespace Gageas.Lutea.Library
     public sealed class Importer
     {
         private const int WORKER_THREADS_N = 8;
-        private static object lockobj = new object();
+        private const string SelectModifySTMT = "SELECT modify FROM list WHERE file_name = ? OR file_name = ?;";
+        private static object LOCKOBJ = new object();
         private readonly string[] supportedExtensions = new string[] { ".MP3", ".MP2", ".M4A", ".MP4", ".TAK", ".FLAC", ".TTA", ".OGG", ".APE", ".WV", ".WMA", ".ASF"};
+        private static readonly Regex regex_year = new Regex(@"(?<1>\d{4})");
+        private static readonly Regex regex_date = new Regex(@"(?<1>\d{4})[\-\/\.](?<2>\d+)[\-\/\.](?<3>\d+)");
 
-        private string importPath;
-        private IEnumerable<string> importFilenames;
-        private Thread th;
-        private Queue<LuteaAudioTrack> SQLQue = new Queue<LuteaAudioTrack>();
+        private string ToBeImportPath;
+        private IEnumerable<string> ToBeImportFilenames;
+        private Thread ImporterThread; // Importerのメインスレッド
+        private List<Thread> Workers; // Importerのワーカスレッド
+        private Queue<string> ToBeAnalyzeDirectories;
+        private List<LuteaAudioTrack> ToBeImportTracks = new List<LuteaAudioTrack>();
+        private Dictionary<string, bool> AlreadyAnalyzedFiles = new Dictionary<string, bool>();
+        private bool IsFastMode; // ファイルのタイムスタンプを見て省略するモード
 
         public event Controller.VOIDINT SetMaximum_read = new Controller.VOIDINT((i) => { });
         public event Controller.VOIDVOID Step_read = new Controller.VOIDVOID(() => { });
@@ -35,30 +42,41 @@ namespace Gageas.Lutea.Library
         /// ディレクトリに対するインポートを行うImporterを作成する
         /// </summary>
         /// <param name="path">インポート処理の検索対象</param>
-        public Importer(string directoryPath)
+        public Importer(string directoryPath, bool fastMode = true)
         {
-            this.importPath = directoryPath.Trim();
-            this.th = new Thread(ImportDirectoryThreadProc);
+            this.ToBeImportPath = directoryPath.Trim();
+            this.IsFastMode = fastMode;
+            this.ImporterThread = new Thread(ImportDirectoryThreadProc);
         }
 
         /// <summary>
         /// 複数のファイルのインポート処理を行うImporterを作成する
         /// </summary>
         /// <param name="filenames"></param>
-        public Importer(IEnumerable<string> filenames)
+        /// <param name="fastMode"></param>
+        public Importer(IEnumerable<string> filenames, bool fastMode = true)
         {
-            this.importFilenames = filenames;
-            this.th = new Thread(ImportMultipleFilesThreadProc);
+            this.ToBeImportFilenames = filenames;
+            this.IsFastMode = fastMode;
+            this.ImporterThread = new Thread(ImportMultipleFilesThreadProc);
         }
-
 
         /// <summary>
         /// インポート処理を開始
         /// </summary>
         public void Start() {
-            th.Priority = ThreadPriority.BelowNormal;
-            th.IsBackground = true; 
-            th.Start();
+            ImporterThread.Priority = ThreadPriority.BelowNormal;
+            ImporterThread.IsBackground = true; 
+            ImporterThread.Start();
+        }
+
+        /// <summary>
+        /// 実行中のインポートを中断する
+        /// </summary>
+        public void Abort()
+        {
+            ImporterThread.Abort();
+            AbortWorkers();
         }
 
         /// <summary>
@@ -120,26 +138,12 @@ namespace Gageas.Lutea.Library
                 stmt.Bind(i + 1, value.ToString());
             }
         }
-        private SQLite3DB.STMT prepareInsert(SQLite3DB db)
-        {
-            string[] cols = GetToBeImportColumn().Select(_ => _.Name).ToArray();
-            string insertFormat = "INSERT INTO list ( " + String.Join(",", cols) + ") VALUES(" + String.Join(",", cols.Select(_=>"?").ToArray()) + ");";
-            return db.Prepare(insertFormat);
-        }
 
-        private SQLite3DB.STMT prepareUpdate(SQLite3DB db)
-        {
-            string[] cols = GetToBeImportColumn().Select(_ => _.Name + " = ?").ToArray();
-            string updateFormat = "UPDATE list SET " + String.Join(",", cols) + " WHERE file_name = ?1;";
-            return db.Prepare(updateFormat);
-        }
-
-        private IEnumerable<Column> GetToBeImportColumn()
-        {
-            return Controller.Columns.Where(_ => !_.OmitOnImport);
-        }
-
-        private void runImport(bool OptimizeDB)
+        /// <summary>
+        /// SQLQueのLibraryDBへのインポート処理を行う
+        /// </summary>
+        /// <param name="OptimizeDB">完了後にデータベースの最適化を実施するかどうか</param>
+        private void RunInsertUpdateQuery(bool OptimizeDB)
         {
             SQLite3DB libraryDB = AppCore.Library.Connect(true);
             try
@@ -153,17 +157,17 @@ namespace Gageas.Lutea.Library
                 return;
             }
 
-            SetMaximum_import(SQLQue.Count);
+            SetMaximum_import(ToBeImportTracks.Count);
 
-            lock (SQLQue)
+            lock (ToBeImportTracks)
             {
-                using (var stmt_insert = prepareInsert(libraryDB))
-                using (var stmt_update = prepareUpdate(libraryDB))
+                using (var stmt_insert = GetInsertPreparedStatement(libraryDB))
+                using (var stmt_update = GetUpdatePreparedStatement(libraryDB))
                 using (var stmt_test = libraryDB.Prepare("SELECT rowid FROM list WHERE file_name = ?;"))
                 {
                     try
                     {
-                        SQLQue.OrderBy(_ =>
+                        ToBeImportTracks.OrderBy(_ =>
                         {
                             int tr = 0;
                             Util.Util.tryParseInt((_.getTagValue("TRACK") ?? "0").ToString(), ref tr);
@@ -204,7 +208,7 @@ namespace Gageas.Lutea.Library
                     {
                         Logger.Log(ex);
                     }
-                    SQLQue.Clear();
+                    ToBeImportTracks.Clear();
                 }
                 try
                 {
@@ -232,18 +236,24 @@ namespace Gageas.Lutea.Library
             }
         }
 
-        private void importFileReadThreadProc_CUE(string file_name)
+        /// <summary>
+        /// CUEシートを解析する
+        /// </summary>
+        /// <param name="file_name">ファイル名</param>
+        /// <param name="lastModifySTMT">modifyを取得するプリペアドステートメント</param>
+        private void AnalyzeCUE(string file_name, SQLite3DB.STMT lastModifySTMT)
         {
-            if (processedFile.ContainsKey(file_name)) return;
-            lock (processedFile)
+            if (AlreadyAnalyzedFiles.ContainsKey(file_name)) return;
+            lock (AlreadyAnalyzedFiles)
             {
-                processedFile[file_name] = true;
+                AlreadyAnalyzedFiles[file_name] = true;
             }
             CD cd = CUEparser.fromFile(file_name, true);
             if (cd == null) return;
 
             string lastCheckedFilename = null;
             bool   lastCheckedFileShouldSkip = false;
+            bool modifyed = !(LastModifyDatetime(lastModifySTMT, file_name) > new System.IO.FileInfo(file_name).LastWriteTimeUtc);
             foreach (CD.Track tr in cd.tracks)
             {
                 if (tr.file_name_CUESheet == "") continue;
@@ -278,27 +288,41 @@ namespace Gageas.Lutea.Library
                 if (tr.getTagValue("ARTIST") == null) tr.tag.Add(new KeyValuePair<string, object>("ARTIST", cd.artist));
                 tr.tag.Add(new KeyValuePair<string, object>("GENRE", cd.genre));
                 tr.tag.Add(new KeyValuePair<string, object>("DATE", cd.date));
-                lock (SQLQue)
-                {
-                    SQLQue.Enqueue(tr);
-                }
-                lock (processedFile)
+
+                lock (AlreadyAnalyzedFiles)
                 {
                     foreach (CD.Track track in cd.tracks)
                     {
-                        processedFile[track.file_name_CUESheet] = true;
+                        AlreadyAnalyzedFiles[track.file_name_CUESheet] = true;
+                    }
+                }
+                if (modifyed || !IsFastMode)
+                {
+                    lock (ToBeImportTracks)
+                    {
+                        ToBeImportTracks.Add(tr);
                     }
                 }
             }
             return;
         }
 
-        private void importFileReadThreadProc_Stream(string file_name, Queue<LuteaAudioTrack> localQueue)
+        /// <summary>
+        /// 単体の音楽ファイルを解析する
+        /// </summary>
+        /// <param name="file_name">ファイル名</param>
+        /// <param name="threadLocalResultQueue">スレッド固有の解析結果</param>
+        /// <param name="lastModifySTMT">modifyを取得するプリペアドステートメント</param>
+        private void AnalyzeStreamFile(string file_name, List<LuteaAudioTrack> threadLocalResultQueue, SQLite3DB.STMT lastModifySTMT)
         {
-            if (processedFile.ContainsKey(file_name)) return;
-            lock (processedFile)
+            if (AlreadyAnalyzedFiles.ContainsKey(file_name)) return;
+            lock (AlreadyAnalyzedFiles)
             {
-                processedFile[file_name] = true;
+                AlreadyAnalyzedFiles[file_name] = true;
+            }
+            if (LastModifyDatetime(lastModifySTMT, file_name) > new System.IO.FileInfo(file_name).LastWriteTimeUtc && IsFastMode)
+            {
+                return;
             }
             List<KeyValuePair<string, object>> tag = MetaTag.readTagByFilename(file_name, false);
             if (tag == null) return;
@@ -307,12 +331,9 @@ namespace Gageas.Lutea.Library
             {
                 CD cd = InternalCUE.Read(file_name);
                 if (cd == null) return;
-                lock (SQLQue)
+                lock (ToBeImportTracks)
                 {
-                    foreach (CD.Track tr in cd.tracks)
-                    {
-                        SQLQue.Enqueue(tr);
-                    }
+                    ToBeImportTracks.AddRange((IEnumerable<LuteaAudioTrack>)cd.tracks);
                 }
             }
             else
@@ -343,167 +364,241 @@ namespace Gageas.Lutea.Library
                     }
                 }
                 tr.tag = tag;
-                localQueue.Enqueue(tr);
+                threadLocalResultQueue.Add(tr);
             }
         }
 
-        private Queue<string> importFilenameQueue;
-        private void importFileReadThreadProc()
+        /// <summary>
+        /// 解析処理のワーカスレッド。解析対象ディレクトリのキューに対するコンシューマ
+        /// </summary>
+        private void ConsumeToBeAnalyzeQueueProc()
         {
             // BASSをno deviceで使用
             BASS.BASS_SetDevice(0);
-            while (importFilenameQueue.Count > 0)
+            var libraryDB = Controller.GetDBConnection();
+            using (var selectModifySTMT = libraryDB.Prepare(SelectModifySTMT))
             {
-                string directory_name;
-                Queue<LuteaAudioTrack> localQueue = new Queue<LuteaAudioTrack>();
-                lock (importFilenameQueue)
+                while (ToBeAnalyzeDirectories.Count > 0)
                 {
-                    if (importFilenameQueue.Count == 0) continue;
-                    directory_name = importFilenameQueue.Dequeue();
-                    Message(directory_name);
-                    Step_read();
-                }
-
-                // CUEファイルを処理
-                try
-                {
-                    var cuefiles = System.IO.Directory.GetFiles(directory_name, "*.CUE", System.IO.SearchOption.TopDirectoryOnly);
-                    foreach (var cuefile in cuefiles)
+                    string directory_name;
+                    List<LuteaAudioTrack> threadLocalResults = new List<LuteaAudioTrack>();
+                    lock (ToBeAnalyzeDirectories)
                     {
-                        importFileReadThreadProc_CUE(cuefile);
+                        if (ToBeAnalyzeDirectories.Count == 0) continue;
+                        directory_name = ToBeAnalyzeDirectories.Dequeue();
+                        Message(directory_name);
+                        Step_read();
                     }
-                }
-                catch (System.IO.IOException ex) { Logger.Error(ex.ToString()); }
 
-                // 全てのファイルを処理
-                try
-                {
-                    var allfiles = System.IO.Directory.GetFiles(directory_name, "*.*", System.IO.SearchOption.TopDirectoryOnly).Where((e) => supportedExtensions.Contains(System.IO.Path.GetExtension(e).ToUpper()));
-                    foreach (var file in allfiles)
+                    // CUEファイルを処理
+                    try
                     {
-                        importFileReadThreadProc_Stream(file, localQueue);
-                    }
-                    lock (SQLQue)
-                    {
-                        var sortedQueue = localQueue.ToList();
-                        sortedQueue.Sort((x, y) => x.file_name.CompareTo(y.file_name));
-                        foreach (var e in sortedQueue)
+                        var cuefiles = System.IO.Directory.GetFiles(directory_name, "*.CUE", System.IO.SearchOption.TopDirectoryOnly);
+                        foreach (var cuefile in cuefiles)
                         {
-                            SQLQue.Enqueue(e);
+                            AnalyzeCUE(cuefile, selectModifySTMT);
                         }
                     }
+                    catch (System.IO.IOException ex) { Logger.Error(ex.ToString()); }
+
+                    // 全てのファイルを処理
+                    try
+                    {
+                        var allfiles = System.IO.Directory.GetFiles(directory_name, "*.*", System.IO.SearchOption.TopDirectoryOnly).Where((e) => supportedExtensions.Contains(System.IO.Path.GetExtension(e).ToUpper()));
+                        foreach (var file in allfiles)
+                        {
+                            AnalyzeStreamFile(file, threadLocalResults, selectModifySTMT);
+                        }
+                        lock (ToBeImportTracks)
+                        {
+                            ToBeImportTracks.AddRange(threadLocalResults);
+                        }
+                    }
+                    catch (System.IO.IOException ex) { Logger.Error(ex.ToString()); }
                 }
-                catch (System.IO.IOException ex) { Logger.Error(ex.ToString()); }
             }
         }
 
-        public void Abort()
-        {
-            th.Abort();
-            AbortWorkers();
-        }
-
+        /// <summary>
+        /// 実行中のワーカースレッドがあれば全て中断する
+        /// </summary>
         private void AbortWorkers()
         {
-            if (workers != null)
+            if (Workers != null)
             {
-                foreach (var worker in workers)
+                foreach (var worker in Workers)
                 {
                     worker.Abort();
                 }
             }
-            workers = null;
+            Workers = null;
         }
 
-        private Dictionary<string, bool> processedFile = new Dictionary<string, bool>();
-        List<Thread> workers;
+        /// <summary>
+        /// ディレクトリのインポートを行う
+        /// </summary>
         private void ImportDirectoryThreadProc()
         {
-            lock (lockobj)
+            lock (LOCKOBJ)
             {
                 AbortWorkers();
-                processedFile.Clear();
+                AlreadyAnalyzedFiles.Clear();
 
                 Message("ディレクトリを検索しています");
                 string[] directories = null;
                 try
                 {
-                    directories = System.IO.Directory.GetDirectories(importPath, "*", System.IO.SearchOption.AllDirectories);
+                    directories = System.IO.Directory.GetDirectories(ToBeImportPath, "*", System.IO.SearchOption.AllDirectories);
                 }
                 catch (Exception e) { Message(e.ToString()); return; }
                 SetMaximum_read(directories.Length);
 
-                workers = new List<Thread>();
-                importFilenameQueue = new Queue<string>(directories);
-                importFilenameQueue.Enqueue(importPath);
-                DoAnalysisAndImportByWorkerThreads();
-                ImportToDB(true);
+                Workers = new List<Thread>();
+                ToBeAnalyzeDirectories = new Queue<string>(directories);
+                ToBeAnalyzeDirectories.Enqueue(ToBeImportPath);
+                DoAnalysisByWorkerThreads();
+                WriteToDB(true);
             }
         }
 
+        /// <summary>
+        /// ファイルのインポートを行う
+        /// </summary>
         private void ImportMultipleFilesThreadProc()
         {
-            lock (lockobj)
+            var libraryDB = Controller.GetDBConnection();
+            using (var selectModifySTMT = libraryDB.Prepare(SelectModifySTMT))
             {
-                AbortWorkers();
-                processedFile.Clear();
-
-                var filenames = importFilenames.Select((_) => _.Trim()).Distinct().ToArray();
-                foreach (var filename in filenames)
+                lock (LOCKOBJ)
                 {
-                    if (System.IO.File.Exists(filename))
+                    AbortWorkers();
+                    AlreadyAnalyzedFiles.Clear();
+
+                    var filenames = ToBeImportFilenames.Select((_) => _.Trim()).Distinct().ToArray();
+                    foreach (var filename in filenames)
                     {
-                        try
+                        if (System.IO.File.Exists(filename))
                         {
-                            if (System.IO.Path.GetExtension(filename).ToUpper() == ".CUE")
+                            try
                             {
-                                importFileReadThreadProc_CUE(filename);
+                                if (System.IO.Path.GetExtension(filename).ToUpper() == ".CUE")
+                                {
+                                    AnalyzeCUE(filename, selectModifySTMT);
+                                }
+                                else
+                                {
+                                    // シングルスレッドで回すのでスレッドローカルのキューは不要（スレッドローカルキューとしてSQLQueを与える）
+                                    AnalyzeStreamFile(filename, ToBeImportTracks, selectModifySTMT);
+                                }
                             }
-                            else
+                            catch (Exception e)
                             {
-                                // シングルスレッドで回すのでスレッドローカルのキューは不要（スレッドローカルキューとしてSQLQueを与える）
-                                importFileReadThreadProc_Stream(filename, SQLQue);
+                                Logger.Error(e);
                             }
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.Error(e);
                         }
                     }
+                    WriteToDB(false);
                 }
-                ImportToDB(false);
             }
         }
 
-        private void DoAnalysisAndImportByWorkerThreads()
+        /// <summary>
+        /// ワーカスレッドでファイルの解析を行う
+        /// 全て完了するまでここで待つ
+        /// </summary>
+        private void DoAnalysisByWorkerThreads()
         {
             for (int i = 0; i < WORKER_THREADS_N; i++)
             {
-                Thread th = new Thread(importFileReadThreadProc);
+                Thread th = new Thread(ConsumeToBeAnalyzeQueueProc);
                 th.Priority = ThreadPriority.BelowNormal;
                 th.IsBackground = true;
                 th.Start();
-                workers.Add(th);
+                Workers.Add(th);
             }
-            foreach (var th in workers)
+            foreach (var th in Workers)
             {
                 th.Join();
             }
 
-            workers = null;
+            Workers = null;
         }
 
-        private void ImportToDB(bool OptimizeDB = true)
+        /// <summary>
+        /// LibraryDBへのインポートと後処理を行う
+        /// </summary>
+        /// <param name="OptimizeDB"></param>
+        private void WriteToDB(bool OptimizeDB = true)
         {
             Message("インポート中");
-            runImport(OptimizeDB);
-            processedFile.Clear();
+            RunInsertUpdateQuery(OptimizeDB);
+            AlreadyAnalyzedFiles.Clear();
             this.AbortWorkers();
             Complete();
         }
 
-        private static readonly Regex regex_year = new Regex(@"(?<1>\d{4})");
-        private static readonly Regex regex_date = new Regex(@"(?<1>\d{4})[\-\/\.](?<2>\d+)[\-\/\.](?<3>\d+)");
+        /// <summary>
+        /// 現在のLibraryDB向けのINSERT文のプリペアドステートメントを生成する
+        /// </summary>
+        /// <param name="db">LibraryDB</param>
+        /// <returns>INSERT文のプリペアドステートメント</returns>
+        private SQLite3DB.STMT GetInsertPreparedStatement(SQLite3DB db)
+        {
+            string[] cols = GetToBeImportColumn().Select(_ => _.Name).ToArray();
+            string insertFormat = "INSERT INTO list ( " + String.Join(",", cols) + ") VALUES(" + String.Join(",", cols.Select(_ => "?").ToArray()) + ");";
+            return db.Prepare(insertFormat);
+        }
+
+        /// <summary>
+        /// 現在のLibraryDB向けのUPDATE文のプリペアドステートメントを生成する
+        /// </summary>
+        /// <param name="db">LibraryDB</param>
+        /// <returns>UPDATE文のプリペアドステートメント</returns>
+        private SQLite3DB.STMT GetUpdatePreparedStatement(SQLite3DB db)
+        {
+            string[] cols = GetToBeImportColumn().Select(_ => _.Name + " = ?").ToArray();
+            string updateFormat = "UPDATE list SET " + String.Join(",", cols) + " WHERE file_name = ?1;";
+            return db.Prepare(updateFormat);
+        }
+
+        /// <summary>
+        /// LibraryDBのカラムのうち、インポート時に値を設定する必要があるものを返す
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<Column> GetToBeImportColumn()
+        {
+            return Controller.Columns.Where(_ => !_.OmitOnImport);
+        }
+
+        /// <summary>
+        /// ライブラリのfile_nameカラムがfile_nameまたはfile_name+" "に一致するもののmodifyの値をDateTime型で返す。
+        /// file_nameがライブラリにない場合はDateTime(0)を返す。
+        /// </summary>
+        /// <param name="lastModifySTMT"></param>
+        /// <param name="file_name"></param>
+        /// <returns></returns>
+        private DateTime LastModifyDatetime(SQLite3DB.STMT lastModifySTMT, string file_name)
+        {
+            // SQLiteがDBがロックされてたとかで失敗する場合があるのでリトライする
+            for (int i = 0; i < 10; i++)
+            {
+                try
+                {
+                    lastModifySTMT.Reset();
+                    lastModifySTMT.Bind(1, file_name);
+                    lastModifySTMT.Bind(2, file_name + " ");
+                    var result = lastModifySTMT.EvaluateAll();
+                    if (result.Length == 0) return new DateTime(0);
+                    return Util.Util.timestamp2DateTime(long.Parse(result[0][0].ToString()));
+                }
+                catch (SQLite3DB.SQLite3Exception)
+                {
+                    Thread.Sleep(1);
+                }
+            }
+            return new DateTime(0);
+        }
+
         /// <summary>
         /// 日時っぽい文字列をYYYY/MM/DD形式に正規化する
         /// </summary>
