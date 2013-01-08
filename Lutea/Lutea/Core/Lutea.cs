@@ -735,6 +735,11 @@ namespace Gageas.Lutea.Core
             }
             return columnIndexCache.ContainsKey(Name) ? columnIndexCache[Name] : -1;
         }
+
+        public static KaoriYa.Migemo.Migemo GetMigemo()
+        {
+            return AppCore.migemo;
+        }
         #endregion
 
         #region Playlist operation
