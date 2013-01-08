@@ -477,6 +477,7 @@ namespace Gageas.Lutea.Core
                     Logger.Error(e);
                 }
 
+                var invalidChars = System.IO.Path.GetInvalidPathChars();
                 // txtファイルから検索
                 try
                 {
@@ -484,6 +485,34 @@ namespace Gageas.Lutea.Core
                     if (System.IO.File.Exists(asTxt))
                     {
                         return System.IO.File.ReadAllLines(asTxt, Encoding.Default);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+
+                // タイトル.lrcファイルから検索
+                try
+                {
+                    var asTitleTxtCandidates = System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(_filename), new string(Current.MetaData(Controller.GetColumnIndexByName("tagTitle")).Select(_ => invalidChars.Contains(_) ? '?' : _).ToArray()) + ".lrc", System.IO.SearchOption.TopDirectoryOnly);
+                    if (asTitleTxtCandidates.Length > 0)
+                    {
+                        return System.IO.File.ReadAllLines(asTitleTxtCandidates[0], Encoding.Default);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+
+                // タイトル.txtファイルから検索
+                try
+                {
+                    var asTitleTxtCandidates = System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(_filename), new string(Current.MetaData(Controller.GetColumnIndexByName("tagTitle")).Select(_ => invalidChars.Contains(_) ? '?' : _).ToArray()) + ".txt", System.IO.SearchOption.TopDirectoryOnly);
+                    if (asTitleTxtCandidates.Length > 0)
+                    {
+                        return System.IO.File.ReadAllLines(asTitleTxtCandidates[0], Encoding.Default);
                     }
                 }
                 catch (Exception e)
