@@ -30,11 +30,11 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DefaultUIForm));
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("ノード1");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("ノード2");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("folder", new System.Windows.Forms.TreeNode[] {
-            treeNode1,
-            treeNode2});
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("ノード1");
+            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("ノード2");
+            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("folder", new System.Windows.Forms.TreeNode[] {
+            treeNode4,
+            treeNode5});
             this.xTrackBar1 = new Gageas.Lutea.DefaultUI.XTrackBar();
             this.queryTreeViewContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.クエリ作成ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -683,14 +683,14 @@
             this.treeView1.Indent = 14;
             this.treeView1.Location = new System.Drawing.Point(0, 0);
             this.treeView1.Name = "treeView1";
-            treeNode1.Name = "ノード1";
-            treeNode1.Text = "ノード1";
-            treeNode2.Name = "ノード2";
-            treeNode2.Text = "ノード2";
-            treeNode3.Name = "ノード0";
-            treeNode3.Text = "folder";
+            treeNode4.Name = "ノード1";
+            treeNode4.Text = "ノード1";
+            treeNode5.Name = "ノード2";
+            treeNode5.Text = "ノード2";
+            treeNode6.Name = "ノード0";
+            treeNode6.Text = "folder";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode3});
+            treeNode6});
             this.treeView1.Size = new System.Drawing.Size(223, 189);
             this.treeView1.TabIndex = 24;
             this.treeView1.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView1_ItemDrag);

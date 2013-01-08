@@ -7,7 +7,7 @@ using System.IO;
 using Gageas.Wrapper.SQLite3;
 using Gageas.Lutea.Util;
 using Gageas.Lutea.Library;
-using KaoriYa.Migemo;
+using Gageas.Lutea.Core;
 
 namespace Gageas.Lutea
 {
@@ -131,8 +131,6 @@ namespace Gageas.Lutea
 
     public class MusicLibrary
     {
-        private Migemo migemo = null;
-
         public static String GetCreateSchema(Column[] columns)
         {
             return "CREATE TABLE IF NOT EXISTS list(" + String.Join(" , ", columns.Select(_ =>
@@ -240,13 +238,7 @@ namespace Gageas.Lutea
         public readonly Column[] Columns = null;
 
         private static System.DateTime UnixEpoch = new System.DateTime(1970, 1, 1, 0, 0, 0);
-        public bool MigemoAvailable
-        {
-            get
-            {
-                return !(migemo == null);
-            }
-        }
+
         public static Int64 currentTimestamp
         {
             get
@@ -262,11 +254,6 @@ namespace Gageas.Lutea
         private string dbPath;
         public MusicLibrary(string dbPath)
         {
-            try
-            {
-                migemo = new Migemo(@"dict\migemo-dict");
-            }
-            catch { }
             this.dbPath = dbPath;
 
             if (!File.Exists(dbPath))
@@ -379,12 +366,12 @@ namespace Gageas.Lutea
 
         private ValueType migemoGenerator(ValueType srcu8, Int32 length)
         {
-            if (migemo == null) return IntPtr.Zero;
+            if (AppCore.migemo == null) return IntPtr.Zero;
 
             byte[] buffer = new byte[length+1];
             System.Runtime.InteropServices.Marshal.Copy((IntPtr)srcu8, buffer, 0,(int)length);
             var src = Encoding.UTF8.GetString(buffer);
-            var query = migemo.Query(src);
+            var query = AppCore.migemo.Query(src);
             var destbytes = Encoding.UTF8.GetBytes(query);
             var destbuf = System.Runtime.InteropServices.Marshal.AllocHGlobal(destbytes.Count() + 1);
             System.Runtime.InteropServices.Marshal.WriteByte(destbuf, destbytes.Count(), 0);

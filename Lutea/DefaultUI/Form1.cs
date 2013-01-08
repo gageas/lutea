@@ -2214,11 +2214,6 @@ namespace Gageas.Lutea.DefaultUI
 
         private void albumArtListViewSearchTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (migemo == null)
-            {
-                migemo = new KaoriYa.Migemo.Migemo(@"dict\migemo-dict");
-            }
-
             var search = albumArtListViewSearchTextBox.Text;
 
             albumArtListView.BeginUpdate();
@@ -2229,6 +2224,7 @@ namespace Gageas.Lutea.DefaultUI
             }
             else
             {
+                var migemo = Controller.GetMigemo();
                 if (migemo != null)
                 {
                     Regex re = null;

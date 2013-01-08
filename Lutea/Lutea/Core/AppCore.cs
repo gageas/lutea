@@ -14,6 +14,7 @@ using Gageas.Lutea.Core;
 using Gageas.Lutea.Util;
 using Gageas.Lutea.Library;
 using Gageas.Lutea.Tags;
+using KaoriYa.Migemo;
 
 using System.Runtime.InteropServices; // dllimport
 
@@ -70,6 +71,7 @@ namespace Gageas.Lutea.Core
         internal static bool fadeInOutOnSkip = false;
         internal static bool UseMigemo = true;
         internal static string preferredDeviceName = "";
+        internal static Migemo migemo = null;
         #endregion
 
         internal static string PlaylistSortColumn = null;
@@ -329,6 +331,15 @@ namespace Gageas.Lutea.Core
             if (initialized) return null;
             SetDllDirectoryW("");
 
+            // migemoのロード
+            try
+            {
+                migemo = new Migemo(@"dict\migemo-dict");
+            }
+            catch(Exception e){
+                Logger.Error(e);
+            }
+
             // userDirectoryオブジェクト取得
             userDirectory = new UserDirectory();
 
@@ -555,7 +566,7 @@ namespace Gageas.Lutea.Core
         private static string GetMigemoSTMT(string sql)
         {
             if (!UseMigemo) throw new System.NotSupportedException("migemo is not enabled.");
-            if (!Library.MigemoAvailable) throw new System.NotSupportedException("migemo is not enabled.");
+            if (migemo == null) throw new System.NotSupportedException("migemo is not enabled.");
 
             string[] words = sql.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             string[] migemo_phrase = new string[words.Length];
