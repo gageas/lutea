@@ -3078,10 +3078,6 @@ namespace Gageas.Lutea.DefaultUI
             th.Start();
         }
 
-
-        private KaoriYa.Migemo.Migemo migemo = null;
-
-
         public bool CanSetEnable()
         {
             return false;
