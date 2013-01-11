@@ -333,7 +333,7 @@ namespace Gageas.Lutea.Library
                 if (cd == null) return;
                 lock (ToBeImportTracks)
                 {
-                    ToBeImportTracks.AddRange((IEnumerable<LuteaAudioTrack>)cd.tracks);
+                    ToBeImportTracks.AddRange(cd.tracks.Cast<LuteaAudioTrack>());
                 }
             }
             else
