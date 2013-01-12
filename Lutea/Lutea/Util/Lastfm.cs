@@ -18,7 +18,7 @@ namespace Gageas.Lutea.Util
 
         private static System.DateTime UnixEpoch = new System.DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        private static Int64 currentTimestamp
+        public static Int64 CurrentTimestamp
         {
             get
             {
@@ -29,7 +29,11 @@ namespace Gageas.Lutea.Util
         private readonly string api_key;
         private readonly string secret;
 
-        public string session_key = null;
+        public string session_key
+        {
+            get;
+            private set;
+        }
 
         public Lastfm(string api_key, string secret)
         {
@@ -55,59 +59,17 @@ namespace Gageas.Lutea.Util
             return GetMD5(username + GetMD5(password));
         }
 
-        public bool Track_updateNowPlaying(string artist, string track, string album, string trackNumber)
+        public XmlDocument CallAPIWithSig(List<KeyValuePair<string, string>> _args)
         {
             if (session_key == null)
             {
-                return false;
+                return null;
             }
-            var result = this.SendWithAPISig(new List<KeyValuePair<string, string>>() { 
-                new KeyValuePair<string, string>("method", "track.updateNowPlaying"),
-                new KeyValuePair<string, string>("artist", artist),
-                new KeyValuePair<string, string>("track", track),
-                new KeyValuePair<string, string>("api_key", api_key),
-                new KeyValuePair<string, string>("sk", session_key),
-            });
-            if (result != null)
-            {
-                var keys = result.GetElementsByTagName("key");
-                if (keys.Count == 1)
-                {
-                    this.session_key = keys.Item(0).FirstChild.Value;
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public bool Track_scrobble(string artist, string track, string album = null, string trackNumber = null, string albumArtist = null, int? duration = null)
-        {
-            if (session_key == null)
-            {
-                return false;
-            }
-            var result = this.SendWithAPISig(new List<KeyValuePair<string, string>>() { 
-                new KeyValuePair<string, string>("method", "track.scrobble"),
-                new KeyValuePair<string, string>("timestamp", currentTimestamp.ToString()),
-                new KeyValuePair<string, string>("artist", artist),
-                new KeyValuePair<string, string>("track", track),
-                new KeyValuePair<string, string>("album", album),
-                new KeyValuePair<string, string>("albumArtist", albumArtist),
-                new KeyValuePair<string, string>("trackNumber", trackNumber),
-                new KeyValuePair<string, string>("duration", duration == null ? null : duration.ToString()),
-                new KeyValuePair<string, string>("api_key", api_key),
-                new KeyValuePair<string, string>("sk", session_key),
-            });
-            if (result != null)
-            {
-                var scrobbles = result.GetElementsByTagName("scrobbles");
-                if (scrobbles.Count == 1)
-                {
-                    var acceptecd = scrobbles.Item(0).Attributes["accepted"];
-                    return true;
-                }
-            }
-            return false;
+            var args = new List<KeyValuePair<string, string>>(_args);
+            args.Add(new KeyValuePair<string, string>("api_key", api_key));
+            args.Add(new KeyValuePair<string, string>("sk", session_key));
+            var result = this.SendWithAPISig(args);
+            return result;
         }
 
         public bool Auth_getMobileSession(string username, string password)
@@ -135,7 +97,7 @@ namespace Gageas.Lutea.Util
             return false;
         }
 
-        public string Auth_gettoken()
+        private string Auth_gettoken()
         {
             var result = this.SendWithAPISig(new List<KeyValuePair<string, string>>() {
                 new KeyValuePair<string, string>("method", "auth.getToken"),
