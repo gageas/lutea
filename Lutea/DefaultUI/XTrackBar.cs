@@ -68,6 +68,8 @@ namespace Gageas.Lutea.DefaultUI
             }
             set
             {
+                if (value > Max) value = Max;
+                if (value < Min) value = Min;
                 if ((value >= Min) && (value <= Max))
                 {
                     _value = value;
