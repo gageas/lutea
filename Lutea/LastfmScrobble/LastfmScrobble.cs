@@ -18,6 +18,7 @@ namespace Gageas.Lutea.LastfmScrobble
         private Lastfm lastfm = null;
 
         private bool scrobbed = false;
+        private bool nowPlayingUpdated = false;
         private double currentDuration;
 
         public void Init(object _setting)
@@ -25,12 +26,9 @@ namespace Gageas.Lutea.LastfmScrobble
             lastfm = Lastfm.GetLuteaLastfmInstance();
 
             Controller.onTrackChange += (i)=>{ 
-                scrobbed = false; 
+                scrobbed = false;
+                nowPlayingUpdated = false;
                 currentDuration = Controller.Current.Length;
-            };
-
-            Controller.onTrackChange += (id) =>
-            {
                 UpdateNowPlaying();
             };
 
@@ -47,7 +45,8 @@ namespace Gageas.Lutea.LastfmScrobble
         {
             if (!pref.ScrobbleEnabled) return;
             if (currentDuration < pref.IgnoreShorterThan) return;
-            if (scrobbed == false && time > (currentDuration * pref.ScrobbleThreshold / 100.0))
+            if (scrobbed) return;
+            if (time > (currentDuration * pref.ScrobbleThreshold / 100.0))
             {
                 scrobbed = true;
                 if (lastfm.session_key == null)
@@ -89,6 +88,8 @@ namespace Gageas.Lutea.LastfmScrobble
         {
             if (!pref.UpdateNowPlayingEnabled) return;
             if (Controller.Current.Length < pref.IgnoreShorterThan) return;
+            if (nowPlayingUpdated) return;
+            nowPlayingUpdated = true;
             if (lastfm.session_key == null)
             {
                 lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.authToken);
