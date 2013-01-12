@@ -31,46 +31,10 @@ namespace Gageas.Lutea.LastfmScrobble
 
             Controller.onTrackChange += (id) =>
             {
-                if (!pref.ScrobbleEnabled) return;
-                if (!pref.UpdateNowPlayingEnabled) return;
-
-                var tagArtist = Controller.Current.MetaData("tagArtist");
-                var tagTitle = Controller.Current.MetaData("tagTitle");
-                var tagAlbum = Controller.Current.MetaData("tagAlbum");
-                int tagTracknumber = -1;
-                Lutea.Util.Util.tryParseInt(Controller.Current.MetaData("tagTracknumber"), ref tagTracknumber);
-                var tagAlbumArtist = Controller.Current.MetaData("tagAlbumArtist");
-                var duration = (int)Controller.Current.Length;
-                if (lastfm.session_key == null)
-                {
-                    lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.authToken);
-                }
-                var result = Track_updateNowPlaying(tagArtist, tagTitle, tagAlbum, tagTracknumber <= 0 ? null : tagTracknumber.ToString(), tagAlbumArtist, duration);
-                Logger.Log("last.fm scrobble " + tagTitle + (result ? " OK." : " Fail."));
+                UpdateNowPlaying();
             };
 
-            Controller.onElapsedTimeChange += (time) =>
-            {
-                if (!pref.ScrobbleEnabled) return;
-                if (currentDuration < pref.IgnoreShorterThan) return;
-                if (scrobbed == false && time > (currentDuration * pref.ScrobbleThreshold / 100.0))
-                {
-                    scrobbed = true;
-                    var tagArtist = Controller.Current.MetaData("tagArtist");
-                    var tagTitle = Controller.Current.MetaData("tagTitle");
-                    var tagAlbum = Controller.Current.MetaData("tagAlbum");
-                    int tagTracknumber = -1;
-                    Lutea.Util.Util.tryParseInt(Controller.Current.MetaData("tagTracknumber"), ref tagTracknumber);
-                    var tagAlbumArtist = Controller.Current.MetaData("tagAlbumArtist");
-                    var duration = (int)Controller.Current.Length;
-                    if (lastfm.session_key == null)
-                    {
-                        lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.authToken);
-                    }
-                    var result = Track_scrobble(tagArtist, tagTitle, tagAlbum, tagTracknumber <= 0 ? null : tagTracknumber.ToString(), tagAlbumArtist, duration);
-                    Logger.Log("last.fm scrobble " + tagTitle + (result ? " OK." : " Fail."));
-                }
-            };
+            Controller.onElapsedTimeChange += Scrobble;
 
             if (_setting != null)
             {
@@ -79,45 +43,70 @@ namespace Gageas.Lutea.LastfmScrobble
             }
         }
 
-        public bool Track_scrobble(string artist, string track, string album = null, string trackNumber = null, string albumArtist = null, int? duration = null)
+        private void Scrobble(int time)
         {
-            var result = lastfm.CallAPIWithSig(new List<KeyValuePair<string, string>>() { 
-                new KeyValuePair<string, string>("method", "track.scrobble"),
-                new KeyValuePair<string, string>("timestamp", Lastfm.CurrentTimestamp.ToString()),
-                new KeyValuePair<string, string>("artist", artist),
-                new KeyValuePair<string, string>("track", track),
-                new KeyValuePair<string, string>("album", album),
-                new KeyValuePair<string, string>("albumArtist", albumArtist),
-                new KeyValuePair<string, string>("trackNumber", trackNumber),
-                new KeyValuePair<string, string>("duration", duration == null ? null : duration.ToString()),
-            });
-            if (result != null)
+            if (!pref.ScrobbleEnabled) return;
+            if (currentDuration < pref.IgnoreShorterThan) return;
+            if (scrobbed == false && time > (currentDuration * pref.ScrobbleThreshold / 100.0))
             {
-                var scrobbles = result.GetElementsByTagName("scrobbles");
-                if (scrobbles.Count == 1)
+                scrobbed = true;
+                if (lastfm.session_key == null)
                 {
-                    var acceptecd = scrobbles.Item(0).Attributes["accepted"].Value;
-                    if (acceptecd == "1")
-                    {
-                        return true;
-                    }
-                    return false;
+                    lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.authToken);
                 }
+
+                int tagTracknumber = -1;
+                Lutea.Util.Util.tryParseInt(Controller.Current.MetaData("tagTracknumber"), ref tagTracknumber);
+                var result = lastfm.CallAPIWithSig(new List<KeyValuePair<string, string>>() { 
+                    new KeyValuePair<string, string>("method", "track.scrobble"),
+                    new KeyValuePair<string, string>("timestamp", Lastfm.CurrentTimestamp.ToString()),
+                    new KeyValuePair<string, string>("artist", Controller.Current.MetaData("tagArtist")),
+                    new KeyValuePair<string, string>("track", Controller.Current.MetaData("tagTitle")),
+                    new KeyValuePair<string, string>("album", Controller.Current.MetaData("tagAlbum")),
+                    new KeyValuePair<string, string>("albumArtist", Controller.Current.MetaData("tagAlbumArtist")),
+                    new KeyValuePair<string, string>("trackNumber", tagTracknumber <= 0 ? null : tagTracknumber.ToString()),
+                    new KeyValuePair<string, string>("duration", ((int)Controller.Current.Length).ToString()),
+                });
+
+                bool success = false;
+                if (result != null)
+                {
+                    var scrobbles = result.GetElementsByTagName("scrobbles");
+                    if (scrobbles.Count == 1)
+                    {
+                        var acceptecd = scrobbles.Item(0).Attributes["accepted"].Value;
+                        if (acceptecd == "1")
+                        {
+                            success = true;
+                        }
+                    }
+                }
+                Logger.Log("last.fm scrobble " + Controller.Current.MetaData("tagTitle") + (success ? " OK." : " Fail."));
             }
-            return false;
         }
 
-        public bool Track_updateNowPlaying(string artist, string track, string album = null, string trackNumber = null, string albumArtist = null, int? duration = null)
+        private void UpdateNowPlaying()
         {
+            if (!pref.UpdateNowPlayingEnabled) return;
+            if (Controller.Current.Length < pref.IgnoreShorterThan) return;
+            if (lastfm.session_key == null)
+            {
+                lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.authToken);
+            }
+
+            int tagTracknumber = -1;
+            Lutea.Util.Util.tryParseInt(Controller.Current.MetaData("tagTracknumber"), ref tagTracknumber);
             var result = lastfm.CallAPIWithSig(new List<KeyValuePair<string, string>>() { 
                 new KeyValuePair<string, string>("method", "track.updateNowPlaying"),
-                new KeyValuePair<string, string>("artist", artist),
-                new KeyValuePair<string, string>("track", track),
-                new KeyValuePair<string, string>("album", album),
-                new KeyValuePair<string, string>("albumArtist", albumArtist),
-                new KeyValuePair<string, string>("trackNumber", trackNumber),
-                new KeyValuePair<string, string>("duration", duration == null ? null : duration.ToString()),
+                new KeyValuePair<string, string>("artist", Controller.Current.MetaData("tagArtist")),
+                new KeyValuePair<string, string>("track", Controller.Current.MetaData("tagTitle")),
+                new KeyValuePair<string, string>("album", Controller.Current.MetaData("tagAlbum")),
+                new KeyValuePair<string, string>("albumArtist", Controller.Current.MetaData("tagAlbumArtist")),
+                new KeyValuePair<string, string>("trackNumber", tagTracknumber <= 0 ? null : tagTracknumber.ToString()),
+                new KeyValuePair<string, string>("duration", ((int)Controller.Current.Length).ToString()),
             });
+
+            var success = false;
             if (result != null)
             {
                 var scrobbles = result.GetElementsByTagName("lfm");
@@ -126,14 +115,13 @@ namespace Gageas.Lutea.LastfmScrobble
                     var status = scrobbles[0].Attributes["status"].Value;
                     if (status == "ok")
                     {
-                        return true;
+                        success = true;
                     }
-                    return false;
                 }
             }
-            return false;
+            Logger.Log("last.fm update " + Controller.Current.MetaData("tagTitle") + (success ? " OK." : " Fail."));
         }
-        
+      
         public object GetSetting()
         {
             return pref.ToDictionary();
@@ -171,6 +159,7 @@ namespace Gageas.Lutea.LastfmScrobble
                     }
                 }
                 this.pref = pref;
+                UpdateNowPlaying();
             }
         }
 
@@ -239,7 +228,7 @@ namespace Gageas.Lutea.LastfmScrobble
 
             [Category("Enable")]
             [DefaultValue(false)]
-            [Description("ScrobbleEnabled")]
+            [Description("Scrobbleを有効にする")]
             public bool ScrobbleEnabled
             {
                 get
@@ -254,7 +243,7 @@ namespace Gageas.Lutea.LastfmScrobble
 
             [Category("Enable")]
             [DefaultValue(false)]
-            [Description("UpdateNowPlayingEnabled")]
+            [Description("NowPlayingの更新を有効にする")]
             public bool UpdateNowPlayingEnabled
             {
                 get
@@ -304,7 +293,7 @@ namespace Gageas.Lutea.LastfmScrobble
             }
 
             [Category("Auth")]
-            [Description("Username")]
+            [Description("ユーザ名")]
             public string Username
             {
                 get
