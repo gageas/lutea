@@ -1990,20 +1990,8 @@ namespace Gageas.Lutea.DefaultUI
                     file_names.Add(Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
                 }
             }
-            var msgText = "";
-            if (file_names.Count == 1)
-            {
-                msgText = "以下のトラックをライブラリから削除してもよろしいですか？\n(ディスク上のファイルは削除されません）\n\n" + file_names[0];
-            }
-            else
-            {
-                msgText = "選択中の" + file_names.Count + "個のトラックをライブラリから削除してもよろしいですか？\n(ディスク上のファイルは削除されません）";
-            }
-            var result = MessageBox.Show(msgText, "ライブラリからのトラックの削除", MessageBoxButtons.OKCancel);
-            if (result == System.Windows.Forms.DialogResult.OK)
-            {
-                Controller.removeItem(file_names);
-            }
+            var dlg = new DeleteFilesDialog(file_names.ToArray());
+            dlg.ShowDialog(this);
         }
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
