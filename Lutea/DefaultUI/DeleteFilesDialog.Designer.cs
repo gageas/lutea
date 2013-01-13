@@ -92,7 +92,10 @@
             this.Controls.Add(this.textBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Name = "DeleteFilesDialog";
+            this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "DeleteFilesDialog";
+            this.TopMost = true;
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -17,7 +17,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             InitializeComponent();
             this.file_names = file_names;
-            this.textBox1.Text = string.Join(System.Environment.NewLine, file_names.Select((_)=>{var tr = _.TrimEnd(); return tr + ", tr" + (_.Length - tr.Length);}).ToArray());
+            this.textBox1.Text = file_names.Length + "個の項目" + System.Environment.NewLine + string.Join(System.Environment.NewLine, file_names.Select((_)=>{var tr = _.TrimEnd(); return tr + ", tr" + (_.Length - tr.Length);}).ToArray());
             this.textBox1.Select(0, 0);
         }
 
