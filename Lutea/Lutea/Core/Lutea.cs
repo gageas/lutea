@@ -648,7 +648,7 @@ namespace Gageas.Lutea.Core
             });
         }
 
-        public static List<string> GetDeadLink()
+        public static List<string> GetDeadLink(VOIDINT callbackMax = null, VOIDINT callbackStep = null)
         {
             object[][] file_names;
             List<string> dead_filenames = new List<string>();
@@ -657,13 +657,17 @@ namespace Gageas.Lutea.Core
                 using (var stmt = db.Prepare("SELECT " + LibraryDBColumnTextMinimum.file_name + " FROM list;"))
                 {
                     file_names = stmt.EvaluateAll();
+                    if (callbackMax != null) { callbackMax(file_names.Length); }
+                    int i = 0;
                     foreach (var _file_name in file_names)
                     {
+                        if (callbackStep != null && i % 10 == 0) { callbackStep(i); }
                         string file_name = _file_name[0].ToString();
                         if (!System.IO.File.Exists(file_name))
                         {
                             dead_filenames.Add(file_name);
                         }
+                        i++;
                     }
                 }
             }

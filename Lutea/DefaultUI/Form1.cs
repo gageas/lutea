@@ -45,6 +45,11 @@ namespace Gageas.Lutea.DefaultUI
         CoverViewerForm coverViewForm;
 
         /// <summary>
+        /// 存在しないファイルを検索するFormを保持
+        /// </summary>
+        FindDeadLinkDialog findDeadLinkDialog;
+
+        /// <summary>
         /// カバーアートをバックグラウンドで読み込むスレッドを保持
         /// </summary>
         Thread coverArtImageLoaderThread;
@@ -2026,12 +2031,9 @@ namespace Gageas.Lutea.DefaultUI
 
         private void removeDeadLinkToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var dead_link = Controller.GetDeadLink();
-            var result = MessageBox.Show(String.Join("\n", dead_link.ToArray()), "以下のファイルをライブラリから削除します", MessageBoxButtons.OKCancel);
-            if (result == System.Windows.Forms.DialogResult.OK)
-            {
-                Controller.removeItem(dead_link);
-            }
+            if (this.findDeadLinkDialog != null && !this.findDeadLinkDialog.IsDisposed) return;
+            this.findDeadLinkDialog = new FindDeadLinkDialog(this);
+            this.findDeadLinkDialog.Show(this);
         }
 
         private void ReImportToolStripMenuItem_Click(object sender, EventArgs e)
