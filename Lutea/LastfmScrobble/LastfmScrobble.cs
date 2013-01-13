@@ -11,7 +11,7 @@ using Gageas.Lutea.Util;
 namespace Gageas.Lutea.LastfmScrobble
 {
     [GuidAttribute("7A719D08-2C82-4A4F-9B33-2CC83B41BDB3")]
-    [LuteaComponentInfo("Last.fm Scrobble", "Gageas", 1.0, "Last.fm Scrobble")]
+    [LuteaComponentInfo("Last.fm Scrobble", "Gageas", 1.1, "Last.fm Scrobble")]
     public class LastfmScrobble : Lutea.Core.LuteaComponentInterface
     {
         private Preference pref = new Preference();
