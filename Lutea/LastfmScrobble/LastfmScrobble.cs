@@ -14,6 +14,7 @@ namespace Gageas.Lutea.LastfmScrobble
     [LuteaComponentInfo("Last.fm Scrobble", "Gageas", 1.1, "Last.fm Scrobble")]
     public class LastfmScrobble : Lutea.Core.LuteaComponentInterface
     {
+        private const int RETRY_COUNT = 5;
         private Preference pref = new Preference();
         private Lastfm lastfm = null;
 
@@ -56,7 +57,7 @@ namespace Gageas.Lutea.LastfmScrobble
 
                 int tagTracknumber = -1;
                 Lutea.Util.Util.tryParseInt(Controller.Current.MetaData("tagTracknumber"), ref tagTracknumber);
-                var result = lastfm.CallAPIWithSig(new List<KeyValuePair<string, string>>() { 
+                var args = new List<KeyValuePair<string, string>>() { 
                     new KeyValuePair<string, string>("method", "track.scrobble"),
                     new KeyValuePair<string, string>("timestamp", Lastfm.CurrentTimestamp.ToString()),
                     new KeyValuePair<string, string>("artist", Controller.Current.MetaData("tagArtist")),
@@ -65,18 +66,23 @@ namespace Gageas.Lutea.LastfmScrobble
                     new KeyValuePair<string, string>("albumArtist", Controller.Current.MetaData("tagAlbumArtist")),
                     new KeyValuePair<string, string>("trackNumber", tagTracknumber <= 0 ? null : tagTracknumber.ToString()),
                     new KeyValuePair<string, string>("duration", ((int)Controller.Current.Length).ToString()),
-                });
+                };
 
-                bool success = false;
-                if (result != null)
+                var success = false;
+                for (int i = 0; i < RETRY_COUNT; i++)
                 {
-                    var scrobbles = result.GetElementsByTagName("scrobbles");
-                    if (scrobbles.Count == 1)
+                    var result = lastfm.CallAPIWithSig(args);
+                    if (result != null)
                     {
-                        var acceptecd = scrobbles.Item(0).Attributes["accepted"].Value;
-                        if (acceptecd == "1")
+                        var scrobbles = result.GetElementsByTagName("scrobbles");
+                        if (scrobbles.Count == 1)
                         {
-                            success = true;
+                            var acceptecd = scrobbles.Item(0).Attributes["accepted"].Value;
+                            if (acceptecd == "1")
+                            {
+                                success = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -97,7 +103,7 @@ namespace Gageas.Lutea.LastfmScrobble
 
             int tagTracknumber = -1;
             Lutea.Util.Util.tryParseInt(Controller.Current.MetaData("tagTracknumber"), ref tagTracknumber);
-            var result = lastfm.CallAPIWithSig(new List<KeyValuePair<string, string>>() { 
+            var args = new List<KeyValuePair<string, string>>() { 
                 new KeyValuePair<string, string>("method", "track.updateNowPlaying"),
                 new KeyValuePair<string, string>("artist", Controller.Current.MetaData("tagArtist")),
                 new KeyValuePair<string, string>("track", Controller.Current.MetaData("tagTitle")),
@@ -105,18 +111,23 @@ namespace Gageas.Lutea.LastfmScrobble
                 new KeyValuePair<string, string>("albumArtist", Controller.Current.MetaData("tagAlbumArtist")),
                 new KeyValuePair<string, string>("trackNumber", tagTracknumber <= 0 ? null : tagTracknumber.ToString()),
                 new KeyValuePair<string, string>("duration", ((int)Controller.Current.Length).ToString()),
-            });
+            };
 
             var success = false;
-            if (result != null)
+            for (int i = 0; i < RETRY_COUNT; i++)
             {
-                var scrobbles = result.GetElementsByTagName("lfm");
-                if (scrobbles.Count == 1)
+                var result = lastfm.CallAPIWithSig(args);
+                if (result != null)
                 {
-                    var status = scrobbles[0].Attributes["status"].Value;
-                    if (status == "ok")
+                    var scrobbles = result.GetElementsByTagName("lfm");
+                    if (scrobbles.Count == 1)
                     {
-                        success = true;
+                        var status = scrobbles[0].Attributes["status"].Value;
+                        if (status == "ok")
+                        {
+                            success = true;
+                            break;
+                        }
                     }
                 }
             }
