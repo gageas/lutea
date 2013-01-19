@@ -25,6 +25,11 @@ namespace Gageas.Lutea.DefaultUI
     public partial class DefaultUIForm : Form, Lutea.Core.LuteaUIComponentInterface
     {
         /// <summary>
+        /// NowPlayingツイートのデフォルトの書式
+        /// </summary>
+        internal const string DefaultNowPlayingFormat = "#NowPlaying %tagTitle% - %tagArtist% [Lutea]";
+
+        /// <summary>
         /// 発行中のクエリのステータス
         /// </summary>
         enum QueryStatus { Normal, Waiting, Error };
@@ -129,6 +134,7 @@ namespace Gageas.Lutea.DefaultUI
         private Keys hotkey_NextTrack = Keys.None;
         private Keys hotkey_PrevTrack = Keys.None;
 
+        private string NowPlayingFormat = DefaultNowPlayingFormat;
 
         public DefaultUIForm()
         {
@@ -1031,6 +1037,21 @@ namespace Gageas.Lutea.DefaultUI
         #region UI Component events
 
         #region mainMenu event
+        private void twToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!Controller.IsPlaying) return;
+            var re = new Regex("%([0-9a-z_]+)%", RegexOptions.IgnoreCase);
+            try
+            {
+                var text = re.Replace(NowPlayingFormat, (_) => { return Controller.Current.MetaData(Controller.GetColumnIndexByName(_.Groups[1].Value)); });
+                Shell32.OpenPath("https://twitter.com/intent/tweet?text=" + Uri.EscapeDataString(text));
+            }
+            catch (Exception ee)
+            {
+                Logger.Log(ee);
+            }
+        }
+
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -2276,6 +2297,7 @@ namespace Gageas.Lutea.DefaultUI
                 ()=>hotkey_Stop = (Keys)setting["Hotkey_Stop"],
                 ()=>hotkey_NextTrack = (Keys)setting["Hotkey_NextTrack"],
                 ()=>hotkey_PrevTrack = (Keys)setting["Hotkey_PrevTrack"],
+                ()=>NowPlayingFormat = (string)setting["NowPlayingFormat"],
             }, null);
         }
 
@@ -2455,6 +2477,7 @@ namespace Gageas.Lutea.DefaultUI
             setting["Hotkey_Stop"] = hotkey_Stop;
             setting["Hotkey_NextTrack"] = hotkey_NextTrack;
             setting["Hotkey_PrevTrack"] = hotkey_PrevTrack;
+            setting["NowPlayingFormat"] = NowPlayingFormat;
             return setting;
         }
 
@@ -2477,6 +2500,7 @@ namespace Gageas.Lutea.DefaultUI
             pref.Hotkey_Stop = this.hotkey_Stop;
             pref.Hotkey_NextTrack = this.hotkey_NextTrack;
             pref.Hotkey_PrevTrack = this.hotkey_PrevTrack;
+            pref.NowPlayingFormat = this.NowPlayingFormat;
 
             return pref;
         }
@@ -2514,6 +2538,7 @@ namespace Gageas.Lutea.DefaultUI
             this.hotkey_Stop = pref.Hotkey_Stop;
             this.hotkey_NextTrack = pref.Hotkey_NextTrack;
             this.hotkey_PrevTrack = pref.Hotkey_PrevTrack;
+            this.NowPlayingFormat = pref.NowPlayingFormat;
             ResetHotKeys();
             ResetPlaylistView();
             ResetTrackInfoView();

@@ -30,11 +30,11 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DefaultUIForm));
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("ノード1");
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("ノード2");
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("folder", new System.Windows.Forms.TreeNode[] {
-            treeNode4,
-            treeNode5});
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("ノード1");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("ノード2");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("folder", new System.Windows.Forms.TreeNode[] {
+            treeNode1,
+            treeNode2});
             this.xTrackBar1 = new Gageas.Lutea.DefaultUI.XTrackBar();
             this.queryTreeViewContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.クエリ作成ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,6 +68,7 @@
             this.toolStripXTrackbar1 = new Gageas.Lutea.DefaultUI.ToolStripXTrackbar();
             this.toolStripComboBox2 = new Gageas.Lutea.DefaultUI.ToolStripComboBox();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tweetNowPlayingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.logToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -409,23 +410,31 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tweetNowPlayingToolStripMenuItem,
             this.logToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(85, 22);
             this.fileToolStripMenuItem.Text = "ファイル(&F)";
             // 
+            // tweetNowPlayingToolStripMenuItem
+            // 
+            this.tweetNowPlayingToolStripMenuItem.Name = "tweetNowPlayingToolStripMenuItem";
+            this.tweetNowPlayingToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.tweetNowPlayingToolStripMenuItem.Text = "tweet NowPlaying...";
+            this.tweetNowPlayingToolStripMenuItem.Click += new System.EventHandler(this.twToolStripMenuItem_Click);
+            // 
             // logToolStripMenuItem
             // 
             this.logToolStripMenuItem.Name = "logToolStripMenuItem";
-            this.logToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.logToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.logToolStripMenuItem.Text = "ログ...";
             this.logToolStripMenuItem.Click += new System.EventHandler(this.logToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.exitToolStripMenuItem.Text = "終了";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -683,14 +692,14 @@
             this.treeView1.Indent = 14;
             this.treeView1.Location = new System.Drawing.Point(0, 0);
             this.treeView1.Name = "treeView1";
-            treeNode4.Name = "ノード1";
-            treeNode4.Text = "ノード1";
-            treeNode5.Name = "ノード2";
-            treeNode5.Text = "ノード2";
-            treeNode6.Name = "ノード0";
-            treeNode6.Text = "folder";
+            treeNode1.Name = "ノード1";
+            treeNode1.Text = "ノード1";
+            treeNode2.Name = "ノード2";
+            treeNode2.Text = "ノード2";
+            treeNode3.Name = "ノード0";
+            treeNode3.Text = "folder";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode6});
+            treeNode3});
             this.treeView1.Size = new System.Drawing.Size(223, 189);
             this.treeView1.TabIndex = 24;
             this.treeView1.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView1_ItemDrag);
@@ -1134,6 +1143,7 @@
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.ImageList mainTabPanelImageList;
         private System.Windows.Forms.ToolStripMenuItem importFullToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem tweetNowPlayingToolStripMenuItem;
     }
 }
 

@@ -19,6 +19,15 @@ namespace Gageas.Lutea.DefaultUI
             return System.Drawing.Icon.FromHandle((isLarge ? large : small)[0]);
         }
 
+        public static void OpenPath(string url)
+        {
+            var info = new SHELLEXECUTEINFO(IntPtr.Zero);
+            info.lpVerb = "open";
+            info.lpFile = url;
+            info.fMask = SHELLEXECUTEINFO.FMASK.SEE_MASK_FLAG_NO_UI;
+            var ret = ShellExecuteExW(ref info);
+        }
+
         public static void OpenPropertiesDialog(IntPtr hWnd, string file)
         {
             var info = new SHELLEXECUTEINFO(hWnd);
