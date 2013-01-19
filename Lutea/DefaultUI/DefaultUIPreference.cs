@@ -312,6 +312,16 @@ namespace Gageas.Lutea.DefaultUI
                 hotkey_Stop = value;
             }
         }
+
+        private string nowPlayingFormat;
+        [Description("Now Playingツイートの書式")]
+        [DefaultValue(DefaultUIForm.DefaultNowPlayingFormat)]
+        public string NowPlayingFormat
+        {
+            get { return nowPlayingFormat; }
+            set { nowPlayingFormat = string.IsNullOrEmpty(value) ? DefaultUIForm.DefaultNowPlayingFormat : value; }
+        }
+
         private DefaultUIForm form;
         public DefaultUIPreference(DefaultUI.DefaultUIForm form)
         {
