@@ -10,7 +10,7 @@ namespace Gageas.Wrapper.BASS
 {
     class BASSWASAPIOutput : BASS.IPlayable, IDisposable
     {
-        private delegate UInt32 WASAPISTREAMPROC(IntPtr buffer, UInt32 length, IntPtr user);
+        private delegate UInt32 WASAPIStreamProc(IntPtr buffer, UInt32 length, IntPtr user);
 
         /// <summary>
         /// 現在のデバイスについての情報を保持する構造体
@@ -65,7 +65,7 @@ namespace Gageas.Wrapper.BASS
                 BASS_DEVICE_LOOPBACK = 8,
                 BASS_DEVICE_INPUT = 16,
             }
-            
+
             private IntPtr name;
             private IntPtr id;
             public Types Type;
@@ -115,32 +115,32 @@ namespace Gageas.Wrapper.BASS
         {
         }
 
-        private static BASSWASAPIOutput lastConstructed = null;
-        private static bool isAvailable = false;
         public static bool IsAvailable
         {
-            get { return isAvailable; }
+            private set;
+            get;
         }
 
-        private static WASAPISTREAMPROC streamProc = (buffer, length, user) =>
-            (lastConstructed == null || lastConstructed.disposed)
-                ? 0x80000000
-                : lastConstructed.originalStreamProc(buffer, length);
-
-        private bool running = false;
+        private WASAPIStreamProc streamProc;
         private BASS.StreamProc originalStreamProc;
+        private bool running = false;
         private bool disposed = true;
         private static List<int> bassThreadIDs = new List<int>();
-        
+
+        private IntPtr pauseBackup = IntPtr.Zero;
+        private uint pauseBackupLen = 0;
+        private uint pauseBackupPos = 0;
+
         #region Static Constructor
         static BASSWASAPIOutput()
         {
+            IsAvailable = false;
             try
             {
                 uint wasapiVer = 0;
                 wasapiVer = BASS_WASAPI_GetVersion();
                 if (wasapiVer == 0) return;
-                isAvailable = true;
+                IsAvailable = true;
             }
             catch { }
         }
@@ -153,13 +153,28 @@ namespace Gageas.Wrapper.BASS
 
         public BASSWASAPIOutput(uint freq, uint chans, BASS.StreamProc proc, InitFlags flag, int device = -1)
         {
+
             bool success = false;
-            if (lastConstructed != null)
-            {
-                lastConstructed.Dispose();
-                lastConstructed = null;
-            }
             this.originalStreamProc = proc;
+            this.streamProc = (buffer, length, user) =>
+            {
+                // Pause時のバックアップからコピーする
+                if (pauseBackup != IntPtr.Zero)
+                {
+                    uint tocopy = Math.Min(length, pauseBackupLen - pauseBackupPos);
+                    MoveMemory(buffer, (IntPtr)(pauseBackup.ToInt32() + pauseBackupPos), (int)tocopy);
+                    pauseBackupPos += tocopy;
+                    if (pauseBackupPos == pauseBackupLen)
+                    {
+                        Marshal.FreeHGlobal(pauseBackup);
+                        pauseBackup = IntPtr.Zero;
+                    }
+                    if (tocopy == length) return length;
+                    return originalStreamProc((IntPtr)(buffer.ToInt32() + tocopy), length - tocopy) + tocopy;
+                }
+
+                return originalStreamProc(buffer, length);
+            };
 
             // Init前から走っていたスレッドのIdを保持
             var ths_before = System.Diagnostics.Process.GetCurrentProcess().Threads;
@@ -186,7 +201,6 @@ namespace Gageas.Wrapper.BASS
                 throw new BASSWASAPIException();
             }
             disposed = false;
-            lastConstructed = this;
         }
 
         public override void Dispose()
@@ -194,6 +208,11 @@ namespace Gageas.Wrapper.BASS
             if (this.disposed) return;
             Stop();
             BASS_WASAPI_Free();
+            if (pauseBackup != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(pauseBackup);
+                pauseBackup = IntPtr.Zero;
+            }
             GC.SuppressFinalize(this);
             this.disposed = true;
         }
@@ -233,6 +252,11 @@ namespace Gageas.Wrapper.BASS
         {
             if (disposed) return false;
             running = false;
+            if (pauseBackup != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(pauseBackup);
+                pauseBackup = IntPtr.Zero;
+            }
             return BASS_WASAPI_Stop(true);
         }
 
@@ -247,7 +271,22 @@ namespace Gageas.Wrapper.BASS
         {
             if (disposed) return false;
             running = false;
-            return BASS_WASAPI_Stop(false);
+
+            // バッファに入ってるデータを退避する
+            var buflen = Info.Buflen;
+            if (pauseBackup != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(pauseBackup);
+            }
+            pauseBackup = Marshal.AllocHGlobal((int)buflen);
+            pauseBackupLen = BASS_WASAPI_GetData(pauseBackup, buflen);
+            pauseBackupPos = 0;
+            if (pauseBackupLen == 0)
+            {
+                Marshal.FreeHGlobal(pauseBackup);
+                pauseBackup = IntPtr.Zero;
+            }
+            return BASS_WASAPI_Stop(true);
         }
 
         public override bool SetVolume(float vol, uint timespan)
@@ -256,10 +295,6 @@ namespace Gageas.Wrapper.BASS
         }
         public override bool SetVolume(float vol)
         {
-            if (vol == -1)
-            {
-                BASS_WASAPI_Stop(true);
-            }
             return false;
         }
 
@@ -336,9 +371,12 @@ namespace Gageas.Wrapper.BASS
         }
 
         #region DLLImport BASSWASAPI
+        [DllImport("Kernel32.dll", EntryPoint = "RtlMoveMemory", SetLastError = false)]
+        static extern void MoveMemory(IntPtr dest, IntPtr src, int size);
+
         [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_Init")]
         private static extern bool BASS_WASAPI_Init(int device, uint freq, uint chans, uint flags,
-            float buffer, float period, WASAPISTREAMPROC proc, IntPtr user);
+            float buffer, float period, WASAPIStreamProc proc, IntPtr user);
 
         [DllImport("basswasapi.dll", EntryPoint = "BASS_WASAPI_Free")]
         private static extern bool BASS_WASAPI_Free();
