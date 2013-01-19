@@ -26,6 +26,8 @@ namespace Gageas.Lutea.DefaultUI
 
         public void AppendText(String s)
         {
+            if (this.IsDisposed) return;
+            if (this.l == null) return;
             if (this.InvokeRequired)
             {
                 this.Invoke((MethodInvoker)(() => AppendText(s)));
@@ -38,7 +40,11 @@ namespace Gageas.Lutea.DefaultUI
 
         private void LogViewerForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Logger.LogClient -= l;
+            if (l != null)
+            {
+                Logger.LogClient -= l;
+                l = null;
+            }
         }
 
     }
