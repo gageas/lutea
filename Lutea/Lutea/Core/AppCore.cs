@@ -1008,19 +1008,27 @@ namespace Gageas.Lutea.Core
                     if (iTunSMPB.Value != null)
                     {
                         var smpbs = iTunSMPB.Value.ToString().Trim().Split(new char[] { ' ' }).Select(_ => System.Convert.ToUInt64(_, 16)).ToArray();
-                        // ref. http://nyaochi.sakura.ne.jp/archives/2006/09/15/itunes-v70070%E3%81%AE%E3%82%AE%E3%83%A3%E3%83%83%E3%83%97%E3%83%AC%E3%82%B9%E5%87%A6%E7%90%86/
-                        nextStream.cueOffset = (smpbs[1]) * newstream.GetChans() * sizeof(float);
-                        nextStream.cueLength = (smpbs[3]) * newstream.GetChans() * sizeof(float);
-                        nextStream.invalidateCueLengthOnSeek = true;
+                        // ライブラリで既に補正されている場合は何もしない
+                        if (newstream.filesize != (smpbs[3]) * newstream.GetChans() * sizeof(float))
+                        {
+                            // ref. http://nyaochi.sakura.ne.jp/archives/2006/09/15/itunes-v70070%E3%81%AE%E3%82%AE%E3%83%A3%E3%83%83%E3%83%97%E3%83%AC%E3%82%B9%E5%87%A6%E7%90%86/
+                            nextStream.cueOffset = (smpbs[1] + smpbs[2]) * newstream.GetChans() * sizeof(float);
+                            nextStream.cueLength = (smpbs[3]) * newstream.GetChans() * sizeof(float);
+                            nextStream.invalidateCueLengthOnSeek = true;
+                        }
                     }
                     else
                     {
                         var lametag = Lametag.Read(filename.Trim());
                         if (lametag != null)
                         {
-                            nextStream.cueOffset = (ulong)(lametag.delay) * newstream.GetChans() * sizeof(float);
-                            nextStream.cueLength = newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float);
-                            nextStream.invalidateCueLengthOnSeek = true;
+                            // ライブラリで既に補正されている場合は何もしない
+                            if (nextStream.stream.filesize != newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float))
+                            {
+                                nextStream.cueOffset = (ulong)(lametag.delay) * newstream.GetChans() * sizeof(float);
+                                nextStream.cueLength = newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float);
+                                nextStream.invalidateCueLengthOnSeek = true;
+                            }
                         }
                     }
                 }
@@ -1066,6 +1074,7 @@ namespace Gageas.Lutea.Core
                             Thread.Sleep(0);
                             left -= (uint)toread;
                         }
+                        Marshal.FreeHGlobal(mem);
                     }
                     else
                     {
