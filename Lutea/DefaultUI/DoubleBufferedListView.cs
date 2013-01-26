@@ -51,7 +51,8 @@ namespace Gageas.Lutea.DefaultUI
             public IntPtr lParam;
             /* 以下略 */
         }
-
+        private const int WM_KEYDOWN = 0x0100;
+        private const int WM_ERASEBKGND = 0x0014;
         public DoubleBufferedListView()
         {
             this.DoubleBuffered = true;
@@ -59,10 +60,18 @@ namespace Gageas.Lutea.DefaultUI
 
         protected override void WndProc(ref Message m)
         {
-            // VirtualModeかつViewがSmallIcon or LargeIconのときShift+SPで落ちるのでSPキー入力を握りつぶす
-            if (this.VirtualMode == true && (View == System.Windows.Forms.View.SmallIcon || View == System.Windows.Forms.View.LargeIcon) && m.Msg == 256 && m.WParam == (IntPtr)0x20)
+            switch (m.Msg)
             {
-                return;
+                case WM_KEYDOWN:
+                    // VirtualModeかつViewがSmallIcon or LargeIconのときShift+SPで落ちるのでSPキー入力を握りつぶす
+                    if (this.VirtualMode == true && (View == System.Windows.Forms.View.SmallIcon || View == System.Windows.Forms.View.LargeIcon) && m.WParam == (IntPtr)0x20)
+                    {
+                        return;
+                    }
+                    break;
+                case WM_ERASEBKGND:
+                    m.Result = (IntPtr)1;
+                    return;
             }
             base.WndProc(ref m);
         }

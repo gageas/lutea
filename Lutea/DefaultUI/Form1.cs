@@ -2830,6 +2830,7 @@ namespace Gageas.Lutea.DefaultUI
 
                 GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.WHITE_PEN));
                 GDI.SetTextColor(hDC, (uint)(isSelected ? SystemColors.HighlightText.ToArgb() : SystemColors.ControlText.ToArgb()) & 0xffffff);
+                GDI.SetBkMode(hDC, GDI.BkMode.TRANSPARENT);
 
 
                 // 各column描画
