@@ -20,6 +20,8 @@ namespace Gageas.Lutea.DefaultUI
         private const UInt32 LVIF_STATE = 0x0008;
         private const UInt32 LVIS_SELECTED = 0x0002;
         private const int WM_SETFONT = 0x0030;
+        private const int WM_KEYDOWN = 0x0100;
+        private const int WM_ERASEBKGND = 0x0014;
 
         struct HDITEM
         {
@@ -51,8 +53,7 @@ namespace Gageas.Lutea.DefaultUI
             public IntPtr lParam;
             /* 以下略 */
         }
-        private const int WM_KEYDOWN = 0x0100;
-        private const int WM_ERASEBKGND = 0x0014;
+
         public DoubleBufferedListView()
         {
             this.DoubleBuffered = true;
