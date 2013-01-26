@@ -77,6 +77,14 @@ namespace Gageas.Lutea.DefaultUI
             uint dwRaster    // ラスタオペレーションコード
         );
 
+        public enum BkMode : int
+        {
+            OPAQUE = 0,
+            TRANSPARENT	= 1,
+        }
+        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "SetBkMode")]
+        public static extern int SetBkMode(IntPtr hDC, BkMode bkMode);
+
         public enum StockObjects
         {
             WHITE_BRUSH = 0,
