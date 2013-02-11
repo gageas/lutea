@@ -721,9 +721,8 @@ namespace Gageas.Lutea.Core
                             CreateOrderedPlaylistTableInDB();
                         }
 
-                        // プレイリストの先頭一定数をキャッシュ
+                        // プレイリストキャッシュ用の配列を作成
                         playlistCache = new object[currentPlaylistRows][];
-                        h2k6db.FetchRowRange(GetPlaylistTableName(), 0, PlaylistPreCacheCount, playlistCache);
                         latestPlaylistQuery = sql;
                     }
                 }
@@ -772,13 +771,6 @@ namespace Gageas.Lutea.Core
                         Controller._PlaylistUpdated(sql);
 
                         if (playOnCreate) PlayPlaylistItem(0);
-
-                        // プレイリストの残りをなめてキャッシュする
-                        for (int i = PlaylistPreCacheCount; i < currentPlaylistRows; i++)
-                        {
-                            Controller.GetPlaylistRow(i);
-                        }
-                        Logger.Debug("なめおわった");
                     }
                 }
                 catch (ThreadInterruptedException) { }
