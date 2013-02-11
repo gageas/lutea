@@ -514,8 +514,17 @@ namespace Gageas.Lutea.Core
                     {
                         pluginSettings.Add(p.GetType().GUID, p.GetSetting());
                     }
-                    catch { }
-                    finally { p.Quit(); }
+                    catch(Exception e) {
+                        Logger.Error(e);
+                    }
+                    finally
+                    {
+                        try { p.Quit(); }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex);
+                        }
+                    }
                 }
                 (new BinaryFormatter()).Serialize(fs, pluginSettings);
             }
