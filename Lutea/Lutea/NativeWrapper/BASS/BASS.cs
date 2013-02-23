@@ -8,142 +8,15 @@ namespace Gageas.Wrapper.BASS
 {
     public class BASS
     {
-        #region Plugin
+        internal const uint BASS_UNICODE = 0x80000000;
+        internal const uint BASS_ASYNCFILE = 0x40000000;
+        internal const uint BASS_POS_BYTE = 0;
+
+        public delegate UInt32 StreamProc(IntPtr bffer, UInt32 length);
+
         /// <summary>
-        /// Pluginクラス
+        /// Sync（再生時イベントタイプ列挙体）
         /// </summary>
-        public class Plugin : IDisposable
-        {
-            private static List<Plugin> plugins = new List<Plugin>();
-
-            public static Plugin[] GetPlugins()
-            {
-                return plugins.ToArray();
-            }
-
-            public static Boolean Load(string filename, uint flags)
-            {
-                IntPtr pinPtr = (IntPtr)0;
-                try
-                {
-                    pinPtr = _BASS_PluginLoad(filename, BASS_UNICODE | flags);
-                    if (pinPtr != (IntPtr)0)
-                    {
-                        var pin = new Plugin(filename, pinPtr);
-                        plugins.Add(pin);
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
-
-            private IntPtr ptr;
-            private string filename;
-
-            private Plugin(string filename, IntPtr ptr)
-            {
-                this.filename = filename;
-                this.ptr = ptr;
-            }
-
-            public void Dispose()
-            {
-                _BASS_PluginFree(ptr);
-                ptr = IntPtr.Zero;
-                GC.SuppressFinalize(this);
-            }
-
-            ~Plugin()
-            {
-                this.Dispose();
-            }
-
-            public string Filename
-            {
-                get { return filename; }
-            }
-
-            BASS_PLUGININFO GetInfo()
-            {
-                var p_pinfo = _BASS_PluginGetInfo(ptr);
-                return (BASS_PLUGININFO)Marshal.PtrToStructure(p_pinfo, typeof(BASS_PLUGININFO));
-            }
-
-            public UInt32 Version
-            {
-                get { return GetInfo().Version; }
-            }
-
-            public BASSPluginFormat[] GetFormats()
-            {
-                var p_pinfo = _BASS_PluginGetInfo(ptr);
-                var info = GetInfo();
-                if (info.FormatCount <= 0) return null;
-                BASSPluginFormat[] forms = new BASSPluginFormat[info.FormatCount];
-                for (int i = 0; i < info.FormatCount; i++)
-                {
-                    forms[i] = GetPluginForm(p_pinfo, i);
-                }
-                return forms;
-            }
-
-            BASSPluginFormat GetPluginForm(IntPtr thisptr, int index)
-            {
-                BASSPluginFormat pform;
-                var ptr = Marshal.ReadIntPtr(thisptr, sizeof(UInt32) * 2);
-                pform = (BASSPluginFormat)Marshal.PtrToStructure(new IntPtr((int)ptr + (sizeof(UInt32) + IntPtr.Size + IntPtr.Size) * index), typeof(BASSPluginFormat));
-                return pform;
-            }
-
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct BASSPluginFormat
-        {
-            UInt32 ctype;
-            IntPtr name;
-            IntPtr exts;
-            public UInt32 CType
-            {
-                get
-                {
-                    return ctype;
-                }
-            }
-            public string Name
-            {
-                get
-                {
-                    return Marshal.PtrToStringAnsi(name);
-                }
-            }
-            public string Exts
-            {
-                get
-                {
-                    return Marshal.PtrToStringAnsi(exts);
-                }
-            }
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        struct BASS_PLUGININFO
-        {
-            public UInt32 Version;
-            public UInt32 FormatCount;
-        }
-        #endregion
-
-        /*
-         * Sync（再生時イベント列挙体）
-         */
         public enum SYNC_TYPE
         {
             POS = 0,
@@ -160,15 +33,16 @@ namespace Gageas.Wrapper.BASS
             OGG_CHANGE = 12
         }
 
-        /*
-         * BASS_ChannelSlideAttributeで使うAttributes
-         */
+        /// <summary>
+        /// BASS_ChannelSlideAttributeで使うAttributes
+        /// </summary>
         private enum BASS_ATTRIB
         {
             FREQ = 1, VOL, PAN, EAXMIX,
             MUSIC_AMPLIFY = 0x100, MUSIC_PANSEP, MUSIC_PSCALER, MUSIC_BPM, MUSIC_SPEED, MUSIC_VOL_GLOBAL, MUSIC_VOL_CHAN = 0x200, MUSIC_VOL_INST = 0x300
         }
-        public enum BASS_CONFIG
+
+        public enum BASS_CONFIG : uint
         {
             BASS_CONFIG_BUFFER = 0,
             BASS_CONFIG_UPDATEPERIOD = 1,
@@ -189,24 +63,25 @@ namespace Gageas.Wrapper.BASS
             BASS_CONFIG_MUSIC_VIRTUAL = 22,
             BASS_CONFIG_VERIFY = 23,
             BASS_CONFIG_UPDATETHREADS = 24,
+            BASS_CONFIG_ASYNCFILE_BUFFER = 45,
         }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct BASS_CHANNELINFO
         {
-            public UInt32 freq;
-            public UInt32 chans;
-            public Stream.StreamFlag flags;
-            public UInt32 ctype;
-            public UInt32 origres;
-            public IntPtr plugin;
-            public IntPtr sample;
-            private IntPtr _filename;
-            public string filename
+            public UInt32 Freq;
+            public UInt32 Chans;
+            public Stream.StreamFlag Flags;
+            public UInt32 Ctype;
+            public UInt32 OrigRes;
+            public IntPtr Plugin;
+            public IntPtr Sample;
+            private IntPtr filename;
+            public string Filename
             {
                 get
                 {
-                    return Marshal.PtrToStringUni(_filename);
+                    return Marshal.PtrToStringUni(filename);
                 }
             }
         }
@@ -247,17 +122,17 @@ namespace Gageas.Wrapper.BASS
                 }
             }
 
-            public bool isEnabled
+            public bool IsEnabled
             {
                 get { return (Flags & FLAGS.ENABLED) != 0; }
             }
 
-            public bool isDefault
+            public bool IsDefault
             {
                 get { return (Flags & FLAGS.DEFAULT) != 0; }
             }
 
-            public bool isInit
+            public bool IsInit
             {
                 get { return (Flags & FLAGS.INIT) != 0; }
             }
@@ -268,24 +143,19 @@ namespace Gageas.Wrapper.BASS
             }
         }
 
+        private static List<int> bassThreadIDs = new List<int>();
+
         public static BASS_DEVICEINFO? GetDeviceInfo(UInt32 device)
         {
             BASS_DEVICEINFO info;
             bool success = _BASS_GetDeviceInfo(device, out info);
             return success ? info : (BASS_DEVICEINFO?)null;
         }
-        
-        public delegate UInt32 StreamProc(IntPtr bffer, UInt32 length);
-
-        private const uint BASS_UNICODE = 0x80000000;
-        private const uint BASS_POS_BYTE = 0;
-
-        private static List<int> bassThreadIDs = new List<int>();
 
         public static Boolean Floatable {
             get
             {
-                if (!BASS.isAvailable) return false;
+                if (!BASS.IsAvailable) return false;
                 bool floatable = false;
                 using (var strm = new UserSampleStream(44100, 1, null, Stream.StreamFlag.BASS_STREAM_FLOAT))
                 {
@@ -368,7 +238,7 @@ namespace Gageas.Wrapper.BASS
         /// <summary>
         /// bass.dllの読み込みに成功したかどうか
         /// </summary>
-        public static bool isAvailable
+        public static bool IsAvailable
         {
             get
             {
@@ -377,32 +247,6 @@ namespace Gageas.Wrapper.BASS
                     return BASS.BASS_GetVersion() > 0;
                 }
                 catch { return false; }
-            }
-        }
-
-        [System.Obsolete("これはシステムのマスターボリュームを変更する。Channnel#volumeを使うべし")]
-        public static float volume
-        {
-            get
-            {
-                return _BASS_GetVolume();
-            }
-
-            set
-            {
-                _BASS_SetVolume(value);
-            }
-        }
-
-        public static IntPtr BASS_StreamCreateFile(Boolean ismemory, string filename, uint offset, uint length, uint flags)
-        {
-            try
-            {
-                return _BASS_StreamCreateFile(ismemory, filename, offset, length, BASS_UNICODE | flags);
-            }
-            catch (Exception)
-            {
-                return (IntPtr)0;
             }
         }
 
@@ -439,7 +283,7 @@ namespace Gageas.Wrapper.BASS
             public abstract bool SetMute(bool mute);
         }
 
-        public abstract class Channel : IPlayable, IDisposable
+        public abstract class Channel : IPlayable
         {
             private _SyncProc dSyncProcProxyInvoker;
             protected bool disposed = false;
@@ -454,7 +298,6 @@ namespace Gageas.Wrapper.BASS
              * BASS.dllにList内のindexを渡しているので、removeしてはいけない。
              * removeSyncはnullに書き換えることで行う
              */
-//            private static Dictionary<int, SyncObject> syncProcs = new Dictionary<int, SyncObject>();            private static Dictionary<int, SyncObject> syncProcs = new Dictionary<int, SyncObject>();
             private List<SyncObject> syncProcs = new List<SyncObject>();
             public delegate void SyncProc(SYNC_TYPE type, object cookie);
             private class SyncObject
@@ -514,9 +357,8 @@ namespace Gageas.Wrapper.BASS
                     return _BASS_ChannelGetLength(handle, 0);
                 }
             }
-            /*
-             * 0 to 1
-             */
+
+            // 0 to 1
             public float volume
             {
                 set
@@ -652,12 +494,12 @@ namespace Gageas.Wrapper.BASS
 
             public override uint GetFreq()
             {
-                return Info.freq;
+                return Info.Freq;
             }
 
             public override uint GetChans()
             {
-                return Info.chans;
+                return Info.Chans;
             }
         }
 
@@ -699,7 +541,7 @@ namespace Gageas.Wrapper.BASS
         {
             public FileStream(String filename, StreamFlag flags = 0, ulong offset = 0, ulong length = 0)
             {
-                IntPtr ret = _BASS_StreamCreateFile(false, filename, offset, length, (BASS_UNICODE | (uint)flags));
+                IntPtr ret = _BASS_StreamCreateFile(false, filename, offset, length, (BASS_UNICODE | BASS_ASYNCFILE | (uint)flags));
                 if (ret == IntPtr.Zero)
                 {
                     throw (new Exception("Could not create stream.\ncode is " + BASS_ErrorGetCode()));
@@ -712,15 +554,6 @@ namespace Gageas.Wrapper.BASS
         #region DLLImport BASS
         [DllImport("bass.dll", EntryPoint = "BASS_Init")]
         private static extern Boolean BASS_Init(int device, uint freq, uint flags, IntPtr hwnd, IntPtr guid);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_PluginLoad", CharSet = CharSet.Unicode)]
-        private static extern IntPtr _BASS_PluginLoad(string filename, uint flags);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_PluginFree", CharSet = CharSet.Unicode)]
-        private static extern bool _BASS_PluginFree(IntPtr plugin);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_PluginGetInfo", CharSet = CharSet.Unicode)]
-        private static extern IntPtr _BASS_PluginGetInfo(IntPtr plugin);
 
         [DllImport("bass.dll", EntryPoint = "BASS_SetConfig", CharSet = CharSet.Unicode)]
         public static extern bool BASS_SetConfig(BASS_CONFIG option, UInt32 value);
@@ -789,12 +622,6 @@ namespace Gageas.Wrapper.BASS
 
         [DllImport("bass.dll", EntryPoint = "BASS_ErrorGetCode")]
         public static extern int BASS_ErrorGetCode();
-
-        [DllImport("bass.dll", EntryPoint = "BASS_SetVolume")]
-        private static extern bool _BASS_SetVolume(float volume);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_GetVolume")]
-        private static extern float _BASS_GetVolume();
 
         [DllImport("bass.dll", EntryPoint = "BASS_GetVersion")]
         private static extern UInt32 BASS_GetVersion();

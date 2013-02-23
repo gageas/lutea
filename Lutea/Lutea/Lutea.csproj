@@ -111,6 +111,7 @@
     <Compile Include="Library\Importer.cs" />
     <Compile Include="Library\LibraryDBColumnTextMinimum.cs" />
     <Compile Include="Library\UserDirectory.cs" />
+    <Compile Include="NativeWrapper\BASS\BASSPlugin.cs" />
     <Compile Include="NativeWrapper\BASS\BASSWASAPIOutput.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Tags\ApeTag.cs" />

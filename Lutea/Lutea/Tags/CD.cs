@@ -168,8 +168,8 @@ namespace Gageas.Lutea.Tags
                                         using (var strm = new BASS.FileStream(last_filename,BASS.Stream.StreamFlag.BASS_STREAM_DECODE))
                                         {
                                             sec = strm.length;
-                                            last_channels = (int)strm.Info.chans;
-                                            last_freq = (int)strm.Info.freq;
+                                            last_channels = (int)strm.Info.Chans;
+                                            last_freq = (int)strm.Info.Freq;
                                             bits = (new FileInfo(last_filename)).Length * 8;
                                         }
                                     }
@@ -179,8 +179,8 @@ namespace Gageas.Lutea.Tags
                                             using (var strm2 = new BASS.FileStream(filename,BASS.Stream.StreamFlag.BASS_STREAM_DECODE))
                                             {
                                                 sec = strm2.length;
-                                                last_channels = (int)strm2.Info.chans;
-                                                last_freq = (int)strm2.Info.freq;
+                                                last_channels = (int)strm2.Info.Chans;
+                                                last_freq = (int)strm2.Info.Freq;
                                                 bits = (new FileInfo(filename)).Length * 8;
                                             }
                                         }
