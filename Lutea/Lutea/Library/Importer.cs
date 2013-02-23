@@ -219,8 +219,8 @@ namespace Gageas.Lutea.Library
                     libraryDB.Exec("COMMIT;");
                     if (OptimizeDB)
                     {
-                        libraryDB.Exec("VACUUM;");
-                        libraryDB.Exec("REINDEX;");
+//                        libraryDB.Exec("VACUUM;");
+//                        libraryDB.Exec("REINDEX;");
                     }
                 }
                 catch
@@ -354,8 +354,8 @@ namespace Gageas.Lutea.Library
                         using (var strm = new BASS.FileStream(file_name,BASS.Stream.StreamFlag.BASS_STREAM_DECODE))
                         {
                             tr.duration = (int)strm.length;
-                            tr.channels = (int)strm.Info.chans;
-                            tr.freq = (int)strm.Info.freq;
+                            tr.channels = (int)strm.Info.Chans;
+                            tr.freq = (int)strm.Info.Freq;
                         }
                     }
                     catch(Exception ex) {

@@ -425,7 +425,7 @@ namespace Gageas.Lutea.Core
                 }
             }
 
-            if (BASS.isAvailable)
+            if (BASS.IsAvailable)
             {
                 BASS.BASS_Init(0);
                 if (System.IO.Directory.Exists(userDirectory.PluginDir))
@@ -433,7 +433,7 @@ namespace Gageas.Lutea.Core
                     String[] dllList = System.IO.Directory.GetFiles(userDirectory.PluginDir, "*.dll");
                     foreach (String dllFilename in dllList)
                     {
-                        bool success = BASS.Plugin.Load(dllFilename, 0);
+                        bool success = BASSPlugin.Load(dllFilename, 0);
                         Logger.Log("Loading " + dllFilename + (success ? " OK" : " Failed"));
                     }
                 }
@@ -878,7 +878,7 @@ namespace Gageas.Lutea.Core
                     var fname = preparedStream.file_name;
                     var freq = preparedStream.stream.GetFreq();
                     var chans = preparedStream.stream.GetChans();
-                    var isFloat = (preparedStream.stream.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) > 0;
+                    var isFloat = (preparedStream.stream.Info.Flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) > 0;
                     try
                     {
                         outputManager.KillOutputChannel(!stopcurrent);

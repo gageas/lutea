@@ -159,10 +159,10 @@ namespace Gageas.Lutea.Core
         {
             if (reference == null) return true;
             var info = reference.Info;
-            uint freq = info.freq;
-            uint chans = info.chans;
+            uint freq = info.Freq;
+            uint chans = info.Chans;
 
-            return RebuildRequired(freq, chans, (info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0);
+            return RebuildRequired(freq, chans, (info.Flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0);
         }
 
         private bool RebuildRequired(uint freq, uint chans, bool useFloat)
@@ -348,7 +348,7 @@ namespace Gageas.Lutea.Core
             for (a = 1; (info = BASS.GetDeviceInfo(a)).HasValue; a++)
             {
                 var _info = info.Value;
-                if (_info.isInit) return a;
+                if (_info.IsInit) return a;
             }
             return 0;
         }
