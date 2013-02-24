@@ -893,19 +893,31 @@ namespace Gageas.Lutea.Core
             elapsedtime = -1;
             Current.CacheIsOutdated = true;
             if (onTrackChange == null) return;
-            onTrackChange.Invoke(index);
+            foreach (var dlg in onTrackChange.GetInvocationList())
+            {
+                var _dlg = (VOIDINT)dlg;
+                _dlg.BeginInvoke(index, (_ => { _dlg.EndInvoke(_); }), null);
+            }
         }
 
         internal static void _OnPlaybackErrorOccured()
         {
             if (onPlaybackErrorOccured == null) return;
-            onPlaybackErrorOccured.Invoke();
+            foreach (var dlg in onPlaybackErrorOccured.GetInvocationList())
+            {
+                var _dlg = (VOIDVOID)dlg;
+                _dlg.BeginInvoke((_ => { _dlg.EndInvoke(_); }), null);
+            }
         }
 
         internal static void _OnDatabaseUpdated()
         {
             if (onDatabaseUpdated == null) return;
-            onDatabaseUpdated.Invoke();
+            foreach (var dlg in onDatabaseUpdated.GetInvocationList())
+            {
+                var _dlg = (VOIDVOID)dlg;
+                _dlg.BeginInvoke((_ => { _dlg.EndInvoke(_); }), null);
+            }
         }
         #endregion
         #endregion
