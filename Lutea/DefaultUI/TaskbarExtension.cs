@@ -128,9 +128,9 @@ namespace Gageas.Lutea.DefaultUI
 
         private readonly Guid CLSID_TaskbarList = new Guid(0x56fdf344, 0xfd6d, 0x11d0, 0x95, 0x8a, 0x00, 0x60, 0x97, 0xc9, 0xa0, 0x90);
 
-        private IntPtr hWnd;
+        private System.Windows.Forms.Form form;
         public readonly uint WM_TBC;
-        public TaskbarExtension(IntPtr hWnd)
+        public TaskbarExtension(System.Windows.Forms.Form form)
         {
             Com.CoCreateInstance(CLSID_TaskbarList, IntPtr.Zero, Com.CLSCTX_ALL, typeof(ITaskbarList).GUID, out pTaskbarList);
             if (pTaskbarList == IntPtr.Zero)
@@ -139,7 +139,7 @@ namespace Gageas.Lutea.DefaultUI
             }
             taskbar = Marshal.GetTypedObjectForIUnknown(pTaskbarList, typeof(ITaskbarList)) as ITaskbarList;
 
-            this.hWnd = hWnd;
+            this.form = form;
             WM_TBC = RegisterWindowMessage("TaskbarButtonCreated");
         }
 
@@ -147,11 +147,11 @@ namespace Gageas.Lutea.DefaultUI
         static extern uint RegisterWindowMessage(string lpString);
 
         public void ThumbBarAddButtons(ThumbButton[] buttons){
-            taskbar.ThumbBarAddButtons(this.hWnd, (uint)buttons.Length, buttons);
+            taskbar.ThumbBarAddButtons(this.form.Handle, (uint)buttons.Length, buttons);
         }
         public void ThumbBarSetImageList(System.Windows.Forms.ImageList imagelist)
         {
-            taskbar.ThumbBarSetImageList(hWnd, imagelist.Handle);
+            taskbar.ThumbBarSetImageList(this.form.Handle, imagelist.Handle);
         }
     }
 }

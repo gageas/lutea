@@ -110,6 +110,12 @@
     <Compile Include="LogViewerForm.Designer.cs">
       <DependentUpon>LogViewerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="NotifyPopup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NotifyPopup.Designer.cs">
+      <DependentUpon>NotifyPopup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryDirectoryNew.cs">
       <SubType>Form</SubType>
@@ -183,6 +189,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="LogViewerForm.resx">
       <DependentUpon>LogViewerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NotifyPopup.resx">
+      <DependentUpon>NotifyPopup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

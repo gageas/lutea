@@ -322,6 +322,15 @@ namespace Gageas.Lutea.DefaultUI
             set { nowPlayingFormat = string.IsNullOrEmpty(value) ? DefaultUIForm.DefaultNowPlayingFormat : value; }
         }
 
+        [Description("最小化時にタスクトレイに収納する")]
+        [DefaultValue(false)]
+        [Category("TaskTray")]
+        public bool HideIntoTrayOnMinimize
+        {
+            get;
+            set;
+        }
+
         private DefaultUIForm form;
         public DefaultUIPreference(DefaultUI.DefaultUIForm form)
         {
