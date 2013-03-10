@@ -52,7 +52,7 @@ namespace Gageas.Lutea.LastfmScrobble
                 scrobbed = true;
                 if (lastfm.session_key == null)
                 {
-                    lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.authToken);
+                    lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.AuthToken);
                 }
 
                 int tagTracknumber = -1;
@@ -98,7 +98,7 @@ namespace Gageas.Lutea.LastfmScrobble
             nowPlayingUpdated = true;
             if (lastfm.session_key == null)
             {
-                lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.authToken);
+                lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.AuthToken);
             }
 
             int tagTracknumber = -1;
@@ -150,24 +150,20 @@ namespace Gageas.Lutea.LastfmScrobble
             if (_pref != null)
             {
                 var pref = (Preference)_pref;
-                if ((pref.username != null && pref.password != null && pref.username != "" && pref.password != "") || pref.username != this.pref.username)
+                if ((pref.Username != null && pref.password != null && pref.Username != "" && pref.password != "") || pref.Username != this.pref.Username)
                 {
+                    pref.AuthToken = "";
                     try
                     {
-                        var result = lastfm.Auth_getMobileSession(pref.username, pref.password);
+                        var result = lastfm.Auth_getMobileSession(pref.Username, pref.password);
                         if (result)
                         {
-                            pref.authToken = Lastfm.GenAuthToken(pref.username, pref.password);
-                        }
-                        else
-                        {
-                            pref.authToken = "";
+                            pref.AuthToken = Lastfm.GenAuthToken(pref.Username, pref.password);
                         }
                     }
                     catch (Exception e)
                     {
                         Logger.Error(e);
-                        pref.authToken = "";
                     }
                 }
                 this.pref = pref;
@@ -196,22 +192,18 @@ namespace Gageas.Lutea.LastfmScrobble
 
         public class Preference : LuteaPreference, ICloneable
         {
-            private readonly string[] sortorder = { "ScrobbleEnabled", "UpdateNowPlayingEnabled", "Username", "Password", "Authenticated"};
+            private readonly string[] Sortorder = 
+            { 
+                "ScrobbleEnabled", 
+                "UpdateNowPlayingEnabled", 
+                "Username", 
+                "Password", 
+                "Authenticated"
+            };
             private const string HiddenPassword = "********";
-            private bool authenticated
-            {
-                get
-                {
-                    return !string.IsNullOrEmpty(this.authToken);
-                }
-            }
-            internal string authToken;
 
-            public bool scrobbleEnabled = false;
-            public bool updateNowPlayingEnabled = false;
             public uint ignoreShorterThan = 30;
             public uint scrobbleThreshold = 50;
-            public string username;
             public string password;
             public string password_disp;
 
@@ -221,21 +213,34 @@ namespace Gageas.Lutea.LastfmScrobble
 
             public Preference(Dictionary<string, object> setting)
             {
-                Util.Util.TryAll(
-                    new Lutea.Core.Controller.VOIDVOID[]{
-                    () => this.ScrobbleEnabled = (bool)setting["enabled"],
-                    () => this.UpdateNowPlayingEnabled = (bool)setting["enabledUpdateNowPlaying"],
-                    () => this.Username = (string)setting["username"],
-                    () => this.authToken = (string)setting["authToken"],
-                    () => this.IgnoreShorterThan = (uint)setting["ignoreShorterThan"],
-                    () => this.ScrobbleThreshold = (uint)setting["scrobbleThreshold"],
-                }, null);
-                this.password_disp = authenticated ? HiddenPassword : "";
+                var props = this.GetType().GetProperties();
+                foreach (var prop in props)
+                {
+                    if (prop.CanRead && prop.CanWrite)
+                    {
+                        try
+                        {
+                            prop.SetValue(this, setting[prop.Name], null);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error(e);
+                        }
+                    }
+                }
+                this.password_disp = Authenticated ? HiddenPassword : "";
             }
 
             public override string[] GetSortOrder()
             {
-                return sortorder;
+                return Sortorder;
+            }
+
+            [Browsable(false)]
+            public string AuthToken
+            {
+                get;
+                internal set;
             }
 
             [Category("Enable")]
@@ -243,14 +248,8 @@ namespace Gageas.Lutea.LastfmScrobble
             [Description("Scrobbleを有効にする")]
             public bool ScrobbleEnabled
             {
-                get
-                {
-                    return scrobbleEnabled;
-                }
-                set
-                {
-                    this.scrobbleEnabled = value;
-                }
+                get;
+                set;
             }
 
             [Category("Enable")]
@@ -258,14 +257,8 @@ namespace Gageas.Lutea.LastfmScrobble
             [Description("NowPlayingの更新を有効にする")]
             public bool UpdateNowPlayingEnabled
             {
-                get
-                {
-                    return updateNowPlayingEnabled;
-                }
-                set
-                {
-                    this.updateNowPlayingEnabled = value;
-                }
+                get;
+                set;
             }
 
             [Category("Option")]
@@ -308,14 +301,8 @@ namespace Gageas.Lutea.LastfmScrobble
             [Description("ユーザ名")]
             public string Username
             {
-                get
-                {
-                    return username;
-                }
-                set
-                {
-                    this.username = value;
-                }
+                get;
+                set;
             }
 
             [Category("Auth")]
@@ -325,7 +312,7 @@ namespace Gageas.Lutea.LastfmScrobble
             {
                 get
                 {
-                    return authenticated;
+                    return !string.IsNullOrEmpty(this.AuthToken);
                 }
             }
 
@@ -348,12 +335,14 @@ namespace Gageas.Lutea.LastfmScrobble
             public Dictionary<string, object> ToDictionary()
             {
                 var setting = new Dictionary<string, object>();
-                setting.Add("enabled", this.ScrobbleEnabled);
-                setting.Add("enabledUpdateNowPlaying", this.UpdateNowPlayingEnabled);
-                setting.Add("username", this.Username);
-                setting.Add("authToken", authToken);
-                setting.Add("ignoreShorterThan", this.IgnoreShorterThan);
-                setting.Add("scrobbleThreshold", this.ScrobbleThreshold);
+                var props = this.GetType().GetProperties();
+                foreach (var prop in props)
+                {
+                    if (prop.CanRead && prop.CanWrite)
+                    {
+                        setting.Add(prop.Name, prop.GetValue(this, null));
+                    }
+                }
                 return setting;
             }
 
