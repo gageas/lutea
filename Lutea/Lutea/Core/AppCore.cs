@@ -653,7 +653,7 @@ namespace Gageas.Lutea.Core
                     orderPhrase += "list." + PlaylistSortColumn + "-0";
                     break;
                 default:
-                    orderPhrase += "list." + PlaylistSortColumn + "||''";
+                    orderPhrase += "list." + PlaylistSortColumn + "||'' COLLATE NOCASE ";
                     break;
             }
 
