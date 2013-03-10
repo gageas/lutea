@@ -635,7 +635,7 @@ namespace Gageas.Lutea.Core
                             stmt.Bind(2, file_name);
                             stmt.Evaluate(null);
                             stmt.Reset();
-                            var row = AppCore.playlistCache.First(((o) => ((string)o[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)]) == file_name));
+                            var row = AppCore.playlistCache.First(((o) => o != null && ((string)o[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)]) == file_name));
                             if (row != null)
                             {
                                 row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.rating)] = rate.ToString();
