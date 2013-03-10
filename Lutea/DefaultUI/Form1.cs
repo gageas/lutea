@@ -45,6 +45,11 @@ namespace Gageas.Lutea.DefaultUI
         LogViewerForm logview;
 
         /// <summary>
+        /// 通知Form
+        /// </summary>
+        NotifyPopupForm NotifyPopup;
+
+        /// <summary>
         /// カバーアートを表示するFormを保持
         /// </summary>
         CoverViewerForm coverViewForm;
@@ -135,6 +140,26 @@ namespace Gageas.Lutea.DefaultUI
         private Keys hotkey_PrevTrack = Keys.None;
 
         private string NowPlayingFormat = DefaultNowPlayingFormat;
+
+        private bool HideIntoTrayOnMinimize = false;
+        private bool showNotifyBalloon = true;
+        private bool ShowNotifyBalloon
+        {
+            get {return showNotifyBalloon;}
+            set
+            {
+                this.showNotifyBalloon = value;
+                if (value)
+                {
+                    Controller.onTrackChange -= TrackChangeNotifyPopup;
+                    Controller.onTrackChange += TrackChangeNotifyPopup;
+                }
+                else
+                {
+                    Controller.onTrackChange -= TrackChangeNotifyPopup;
+                }
+            }
+        }
 
         public DefaultUIForm()
         {
@@ -279,6 +304,14 @@ namespace Gageas.Lutea.DefaultUI
         }
 
         #region Application core event handler
+        private void TrackChangeNotifyPopup(int i)
+        {
+            if (!Controller.IsPlaying) return;
+            var t1 = Controller.Current.MetaData("tagTitle");
+            var t2 = Controller.Current.MetaData("tagArtist") + " - " + Controller.Current.MetaData("tagAlbum");
+            NotifyPopup.DoNotify(t1, t2, Controller.Current.CoverArtImage(), this.TrackInfoViewFont);          
+        }
+
         private void trackChange(int index)
         {
             var album = Controller.Current.MetaData("tagAlbum");
@@ -517,9 +550,16 @@ namespace Gageas.Lutea.DefaultUI
         {
             Logger.Log("Form1 started");
             setFormTitle(null);
+            NotifyPopup = new NotifyPopupForm();
+            NotifyPopup.Show();
             Controller.PlaylistUpdated += new Controller.PlaylistUpdatedEvent(playlistUpdated);
             Controller.onElapsedTimeChange += new Controller.VOIDINT(elapsedTimeChange);
             Controller.onTrackChange += new Controller.VOIDINT(trackChange);
+            if (ShowNotifyBalloon)
+            {
+                Controller.onTrackChange -= TrackChangeNotifyPopup;
+                Controller.onTrackChange += TrackChangeNotifyPopup;
+            }
             Controller.onPlaybackErrorOccured += new Controller.VOIDVOID(playbackErrorOccured);
             Controller.onVolumeChange += new Controller.VOIDVOID(changeVolume);
             Controller.onPlaybackOrderChange += new Controller.VOIDVOID(AppCore_onPlaybackOrderChange);
@@ -622,8 +662,7 @@ namespace Gageas.Lutea.DefaultUI
                         break;
                     default:
                         if (m.Msg == TaskbarExt.WM_TBC)
-                        { // case m_wmTBC�Ƃ���Ɠ{����̂�default�̉��ɂ���܂��E�E�E
-                            //				ResetTaskbarProgress();
+                        {
                             TaskbarExt.ThumbBarAddButtons(taskbarThumbButtons);
                             m.Result = IntPtr.Zero;
                             omitBaseProc = true;
@@ -636,6 +675,7 @@ namespace Gageas.Lutea.DefaultUI
         }
 
         private FormWindowState prevWindowsState = FormWindowState.Minimized;
+        private FormWindowState beforeMinimizeWindowState = FormWindowState.Normal;
         private void DefaultUIForm_SizeChanged(object sender, EventArgs e)
         {
             if (prevWindowsState == FormWindowState.Minimized)
@@ -660,6 +700,10 @@ namespace Gageas.Lutea.DefaultUI
                 ResetProgressBar();
             }
             prevWindowsState = this.WindowState;
+            if (this.WindowState != FormWindowState.Minimized)
+            {
+                beforeMinimizeWindowState = this.WindowState;
+            }
         }
 
         private void DefaultUIForm_Move(object sender, EventArgs e)
@@ -674,7 +718,36 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (this.IsHandleCreated && this.WindowState == FormWindowState.Normal)
             {
-                this.config_FormSize = this.ClientSize;
+                if (this.ClientSize.Height > 0 && this.ClientSize.Width > 0)
+                {
+                    this.config_FormSize = this.ClientSize;
+                }
+            }
+            if (HideIntoTrayOnMinimize && this.WindowState == FormWindowState.Minimized)
+            {
+                this.ShowInTaskbar = false;
+            }
+            else
+            {
+                try
+                {
+                    if (this.ShowInTaskbar == false)
+                    {
+                        if (SpectrumRenderer != null)
+                        {
+                            SpectrumRenderer.Abort();
+                        }
+                        this.ShowInTaskbar = true;
+                        treeView1.ExpandAll();
+                        ResetTaskbarExtButtonImage();
+                        ResetSpectrumRenderer(true);
+                        ResetProgressBar();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(ex);
+                }
             }
         }
         #endregion
@@ -2258,6 +2331,34 @@ namespace Gageas.Lutea.DefaultUI
             albumArtListView.EndUpdate();
         }
         #endregion
+
+        #region TaskTray Icon event
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                if (beforeMinimizeWindowState == FormWindowState.Maximized)
+                {
+                    this.WindowState = FormWindowState.Maximized;
+                }
+                else
+                {
+                    this.WindowState = FormWindowState.Normal;
+                }
+            }
+            this.Activate();
+        }
+
+        private void notifyIconContextMenuStrip_Opening(object sender, CancelEventArgs e)
+        {
+            notifyIconToolStripMenuItem_ShowBalloon.Checked = this.ShowNotifyBalloon;
+        }
+
+        private void notifyIconToolStripMenuItem_ShowBalloon_Click(object sender, EventArgs e)
+        {
+            this.ShowNotifyBalloon = !this.ShowNotifyBalloon;
+        }
+        #endregion
         #endregion
 
         #region pluginInterface methods
@@ -2298,6 +2399,8 @@ namespace Gageas.Lutea.DefaultUI
                 ()=>hotkey_NextTrack = (Keys)setting["Hotkey_NextTrack"],
                 ()=>hotkey_PrevTrack = (Keys)setting["Hotkey_PrevTrack"],
                 ()=>NowPlayingFormat = (string)setting["NowPlayingFormat"],
+                ()=>ShowNotifyBalloon = (bool)setting["ShowNotifyBalloon"],
+                ()=>HideIntoTrayOnMinimize = (bool)setting["HideIntoTrayOnMinimize"],
             }, null);
         }
 
@@ -2403,7 +2506,25 @@ namespace Gageas.Lutea.DefaultUI
 
             try
             {
-                TaskbarExt = new TaskbarExtension(this.Handle);
+                TaskbarExt = new TaskbarExtension(this);
+                TaskbarExt.Taskbar.RegisterTab(logview.Handle, this.Handle);
+                TaskbarExt.Taskbar.RegisterTab(NotifyPopup.Handle, this.Handle);
+                TaskbarExt.Taskbar.SetTabOrder(NotifyPopup.Handle, this.Handle);
+                TaskbarExt.Taskbar.SetTabActive(logview.Handle, this.Handle, 0);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+            ResetTaskbarExtButtonImage();
+            ResetHotKeys();
+            ResetTrackInfoView();
+        }
+
+        private void ResetTaskbarExtButtonImage()
+        {
+            try
+            {
                 taskbarImageList = new ImageList();
                 taskbarImageList.ImageSize = new System.Drawing.Size(16, 16);
                 taskbarImageList.ColorDepth = ColorDepth.Depth32Bit;
@@ -2420,9 +2541,6 @@ namespace Gageas.Lutea.DefaultUI
                 taskbarThumbButtons[3] = new TaskbarExtension.ThumbButton() { iID = 3, szTip = "Next", iBitmap = 3, dwMask = TaskbarExtension.ThumbButtonMask.Flags | TaskbarExtension.ThumbButtonMask.ToolTip | TaskbarExtension.ThumbButtonMask.Bitmap, dwFlags = TaskbarExtension.ThumbButtonFlags.Enabled };
             }
             catch { }
-
-            ResetHotKeys();
-            ResetTrackInfoView();
         }
 
         public object GetSetting()
@@ -2478,6 +2596,8 @@ namespace Gageas.Lutea.DefaultUI
             setting["Hotkey_NextTrack"] = hotkey_NextTrack;
             setting["Hotkey_PrevTrack"] = hotkey_PrevTrack;
             setting["NowPlayingFormat"] = NowPlayingFormat;
+            setting["ShowNotifyBalloon"] = ShowNotifyBalloon;
+            setting["HideIntoTrayOnMinimize"] = HideIntoTrayOnMinimize;
             return setting;
         }
 
@@ -2501,7 +2621,7 @@ namespace Gageas.Lutea.DefaultUI
             pref.Hotkey_NextTrack = this.hotkey_NextTrack;
             pref.Hotkey_PrevTrack = this.hotkey_PrevTrack;
             pref.NowPlayingFormat = this.NowPlayingFormat;
-
+            pref.HideIntoTrayOnMinimize = this.HideIntoTrayOnMinimize;
             return pref;
         }
 
@@ -2539,6 +2659,8 @@ namespace Gageas.Lutea.DefaultUI
             this.hotkey_NextTrack = pref.Hotkey_NextTrack;
             this.hotkey_PrevTrack = pref.Hotkey_PrevTrack;
             this.NowPlayingFormat = pref.NowPlayingFormat;
+            this.HideIntoTrayOnMinimize = pref.HideIntoTrayOnMinimize;
+
             ResetHotKeys();
             ResetPlaylistView();
             ResetTrackInfoView();
