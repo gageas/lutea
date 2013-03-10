@@ -162,7 +162,10 @@ namespace Gageas.Lutea
 
         public static String GetCreateIndexSchema(Column[] columns)
         {
-            return String.Join(" ", columns.Where(_ => _.Name == LibraryDBColumnTextMinimum.rating || _.IsTextSearchTarget).Select(_ => "CREATE INDEX " + _.Name + "_index ON list(" + _.Name + ");").ToArray());
+            return String.Join(" ", columns.Where(_ => _.Name == LibraryDBColumnTextMinimum.rating || _.IsTextSearchTarget).SelectMany(_ => new string[]{
+                "CREATE INDEX " + _.Name + "_index ON list(" + _.Name + ");", 
+                "CREATE INDEX " + _.Name + "_index_nocase ON list(" + _.Name + " COLLATE NOCASE);", 
+            }).ToArray());
         }
 
         private static readonly Column[] H2k6CompatColumns = 
