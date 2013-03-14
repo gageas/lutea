@@ -120,6 +120,7 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         this.Location = new Point(wa.Right - this.Width - Pad, wa.Bottom - h_norm - Pad);
                         this.Width += Math.Max(1, (w_norm - this.Width) / 5);
+                        this.Invalidate();
                     }
                     if (BeforeFadeOutWaitTicksRemain > 0)
                     {
