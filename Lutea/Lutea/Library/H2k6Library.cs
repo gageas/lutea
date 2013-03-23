@@ -376,7 +376,7 @@ namespace Gageas.Lutea
             var src = Encoding.UTF8.GetString(buffer);
             var query = AppCore.Migemo.Query(src);
             var destbytes = Encoding.UTF8.GetBytes(query);
-            var destbuf = System.Runtime.InteropServices.Marshal.AllocHGlobal(destbytes.Count() + 1);
+            var destbuf = System.Runtime.InteropServices.Marshal.AllocHGlobal(destbytes.Count() + 1); // ここで確保したメモリはLuteaHelper側で解放される
             System.Runtime.InteropServices.Marshal.WriteByte(destbuf, destbytes.Count(), 0);
             System.Runtime.InteropServices.Marshal.Copy(destbytes, 0, destbuf, destbytes.Count());
             return destbuf;
