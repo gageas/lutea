@@ -89,7 +89,7 @@ namespace Gageas.Lutea.Core
             while (true)
             {
                 Thread.Sleep(100);
-                if (!AppCore.isPlaying) continue;
+                if (!AppCore.IsPlaying) continue;
                 if (onElapsedTimeChange != null)
                 {
                     int t = (int)Controller.Current.Position;
@@ -146,7 +146,7 @@ namespace Gageas.Lutea.Core
         {
             get
             {
-                return AppCore.isPlaying;
+                return AppCore.IsPlaying;
             }
         }
 
@@ -166,27 +166,15 @@ namespace Gageas.Lutea.Core
             }
         }
 
-        public static bool Mute
-        {
-            get
-            {
-                return AppCore.mute;
-            }
-            set
-            {
-                AppCore.mute = value;
-            }
-        }
-
         public static bool Pause
         {
             get
             {
-                return AppCore.pause;
+                return AppCore.Pause;
             }
             set
             {
-                AppCore.pause = value;
+                AppCore.Pause = value;
             }
         }
 
@@ -200,11 +188,11 @@ namespace Gageas.Lutea.Core
         {
             get
             {
-                return AppCore.volume;
+                return AppCore.Volume;
             }
             set
             {
-                AppCore.volume = value;
+                AppCore.Volume = value;
                 if (onVolumeChange != null) onVolumeChange.Invoke();
             }
         }
@@ -213,11 +201,11 @@ namespace Gageas.Lutea.Core
         {
             get
             {
-                return AppCore.playbackOrder;
+                return AppCore.PlaybackOrder;
             }
             set
             {
-                AppCore.playbackOrder = value;
+                AppCore.PlaybackOrder = value;
                 if (onPlaybackOrderChange != null) onPlaybackOrderChange.Invoke();
             }
         }
@@ -317,14 +305,14 @@ namespace Gageas.Lutea.Core
             {
                 get
                 {
-                    return (AppCore.currentStream != null) ? (AppCore.currentStream.cueLength > 0 ? AppCore.currentStream.stream.Bytes2Seconds(AppCore.currentStream.cueLength) : AppCore.currentStream.stream.length) : 0;
+                    return (AppCore.CurrentStream != null) ? (AppCore.CurrentStream.cueLength > 0 ? AppCore.CurrentStream.stream.Bytes2Seconds(AppCore.CurrentStream.cueLength) : AppCore.CurrentStream.stream.length) : 0;
                 }
             }
             public static double Position
             {
                 get
                 {
-                    return (AppCore.currentStream != null) ? AppCore.currentStream.stream.positionSec - AppCore.currentStream.stream.Bytes2Seconds(AppCore.currentStream.cueOffset) : 0;
+                    return (AppCore.CurrentStream != null) ? AppCore.CurrentStream.stream.positionSec - AppCore.CurrentStream.stream.Bytes2Seconds(AppCore.CurrentStream.cueOffset) : 0;
                 }
                 set
                 {
@@ -333,23 +321,23 @@ namespace Gageas.Lutea.Core
             }
             public static String MetaData(Library.Column col)
             {
-                if (AppCore.currentStream == null) return null;
+                if (AppCore.CurrentStream == null) return null;
                 int idx = AppCore.Library.Columns.ToList().IndexOf(col);
-                if (idx < 0 || idx >= AppCore.currentStream.meta.Length) return null;
-                return AppCore.currentStream.meta[idx].ToString();
+                if (idx < 0 || idx >= AppCore.CurrentStream.meta.Length) return null;
+                return AppCore.CurrentStream.meta[idx].ToString();
             }
             public static String MetaData(int colidx)
             {
-                if (AppCore.currentStream == null) return null;
-                if (colidx < 0 || colidx >= AppCore.currentStream.meta.Length) return null;
-                return AppCore.currentStream.meta[colidx].ToString();
+                if (AppCore.CurrentStream == null) return null;
+                if (colidx < 0 || colidx >= AppCore.CurrentStream.meta.Length) return null;
+                return AppCore.CurrentStream.meta[colidx].ToString();
             }
             public static String MetaData(string DBText)
             {
-                if (AppCore.currentStream == null) return null;
+                if (AppCore.CurrentStream == null) return null;
                 int idx = AppCore.Library.Columns.ToList().IndexOf(AppCore.Library.Columns.First(_ => _.Name == DBText));
-                if (idx < 0 || idx >= AppCore.currentStream.meta.Length) return null;
-                return AppCore.currentStream.meta[idx].ToString();
+                if (idx < 0 || idx >= AppCore.CurrentStream.meta.Length) return null;
+                return AppCore.CurrentStream.meta[idx].ToString();
             }
 
             public static int Rating
@@ -384,16 +372,16 @@ namespace Gageas.Lutea.Core
             {
                 get
                 {
-                    if (AppCore.currentStream == null) return null;
-                    return AppCore.currentStream.cueStreamFileName != null ? AppCore.currentStream.cueStreamFileName : Filename;
+                    if (AppCore.CurrentStream == null) return null;
+                    return AppCore.CurrentStream.cueStreamFileName != null ? AppCore.CurrentStream.cueStreamFileName : Filename;
                 }
             }
             public static int IndexInPlaylist
             {
                 get
                 {
-                    if (AppCore.currentStream == null) return -1;
-                    return IndexInPlaylist(AppCore.currentStream.file_name);
+                    if (AppCore.CurrentStream == null) return -1;
+                    return IndexInPlaylist(AppCore.CurrentStream.file_name);
                 }
             }
             
@@ -583,7 +571,7 @@ namespace Gageas.Lutea.Core
         /// <returns></returns>
         public static Lutea.Core.LuteaComponentInterface[] GetComponents()
         {
-            return AppCore.plugins.ToArray();
+            return AppCore.Plugins.ToArray();
         }
 
         public static void Reload(Column[] extraColumns)
@@ -635,7 +623,7 @@ namespace Gageas.Lutea.Core
                             stmt.Bind(2, file_name);
                             stmt.Evaluate(null);
                             stmt.Reset();
-                            var row = AppCore.playlistCache.First(((o) => o != null && ((string)o[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)]) == file_name));
+                            var row = AppCore.PlaylistCache.First(((o) => o != null && ((string)o[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)]) == file_name));
                             if (row != null)
                             {
                                 row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.rating)] = rate.ToString();
@@ -742,7 +730,7 @@ namespace Gageas.Lutea.Core
 
         public static KaoriYa.Migemo.Migemo GetMigemo()
         {
-            return AppCore.migemo;
+            return AppCore.Migemo;
         }
         #endregion
 
@@ -773,7 +761,7 @@ namespace Gageas.Lutea.Core
         /// </summary>
         public static string LatestPlaylistQuery
         {
-            get { return AppCore.latestPlaylistQuery; }
+            get { return AppCore.LatestPlaylistQuery; }
         }
 
         /// <summary>
@@ -873,7 +861,7 @@ namespace Gageas.Lutea.Core
         {
             if (onVolumeChange != null) onVolumeChange.Invoke();
             if (onPlaybackOrderChange != null) onPlaybackOrderChange.Invoke();
-            if (PlaylistUpdated != null) PlaylistUpdated.Invoke(AppCore.latestPlaylistQuery);
+            if (PlaylistUpdated != null) PlaylistUpdated.Invoke(AppCore.LatestPlaylistQuery);
             if (PlaylistSortOrderChanged != null) PlaylistSortOrderChanged.Invoke(AppCore.PlaylistSortColumn, AppCore.PlaylistSortOrder);
 
             elapsedTimeWatcherThread = new Thread(elapsedTimeWatcher);
