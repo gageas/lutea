@@ -369,12 +369,12 @@ namespace Gageas.Lutea
 
         private ValueType migemoGenerator(ValueType srcu8, Int32 length)
         {
-            if (AppCore.migemo == null) return IntPtr.Zero;
+            if (AppCore.Migemo == null) return IntPtr.Zero;
 
             byte[] buffer = new byte[length+1];
             System.Runtime.InteropServices.Marshal.Copy((IntPtr)srcu8, buffer, 0,(int)length);
             var src = Encoding.UTF8.GetString(buffer);
-            var query = AppCore.migemo.Query(src);
+            var query = AppCore.Migemo.Query(src);
             var destbytes = Encoding.UTF8.GetBytes(query);
             var destbuf = System.Runtime.InteropServices.Marshal.AllocHGlobal(destbytes.Count() + 1);
             System.Runtime.InteropServices.Marshal.WriteByte(destbuf, destbytes.Count(), 0);

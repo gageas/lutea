@@ -238,7 +238,7 @@ namespace Gageas.Lutea.Core
         /// <returns></returns>
         private BASS.IPlayable BuildWASAPIExOutput(uint freq, uint chans, string preferredDeviceName)
         {
-            if (!BASSWASAPIOutput.IsAvailable || !AppCore.enableWASAPIExclusive)
+            if (!BASSWASAPIOutput.IsAvailable || !AppCore.EnableWASAPIExclusive)
             {
                 throw new Exception();
             }

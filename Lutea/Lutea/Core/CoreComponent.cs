@@ -17,142 +17,190 @@ namespace Gageas.Lutea.Core
     public class CoreComponent : LuteaComponentInterface
     {
         private const string PseudoDeviceNameForDefaultOutput = "(Default)";
-        public class Preference
+
+        bool enableReplayGain = true;
+        [Category("ReplayGain")]
+        [Description("Replaygainを有効にする")]
+        [DefaultValue(true)]
+        public bool EnableReplayGain
         {
-            bool enableReplayGain = AppCore.EnableReplayGain;
-            [Category("ReplayGain")]
-            [Description("Replaygainを有効にする")]
-            [DefaultValue(true)]
-            public bool EnableReplayGain
+            get
             {
-                get
-                {
-                    return enableReplayGain;
-                }
-                set
-                {
-                    enableReplayGain = value;
-                }
+                return enableReplayGain;
             }
-            /// <summary>
-            /// Replaygainが付与されたトラックのプリアンプ
-            /// </summary>
-            double replaygainGainBoost = AppCore.ReplaygainGainBoost;
-            [Category("ReplayGain")]
-            [Description("Replaygainが付与されたトラックのプリアンプ(dB)")]
-            public double ReplaygainGainBoost
+            set
             {
-                get
-                {
-                    return replaygainGainBoost;
-                }
-                set
-                {
-                    replaygainGainBoost = value;
-                }
+                enableReplayGain = value;
             }
-            /// <summary>
-            /// Replaygainが付与されていないトラックのプリアンプ
-            /// </summary>
-            double noreplaygainGainBoost = AppCore.NoReplaygainGainBoost;
-            [Category("ReplayGain")]
-            [Description("Replaygainが付与されていないトラックのプリアンプ(dB)")]
-            [DefaultValue(0.0)]
-            public double NoReplaygainGainBoost
+        }
+        /// <summary>
+        /// Replaygainが付与されたトラックのプリアンプ
+        /// </summary>
+        double replaygainGainBoost = 5.0;
+        [Category("ReplayGain")]
+        [Description("Replaygainが付与されたトラックのプリアンプ(dB)")]
+        public double ReplaygainGainBoost
+        {
+            get
             {
-                get
-                {
-                    return noreplaygainGainBoost;
-                }
-                set
-                {
-                    noreplaygainGainBoost = value;
-                }
+                return replaygainGainBoost;
             }
+            set
+            {
+                replaygainGainBoost = value;
+            }
+        }
 
-            bool enableWASAPIExclusive = AppCore.enableWASAPIExclusive;
-            [Category("Output")]
-            [Description("WASAPIで排他モードを使用する\n※ 停止後に反映されます")]
-            [DefaultValue(true)]
-            public bool EnableWASAPIExclusive
+        /// <summary>
+        /// Replaygainが付与されていないトラックのプリアンプ
+        /// </summary>
+        double noreplaygainGainBoost = 0.0;
+        [Category("ReplayGain")]
+        [Description("Replaygainが付与されていないトラックのプリアンプ(dB)")]
+        [DefaultValue(0.0)]
+        public double NoReplaygainGainBoost
+        {
+            get
             {
-                get
+                return noreplaygainGainBoost;
+            }
+            set
+            {
+                noreplaygainGainBoost = value;
+            }
+        }
+
+        bool enableWASAPIExclusive = true;
+        [Category("Output")]
+        [Description("WASAPIで排他モードを使用する\n※ 停止後に反映されます")]
+        [DefaultValue(true)]
+        public bool EnableWASAPIExclusive
+        {
+            get
+            {
+                return enableWASAPIExclusive;
+            }
+            set
+            {
+                enableWASAPIExclusive = value;
+            }
+        }
+
+        /// <summary>
+        /// 曲間プチノイズ対策
+        /// </summary>
+        bool fadeInOutOnSkip = false;
+        [Category("Output")]
+        [Description("曲間のプチノイズ対策にフェードインを利用する\n曲間のノイズが気になる場合有効にしてください(非WASAPI時のみ有効)")]
+        [DefaultValue(false)]
+        public bool FadeInOutOnSkip
+        {
+            get
+            {
+                return fadeInOutOnSkip;
+            }
+            set
+            {
+                fadeInOutOnSkip = value;
+            }
+        }
+
+        string preferredDeviceName = "";
+        string[] devlist = GetDeviceNameListForSetting();
+        [TypeConverter(typeof(OutputDeviceConverter))]
+        [Category("Output")]
+        [Description("出力デバイス選択")]
+        [DefaultValue("(Default)")]
+        public String PreferredDeviceName
+        {
+            get
+            {
+                if (devlist.Any(_ => _ == preferredDeviceName))
                 {
-                    return enableWASAPIExclusive;
+                    return devlist.First(_ => _ == preferredDeviceName);
                 }
-                set
+                else
                 {
-                    enableWASAPIExclusive = value;
+                    return devlist[0];
                 }
             }
-
-            /// <summary>
-            /// 曲間プチノイズ対策
-            /// </summary>
-            bool fadeInOutOnSkip = AppCore.fadeInOutOnSkip;
-            [Category("Output")]
-            [Description("曲間のプチノイズ対策にフェードインを利用する\n曲間のノイズが気になる場合有効にしてください(非WASAPI時のみ有効)")]
-            [DefaultValue(false)]
-            public bool FadeInOutOnSkip
+            set
             {
-                get
+                if (devlist.Any(_ => _ == value))
                 {
-                    return fadeInOutOnSkip;
+                    preferredDeviceName = devlist.First(_ => _ == value);
                 }
-                set
+                else
                 {
-                    fadeInOutOnSkip = value;
+                    preferredDeviceName = devlist[0];
                 }
             }
+        }
 
-            string preferredDeviceName = AppCore.preferredDeviceName;
-            string[] devlist = GetDeviceNameListForSetting();
-            [TypeConverter(typeof(OutputDeviceConverter))]
-            [Category("Output")]
-            [Description("出力デバイス選択")]
-            public String PreferredDeviceName
+        /// <summary>
+        /// Migemo有効・無効
+        /// </summary>
+        bool useMigemo = true;
+        [Category("Query")]
+        [Description("あいまい検索にMigemoを使う（検索のレスポンスが遅くなります）")]
+        [DefaultValue(true)]
+        public bool UseMigemo
+        {
+            get
             {
-                get
-                {
-                    if (devlist.Any(_ => _ == preferredDeviceName))
-                    {
-                        return devlist.First(_ => _ == preferredDeviceName);
-                    }
-                    else
-                    {
-                        return devlist[0];
-                    }
-                }
-                set
-                {
-                    if (devlist.Any(_ => _ == value))
-                    {
-                        preferredDeviceName = devlist.First(_ => _ == value);
-                    }
-                    else
-                    {
-                        preferredDeviceName = devlist[0];
-                    }
-                }
+                return useMigemo;
             }
-
-            /// <summary>
-            /// Migemo有効・無効
-            /// </summary>
-            bool useMigemo = AppCore.UseMigemo;
-            [Category("Query")]
-            [Description("あいまい検索にMigemoを使う（検索のレスポンスが遅くなります）")]
-            [DefaultValue(true)]
-            public bool UseMigemo
+            set
             {
-                get
-                {
-                    return useMigemo;
-                }
-                set
-                {
-                    useMigemo = value;
-                }
+                useMigemo = value;
+            }
+        }
+
+        [Browsable(false)]
+        public string PlaylistSortColumn { get; set; }
+
+        private Controller.SortOrders playlistSortOrder = Controller.SortOrders.Asc;
+        [Browsable(false)]
+        public Controller.SortOrders PlaylistSortOrder
+        {
+            get
+            {
+                return playlistSortOrder;
+            }
+            set
+            {
+                playlistSortOrder = value;
+            }
+        }
+
+        [Browsable(false)]
+        public Controller.PlaybackOrder PlaybackOrder { get; set; }
+
+        float volume = 1.0F;
+        [Browsable(false)]
+        internal float Volume
+        {
+            get
+            {
+                return volume;
+            }
+            set
+            {
+                volume = value;
+            }
+        }
+
+        string latestPlaylistQuery = "SELECT * FROM list;";
+        [Browsable(false)]
+        public string LatestPlaylistQuery
+        {
+            get
+            {
+                return latestPlaylistQuery;
+            }
+            set
+            {
+                latestPlaylistQuery = value;
             }
         }
 
@@ -185,73 +233,77 @@ namespace Gageas.Lutea.Core
         /// 出力デバイスとして選択可能なデバイスの名前のリストを取得する
         /// </summary>
         /// <returns></returns>
-        private static string[] GetDeviceNameListForSetting() {
+        private static string[] GetDeviceNameListForSetting()
+        {
             return BASS.GetDevices().Select(((_, i) => i == 0 ? PseudoDeviceNameForDefaultOutput : _.Name)).ToArray();
         }
 
-        private void ParseSetting(Dictionary<string,object> setting)
+        private void ParseSetting(List<KeyValuePair<string, object>> setting, bool BrowsableOnly = false)
         {
-            Util.Util.TryAll(new Controller.VOIDVOID[] { 
-                ()=>AppCore.PlaylistSortColumn = (string)setting["PlaylistSortColumn"],
-                ()=>AppCore.PlaylistSortOrder = (Controller.SortOrders)setting["PlaylistSortOrder"],
-                ()=>Controller.playbackOrder = (Controller.PlaybackOrder)setting["PlaybackOrder"],
-                ()=>AppCore.volume = (float)setting["Volume"],
-                ()=>AppCore.ReplaygainGainBoost = (double)setting["ReplaygainGainBoost"],
-                ()=>AppCore.NoReplaygainGainBoost = (double)setting["NoReplaygainGainBoost"],
-                ()=>AppCore.createPlaylist((string)setting["latestPlaylistQuery"]),
-                ()=>AppCore.enableWASAPIExclusive = (bool)setting["enableWASAPIExclusive"],
-                ()=>AppCore.fadeInOutOnSkip = (bool)setting["fadeInOutOnSkip"],
-                ()=>AppCore.preferredDeviceName = (string)setting["preferredDeviceName"],
-                ()=>AppCore.UseMigemo = (bool)setting["useMigemo"],
-            }, null);
+            var props = this.GetType().GetProperties().Where(_ => _.CanRead && _.CanWrite).Where(_ => setting.Exists(__ => __.Key == _.Name));
+
+            foreach (var prop in props)
+            {
+                if (BrowsableOnly)
+                {
+                    var browsableAttr = prop.GetCustomAttributes(typeof(BrowsableAttribute), false);
+                    if (browsableAttr.Length > 0)
+                    {
+                        if (!((BrowsableAttribute)(browsableAttr[0])).Browsable)
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                try
+                {
+                    prop.SetValue(this, setting.First(_ => _.Key == prop.Name).Value, null);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+            }
         }
+
         public void Init(object setting)
         {
             if (setting != null)
             {
-                ParseSetting((Dictionary<string, object>)setting);
+                ParseSetting((List<KeyValuePair<string, object>>)setting);
             }
+        }
+
+        private List<KeyValuePair<string, object>> ToSettingsList()
+        {
+            return this.GetType().GetProperties().Where(_ => _.CanRead && _.CanWrite).Select(_ => new KeyValuePair<string, object>(_.Name, _.GetValue(this, null))).ToList();
         }
 
         public object GetSetting()
         {
-            var setting = new Dictionary<string, object>();
-            setting["PlaylistSortColumn"] = AppCore.PlaylistSortColumn;
-            setting["PlaylistSortOrder"] = AppCore.PlaylistSortOrder;
-            setting["PlaybackOrder"] = AppCore.playbackOrder;
-            setting["Volume"] = AppCore.volume;
-            setting["ReplaygainGainBoost"] = AppCore.ReplaygainGainBoost;
-            setting["NoReplaygainGainBoost"] = AppCore.NoReplaygainGainBoost;
-            setting["latestPlaylistQuery"] = AppCore.latestPlaylistQuery;
-            setting["enableWASAPIExclusive"] = AppCore.enableWASAPIExclusive;
-            setting["fadeInOutOnSkip"] = AppCore.fadeInOutOnSkip;
-            setting["preferredDeviceName"] = AppCore.preferredDeviceName;
-            setting["useMigemo"] = AppCore.UseMigemo;
-            return setting;
+            return this.ToSettingsList();
         }
-
 
         public object GetPreferenceObject()
         {
-            return new Preference();
+            var tmp = new CoreComponent();
+            tmp.SetPreferenceObject(this);
+            return tmp;
         }
 
         public void SetPreferenceObject(object _pref)
         {
-            Preference pref = (Preference)_pref;
-            AppCore.EnableReplayGain = pref.EnableReplayGain;
-            AppCore.ReplaygainGainBoost = pref.ReplaygainGainBoost;
-            AppCore.NoReplaygainGainBoost = pref.NoReplaygainGainBoost;
-            AppCore.enableWASAPIExclusive = pref.EnableWASAPIExclusive;
-            AppCore.fadeInOutOnSkip = pref.FadeInOutOnSkip;
-            AppCore.UseMigemo = pref.UseMigemo;
-            AppCore.preferredDeviceName = pref.PreferredDeviceName == PseudoDeviceNameForDefaultOutput ? "" : pref.PreferredDeviceName;
+            if (_pref != null && _pref is CoreComponent)
+            {
+                var pref = (CoreComponent)_pref;
+                this.ParseSetting(pref.ToSettingsList(), true);
+            }
         }
 
         public void Quit()
         {
         }
-
 
         public bool CanSetEnable()
         {
