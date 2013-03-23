@@ -457,7 +457,7 @@ namespace Gageas.Lutea.Core
                     var asLrc = System.IO.Path.ChangeExtension(_filename, "lrc");
                     if (System.IO.File.Exists(asLrc))
                     {
-                        return System.IO.File.ReadAllLines(asLrc, Encoding.Default);
+                        return ReadAllLinesAutoEncoding(asLrc);
                     }
                 }
                 catch (Exception e)
@@ -472,7 +472,7 @@ namespace Gageas.Lutea.Core
                     var asTxt = System.IO.Path.ChangeExtension(_filename, "txt");
                     if (System.IO.File.Exists(asTxt))
                     {
-                        return System.IO.File.ReadAllLines(asTxt, Encoding.Default);
+                        return ReadAllLinesAutoEncoding(asTxt);
                     }
                 }
                 catch (Exception e)
@@ -486,7 +486,7 @@ namespace Gageas.Lutea.Core
                     var asTitleTxtCandidates = System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(_filename), new string(Current.MetaData(Controller.GetColumnIndexByName("tagTitle")).Select(_ => invalidChars.Contains(_) ? '?' : _).ToArray()) + ".lrc", System.IO.SearchOption.TopDirectoryOnly);
                     if (asTitleTxtCandidates.Length > 0)
                     {
-                        return System.IO.File.ReadAllLines(asTitleTxtCandidates[0], Encoding.Default);
+                        return ReadAllLinesAutoEncoding(asTitleTxtCandidates[0]);
                     }
                 }
                 catch (Exception e)
@@ -500,7 +500,7 @@ namespace Gageas.Lutea.Core
                     var asTitleTxtCandidates = System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(_filename), new string(Current.MetaData(Controller.GetColumnIndexByName("tagTitle")).Select(_ => invalidChars.Contains(_) ? '?' : _).ToArray()) + ".txt", System.IO.SearchOption.TopDirectoryOnly);
                     if (asTitleTxtCandidates.Length > 0)
                     {
-                        return System.IO.File.ReadAllLines(asTitleTxtCandidates[0], Encoding.Default);
+                        return ReadAllLinesAutoEncoding(asTitleTxtCandidates[0]);
                     }
                 }
                 catch (Exception e)
@@ -510,6 +510,12 @@ namespace Gageas.Lutea.Core
 
                 return null;
             }
+        }
+
+        private static string[] ReadAllLinesAutoEncoding(string filename){
+            var asDef = System.IO.File.ReadAllLines(filename, Encoding.Default);
+            var asUtf8 = System.IO.File.ReadAllLines(filename, Encoding.UTF8);
+            return (asDef.Sum(_ => _.Length) < asUtf8.Sum(_ => _.Length) ? asDef : asUtf8);
         }
 
         public static System.Drawing.Image CoverArtImageForFile(string filename)
