@@ -80,5 +80,26 @@ namespace Gageas.Lutea.DefaultUI
         {
             this.Close();
         }
+
+        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
+        {
+
+        }
+
+        private void resetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var propName = this.propertyGrid1.SelectedGridItem.PropertyDescriptor.Name;
+                var prop = this.propertyGrid1.SelectedObject.GetType().GetProperty(propName);
+                var defaultValueAttr = (DefaultValueAttribute)(prop.GetCustomAttributes(typeof(DefaultValueAttribute), true).First());
+                prop.SetValue(this.propertyGrid1.SelectedObject, defaultValueAttr.Value, null);
+            }
+            catch (Exception) { }
+            finally {
+                this.propertyGrid1.Refresh();
+                button1.Enabled = true;
+            }
+        }
     }
 }
