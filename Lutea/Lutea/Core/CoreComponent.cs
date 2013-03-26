@@ -39,6 +39,7 @@ namespace Gageas.Lutea.Core
         double replaygainGainBoost = 5.0;
         [Category("ReplayGain")]
         [Description("Replaygainが付与されたトラックのプリアンプ(dB)")]
+        [DefaultValue(5.0)]
         public double ReplaygainGainBoost
         {
             get
