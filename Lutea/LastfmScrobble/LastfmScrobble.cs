@@ -228,6 +228,7 @@ namespace Gageas.Lutea.LastfmScrobble
                         }
                     }
                 }
+                this.password = "";
                 this.password_disp = Authenticated ? HiddenPassword : "";
             }
 
