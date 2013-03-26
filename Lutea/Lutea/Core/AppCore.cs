@@ -837,7 +837,7 @@ namespace Gageas.Lutea.Core
                         CurrentStream = null;
                     }
                     Pause = false;
-                    OutputManager.ResetOutputChannel(freq, chans, isFloat, MyCoreComponent.PreferredDeviceName);
+                    OutputManager.ResetOutputChannel(freq, chans, isFloat, (uint)MyCoreComponent.BufferLength, MyCoreComponent.PreferredDeviceName);
                     OutputManager.SetVolume(Volume, 0);
                     prepareNextStream(IndexInPlaylist(fname));
                     PlayQueuedStream();

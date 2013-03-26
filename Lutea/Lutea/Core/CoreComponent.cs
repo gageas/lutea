@@ -105,6 +105,30 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        /// <summary>
+        /// バッファサイズ
+        /// </summary>
+        uint bufferLength = 500;
+        [Category("Output")]
+        [Description("出力バッファサイズ(ms)\nWASAPI使用時に適用されます。\n0で自動設定になります\n※ 停止後に反映されます")]
+        [DefaultValue(500)]
+        public int BufferLength
+        {
+            get
+            {
+                return (int)bufferLength;
+            }
+            set
+            {
+                if ((value < 0) || (value > 1000 * 10))
+                {
+                    bufferLength = 0;
+                    return;
+                }
+                bufferLength = (uint)value;
+            }
+        }
+
         string preferredDeviceName = "";
         string[] devlist = GetDeviceNameListForSetting();
         [TypeConverter(typeof(OutputDeviceConverter))]

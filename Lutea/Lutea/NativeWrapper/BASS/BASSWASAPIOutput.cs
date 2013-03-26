@@ -146,12 +146,12 @@ namespace Gageas.Wrapper.BASS
         }
         #endregion
 
-        public BASSWASAPIOutput(uint freq, uint chans, BASS.StreamProc proc, int device = -1)
-            : this(freq, chans, proc, InitFlags.Buffer, device)
+        public BASSWASAPIOutput(uint freq, uint chans, BASS.StreamProc proc, int device = -1, uint bufferLen = 0)
+            : this(freq, chans, proc, InitFlags.Buffer, device, bufferLen)
         {
         }
 
-        public BASSWASAPIOutput(uint freq, uint chans, BASS.StreamProc proc, InitFlags flag, int device = -1)
+        public BASSWASAPIOutput(uint freq, uint chans, BASS.StreamProc proc, InitFlags flag, int device = -1, uint bufferLen = 0)
         {
 
             bool success = false;
@@ -183,7 +183,7 @@ namespace Gageas.Wrapper.BASS
             {
                 ids.Add(ths_before[i].Id);
             }
-            success = BASS_WASAPI_Init(device, freq, chans, (uint)flag, 0.5F, 0.0F, streamProc, IntPtr.Zero);
+            success = BASS_WASAPI_Init(device, freq, chans, (uint)flag, (bufferLen / 1000.0F), 0.0F, streamProc, IntPtr.Zero);
 
             // 新しく生成されたスレッドのプライオリティを上げる
             var ths_after = System.Diagnostics.Process.GetCurrentProcess().Threads;
