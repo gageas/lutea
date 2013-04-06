@@ -65,7 +65,6 @@ namespace Gageas.Lutea
         public int rating = 0;
         public int playcount = 0;
         public long lastplayed = 0;
-        public long modify;
         private int _bitrate = 0;
         public int bitrate
         {

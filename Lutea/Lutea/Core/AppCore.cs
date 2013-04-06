@@ -887,7 +887,7 @@ namespace Gageas.Lutea.Core
             CD.Track track = cd.tracks[index];
             String streamFullPath = System.IO.Path.IsPathRooted(track.file_name_CUESheet)
                 ? track.file_name_CUESheet
-                : Path.GetDirectoryName(cd.filename) + Path.DirectorySeparatorChar + track.file_name_CUESheet;
+                : Path.GetDirectoryName(track.file_name) + Path.DirectorySeparatorChar + track.file_name_CUESheet;
             if (newstream == null)
             {
                 Logger.Log("new Stream opened " + streamFullPath);
@@ -897,11 +897,11 @@ namespace Gageas.Lutea.Core
             {
                 return null;
             }
-            ulong offset = (ulong)track.start * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
-            ulong length = track.end > track.start
-                ? (ulong)(track.end - track.start) * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float)
+            ulong offset = (ulong)track.Start * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
+            ulong length = track.End > track.Start
+                ? (ulong)(track.End - track.Start) * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float)
                 : newstream.filesize - offset;
-            StreamObject nextStream = new StreamObject(newstream, cd.filename, offset, length);
+            StreamObject nextStream = new StreamObject(newstream, track.file_name, offset, length);
             if (!OutputManager.RebuildRequired(newstream)) nextStream.ready = true;
             nextStream.cueStreamFileName = streamFullPath;
             var gain = track.getTagValue("ALBUM GAIN");
@@ -916,10 +916,12 @@ namespace Gageas.Lutea.Core
             StreamObject nextStream;
             Logger.Log(String.Format("Trying to play file {0}", filename));
 
+            filename = filename.Trim();
+
             // case for CUE sheet
-            if (Path.GetExtension(filename).Trim().ToUpper() == ".CUE")
+            if (Path.GetExtension(filename).ToUpper() == ".CUE")
             {
-                CD cd = CUEparser.fromFile(filename, false);
+                CD cd = CUEReader.ReadFromFile(filename, false);
                 nextStream = getStreamObjectCUE(cd, tagTracknumber - 1, flag);
             }
             else
@@ -931,16 +933,16 @@ namespace Gageas.Lutea.Core
                 }
                 if (tag == null)
                 {
-                    tag = Tags.MetaTag.readTagByFilename(filename.Trim(), false);
+                    tag = Tags.MetaTag.readTagByFilename(filename, false);
                 }
                 KeyValuePair<string, object> cue = tag.Find((match) => match.Key == "CUESHEET");
 
                 // case for Internal CUESheet
                 if (cue.Key != null)
                 {
-                    CD cd = CUEparser.fromString(cue.Value.ToString(), filename, false);
+                    CD cd = CUEReader.ReadFromString(cue.Value.ToString(), filename, false);
                     nextStream = getStreamObjectCUE(cd, tagTracknumber - 1, flag, newstream);
-                    nextStream.cueStreamFileName = filename.Trim();
+                    nextStream.cueStreamFileName = filename;
                 }
                 else
                 {
@@ -965,7 +967,7 @@ namespace Gageas.Lutea.Core
                     }
                     else
                     {
-                        var lametag = Lametag.Read(filename.Trim());
+                        var lametag = Lametag.Read(filename);
                         if (lametag != null)
                         {
                             // ライブラリで既に補正されている場合は何もしない

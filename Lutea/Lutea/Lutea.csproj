@@ -106,6 +106,7 @@
     <Compile Include="Core\OutputManager.cs" />
     <Compile Include="Core\WorkerThread.cs" />
     <Compile Include="Library\Column.cs" />
+    <Compile Include="Library\CUEReader.cs" />
     <Compile Include="Library\H2k6Library.cs" />
     <Compile Include="External\Migemo.cs" />
     <Compile Include="Library\Importer.cs" />
@@ -117,10 +118,12 @@
     <Compile Include="Tags\ApeTag.cs" />
     <Compile Include="Core\AppCore.cs" />
     <Compile Include="NativeWrapper\BASS\BASS.cs" />
-    <Compile Include="Tags\CD.cs" />
+    <Compile Include="Library\CD.cs" />
     <Compile Include="Tags\ASF.cs" />
+    <Compile Include="Tags\CUEParser.cs" />
+    <Compile Include="Tags\CUESheet.cs" />
     <Compile Include="Tags\ID3.cs" />
-    <Compile Include="Tags\InternalCUE.cs" />
+    <Compile Include="Library\InternalCUEReader.cs" />
     <Compile Include="Tags\FlacTag.cs" />
     <Compile Include="Tags\ID3V2Tag.cs" />
     <Compile Include="Core\Logger.cs" />
@@ -130,6 +133,7 @@
     <Compile Include="Tags\MetaTag.cs" />
     <Compile Include="Util\ImageUtil.cs" />
     <Compile Include="Util\Lastfm.cs" />
+    <Compile Include="Util\LuteaLastfm.cs" />
     <Compile Include="Util\StreamUtil.cs" />
     <Compile Include="Util\Util.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">

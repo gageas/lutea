@@ -4,16 +4,17 @@ using System.Linq;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using Gageas.Lutea.Tags;
 using Gageas.Wrapper.BASS;
 
-namespace Gageas.Lutea.Tags
+namespace Gageas.Lutea.Library
 {
-    class InternalCUE
+    class InternalCUEReader
     {
-        public static CD Read(string filename)
+        public static CD Read(string filename, bool readStream)
         {
             var tag = MetaTag.readTagByFilename(filename, false);
-            CD cd = CUEparser.fromString(tag.Find((e) => e.Key == "CUESHEET").Value.ToString(),filename,true);
+            CD cd = CUEReader.ReadFromString(tag.Find((e) => e.Key == "CUESHEET").Value.ToString(), filename, readStream);
             if (cd == null) return null;
             long bits = (new FileInfo(filename)).Length * 8;
             int bitrate = 1410*1000;
