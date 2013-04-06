@@ -9,12 +9,13 @@ using System.Security.Cryptography;
 
 namespace Gageas.Lutea.Util
 {
-    public class Lastfm
+    public abstract class Lastfm
     {
         const string baseURIHTTP  = "http://ws.audioscrobbler.com/2.0/";
         const string baseURIHTTPS = "https://ws.audioscrobbler.com/2.0/";
-        const string lutea_api_key = "a6e1b05b051efa32e157be87d93bf074";
-        const string lutea_secret = "401bf2202659a84b8ffc73b9e3c39d02";
+
+        public abstract string GetAPIKey();
+        public abstract string GetAPISecret();
 
         private static System.DateTime UnixEpoch = new System.DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -26,24 +27,10 @@ namespace Gageas.Lutea.Util
             }
         }
 
-        private readonly string api_key;
-        private readonly string secret;
-
         public string session_key
         {
             get;
             private set;
-        }
-
-        public Lastfm(string api_key, string secret)
-        {
-            this.api_key = api_key;
-            this.secret = secret;
-        }
-
-        public static Lastfm GetLuteaLastfmInstance()
-        {
-            return new Lastfm(lutea_api_key, lutea_secret);
         }
 
         private static string GetMD5(string src)
@@ -66,7 +53,7 @@ namespace Gageas.Lutea.Util
                 return null;
             }
             var args = new List<KeyValuePair<string, string>>(_args);
-            args.Add(new KeyValuePair<string, string>("api_key", api_key));
+            args.Add(new KeyValuePair<string, string>("api_key", GetAPIKey()));
             args.Add(new KeyValuePair<string, string>("sk", session_key));
             var result = this.SendWithAPISig(args);
             return result;
@@ -83,7 +70,7 @@ namespace Gageas.Lutea.Util
                 new KeyValuePair<string, string>("method", "auth.getMobileSession"),
                 new KeyValuePair<string, string>("username", username),
                 new KeyValuePair<string, string>("authToken", authtoken),
-                new KeyValuePair<string, string>("api_key", api_key),
+                new KeyValuePair<string, string>("api_key", GetAPIKey()),
             });
             if (result != null)
             {
@@ -101,7 +88,7 @@ namespace Gageas.Lutea.Util
         {
             var result = this.SendWithAPISig(new List<KeyValuePair<string, string>>() {
                 new KeyValuePair<string, string>("method", "auth.getToken"),
-                new KeyValuePair<string, string>("api_key", api_key) 
+                new KeyValuePair<string, string>("api_key", GetAPIKey()) 
             });
             if (result != null)
             {
@@ -114,23 +101,7 @@ namespace Gageas.Lutea.Util
             return null;
         }
 
-        public XmlDocument Artist_getInfo(string artistname, string lang = "jp")
-        {
-            if (artistname == null) return null;
-            var result = this.SendWithoutAPISig(new List<KeyValuePair<string, string>>() {
-                new KeyValuePair<string, string>("method", "artist.getInfo"),
-                new KeyValuePair<string, string>("artist", artistname),
-                new KeyValuePair<string, string>("lang", lang),
-                new KeyValuePair<string, string>("api_key", api_key) 
-            });
-            if (result != null)
-            {
-                return result;
-            }
-            return null;
-        }
-
-        private XmlDocument send(string parameters, bool https, bool httppost)
+        private XmlDocument Send(string parameters, bool https, bool httppost)
         {
             var req = System.Net.HttpWebRequest.Create((https ? baseURIHTTPS : baseURIHTTP) + (httppost ? "" : ("?" + parameters)));
             ((HttpWebRequest)req).UserAgent = "Lutea - audio player for Windows";
@@ -160,18 +131,18 @@ namespace Gageas.Lutea.Util
             }
         }
 
-        private XmlDocument SendWithAPISig(List<KeyValuePair<string, string>> parameters, bool https = true, bool httppost = true)
+        internal XmlDocument SendWithAPISig(List<KeyValuePair<string, string>> parameters, bool https = true, bool httppost = true)
         {
             var sorted = parameters.Where(_ => _.Value != null && _.Value != "").ToList();
             sorted.Sort((a, b) => a.Key.CompareTo(b.Key));
-            var f = sorted.Select((e) => e.Key + e.Value).Aggregate((a, b) => a + b) + secret;
+            var f = sorted.Select((e) => e.Key + e.Value).Aggregate((a, b) => a + b) + GetAPISecret();
             var signature = GetMD5(f);
-            return send(sorted.Select((e) => e.Key + "=" + Uri.EscapeDataString(e.Value)).Aggregate((a, b) => a + "&" + b) + "&api_sig=" + signature, https, httppost);
+            return Send(sorted.Select((e) => e.Key + "=" + Uri.EscapeDataString(e.Value)).Aggregate((a, b) => a + "&" + b) + "&api_sig=" + signature, https, httppost);
         }
 
-        private XmlDocument SendWithoutAPISig(List<KeyValuePair<string, string>> parameters, bool https = false, bool httppost = false)
+        internal XmlDocument SendWithoutAPISig(List<KeyValuePair<string, string>> parameters, bool https = false, bool httppost = false)
         {
-            return send(parameters.Select((e) => e.Key + "=" + Uri.EscapeDataString(e.Value)).Aggregate((a, b) => a + "&" + b), https, httppost);
+            return Send(parameters.Select((e) => e.Key + "=" + Uri.EscapeDataString(e.Value)).Aggregate((a, b) => a + "&" + b), https, httppost);
         }
     }
 }
