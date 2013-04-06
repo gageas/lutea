@@ -100,7 +100,7 @@ namespace Gageas.Lutea.Library
                     case LibraryDBColumnTextMinimum.file_ext: value = extension; break;
                     case LibraryDBColumnTextMinimum.file_size: value = track.file_size; break;
 
-                    case LibraryDBColumnTextMinimum.statDuration: value = track.duration; break;
+                    case LibraryDBColumnTextMinimum.statDuration: value = (int)track.duration; break;
                     case LibraryDBColumnTextMinimum.statChannels: value = track.channels; break;
                     case LibraryDBColumnTextMinimum.statSamplingrate: value = track.freq; break;
                     case LibraryDBColumnTextMinimum.statBitrate: value = track.bitrate; break;
@@ -186,9 +186,13 @@ namespace Gageas.Lutea.Library
                                     stmt_test.Bind(1, track.file_name);
                                     if (stmt_test.EvaluateAll().Length > 0)
                                     {
-                                        stmt_update.Reset();
+                                        try
+                                        {
+                                            stmt_update.Reset();
                                         BindTrackInfo(stmt_update, track);
                                         stmt_update.Evaluate(null);
+                                        }
+                                        catch (Exception e) { Logger.Log(e); }
                                     }
                                     else
                                     {
@@ -248,12 +252,12 @@ namespace Gageas.Lutea.Library
             {
                 AlreadyAnalyzedFiles[file_name] = true;
             }
-            CD cd = CUEparser.fromFile(file_name, true);
+            CD cd = CUEReader.ReadFromFile(file_name, true);
             if (cd == null) return;
 
             string lastCheckedFilename = null;
             bool   lastCheckedFileShouldSkip = false;
-            bool modifyed = !(LastModifyDatetime(lastModifySTMT, file_name) > new System.IO.FileInfo(file_name).LastWriteTimeUtc);
+            bool modifyed = !(LastModifyDatetime(lastModifySTMT, file_name) > new System.IO.FileInfo(file_name).LastWriteTime);
             foreach (CD.Track tr in cd.tracks)
             {
                 if (tr.file_name_CUESheet == "") continue;
@@ -285,9 +289,6 @@ namespace Gageas.Lutea.Library
                     continue;
                 }
                 var trackIndex = tr.tag.Find((match) => match.Key == "TRACK" ? true : false);
-                if (tr.getTagValue("ARTIST") == null) tr.tag.Add(new KeyValuePair<string, object>("ARTIST", cd.artist));
-                tr.tag.Add(new KeyValuePair<string, object>("GENRE", cd.genre));
-                tr.tag.Add(new KeyValuePair<string, object>("DATE", cd.date));
 
                 lock (AlreadyAnalyzedFiles)
                 {
@@ -320,7 +321,7 @@ namespace Gageas.Lutea.Library
             {
                 AlreadyAnalyzedFiles[file_name] = true;
             }
-            if (LastModifyDatetime(lastModifySTMT, file_name) > new System.IO.FileInfo(file_name).LastWriteTimeUtc && IsFastMode)
+            if (LastModifyDatetime(lastModifySTMT, file_name) > new System.IO.FileInfo(file_name).LastWriteTime && IsFastMode)
             {
                 return;
             }
@@ -329,7 +330,7 @@ namespace Gageas.Lutea.Library
             KeyValuePair<string, object> cue = tag.Find((match) => match.Key.ToUpper() == "CUESHEET" ? true : false);
             if (cue.Key != null)
             {
-                CD cd = InternalCUE.Read(file_name);
+                CD cd = InternalCUEReader.Read(file_name, true);
                 if (cd == null) return;
                 lock (ToBeImportTracks)
                 {

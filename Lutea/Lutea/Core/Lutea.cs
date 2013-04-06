@@ -420,7 +420,7 @@ namespace Gageas.Lutea.Core
                 // Internal cueから検索
                 try
                 {
-                    var cue = Tags.InternalCUE.Read(_filename);
+                    var cue = InternalCUEReader.Read(_filename, false);
                     if (cue != null)
                     {
                         int track = 1;
