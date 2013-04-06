@@ -24,7 +24,7 @@ namespace Gageas.Lutea.LastfmScrobble
 
         public void Init(object _setting)
         {
-            lastfm = Lastfm.GetLuteaLastfmInstance();
+            lastfm = new LuteaLastfm();
 
             Controller.onTrackChange += (i)=>{ 
                 scrobbed = false;
