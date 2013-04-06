@@ -380,9 +380,9 @@ namespace Gageas.Lutea.DefaultUI
                         trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}",
                             Controller.Current.MetaData("tagTitle"),
                             Util.Util.FormatIfExists(" - {0}",
-                               Controller.Current.MetaData("tagArtist"))
+                               Controller.Current.MetaData("tagArtist").Replace("\n", "; "))
                             );
-                        setFormTitle(Controller.Current.MetaData("tagTitle") + Util.Util.FormatIfExists(" / {0}", Controller.Current.MetaData("tagArtist")));
+                        setFormTitle(Controller.Current.MetaData("tagTitle") + Util.Util.FormatIfExists(" / {0}", Controller.Current.MetaData("tagArtist").Replace("\n", "; ")));
                         cms = new ContextMenuStrip();
 
                         xTrackBar1.Enabled = true;
@@ -393,7 +393,7 @@ namespace Gageas.Lutea.DefaultUI
 
                 ResetSpectrumRenderer();
                 var item_splitter = new char[] { '；', ';', '，', ',', '／', '/', '＆', '&', '・', '･', '、', '､', '（', '(', '）', ')', '\n', '\t' };
-                var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries);
                 var subGenre = genre.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList().FindAll(e => e.Length > 1);
                 var q = String.Join(" OR ", (from __ in from _ in subArtists select _.LCMapUpper().Trim() select String.Format(__.Length > 1 ? @" LCMapUpper(tagArtist) LIKE '%{0}%' " : @" LCMapUpper(tagArtist) = '{0}' ", __.EscapeSingleQuotSQL())).ToArray());
                 object[][] related_albums = null;
@@ -401,7 +401,7 @@ namespace Gageas.Lutea.DefaultUI
                 using (var db = Controller.GetDBConnection())
                 {
                     // 関連アルバムを引っ張ってくる
-                    if (subArtists.Count > 0)
+                    if (subArtists.Length > 0)
                     {
                         using (var stmt = db.Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE tagAlbum IN (SELECT tagAlbum FROM list WHERE " + q + " ) GROUP BY tagAlbum ORDER BY COUNT(*) DESC;"))
                         {
@@ -418,58 +418,51 @@ namespace Gageas.Lutea.DefaultUI
                 this.Invoke((MethodInvoker)(() =>
                 {
                     var cms_album = new ToolStripMenuItem("Album: " + album.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagAlbum = '" + album.EscapeSingleQuotSQL() + "';"); });
-                    var cms_artist = new ToolStripMenuItem("Artist: " + artist.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagArtist = '" + artist.EscapeSingleQuotSQL() + "';"); });
-                    var cms_genre = new ToolStripMenuItem("Genre: " + genre.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagGenre = '" + genre.EscapeSingleQuotSQL() + "';"); });
-                    cms.Items.Add(cms_album);
-                    cms.Items.Add(cms_artist);
-                    cms.Items.Add(cms_genre);
-                    cms.Items.Add(new ToolStripSeparator());
+                    var cms_artist = new ToolStripMenuItem("Artist: " + artist.Replace("&", "&&").Replace("\n", "; "), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagArtist = '" + artist.EscapeSingleQuotSQL() + "';"); });
+                    var cms_genre = new ToolStripMenuItem("Genre: " + genre.Replace("&", "&&").Replace("\n", "; "), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagGenre = '" + genre.EscapeSingleQuotSQL() + "';"); });
+                    cms.Items.AddRange(new ToolStripItem[] { cms_album, cms_artist, cms_genre, new ToolStripSeparator() });
 
                     // 関連アルバムを登録
                     if (related_albums != null)
                     {
-                        foreach (var _ in related_albums)
+                        var related_albums_where_not_null = related_albums.Where(_ => !string.IsNullOrEmpty(_[0].ToString()));
+                        listView2.Items.AddRange(related_albums_where_not_null.Select(_ =>
                         {
                             var album_title = _[0].ToString();
-                            if (string.IsNullOrEmpty(album_title)) continue;
                             var query = "SELECT * FROM list WHERE tagAlbum = '" + album_title.EscapeSingleQuotSQL() + "';";
-                            cms.Items.Add("Album: [" + _[1].ToString() + "]" + album_title.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist(query); });
-                            var item = new ListViewItem(new string[] { "", _[0].ToString() });
+                            var item = new ListViewItem(new string[] { "", album_title });
                             item.Tag = query;
-                            listView2.Items.Add(item);
-                        }
+                            return item;
+                        }).ToArray());
+                        cms.Items.AddRange(related_albums_where_not_null.Select(_ =>
+                        {
+                            var album_title = _[0].ToString();
+                            var query = "SELECT * FROM list WHERE tagAlbum = '" + album_title.EscapeSingleQuotSQL() + "';";
+                            var item = new ToolStripMenuItem("Album: [" + _[1].ToString() + "]" + album_title.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist(query); });
+                            return item;
+                        }).ToArray());
                     }
 
-                    if (multi_disc_albums.Length > 1)
-                    {
-                        foreach (var _ in multi_disc_albums)
-                        {
-                            var album_title = _[0].ToString();
-                            if (string.IsNullOrEmpty(album_title)) continue;
-                            cms_album.DropDownItems.Add("Album: [" + _[1].ToString() + "]" + album_title.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagAlbum = '" + album_title + "';"); });
-                        }
-                    }
+                    // 複数ディスクアルバムのクエリを作る
+                    cms_album.DropDownItems.AddRange(multi_disc_albums.Where(_ => !string.IsNullOrEmpty(_[0].ToString()))
+                        .Select(_ => 
+                            new ToolStripMenuItem("Album: [" + _[1].ToString() + "]" + _[0].ToString().Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagAlbum = '" + _[0].ToString() + "';"); })
+                        ).ToArray()
+                    );
 
                     // 各サブアーティストごとのクエリを作る
-                    if (subArtists.Count > 1)
-                    {
-                        foreach (var _ in subArtists)
-                        {
-                            var artist_title = _;
-                            cms_artist.DropDownItems.Add(artist_title.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagArtist) like '%" + artist_title.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); });
-                        }
-                    }
-                    groupBox1.ContextMenuStrip = cms;
+                    cms_artist.DropDownItems.AddRange(
+                        artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).Select(_ =>
+                            new ToolStripMenuItem(_.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagArtist) like '%" + _.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); })
+                        ).ToArray()
+                    );
 
                     // 各サブジャンルごとのクエリを作る
-                    if (subGenre.Count > 1)
-                    {
-                        foreach (var _ in subGenre)
-                        {
-                            var genre_title = _;
-                            cms_genre.DropDownItems.Add(genre_title.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagGenre) like '%" + genre_title.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); });
-                        }
-                    }
+                    cms_genre.DropDownItems.AddRange(
+                        subGenre.Select(_ =>
+                            new ToolStripMenuItem(_.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagGenre) like '%" + _.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); })
+                        ).ToArray()
+                    );
                     groupBox1.ContextMenuStrip = cms;
                 }));
             }
