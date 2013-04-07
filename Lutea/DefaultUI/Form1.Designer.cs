@@ -321,6 +321,7 @@
             this.groupBox1.Controls.Add(this.trackInfoText);
             this.groupBox1.Controls.Add(this.pictureBox2);
             resources.ApplyResources(this.groupBox1, "groupBox1");
+            this.groupBox1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
@@ -355,7 +356,6 @@
             // 
             resources.ApplyResources(this.trackInfoText, "trackInfoText");
             this.trackInfoText.AutoEllipsis = true;
-            this.trackInfoText.BackColor = System.Drawing.Color.Transparent;
             this.trackInfoText.Name = "trackInfoText";
             this.trackInfoText.UseMnemonic = false;
             // 
