@@ -2500,12 +2500,16 @@ namespace Gageas.Lutea.DefaultUI
             try
             {
                 TaskbarExt = new TaskbarExtension(this);
-                ResetTaskbarExtButtonImage();
+                TaskbarExt.Taskbar.RegisterTab(logview.Handle, this.Handle);
+                TaskbarExt.Taskbar.RegisterTab(NotifyPopup.Handle, this.Handle);
+                TaskbarExt.Taskbar.SetTabOrder(NotifyPopup.Handle, this.Handle);
+                TaskbarExt.Taskbar.SetTabActive(logview.Handle, this.Handle, 0);
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
             }
+            ResetTaskbarExtButtonImage();
             ResetHotKeys();
             ResetTrackInfoView();
         }
