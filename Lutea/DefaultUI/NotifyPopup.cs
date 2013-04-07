@@ -51,6 +51,9 @@ namespace Gageas.Lutea.DefaultUI
         public void DoNotify(string title, string title2, Image image, Font font)
         {
             EndNotify();
+            title = title.Replace("\n", "; ");
+            title2 = title2.Replace("\n", "; ");
+            TextFormatFlags tfFlags = TextFormatFlags.NoClipping | TextFormatFlags.SingleLine | TextFormatFlags.Top | TextFormatFlags.Left | TextFormatFlags.NoPrefix;
             if (title.Length > Title1LenLimit)
             {
                 title = title.Substring(0, Title1LenLimit) + "...";
@@ -72,7 +75,7 @@ namespace Gageas.Lutea.DefaultUI
             var hasImage = image != null;
             var gw = (hasImage ? (image.Width + Pad) : 0) + Pad;
 
-            var w = Math.Max(TextRenderer.MeasureText(title, font1).Width, TextRenderer.MeasureText(title2, font2).Width) + (gw + Pad) * OverSample;
+            var w = Math.Max(TextRenderer.MeasureText(title, font1, new Size(), tfFlags).Width, TextRenderer.MeasureText(title2, font2, new Size(), tfFlags).Width) + (gw + Pad) * OverSample;
             var w_norm = w / OverSample;
 
             Bitmap bg = new Bitmap(w, h);
@@ -83,8 +86,8 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
                     g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-                    TextRenderer.DrawText(g, title, font1, new Rectangle(0, 0, bg.Width, bg.Height), SystemColors.WindowText, TextFormatFlags.NoClipping | TextFormatFlags.SingleLine | TextFormatFlags.Top | TextFormatFlags.Left);
-                    TextRenderer.DrawText(g, title2, font2, new Rectangle(0, font1.Height + Pad * OverSample, bg.Width, bg.Height), SystemColors.WindowText, TextFormatFlags.NoClipping | TextFormatFlags.SingleLine | TextFormatFlags.Top | TextFormatFlags.Left);
+                    TextRenderer.DrawText(g, title, font1, new Rectangle(0, 0, bg.Width, bg.Height), SystemColors.WindowText, tfFlags);
+                    TextRenderer.DrawText(g, title2, font2, new Rectangle(0, font1.Height + Pad * OverSample, bg.Width, bg.Height), SystemColors.WindowText, tfFlags);
 
                 }
                 this.BackgroundImage = new Bitmap(w_norm, h_norm);
