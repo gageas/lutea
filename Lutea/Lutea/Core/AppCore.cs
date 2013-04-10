@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Reflection;
 using System.IO;
 using Gageas.Wrapper.BASS;
 using Gageas.Wrapper.SQLite3;
@@ -56,6 +57,7 @@ namespace Gageas.Lutea.Core
         private static WorkerThread CoreWorker = new WorkerThread();
         private static OutputManager OutputManager = new OutputManager(StreamProc);
         internal static List<Lutea.Core.LuteaComponentInterface> Plugins = new List<Core.LuteaComponentInterface>();
+        internal static List<Assembly> Assemblys = new List<Assembly>();
         internal static Migemo Migemo = null;
 
         internal static UserDirectory userDirectory;
@@ -329,7 +331,6 @@ namespace Gageas.Lutea.Core
 
             // コンポーネントの読み込み
             // Core Componentをロード
-            Plugins.Clear();
             Plugins.Add(MyCoreComponent);
             try
             {
@@ -345,6 +346,7 @@ namespace Gageas.Lutea.Core
                             var p = (Lutea.Core.LuteaComponentInterface)asm.CreateInstance(t.FullName);
                             if (p == null) continue;
                             Plugins.Add(p);
+                            Assemblys.Add(asm);
                             if (componentAsMainForm == null && p is System.Windows.Forms.Form)
                             {
                                 componentAsMainForm = (System.Windows.Forms.Form)p;
@@ -368,7 +370,9 @@ namespace Gageas.Lutea.Core
             {
                 using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.Open, System.IO.FileAccess.Read))
                 {
+                    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
                     pluginSettings = (Dictionary<Guid, object>)(new BinaryFormatter()).Deserialize(fs);
+                    AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve); 
                 }
             }
             catch (Exception e)
@@ -411,6 +415,11 @@ namespace Gageas.Lutea.Core
             Controller.Startup();
 
             return componentAsMainForm;
+        }
+
+        static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            return Assemblys.First(_ => _.FullName == args.Name);
         }
 
         internal static void Reload(Column[] extraColumns)
