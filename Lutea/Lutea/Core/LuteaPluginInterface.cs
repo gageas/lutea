@@ -47,7 +47,7 @@ namespace Gageas.Lutea.Core
     {
         public virtual string[] GetSortOrder()
         {
-            return null;
+            return new string[]{};
         }
     }
 
