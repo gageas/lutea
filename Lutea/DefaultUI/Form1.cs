@@ -545,6 +545,8 @@ namespace Gageas.Lutea.DefaultUI
             toolStripComboBox2.GetControl.SelectedIndexChanged += new EventHandler(playbackOrderComboBox_SelectedIndexChanged);
 
             menuStrip1.SetBackgroundColorSolid(SystemColors.Control);
+
+            listView2.Columns[1].Width = listView2.Width;
             ResetProgressBar();
  
             yomigana = new Yomigana(Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "yomiCache", this);
