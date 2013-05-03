@@ -19,14 +19,14 @@ namespace Gageas.Lutea.DefaultUI
         private int SpectrumMode;
         private Thread spectrumAnalyzerThread = null;
 
-        public SpectrumRenderer(PictureBox destPictureBox, Boolean FFTLogarithmic, DefaultUIPreference.FFTNum FFTNum, Color Color1, Color Color2, int SpectrumMode)
+        public SpectrumRenderer(PictureBox destPictureBox, Boolean FFTLogarithmic, DefaultUIPreference.FFTNum FFTNum, Color Color1, Color Color2, DefaultUIPreference.SpectrumModes SpectrumMode)
         {
             this.DestPictureBox = destPictureBox;
             this.FFTLogarithmic = FFTLogarithmic;
             this.FFTNum = FFTNum;
             this.Color1 = Color1;
             this.Color2 = Color2;
-            this.SpectrumMode = SpectrumMode;
+            this.SpectrumMode = (int)SpectrumMode;
         }
 
         public void Start()
