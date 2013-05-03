@@ -117,31 +117,8 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private Size config_FormSize;
         private Point config_FormLocation;
-//        private int settingCoverArtSize = 120;
 
         DefaultUIPreference pref = new DefaultUIPreference(null);
-//        private int SpectrumMode = 0;
-//        private DefaultUIPreference.FFTNum FFTNum = DefaultUIPreference.FFTNum.FFT1024;
-//        private bool FFTLogarithmic = false;
-//        private Color SpectrumColor1 = SystemColors.Control;
-//        private Color SpectrumColor2 = Color.Orange;
-//        private bool ColoredAlbum = true;
-//        private Boolean ShowCoverArtInPlaylistView = true;
-//        private int CoverArtSizeInPlaylistView = 80;
-//        private Font PlaylistViewFont = null;
-//        private Font TrackInfoViewFont = null;
-//        private int PlaylistViewLineHeightAdjustment = 0;
-
-//        private bool UseMediaKey = false;
-//        private Keys hotkey_PlayPause = Keys.None;
-//        private Keys hotkey_Stop = Keys.None;
-//        private Keys hotkey_NextTrack = Keys.None;
-//        private Keys hotkey_PrevTrack = Keys.None;
-
-//        private string NowPlayingFormat = DefaultNowPlayingFormat;
-
-//        private bool HideIntoTrayOnMinimize = false;
-//        private bool showNotifyBalloon = true;
         
         private bool ShowNotifyBalloon
         {
@@ -169,7 +146,7 @@ namespace Gageas.Lutea.DefaultUI
             trackInfoText.Text = "";
             queryComboBox.ForeColor = System.Drawing.SystemColors.WindowText;
             toolStripStatusLabel1.Text = "";
-            toolStripXTrackbar1.GetControl.ThumbWidth = 30;
+            toolStripXTrackbar1.GetControl.ThumbWidth = TextRenderer.MeasureText("100", this.Font).Width + 10;
         }
 
         private void ResetPlaylistView()
@@ -294,6 +271,7 @@ namespace Gageas.Lutea.DefaultUI
             xTrackBar1.Width = this.ClientSize.Width - widthSum;
             xTrackBar1.Height = menuStrip1.Height;
             xTrackBar1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            xTrackBar1.ThumbWidth = this.xTrackBar1.Font.Height * 3;
             xTrackBar1.Update();
         }
 

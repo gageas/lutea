@@ -16,18 +16,12 @@ namespace Gageas.Lutea.DefaultUI
     {
         private TrackBarThumbState thumbState = TrackBarThumbState.Normal;
 
-//        private int mousex;
-//        private int mousey;
+        private int thumbwidth;
 
         private int thumby = 0;
-
-        private int thumbwidth = 10;
-        private int thumbheight = 20;
-
+ 
         private int padx = 7;
         private int pady = 0;
-
-//        private bool captured = false;
 
         private double _max = 100;
         private double _min = 0;
@@ -98,6 +92,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             sf.Alignment = StringAlignment.Center;
             sf.LineAlignment = StringAlignment.Center;
+            sf.FormatFlags = StringFormatFlags.NoWrap;
         }
 
         public XTrackBar()
@@ -133,8 +128,8 @@ namespace Gageas.Lutea.DefaultUI
         private void XTrackBar_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            Rectangle track = new Rectangle(padx, 10 + pady, innerWidth - 1, 5 );
-            Rectangle thumb = new Rectangle(thumbX, 3 + pady, thumbwidth, 20);
+            Rectangle track = new Rectangle(padx, (int)(this.Height * 0.4), innerWidth - 1, (int)(this.Height * 0.2));
+            Rectangle thumb = new Rectangle(thumbX, 3 + pady, thumbwidth, this.Height - 6);
             if (TrackBarRenderer.IsSupported)
             {
                 TrackBarRenderer.DrawHorizontalTrack(g, track);
@@ -161,7 +156,8 @@ namespace Gageas.Lutea.DefaultUI
             }
             if (Enabled && ThumbText != null)
             {
-                g.DrawString(ThumbText, this.Font, SystemBrushes.ControlText, thumb, sf);
+                TextRenderer.DrawText(g, ThumbText, this.Font, thumb, this.ForeColor, TextFormatFlags.NoClipping | TextFormatFlags.NoPrefix | TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding);
+//                g.DrawString(ThumbText, this.Font, SystemBrushes.ControlText, thumb, sf);
             }
         }
 
@@ -178,7 +174,7 @@ namespace Gageas.Lutea.DefaultUI
             }
             else
             {
-                if ((e.X > thumbX - thumbwidth/2) && (e.X < thumbX + thumbwidth) && (e.Y > thumby - thumbheight/2) && (e.Y < thumby + thumbheight))
+                if ((e.X > thumbX - this.Height/2) && (e.X < thumbX + this.Height) && (e.Y > thumby - this.Height/2) && (e.Y < thumby + this.Height))
                 {
                     thumbState = TrackBarThumbState.Hot;
                 }
@@ -205,7 +201,7 @@ namespace Gageas.Lutea.DefaultUI
                 return;
             }
             if ((e.X > thumbX) && (e.X < (thumbX + thumbwidth))
-                && (e.Y > thumby) && (e.Y < (thumby + thumbheight)))
+                && (e.Y > thumby) && (e.Y < (thumby + this.Height)))
             {
                 Capture = true;
             }
