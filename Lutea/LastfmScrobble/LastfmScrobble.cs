@@ -164,12 +164,15 @@ namespace Gageas.Lutea.LastfmScrobble
       
         public object GetSetting()
         {
-            return pref.ToDictionary();
+            var dict = pref.ToDictionary();
+            dict.Remove("Password");
+            return dict;
         }
 
         public object GetPreferenceObject()
         {
             var clone = pref.Clone<Preference>();
+            clone.password = "";
             return clone;
         }
 
@@ -232,7 +235,7 @@ namespace Gageas.Lutea.LastfmScrobble
 
             public uint ignoreShorterThan = 30;
             public uint scrobbleThreshold = 50;
-            public string password;
+            public string password = "";
             public string password_disp;
 
             public Preference()
