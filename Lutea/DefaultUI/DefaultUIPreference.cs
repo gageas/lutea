@@ -12,7 +12,7 @@ using Gageas.Lutea.Core;
 namespace Gageas.Lutea.DefaultUI
 {
 
-    public class DefaultUIPreference
+    public class DefaultUIPreference : LuteaPreference
     {
         public enum FFTNum
         {
@@ -23,7 +23,6 @@ namespace Gageas.Lutea.DefaultUI
             FFT4096 = 4096,
             FFT8192 = 8192,
         }
-        bool _FFTLogarithmic;
 
         public enum SpectrumModes
         {
@@ -38,7 +37,7 @@ namespace Gageas.Lutea.DefaultUI
         /// <summary>
         /// PropertyGridに行間調整用intを表示するTypeConverter
         /// </summary>
-        class LineHeightAdjustmentConverter : Int32Converter
+        public class LineHeightAdjustmentConverter : Int32Converter
         {
             readonly int[] intlist = {-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
@@ -58,7 +57,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private SpectrumModes spectrumMode;
+        private SpectrumModes spectrumMode = SpectrumModes.Mode0;
         [Description("スペクトラムアナライザ描画モード\n0～4")]
         [DefaultValue(SpectrumModes.Mode0)]
         [Category("Spectrum Analyzer")]
@@ -74,6 +73,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private bool _FFTLogarithmic = false;
         [Description("スペクトラムアナライザで横軸を対数にする")]
         [DefaultValue(false)]
         [Category("Spectrum Analyzer")]
@@ -89,7 +89,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private FFTNum _FFTNum;
+        private FFTNum _FFTNum = FFTNum.FFT1024;
         [Description("FFTの細かさ")]
         [DefaultValue(FFTNum.FFT1024)]
         [Category("Spectrum Analyzer")]
@@ -105,7 +105,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private Color color1;
+        private Color color1 = Color.Orange;
         [Description("Color1")]
         [Category("Spectrum Analyzer")]
         public Color SpectrumColor1
@@ -120,7 +120,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private Color color2;
+        private Color color2 = SystemColors.Control;
         [Description("Color2")]
         [Category("Spectrum Analyzer")]
         public Color SpectrumColor2
@@ -147,7 +147,10 @@ namespace Gageas.Lutea.DefaultUI
             }
             set
             {
-                font_trackInfoView = value;
+                if (value != null)
+                {
+                    font_trackInfoView = value;
+                }
             }
         }
 
@@ -162,11 +165,14 @@ namespace Gageas.Lutea.DefaultUI
             }
             set
             {
-                font_playlistView = value;
+                if (value != null)
+                {
+                    font_playlistView = value;
+                }
             }
         }
 
-        private int playlistViewLineHeightAdjustment;
+        private int playlistViewLineHeightAdjustment = 0;
         [Description("プレイリストの行間調整")]
         [DefaultValue(0)]
         [TypeConverter(typeof(LineHeightAdjustmentConverter))]
@@ -183,7 +189,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private Boolean showCoverArtInPlaylistView;
+        private Boolean showCoverArtInPlaylistView = true;
         [Description("プレイリストにカバーアートを表示する")]
         [DefaultValue(true)]
         [Category("Playlist View")]
@@ -200,7 +206,7 @@ namespace Gageas.Lutea.DefaultUI
         }
 
 
-        private int coverArtSizeInPlaylistView;
+        private int coverArtSizeInPlaylistView = 80;
         [Description("プレイリストに表示するカバーアートのサイズ")]
         [DefaultValue(80)]
         [Category("Playlist View")]
@@ -217,7 +223,7 @@ namespace Gageas.Lutea.DefaultUI
         }
 
 
-        private bool coloredAlbum;
+        private bool coloredAlbum = true;
         [Description("アルバムごとに色分けする\n適当")]
         [DefaultValue(true)]
         [Category("Playlist View")]
@@ -233,7 +239,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private bool useMediaKey;
+        private bool useMediaKey = false;
         [Description("マルチメディアキーを使用する")]
         [DefaultValue(false)]
         [Category("Hotkey")]
@@ -249,7 +255,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private Keys hotkey_NextTrack;
+        private Keys hotkey_NextTrack = Keys.None;
         [Description("次の曲")]
         [DefaultValue(Keys.None)]
         [Category("Hotkey")]
@@ -265,7 +271,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private Keys hotkey_PrevTrack;
+        private Keys hotkey_PrevTrack = Keys.None;
         [Description("前の曲")]
         [DefaultValue(Keys.None)]
         [Category("Hotkey")]
@@ -281,7 +287,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private Keys hotkey_PlayPause;
+        private Keys hotkey_PlayPause = Keys.None;
         [Description("再生/一時停止")]
         [DefaultValue(Keys.None)]
         [Category("Hotkey")]
@@ -297,7 +303,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private Keys hotkey_Stop;
+        private Keys hotkey_Stop = Keys.None;
         [Description("停止")]
         [DefaultValue(Keys.None)]
         [Category("Hotkey")]
@@ -322,19 +328,82 @@ namespace Gageas.Lutea.DefaultUI
             set { nowPlayingFormat = string.IsNullOrEmpty(value) ? DefaultUIForm.DefaultNowPlayingFormat : value; }
         }
 
+        private bool hideIntoTrayOnMinimize = false;
         [Description("最小化時にタスクトレイに収納する")]
         [DefaultValue(false)]
         [Category("TaskTray")]
         public bool HideIntoTrayOnMinimize
         {
-            get;
-            set;
+            get { return hideIntoTrayOnMinimize; }
+            set { hideIntoTrayOnMinimize = value; }
         }
 
-        private DefaultUIForm form;
-        public DefaultUIPreference(DefaultUI.DefaultUIForm form)
+        private bool showNotifyBalloon = true;
+        [Browsable(false)]
+        public bool ShowNotifyBalloon
         {
-            this.form = form;
+            get { return showNotifyBalloon; }
+            set { showNotifyBalloon = value; }
+        }
+
+        /// <summary>
+        /// playlistviewに表示するcolumnを定義
+        /// </summary>
+        private string[] displayColumns = null; // DBCol.infoCodec, DBCol.infoCodec_sub, DBCol.modify, DBCol.statChannels, DBCol.statSamplingrate
+        [Browsable(false)]
+        public string[] DisplayColumns
+        {
+            get { return displayColumns; }
+            set { displayColumns = value; }
+        }
+
+        private Dictionary<string, int> playlistViewColumnOrder = new Dictionary<string, int>();
+        [Browsable(false)]
+        public Dictionary<string, int> PlaylistViewColumnOrder {
+            get { return playlistViewColumnOrder; }
+            set { playlistViewColumnOrder = value; }
+        }
+
+        private Dictionary<string, int> playlistViewColumnWidth = new Dictionary<string, int>();
+        [Browsable(false)]
+        public Dictionary<string, int> PlaylistViewColumnWidth
+        {
+            get { return playlistViewColumnWidth; }
+            set { playlistViewColumnWidth = value; }
+        }
+
+        [Browsable(false)]
+        public Point WindowLocation { get; set; }
+
+        [Browsable(false)]
+        public Size WindowSize { get; set; }
+
+        [Browsable(false)]
+        public FormWindowState WindowState { get; set; }
+
+        [Browsable(false)]
+        public int? splitContainer1_SplitterDistance { get; set; }
+
+        [Browsable(false)]
+        public int? splitContainer2_SplitterDistance { get; set; }
+
+        private int splitContainer3_SplitterDistance = 120;
+        [Browsable(false)]
+        public int SplitContainer3_SplitterDistance {
+            get { return splitContainer3_SplitterDistance; }
+            set { splitContainer3_SplitterDistance = value; }
+        }
+
+        [Browsable(false)]
+        public string LibraryLatestDir { get; set; }
+
+        public DefaultUIPreference(Dictionary<string, object> setting)
+            : base(setting)
+        {
+        }
+
+        public DefaultUIPreference()
+        {
         }
     }
 }

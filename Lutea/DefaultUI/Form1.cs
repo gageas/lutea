@@ -94,7 +94,6 @@ namespace Gageas.Lutea.DefaultUI
         /// <summary>
         /// playlistviewに表示するcolumnを定義
         /// </summary>
-        string[] displayColumns = null; // DBCol.infoCodec, DBCol.infoCodec_sub, DBCol.modify, DBCol.statChannels, DBCol.statSamplingrate
         Dictionary<string, int> ColumnOrder = new Dictionary<string, int>();
         Dictionary<string, int> ColumnWidth = new Dictionary<string, int>();
 
@@ -118,45 +117,42 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private Size config_FormSize;
         private Point config_FormLocation;
-        private string LibraryLatestDir = "";
-        private int settingCoverArtSize = 120;
+//        private int settingCoverArtSize = 120;
 
-        private int SpectrumMode = 0;
-        private DefaultUIPreference.FFTNum FFTNum = DefaultUIPreference.FFTNum.FFT1024;
-        private bool FFTLogarithmic = false;
-        private Color SpectrumColor1 = SystemColors.Control;
-        private Color SpectrumColor2 = Color.Orange;
-        private bool ColoredAlbum = true;
-        private Boolean ShowCoverArtInPlaylistView = true;
-        private int CoverArtSizeInPlaylistView = 80;
-        private Font PlaylistViewFont = null;
-        private Font TrackInfoViewFont = null;
-        private int PlaylistViewLineHeightAdjustment = 0;
+        DefaultUIPreference pref = new DefaultUIPreference(null);
+//        private int SpectrumMode = 0;
+//        private DefaultUIPreference.FFTNum FFTNum = DefaultUIPreference.FFTNum.FFT1024;
+//        private bool FFTLogarithmic = false;
+//        private Color SpectrumColor1 = SystemColors.Control;
+//        private Color SpectrumColor2 = Color.Orange;
+//        private bool ColoredAlbum = true;
+//        private Boolean ShowCoverArtInPlaylistView = true;
+//        private int CoverArtSizeInPlaylistView = 80;
+//        private Font PlaylistViewFont = null;
+//        private Font TrackInfoViewFont = null;
+//        private int PlaylistViewLineHeightAdjustment = 0;
 
-        private bool UseMediaKey = false;
-        private Keys hotkey_PlayPause = Keys.None;
-        private Keys hotkey_Stop = Keys.None;
-        private Keys hotkey_NextTrack = Keys.None;
-        private Keys hotkey_PrevTrack = Keys.None;
+//        private bool UseMediaKey = false;
+//        private Keys hotkey_PlayPause = Keys.None;
+//        private Keys hotkey_Stop = Keys.None;
+//        private Keys hotkey_NextTrack = Keys.None;
+//        private Keys hotkey_PrevTrack = Keys.None;
 
-        private string NowPlayingFormat = DefaultNowPlayingFormat;
+//        private string NowPlayingFormat = DefaultNowPlayingFormat;
 
-        private bool HideIntoTrayOnMinimize = false;
-        private bool showNotifyBalloon = true;
+//        private bool HideIntoTrayOnMinimize = false;
+//        private bool showNotifyBalloon = true;
+        
         private bool ShowNotifyBalloon
         {
-            get {return showNotifyBalloon;}
+            get { return pref.ShowNotifyBalloon; }
             set
             {
-                this.showNotifyBalloon = value;
+                pref.ShowNotifyBalloon = value;
+                Controller.onTrackChange -= TrackChangeNotifyPopup;
                 if (value)
                 {
-                    Controller.onTrackChange -= TrackChangeNotifyPopup;
                     Controller.onTrackChange += TrackChangeNotifyPopup;
-                }
-                else
-                {
-                    Controller.onTrackChange -= TrackChangeNotifyPopup;
                 }
             }
         }
@@ -173,8 +169,6 @@ namespace Gageas.Lutea.DefaultUI
             trackInfoText.Text = "";
             queryComboBox.ForeColor = System.Drawing.SystemColors.WindowText;
             toolStripStatusLabel1.Text = "";
-            PlaylistViewFont = this.listView1.Font;
-            TrackInfoViewFont = this.trackInfoText.Font;
             toolStripXTrackbar1.GetControl.ThumbWidth = 30;
         }
 
@@ -198,13 +192,13 @@ namespace Gageas.Lutea.DefaultUI
             listView1.Clear();
 
             // set "dummy" font
-            listView1.Font = new Font(this.Font.FontFamily, PlaylistViewFont.Height + PlaylistViewLineHeightAdjustment, GraphicsUnit.Pixel);
+            listView1.Font = new Font(this.Font.FontFamily, pref.Font_playlistView.Height + pref.PlaylistViewLineHeightAdjustment, GraphicsUnit.Pixel);
 
             // set "real" font
-            listView1.SetHeaderFont(PlaylistViewFont);
+            listView1.SetHeaderFont(pref.Font_playlistView);
 
-            displayColumns = displayColumns.Where(_ => Controller.GetColumnIndexByName(_) >= 0).OrderBy((_) => ColumnOrder.ContainsKey(_) ? ColumnOrder[_] : ColumnOrder.Count).ToArray();
-            foreach (string coltext in displayColumns)
+            pref.DisplayColumns = pref.DisplayColumns.Where(_ => Controller.GetColumnIndexByName(_) >= 0).OrderBy((_) => ColumnOrder.ContainsKey(_) ? ColumnOrder[_] : ColumnOrder.Count).ToArray();
+            foreach (string coltext in pref.DisplayColumns)
             {
                 var colheader = new ColumnHeader();
                 var col = Controller.GetColumnIndexByName(coltext);
@@ -273,7 +267,7 @@ namespace Gageas.Lutea.DefaultUI
                 pictureBox2.Height = groupBox1.Height - pictureBox2.Top - 2;
                 if (pictureBox2.Height > 0)
                 {
-                    SpectrumRenderer = new SpectrumRenderer(this.pictureBox2, FFTLogarithmic, FFTNum, SpectrumColor1, SpectrumColor2, SpectrumMode);
+                    SpectrumRenderer = new SpectrumRenderer(this.pictureBox2, pref.FFTLogarithmic, pref.FFTNumber, pref.SpectrumColor1, pref.SpectrumColor2, pref.SpectrumMode);
                     SpectrumRenderer.Start();
                 }
             }
@@ -281,9 +275,9 @@ namespace Gageas.Lutea.DefaultUI
 
         private void ResetTrackInfoView()
         {
-            trackInfoText.Font = TrackInfoViewFont;
+            trackInfoText.Font = pref.Font_trackInfoView;
             trackInfoText.Height = trackInfoText.Font.Height;
-            groupBox1.Font = new Font(TrackInfoViewFont.FontFamily, (float)Math.Max(this.Font.Size, TrackInfoViewFont.Size*0.6));
+            groupBox1.Font = new Font(pref.Font_trackInfoView.FontFamily, (float)Math.Max(this.Font.Size, pref.Font_trackInfoView.Size * 0.6));
             ResetSpectrumRenderer(true);
         }
 
@@ -309,7 +303,7 @@ namespace Gageas.Lutea.DefaultUI
             if (!Controller.IsPlaying) return;
             var t1 = Controller.Current.MetaData("tagTitle");
             var t2 = Controller.Current.MetaData("tagArtist") + " - " + Controller.Current.MetaData("tagAlbum");
-            NotifyPopup.DoNotify(t1, t2, Controller.Current.CoverArtImage(), this.TrackInfoViewFont);          
+            NotifyPopup.DoNotify(t1, t2, Controller.Current.CoverArtImage(), pref.Font_trackInfoView);          
         }
 
         private void trackChange(int index)
@@ -548,7 +542,7 @@ namespace Gageas.Lutea.DefaultUI
             Controller.PlaylistUpdated += new Controller.PlaylistUpdatedEvent(playlistUpdated);
             Controller.onElapsedTimeChange += new Controller.VOIDINT(elapsedTimeChange);
             Controller.onTrackChange += new Controller.VOIDINT(trackChange);
-            if (ShowNotifyBalloon)
+            if (pref.ShowNotifyBalloon)
             {
                 Controller.onTrackChange -= TrackChangeNotifyPopup;
                 Controller.onTrackChange += TrackChangeNotifyPopup;
@@ -716,7 +710,7 @@ namespace Gageas.Lutea.DefaultUI
                     this.config_FormSize = this.ClientSize;
                 }
             }
-            if (HideIntoTrayOnMinimize && this.WindowState == FormWindowState.Minimized)
+            if (pref.HideIntoTrayOnMinimize && this.WindowState == FormWindowState.Minimized)
             {
                 this.ShowInTaskbar = false;
             }
@@ -1109,7 +1103,7 @@ namespace Gageas.Lutea.DefaultUI
             var re = new Regex("%([0-9a-z_]+)%", RegexOptions.IgnoreCase);
             try
             {
-                var text = re.Replace(NowPlayingFormat, (_) => { return Controller.Current.MetaData(Controller.GetColumnIndexByName(_.Groups[1].Value)); });
+                var text = re.Replace(pref.NowPlayingFormat, (_) => { return Controller.Current.MetaData(Controller.GetColumnIndexByName(_.Groups[1].Value)); });
                 Shell32.OpenPath("https://twitter.com/intent/tweet?text=" + Uri.EscapeDataString(text));
             }
             catch (Exception ee)
@@ -2028,11 +2022,11 @@ namespace Gageas.Lutea.DefaultUI
             lock (importThreadLock)
             {
                 FolderBrowserDialog dlg = new FolderBrowserDialog();
-                dlg.SelectedPath = LibraryLatestDir;
+                dlg.SelectedPath = pref.LibraryLatestDir;
                 DialogResult result = dlg.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    LibraryLatestDir = dlg.SelectedPath;
+                    pref.LibraryLatestDir = dlg.SelectedPath;
                     iform = new ImportForm(dlg.SelectedPath, sender == importToolStripMenuItem1 ? true : false);
                     iform.Show();
                     iform.Start();
@@ -2196,11 +2190,11 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     hasCoverArtPic = true;
                     var hdc = g.GetHdc();
-                    xp = x + 3 + (CoverArtSizeInPlaylistView - coverArt.Width) / 2;
-                    yp = y + 3 + (CoverArtSizeInPlaylistView - coverArt.Height) / 2;
+                    xp = x + 3 + (pref.CoverArtSizeInPlaylistView - coverArt.Width) / 2;
+                    yp = y + 3 + (pref.CoverArtSizeInPlaylistView - coverArt.Height) / 2;
                     w = coverArt.Width - 4;
                     h = coverArt.Height - 4;
-                    GDI.BitBlt(hdc, xp, yp, CoverArtSizeInPlaylistView + 2, CoverArtSizeInPlaylistView + 2, coverArt.HDC, 0, 0, 0x00CC0020);
+                    GDI.BitBlt(hdc, xp, yp, pref.CoverArtSizeInPlaylistView + 2, pref.CoverArtSizeInPlaylistView + 2, coverArt.HDC, 0, 0, 0x00CC0020);
                     g.ReleaseHdc(hdc);
                 }
                 else
@@ -2247,7 +2241,7 @@ namespace Gageas.Lutea.DefaultUI
             // overlay
             if (((e.State & ListViewItemStates.Selected) != 0) || !hasCoverArtPic)
             {
-                g.DrawString(album, PlaylistViewFont, System.Drawing.Brushes.White, new RectangleF(xp + 2, yp + 2, w - 20, h));
+                g.DrawString(album, pref.Font_playlistView, System.Drawing.Brushes.White, new RectangleF(xp + 2, yp + 2, w - 20, h));
             }
             double rate = 0;
             double.TryParse(albums[index][3].ToString(), out rate);
@@ -2356,45 +2350,16 @@ namespace Gageas.Lutea.DefaultUI
 
         #region pluginInterface methods
 
-        private void parseSetting(Dictionary<string, object> setting)
+        private void parseSetting(Dictionary<string, object> _pref)
         {
-            Util.Util.TryAll(new MethodInvoker[]{
-                ()=>{
-                    ColumnOrder = (Dictionary<string, int>)setting["PlaylistViewColumnOrder"];
-                    ColumnWidth = (Dictionary<string, int>)setting["PlaylistViewColumnWidth"];
-                },
-                ()=>config_FormLocation = (Point)setting["WindowLocation"],
-                ()=>config_FormSize = (Size)setting["WindowSize"],
-                ()=>{
-                    this.WindowState = (FormWindowState)setting["WindowState"];
-                },
-                ()=>this.splitContainer1.SplitterDistance = (int)setting["splitContainer1.SplitterDistance"],
-                ()=>this.splitContainer2.SplitterDistance = (int)setting["splitContainer2.SplitterDistance"],
-                ()=>{
-                    settingCoverArtSize = (int)setting["splitContainer3.SplitterDistance"];
-                },
-                ()=>LibraryLatestDir = (string)setting["LibraryLatestDir"],
-                ()=>SpectrumMode = (int)setting["SpectrumMode"],
-                ()=>FFTLogarithmic = (bool)setting["FFTLogarithmic"],
-                ()=>FFTNum = (DefaultUIPreference.FFTNum)setting["FFTNum"],
-                ()=>SpectrumColor1 = (Color)setting["SpectrumColor1"],
-                ()=>SpectrumColor2 = (Color)setting["SpectrumColor2"],
-                ()=>displayColumns = (string[])setting["DisplayColumns"],
-                ()=>PlaylistViewFont = (System.Drawing.Font)setting["Font_PlaylistView"],
-                ()=>TrackInfoViewFont = (System.Drawing.Font)setting["Font_TrackInfoView"],
-                ()=>PlaylistViewLineHeightAdjustment = (int)setting["PlaylistViewLineHeightAdjustment"],
-                ()=>ShowCoverArtInPlaylistView = (Boolean)setting["ShowCoverArtInPlaylistView"],
-                ()=>CoverArtSizeInPlaylistView = (int)setting["CoverArtSizeInPlaylistView"],
-                ()=>ColoredAlbum = (bool)setting["ColoredAlbum"],
-                ()=>UseMediaKey = (bool)setting["UseMediaKey"],
-                ()=>hotkey_PlayPause = (Keys)setting["Hotkey_PlayPause"],
-                ()=>hotkey_Stop = (Keys)setting["Hotkey_Stop"],
-                ()=>hotkey_NextTrack = (Keys)setting["Hotkey_NextTrack"],
-                ()=>hotkey_PrevTrack = (Keys)setting["Hotkey_PrevTrack"],
-                ()=>NowPlayingFormat = (string)setting["NowPlayingFormat"],
-                ()=>ShowNotifyBalloon = (bool)setting["ShowNotifyBalloon"],
-                ()=>HideIntoTrayOnMinimize = (bool)setting["HideIntoTrayOnMinimize"],
-            }, null);
+            this.pref = new DefaultUIPreference(_pref);
+            ColumnOrder = (Dictionary<string, int>)pref.PlaylistViewColumnOrder;
+            ColumnWidth = (Dictionary<string, int>)pref.PlaylistViewColumnWidth;
+            config_FormLocation = pref.WindowLocation;
+            config_FormSize = pref.WindowSize;
+            this.WindowState = pref.WindowState;
+            this.splitContainer1.SplitterDistance = pref.splitContainer1_SplitterDistance ?? 100;
+            this.splitContainer2.SplitterDistance = pref.splitContainer2_SplitterDistance ?? 100;
         }
 
         private List<HotKey> hotkeys = new List<HotKey>();
@@ -2404,11 +2369,11 @@ namespace Gageas.Lutea.DefaultUI
             {
                 hotkeys.ForEach((e) => e.Dispose());
                 hotkeys.Clear();
-                hotkeys.Add(new HotKey(hotkey_PlayPause, (o, e) => { if (Controller.Current.Position > 0)Controller.TogglePause(); else Controller.Play(); }));
-                hotkeys.Add(new HotKey(hotkey_Stop, (o, e) => Controller.Stop()));
-                hotkeys.Add(new HotKey(hotkey_NextTrack, (o, e) => Controller.NextTrack()));
-                hotkeys.Add(new HotKey(hotkey_PrevTrack, (o, e) => Controller.PrevTrack()));
-                if (UseMediaKey)
+                hotkeys.Add(new HotKey(pref.Hotkey_PlayPause, (o, e) => { if (Controller.Current.Position > 0)Controller.TogglePause(); else Controller.Play(); }));
+                hotkeys.Add(new HotKey(pref.Hotkey_Stop, (o, e) => Controller.Stop()));
+                hotkeys.Add(new HotKey(pref.Hotkey_NextTrack, (o, e) => Controller.NextTrack()));
+                hotkeys.Add(new HotKey(pref.Hotkey_PrevTrack, (o, e) => Controller.PrevTrack()));
+                if (pref.UseMediaKey)
                 {
                     hotkeys.Add(new HotKey(0, Keys.MediaPreviousTrack, (o, e) => Controller.PrevTrack()));
                     hotkeys.Add(new HotKey(0, Keys.MediaNextTrack, (o, e) => Controller.NextTrack()));
@@ -2420,16 +2385,20 @@ namespace Gageas.Lutea.DefaultUI
 
         public void Init(object _setting)
         {
+            pref.Font_playlistView = pref.Font_playlistView ?? this.listView1.Font;
+            pref.Font_trackInfoView = pref.Font_trackInfoView ?? this.trackInfoText.Font;
+            pref.splitContainer1_SplitterDistance = pref.splitContainer1_SplitterDistance ?? this.splitContainer1.SplitterDistance;
+            pref.splitContainer2_SplitterDistance = pref.splitContainer2_SplitterDistance ?? this.splitContainer2.SplitterDistance;
             // プレファレンスを適用
-            if (_setting != null)
+            if (_setting != null && _setting is Dictionary<string, object>)
             {
                 parseSetting((Dictionary<string, object>)_setting);
             }
 
             // 表示するカラムが空の時、タグのカラムを表示することにする
-            if (displayColumns == null || displayColumns.Length == 0)
+            if (pref.DisplayColumns == null || pref.DisplayColumns.Length == 0)
             {
-                displayColumns = Columns.Where(_ => _.MappedTagField != null).OrderBy(_ => _.Type).Select(_ => _.Name).ToArray();
+                pref.DisplayColumns = Columns.Where(_ => !string.IsNullOrEmpty(_.MappedTagField)).OrderBy(_ => _.Type).Select(_ => _.Name).ToArray();
             }
 
             // レーティングの☆描画準備
@@ -2458,7 +2427,7 @@ namespace Gageas.Lutea.DefaultUI
 
             // ウィンドウ表示
             this.Show();
-            pictureBox1.Width = pictureBox1.Height = splitContainer4.SplitterDistance = splitContainer3.SplitterDistance = settingCoverArtSize;
+            pictureBox1.Width = pictureBox1.Height = splitContainer4.SplitterDistance = splitContainer3.SplitterDistance = pref.SplitContainer3_SplitterDistance;
             splitContainer3_SplitterMoved(null, null);
             pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
 
@@ -2477,12 +2446,12 @@ namespace Gageas.Lutea.DefaultUI
                             displayColumns_list.Add(Columns[(int)_.Tag].Name);
                         }
                     }
-                    displayColumns = displayColumns_list.ToArray();
+                    pref.DisplayColumns = displayColumns_list.ToArray();
                     ResetPlaylistView();
                 });
                 item.CheckOnClick = true;
                 item.Tag = i;
-                if (displayColumns.Contains(col.Name))
+                if (pref.DisplayColumns.Contains(col.Name))
                 {
                     item.Checked = true;
                 }
@@ -2534,101 +2503,50 @@ namespace Gageas.Lutea.DefaultUI
 
         public object GetSetting()
         {
-            var setting = new Dictionary<string, object>();
-            setting["splitContainer1.SplitterDistance"] = splitContainer1.SplitterDistance;
-            setting["splitContainer2.SplitterDistance"] = splitContainer2.SplitterDistance;
-            setting["splitContainer3.SplitterDistance"] = splitContainer3.SplitterDistance;
-            Dictionary<string, int> PlaylistViewColumnOrder = new Dictionary<string, int>();
-            Dictionary<string, int> PlaylistViewColumnWidth = new Dictionary<string, int>();
+            this.pref.splitContainer1_SplitterDistance = splitContainer1.SplitterDistance;
+            this.pref.splitContainer2_SplitterDistance = splitContainer2.SplitterDistance;
+            this.pref.SplitContainer3_SplitterDistance = splitContainer3.SplitterDistance;
+            this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
+            this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
             for (int i = 0; i < listView1.Columns.Count; i++)
             {
-                PlaylistViewColumnOrder[Columns[(int)listView1.Columns[i].Tag].Name] = listView1.Columns[i].DisplayIndex;
-                PlaylistViewColumnWidth[Columns[(int)listView1.Columns[i].Tag].Name] = Math.Max(10, listView1.Columns[i].Width);
+                this.pref.PlaylistViewColumnOrder[Columns[(int)listView1.Columns[i].Tag].Name] = listView1.Columns[i].DisplayIndex;
+                this.pref.PlaylistViewColumnWidth[Columns[(int)listView1.Columns[i].Tag].Name] = Math.Max(10, listView1.Columns[i].Width);
             }
-            setting["PlaylistViewColumnOrder"] = PlaylistViewColumnOrder;
-            setting["PlaylistViewColumnWidth"] = PlaylistViewColumnWidth;
-            setting["WindowState"] = this.WindowState;
+            this.pref.WindowState = this.WindowState;
             if (this.WindowState == FormWindowState.Minimized)
             {
-                setting["WindowLocation"] = this.config_FormLocation;
+                pref.WindowLocation = this.config_FormLocation;
             }
             else
             {
-                setting["WindowLocation"] = this.Location;
+                pref.WindowLocation = this.Location;
             }
             if (this.WindowState == FormWindowState.Normal)
             {
-                setting["WindowSize"] = this.ClientSize;
+                pref.WindowSize = this.ClientSize;
             }
             else
             {
-                setting["WindowSize"] = this.config_FormSize;
+                pref.WindowSize = this.config_FormSize;
             }
-            setting["LastExecutedSQL"] = queryComboBox.Text;
-            setting["LibraryLatestDir"] = LibraryLatestDir;
-
-            setting["SpectrumMode"] = SpectrumMode;
-            setting["FFTLogarithmic"] = FFTLogarithmic;
-            setting["FFTNum"] = (int)FFTNum;
-            setting["SpectrumColor1"] = SpectrumColor1;
-            setting["SpectrumColor2"] = SpectrumColor2;
-            setting["DisplayColumns"] = displayColumns;
-            setting["Font_PlaylistView"] = PlaylistViewFont;
-            setting["Font_TrackInfoView"] = TrackInfoViewFont;
-            setting["PlaylistViewLineHeightAdjustment"] = PlaylistViewLineHeightAdjustment;
-            setting["ShowCoverArtInPlaylistView"] = ShowCoverArtInPlaylistView;
-            setting["CoverArtSizeInPlaylistView"] = CoverArtSizeInPlaylistView;
-            setting["ColoredAlbum"] = ColoredAlbum;
-            setting["UseMediaKey"] = UseMediaKey;
-            setting["Hotkey_PlayPause"] = hotkey_PlayPause;
-            setting["Hotkey_Stop"] = hotkey_Stop;
-            setting["Hotkey_NextTrack"] = hotkey_NextTrack;
-            setting["Hotkey_PrevTrack"] = hotkey_PrevTrack;
-            setting["NowPlayingFormat"] = NowPlayingFormat;
-            setting["ShowNotifyBalloon"] = ShowNotifyBalloon;
-            setting["HideIntoTrayOnMinimize"] = HideIntoTrayOnMinimize;
-            return setting;
+            return this.pref.ToDictionary();
         }
 
         public object GetPreferenceObject()
         {
-            var pref = new DefaultUIPreference(this);
-            pref.SpectrumMode = (DefaultUIPreference.SpectrumModes)this.SpectrumMode;
-            pref.FFTLogarithmic = this.FFTLogarithmic;
-            pref.FFTNumber = this.FFTNum;
-            pref.SpectrumColor1 = this.SpectrumColor1;
-            pref.SpectrumColor2 = this.SpectrumColor2;
-            pref.Font_playlistView = new Font(PlaylistViewFont, 0); // styleが設定されていないcloneを作る
-            pref.Font_trackInfoView = new Font(TrackInfoViewFont, 0);
-            pref.PlaylistViewLineHeightAdjustment = this.PlaylistViewLineHeightAdjustment;
-            pref.ColoredAlbum = this.ColoredAlbum;
-            pref.ShowCoverArtInPlaylistView = this.ShowCoverArtInPlaylistView;
-            pref.CoverArtSizeInPlaylistView = this.CoverArtSizeInPlaylistView;
-            pref.UseMediaKey = this.UseMediaKey;
-            pref.Hotkey_PlayPause = this.hotkey_PlayPause;
-            pref.Hotkey_Stop = this.hotkey_Stop;
-            pref.Hotkey_NextTrack = this.hotkey_NextTrack;
-            pref.Hotkey_PrevTrack = this.hotkey_PrevTrack;
-            pref.NowPlayingFormat = this.NowPlayingFormat;
-            pref.HideIntoTrayOnMinimize = this.HideIntoTrayOnMinimize;
-            return pref;
+            return this.pref.Clone<DefaultUIPreference>();
         }
 
         public void SetPreferenceObject(object _pref)
         {
+            var prevpref = this.pref;
             var pref = (DefaultUIPreference)_pref;
-            this.FFTLogarithmic = pref.FFTLogarithmic;
-            this.FFTNum = pref.FFTNumber;
-            this.SpectrumColor1 = pref.SpectrumColor1;
-            this.SpectrumColor2 = pref.SpectrumColor2;
-            this.SpectrumMode = (int)pref.SpectrumMode;
-            this.PlaylistViewFont = pref.Font_playlistView;
-            this.TrackInfoViewFont = pref.Font_trackInfoView;
-            this.PlaylistViewLineHeightAdjustment = pref.PlaylistViewLineHeightAdjustment;
-            this.ShowCoverArtInPlaylistView = pref.ShowCoverArtInPlaylistView;
-            if (this.CoverArtSizeInPlaylistView != pref.CoverArtSizeInPlaylistView)
+            pref.Font_playlistView = pref.Font_playlistView  ?? this.listView1.Font;
+            pref.Font_trackInfoView = pref.Font_trackInfoView ?? this.trackInfoText.Font;
+            this.pref = pref;
+            if (prevpref.CoverArtSizeInPlaylistView != pref.CoverArtSizeInPlaylistView)
             {
-                this.CoverArtSizeInPlaylistView = pref.CoverArtSizeInPlaylistView;
                 lock (coverArts)
                 {
                     playlistViewImageLoader.Interrupt();
@@ -2641,15 +2559,6 @@ namespace Gageas.Lutea.DefaultUI
                     }
                 }
             }
-            this.ColoredAlbum = pref.ColoredAlbum;
-            this.UseMediaKey = pref.UseMediaKey;
-            this.hotkey_PlayPause = pref.Hotkey_PlayPause;
-            this.hotkey_Stop = pref.Hotkey_Stop;
-            this.hotkey_NextTrack = pref.Hotkey_NextTrack;
-            this.hotkey_PrevTrack = pref.Hotkey_PrevTrack;
-            this.NowPlayingFormat = pref.NowPlayingFormat;
-            this.HideIntoTrayOnMinimize = pref.HideIntoTrayOnMinimize;
-
             ResetHotKeys();
             ResetPlaylistView();
             ResetTrackInfoView();
@@ -2749,7 +2658,7 @@ namespace Gageas.Lutea.DefaultUI
                 if (tasks.Key != null)
                 {
                     var album = tasks.Key;
-                    if ((CoverArtSizeInPlaylistView == 0) || (coverArts.ContainsKey(album)))
+                    if ((pref.CoverArtSizeInPlaylistView == 0) || (coverArts.ContainsKey(album)))
                     {
                         return;
                     }
@@ -2757,7 +2666,7 @@ namespace Gageas.Lutea.DefaultUI
                     var orig = Controller.CoverArtImageForFile(file_name);
                     if (orig != null)
                     {
-                        var size = CoverArtSizeInPlaylistView;
+                        var size = pref.CoverArtSizeInPlaylistView;
 
                         var resize = ImageUtil.GetResizedImageWithoutPadding(orig, size, size);
                         var w = resize.Width;
@@ -2847,7 +2756,7 @@ namespace Gageas.Lutea.DefaultUI
                 // SystemBrushはsolidBrushのはずだけど
                 GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.DC_BRUSH));
                 GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.DC_PEN));
-                if (ColoredAlbum & !isSelected)
+                if (pref.ColoredAlbum & !isSelected)
                 {
                     int c = (album.GetHashCode() & 0xFFFFFF) | 0x00c0c0c0;
                     int red = c >> 16;
@@ -2875,11 +2784,11 @@ namespace Gageas.Lutea.DefaultUI
                 GDI.Rectangle(hDC, bounds_X, bounds_Y, bounds_X + bounds_Width, bounds_Y + bounds_Height);
 
                 // カバアート読み込みをキューイング
-                if (ShowCoverArtInPlaylistView)
+                if (pref.ShowCoverArtInPlaylistView)
                 {
                     if (!string.IsNullOrEmpty(album))
                     {
-                        if (((indexInGroup - 2) * bounds_Height) < CoverArtSizeInPlaylistView && !coverArts.ContainsKey(album))
+                        if (((indexInGroup - 2) * bounds_Height) < pref.CoverArtSizeInPlaylistView && !coverArts.ContainsKey(album))
                         {
                             lock (playlistViewImageLoadQueue)
                             {
@@ -2923,7 +2832,7 @@ namespace Gageas.Lutea.DefaultUI
 
                 // 各column描画準備
                 int pc = 0;
-                IntPtr hFont = (emphasizedRowId == index ? new Font(PlaylistViewFont, FontStyle.Bold) : PlaylistViewFont).ToHfont();
+                IntPtr hFont = (emphasizedRowId == index ? new Font(pref.Font_playlistView, FontStyle.Bold) : pref.Font_playlistView).ToHfont();
                 IntPtr hOldFont = GDI.SelectObject(hDC, hFont);
 
                 // 強調枠描画
@@ -2968,7 +2877,7 @@ namespace Gageas.Lutea.DefaultUI
                         continue;
                     }
 
-                    if (ShowCoverArtInPlaylistView && col.Type == Library.LibraryColumnType.TrackNumber)
+                    if (pref.ShowCoverArtInPlaylistView && col.Type == Library.LibraryColumnType.TrackNumber)
                     {
                         if (coverArts.ContainsKey(album))
                         {
@@ -2977,7 +2886,7 @@ namespace Gageas.Lutea.DefaultUI
                             if (img != null && img.Width > 1)
                             {
                                 GDI.BitBlt(hDC,
-                                    bounds_X + pc + (CoverArtSizeInPlaylistView - img.Width) / 2 + margin,
+                                    bounds_X + pc + (pref.CoverArtSizeInPlaylistView - img.Width) / 2 + margin,
                                     bounds_Y + (indexInGroup == 1 ? margin : 0),
                                     img.Width,
                                     bounds_Height - (indexInGroup == 1 ? margin : 0),
@@ -3050,7 +2959,7 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (Columns[Controller.GetColumnIndexByName(displayColumns[item.SubItems.IndexOf(sub)])].Type == Library.LibraryColumnType.Rating)
+            if (Columns[Controller.GetColumnIndexByName(pref.DisplayColumns[item.SubItems.IndexOf(sub)])].Type == Library.LibraryColumnType.Rating)
             {
                 if (item.GetSubItemAt(e.X - starwidth * 4, e.Y) == sub)
                 {
@@ -3085,7 +2994,7 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (Columns[Controller.GetColumnIndexByName(displayColumns[item.SubItems.IndexOf(sub)])].Type == Library.LibraryColumnType.Rating)
+            if (Columns[Controller.GetColumnIndexByName(pref.DisplayColumns[item.SubItems.IndexOf(sub)])].Type == Library.LibraryColumnType.Rating)
             {
                 if (listView1.Cursor != Cursors.Hand)
                 {
@@ -3147,8 +3056,8 @@ namespace Gageas.Lutea.DefaultUI
             albumArtListView.BeginUpdate();
             albumArtListView.Enabled = false;
             albumArtListView.SmallImageList = new ImageList();
-            albumArtListView.SmallImageList.ImageSize = new System.Drawing.Size(CoverArtSizeInPlaylistView + 7, CoverArtSizeInPlaylistView + 7);
-            albumArtListView.Columns[0].Width = CoverArtSizeInPlaylistView + 7;
+            albumArtListView.SmallImageList.ImageSize = new System.Drawing.Size(pref.CoverArtSizeInPlaylistView + 7, pref.CoverArtSizeInPlaylistView + 7);
+            albumArtListView.Columns[0].Width = pref.CoverArtSizeInPlaylistView + 7;
             Albums = null;
             AlbumsFiltered = null;
             using (var db = Controller.GetDBConnection())

@@ -148,18 +148,6 @@ namespace Gageas.Lutea.Util
             return default(T);
         }
 
-        public static void TryAll(IEnumerable<Delegate> procs, object[] args)
-        {
-            foreach (var proc in procs)
-            {
-                try
-                {
-                    proc.DynamicInvoke(args);
-                }
-                catch { }
-            }
-        }
-
         private static readonly System.Text.RegularExpressions.Regex intRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+");
         private static readonly System.Text.RegularExpressions.Regex doubleRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+(\.)?(\d+)?");
         public static double parseDouble(string src)

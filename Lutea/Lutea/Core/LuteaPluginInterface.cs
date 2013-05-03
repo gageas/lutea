@@ -49,7 +49,55 @@ namespace Gageas.Lutea.Core
         {
             return new string[]{};
         }
-    }
+
+        public Dictionary<string, object> ToDictionary()
+        {
+            var setting = new Dictionary<string, object>();
+            var props = this.GetType().GetProperties();
+            foreach (var prop in props)
+            {
+                if (prop.CanRead && prop.CanWrite)
+                {
+                    setting.Add(prop.Name, prop.GetValue(this, null));
+                }
+            }
+            return setting;
+        }
+
+
+        public LuteaPreference(Dictionary<string, object> setting)
+        {
+            this.FromDictionary(setting);
+        }
+
+        public LuteaPreference() { }
+
+        public T Clone<T>() where T : LuteaPreference, new()
+        {
+            T t = new T();
+            t.FromDictionary(this.ToDictionary());
+            return t;
+        }
+
+        private void FromDictionary(Dictionary<string, object> dict)
+        {
+            var props = this.GetType().GetProperties();
+            foreach (var prop in props)
+            {
+                if (prop.CanRead && prop.CanWrite)
+                {
+                    try
+                    {
+                        prop.SetValue(this, dict[prop.Name], null);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error(e);
+                    }
+                }
+            }
+        }
+   }
 
     public interface LuteaUIComponentInterface : LuteaComponentInterface
     {

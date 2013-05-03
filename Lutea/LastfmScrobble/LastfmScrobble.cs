@@ -15,7 +15,7 @@ namespace Gageas.Lutea.LastfmScrobble
     public class LastfmScrobble : Lutea.Core.LuteaComponentInterface
     {
         private const int RETRY_COUNT = 5;
-        private Preference pref = new Preference();
+        private Preference pref = new Preference(null);
         private Lastfm lastfm = null;
 
         private bool scrobbed = false;
@@ -52,7 +52,14 @@ namespace Gageas.Lutea.LastfmScrobble
                 scrobbed = true;
                 if (lastfm.session_key == null)
                 {
-                    lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.AuthToken);
+                    try
+                    {
+                        lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.AuthToken);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error(e);
+                    }
                 }
 
                 int tagTracknumber = -1;
@@ -71,19 +78,26 @@ namespace Gageas.Lutea.LastfmScrobble
                 var success = false;
                 for (int i = 0; i < RETRY_COUNT; i++)
                 {
-                    var result = lastfm.CallAPIWithSig(args);
-                    if (result != null)
+                    try
                     {
-                        var scrobbles = result.GetElementsByTagName("scrobbles");
-                        if (scrobbles.Count == 1)
+                        var result = lastfm.CallAPIWithSig(args);
+                        if (result != null)
                         {
-                            var acceptecd = scrobbles.Item(0).Attributes["accepted"].Value;
-                            if (acceptecd == "1")
+                            var scrobbles = result.GetElementsByTagName("scrobbles");
+                            if (scrobbles.Count == 1)
                             {
-                                success = true;
-                                break;
+                                var acceptecd = scrobbles.Item(0).Attributes["accepted"].Value;
+                                if (acceptecd == "1")
+                                {
+                                    success = true;
+                                    break;
+                                }
                             }
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error(e);
                     }
                 }
                 Logger.Log("last.fm scrobble " + Controller.Current.MetaData("tagTitle") + (success ? " OK." : " Fail."));
@@ -98,7 +112,14 @@ namespace Gageas.Lutea.LastfmScrobble
             nowPlayingUpdated = true;
             if (lastfm.session_key == null)
             {
-                lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.AuthToken);
+                try
+                {
+                    lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.AuthToken);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e);
+                }
             }
 
             int tagTracknumber = -1;
@@ -116,19 +137,26 @@ namespace Gageas.Lutea.LastfmScrobble
             var success = false;
             for (int i = 0; i < RETRY_COUNT; i++)
             {
-                var result = lastfm.CallAPIWithSig(args);
-                if (result != null)
+                try
                 {
-                    var scrobbles = result.GetElementsByTagName("lfm");
-                    if (scrobbles.Count == 1)
+                    var result = lastfm.CallAPIWithSig(args);
+                    if (result != null)
                     {
-                        var status = scrobbles[0].Attributes["status"].Value;
-                        if (status == "ok")
+                        var scrobbles = result.GetElementsByTagName("lfm");
+                        if (scrobbles.Count == 1)
                         {
-                            success = true;
-                            break;
+                            var status = scrobbles[0].Attributes["status"].Value;
+                            if (status == "ok")
+                            {
+                                success = true;
+                                break;
+                            }
                         }
                     }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
                 }
             }
             Logger.Log("last.fm update " + Controller.Current.MetaData("tagTitle") + (success ? " OK." : " Fail."));
@@ -141,7 +169,7 @@ namespace Gageas.Lutea.LastfmScrobble
 
         public object GetPreferenceObject()
         {
-            var clone = pref.Clone();
+            var clone = pref.Clone<Preference>();
             return clone;
         }
 
@@ -190,7 +218,7 @@ namespace Gageas.Lutea.LastfmScrobble
             return this.pref.ScrobbleEnabled;
         }
 
-        public class Preference : LuteaPreference, ICloneable
+        public class Preference : LuteaPreference
         {
             private readonly string[] Sortorder = 
             { 
@@ -211,23 +239,8 @@ namespace Gageas.Lutea.LastfmScrobble
             {
             }
 
-            public Preference(Dictionary<string, object> setting)
+            public Preference(Dictionary<string, object> setting) : base(setting)
             {
-                var props = this.GetType().GetProperties();
-                foreach (var prop in props)
-                {
-                    if (prop.CanRead && prop.CanWrite)
-                    {
-                        try
-                        {
-                            prop.SetValue(this, setting[prop.Name], null);
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.Error(e);
-                        }
-                    }
-                }
                 this.password = "";
                 this.password_disp = Authenticated ? HiddenPassword : "";
             }
@@ -331,25 +344,6 @@ namespace Gageas.Lutea.LastfmScrobble
                     this.password = value;
                     this.password_disp = HiddenPassword;
                 }
-            }
-
-            public Dictionary<string, object> ToDictionary()
-            {
-                var setting = new Dictionary<string, object>();
-                var props = this.GetType().GetProperties();
-                foreach (var prop in props)
-                {
-                    if (prop.CanRead && prop.CanWrite)
-                    {
-                        setting.Add(prop.Name, prop.GetValue(this, null));
-                    }
-                }
-                return setting;
-            }
-
-            public object Clone()
-            {
-                return new Preference(this.ToDictionary());
             }
         }
     }
