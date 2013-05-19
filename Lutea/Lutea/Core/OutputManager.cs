@@ -218,12 +218,17 @@ namespace Gageas.Lutea.Core
                     Logger.Debug("Rebuild output");
                     if (useFloat)
                     {
-                        outputChannel = Util.Util.TryThese<BASS.IPlayable>(
-                            new OutputChannelBuilder[] { 
+                        foreach(var dlg in new OutputChannelBuilder[] { 
                                 BuildWASAPIExOutput, 
                                 BuildWASAPIOutput, 
                                 BuildFloatingPointOutput 
-                            }, new object[] { freq, chans, preferredDeviceName, bufferLen });
+                            }){
+                            try{
+                                outputChannel = (BASS.IPlayable)dlg.DynamicInvoke(new object[] { freq, chans, preferredDeviceName, bufferLen });
+                                break;
+                            }catch(Exception){
+                            }
+                        }
                     }
                 }
             }
