@@ -631,7 +631,7 @@ namespace Gageas.Lutea.Core
             }
         }
 
-        delegate SQLite3DB.STMT CreatePlaylistParser();
+        delegate string CreatePlaylistParser();
         private static void createPlaylistTableInDB(string sql)
         {
             try
@@ -643,7 +643,8 @@ namespace Gageas.Lutea.Core
                     h2k6db.Exec("DROP TABLE IF EXISTS unordered_playlist;");
                     Logger.Debug("playlist TABLE(Lutea type) DROPed");
                 }
-                catch (SQLite3DB.SQLite3Exception e) {
+                catch (SQLite3DB.SQLite3Exception e)
+                {
                     // H2k6で生成するplaylistをdrop
                     try
                     {
@@ -659,41 +660,52 @@ namespace Gageas.Lutea.Core
                 }
 
                 using (SQLite3DB.Lock dbLock = h2k6db.GetLock("list"))
-                using (SQLite3DB.STMT tmt = Util.Util.TryThese<SQLite3DB.STMT>(new CreatePlaylistParser[]{
-                                    ()=>prepareForCreatePlaylistView(h2k6db, sql==""?"SELECT * FROM list":sql),
-                                    ()=>prepareForCreatePlaylistView(h2k6db,GetRegexpSTMT(sql)),
-                                    ()=>prepareForCreatePlaylistView(h2k6db,GetMigemoSTMT(sql)),
-                                    ()=>prepareForCreatePlaylistView(h2k6db,"SELECT * FROM list WHERE " + String.Join("||'\n'||", GetSearchTargetColumns()) + " like '%" + sql.EscapeSingleQuotSQL() + "%';"),
-                                }, null))
                 {
-                    if (tmt == null) return;
-                    for (int i = 0; i < 10; i++)
+                    SQLite3DB.STMT tmt = null;
+                    foreach (var dlg in new CreatePlaylistParser[]{
+                        ()=>sql==""?"SELECT * FROM list":sql,
+                        ()=>GetRegexpSTMT(sql),
+                        ()=>GetMigemoSTMT(sql),
+                        ()=>"SELECT * FROM list WHERE " + String.Join("||'\n'||", GetSearchTargetColumns()) + " like '%" + sql.EscapeSingleQuotSQL() + "%';"})
                     {
                         try
                         {
-                            tmt.Evaluate(null);
+                            tmt = prepareForCreatePlaylistView(h2k6db, dlg());
                             break;
                         }
-                        catch (SQLite3DB.SQLite3Exception) { }
-                        Thread.Sleep(50);
-                    }
-
-                    //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
-                    Thread.Sleep(10);
-
-                    using (SQLite3DB.STMT tmt2 = h2k6db.Prepare("SELECT COUNT(*) FROM unordered_playlist ;"))
+                        catch (Exception) { }
+                    };
+                    if (tmt == null) return;
+                    using (tmt)
                     {
-                        Logger.Debug("Creating new playlist " + sql);
-                        tmt2.Evaluate((o) => currentPlaylistRows = int.Parse(o[0].ToString()));
-                        Logger.Debug("Start Playlist Loader");
-                        if (MyCoreComponent.PlaylistSortColumn != null)
+                        for (int i = 0; i < 10; i++)
                         {
-                            CreateOrderedPlaylistTableInDB();
+                            try
+                            {
+                                tmt.Evaluate(null);
+                                break;
+                            }
+                            catch (SQLite3DB.SQLite3Exception) { }
+                            Thread.Sleep(50);
                         }
 
-                        // プレイリストキャッシュ用の配列を作成
-                        PlaylistCache = new object[currentPlaylistRows][];
-                        MyCoreComponent.LatestPlaylistQuery = sql;
+                        //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
+                        Thread.Sleep(10);
+
+                        using (SQLite3DB.STMT tmt2 = h2k6db.Prepare("SELECT COUNT(*) FROM unordered_playlist ;"))
+                        {
+                            Logger.Debug("Creating new playlist " + sql);
+                            tmt2.Evaluate((o) => currentPlaylistRows = int.Parse(o[0].ToString()));
+                            Logger.Debug("Start Playlist Loader");
+                            if (MyCoreComponent.PlaylistSortColumn != null)
+                            {
+                                CreateOrderedPlaylistTableInDB();
+                            }
+
+                            // プレイリストキャッシュ用の配列を作成
+                            PlaylistCache = new object[currentPlaylistRows][];
+                            MyCoreComponent.LatestPlaylistQuery = sql;
+                        }
                     }
                 }
             }

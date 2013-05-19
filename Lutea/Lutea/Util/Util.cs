@@ -113,41 +113,6 @@ namespace Gageas.Lutea.Util
             return new String(buffer, 0, len);
         }
 
-        /// <summary>
-        /// prototype.js like TryThese Method.
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// private delegate int D(int i);
-        /// int val = Util.Util.TryThese&lt;int&gt;(new D[]{
-        ///     (i)=>{throw new Exception();},
-        ///     (i)=>i*3
-        /// }
-        /// , new object[]{4}); // => 12
-        /// </code>
-        /// </example>
-        /// <typeparam name="T">Type of "function"'s return value.</typeparam>
-        /// <param name="functions">Collection of functions to Try.</param>
-        /// <param name="args">Arguments for "function".</param>
-        /// <returns></returns>
-        public static T TryThese<T>(IEnumerable<Delegate> functions, object[] args)
-        {
-            foreach (var func in functions)
-            {
-                if (func.Method.ReturnType != typeof(T))
-                {
-                    throw new System.ArgumentException("デリゲートの戻り値の型が" + typeof(T) + "と一致しません\n明示的なキャストが必要かもしれません");
-                }
-                try
-                {
-                    T ret = (T)func.DynamicInvoke(args);
-                    return ret;
-                }
-                catch { }
-            }
-            return default(T);
-        }
-
         private static readonly System.Text.RegularExpressions.Regex intRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+");
         private static readonly System.Text.RegularExpressions.Regex doubleRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+(\.)?(\d+)?");
         public static double parseDouble(string src)
