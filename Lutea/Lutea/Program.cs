@@ -1,17 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Ipc;
 
 namespace Gageas.Lutea.Core
 {
+    public class IpcRemoteObject : MarshalByRefObject
+    {
+        public void Activate()
+        {
+        }
+    }
+
     static class Program
     {
+        private const string APP_NAME = "Gageas.Lutea";
+        private const string APP_IF = "remoting";
+        private static System.Threading.Mutex _mutex;
+        private static IpcRemoteObject RemoteObject;
+
         /// <summary>
         /// アプリケーションのメイン エントリ ポイントです。
         /// </summary>
         [STAThread]
         static void Main()
         {
+            _mutex = new System.Threading.Mutex(false, APP_NAME);
+            if (_mutex.WaitOne(0, false) == false)
+            {
+                // クライアントチャンネルの生成
+                IpcClientChannel cchannel = new IpcClientChannel();
+
+                // チャンネルを登録
+                ChannelServices.RegisterChannel(cchannel, true);
+
+                // リモートオブジェクトを取得
+                RemoteObject = Activator.GetObject(typeof(IpcRemoteObject), "ipc://" + APP_NAME + "/" + APP_IF) as IpcRemoteObject;
+                RemoteObject.Activate();
+                ChannelServices.UnregisterChannel(cchannel);
+                return;
+            }
+
+            // サーバーチャンネルの生成
+            IpcServerChannel channel = new IpcServerChannel(APP_NAME);
+
+            // チャンネルを登録
+            ChannelServices.RegisterChannel(channel, true);
+
+            // リモートオブジェクトを生成して公開
+            RemoteObject = new IpcRemoteObject();
+            RemotingServices.Marshal(RemoteObject, APP_IF, typeof(IpcRemoteObject));
+   
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 #if DEBUG
