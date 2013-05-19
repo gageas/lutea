@@ -67,7 +67,7 @@ namespace Gageas.Lutea.LastfmScrobble
                 var args = new List<KeyValuePair<string, string>>() { 
                     new KeyValuePair<string, string>("method", "track.scrobble"),
                     new KeyValuePair<string, string>("timestamp", Lastfm.CurrentTimestamp.ToString()),
-                    new KeyValuePair<string, string>("artist", Controller.Current.MetaData("tagArtist")),
+                    new KeyValuePair<string, string>("artist", Controller.Current.MetaData("tagArtist").Replace("\n", ", ")),
                     new KeyValuePair<string, string>("track", Controller.Current.MetaData("tagTitle")),
                     new KeyValuePair<string, string>("album", Controller.Current.MetaData("tagAlbum")),
                     new KeyValuePair<string, string>("albumArtist", Controller.Current.MetaData("tagAlbumArtist")),
@@ -126,7 +126,7 @@ namespace Gageas.Lutea.LastfmScrobble
             Lutea.Util.Util.tryParseInt(Controller.Current.MetaData("tagTracknumber"), ref tagTracknumber);
             var args = new List<KeyValuePair<string, string>>() { 
                 new KeyValuePair<string, string>("method", "track.updateNowPlaying"),
-                new KeyValuePair<string, string>("artist", Controller.Current.MetaData("tagArtist")),
+                new KeyValuePair<string, string>("artist", Controller.Current.MetaData("tagArtist").Replace("\n", ", ")),
                 new KeyValuePair<string, string>("track", Controller.Current.MetaData("tagTitle")),
                 new KeyValuePair<string, string>("album", Controller.Current.MetaData("tagAlbum")),
                 new KeyValuePair<string, string>("albumArtist", Controller.Current.MetaData("tagAlbumArtist")),
