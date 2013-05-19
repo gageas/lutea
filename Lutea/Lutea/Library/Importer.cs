@@ -531,10 +531,17 @@ namespace Gageas.Lutea.Library
         /// <param name="OptimizeDB"></param>
         private void WriteToDB(bool OptimizeDB = true)
         {
-            Message("インポート中");
-            RunInsertUpdateQuery(OptimizeDB);
             AlreadyAnalyzedFiles.Clear();
-            this.AbortWorkers();
+            AbortWorkers();
+            if (ToBeImportTracks.Count == 0)
+            {
+                Message("インポートするファイルがありません");
+            }
+            else
+            {
+                Message("インポート中");
+                RunInsertUpdateQuery(OptimizeDB);
+            }
             Complete();
         }
 
