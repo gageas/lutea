@@ -11,6 +11,7 @@ namespace Gageas.Lutea.Core
     {
         public void Activate()
         {
+            AppCore.ActivateUI();
         }
     }
 
