@@ -101,7 +101,7 @@ namespace Gageas.Lutea.Core
 
     public interface LuteaUIComponentInterface : LuteaComponentInterface
     {
-        void LibraryInitializeRequired();
+        void ActivateUI();
     }
 
     [System.AttributeUsage(System.AttributeTargets.Class, 

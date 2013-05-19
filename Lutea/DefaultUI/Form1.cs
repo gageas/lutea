@@ -2299,18 +2299,7 @@ namespace Gageas.Lutea.DefaultUI
         #region TaskTray Icon event
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (this.WindowState == FormWindowState.Minimized)
-            {
-                if (beforeMinimizeWindowState == FormWindowState.Maximized)
-                {
-                    this.WindowState = FormWindowState.Maximized;
-                }
-                else
-                {
-                    this.WindowState = FormWindowState.Normal;
-                }
-            }
-            this.Activate();
+            ActivateUI();
         }
 
         private void notifyIconContextMenuStrip_Opening(object sender, CancelEventArgs e)
@@ -2541,9 +2530,27 @@ namespace Gageas.Lutea.DefaultUI
             ResetTrackInfoView();
         }
 
-        public void LibraryInitializeRequired()
+        public void ActivateUI()
         {
-            throw new NotImplementedException();
+            if (InvokeRequired)
+            {
+                this.Invoke((Action)(() => { this.ActivateUI(); }));
+            }
+            else
+            {
+                if (this.WindowState == FormWindowState.Minimized)
+                {
+                    if (beforeMinimizeWindowState == FormWindowState.Maximized)
+                    {
+                        this.WindowState = FormWindowState.Maximized;
+                    }
+                    else
+                    {
+                        this.WindowState = FormWindowState.Normal;
+                    }
+                }
+                this.Activate();
+            }
         }
 
         public void Quit()

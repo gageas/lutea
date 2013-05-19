@@ -491,6 +491,17 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        internal static void ActivateUI()
+        {
+            foreach (var plg in Plugins)
+            {
+                if (plg is LuteaUIComponentInterface)
+                {
+                    ((LuteaUIComponentInterface)plg).ActivateUI();
+                }
+            }
+        }
+
         /*
          * DBに問い合わせてプレイリストを生成するための処理郡
          * 
