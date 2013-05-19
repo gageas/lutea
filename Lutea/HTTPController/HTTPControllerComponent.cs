@@ -14,7 +14,7 @@ namespace Gageas.Lutea.HTTPController
     public class HTTPControllerComponent : LuteaComponentInterface
     {
         private HTTPController controller;
-        private Preference pref;
+        private Preference pref = new Preference();
         public void Init(object _setting)
         {
             if (_setting != null)
