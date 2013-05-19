@@ -959,11 +959,6 @@ namespace Gageas.Lutea.DefaultUI
                     // Nextを連打したような場合に実際の処理が走らないように少しウェイト
                     Thread.Sleep(300);
                     Image coverArtImage = Controller.Current.CoverArtImage();
-                    TaskbarExtension.tagRECT rect = new TaskbarExtension.tagRECT() { left = splitContainer1.SplitterDistance + splitContainer1.SplitterWidth, top = menuStrip1.Height };
-                    rect.top = 0;
-                    rect.left = 0;
-                    rect.bottom = 100;
-                    rect.right = 100;
 
                     this.Invoke((MethodInvoker)(() =>
                     {
@@ -973,11 +968,13 @@ namespace Gageas.Lutea.DefaultUI
                         {
                             int size = Math.Max(coverArtImage.Width, coverArtImage.Height);
                             Bitmap bmp = new Bitmap(size, size);
+                            int iconSize;
                             using (var g = Graphics.FromImage(bmp))
                             {
                                 g.DrawImage(coverArtImage, (size - coverArtImage.Width) / 2, (size - coverArtImage.Height) / 2, coverArtImage.Width, coverArtImage.Height);
+                                iconSize = g.DpiX > 96 ? 64 : 32;
                             }
-                            Bitmap bmp2 = new Bitmap(32, 32);
+                            Bitmap bmp2 = new Bitmap(iconSize, iconSize);
                             int outset = 1;
                             using (var g = Graphics.FromImage(bmp2))
                             {
