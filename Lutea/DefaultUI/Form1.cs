@@ -2899,6 +2899,16 @@ namespace Gageas.Lutea.DefaultUI
                             int sz = int.Parse(str);
                             str = sz > 1024 * 1024 ? String.Format("{0:0.00}MB", sz / 1024.0 / 1024) : String.Format("{0}KB", sz / 1024);
                             break;
+                        case LibraryColumnType.TrackNumber:
+                            if (pref.TrackNumberFormat == DefaultUIPreference.TrackNumberFormats.N)
+                            {
+                                int tr = -1;
+                                if (Util.Util.tryParseInt(str, ref tr))
+                                {
+                                    str = tr.ToString();
+                                }
+                            }
+                            break;
                         default:
                             str = str.Replace("\n", "; ");
                             break;
