@@ -340,11 +340,11 @@ namespace Gageas.Lutea.DefaultUI
                             TaskbarExt.Taskbar.SetProgressState(this.Handle, TaskbarExtension.TbpFlag.NoProgress);
                         }
                         var hIcon = hIconForWindowIcon_Large;
-                        SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
+                        User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
                         hIconForWindowIcon_Large = IntPtr.Zero;
                         if (hIcon != IntPtr.Zero)
                         {
-                            DestroyIcon(hIcon);
+                            User32.DestroyIcon(hIcon);
                         }
                         xTrackBar1.Value = 0;
                         xTrackBar1.ThumbText = null;
@@ -961,12 +961,6 @@ namespace Gageas.Lutea.DefaultUI
 
         int CoverArtWidth = 10;
         int CoverArtHeight = 10;
-        //
-        [DllImport("user32.dll")]
-        static extern bool DestroyIcon(IntPtr hIcon);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
 
         private static IntPtr hIconForWindowIcon_Large;
         private void CoverArtLoaderProc()
@@ -1005,15 +999,15 @@ namespace Gageas.Lutea.DefaultUI
                             }
                             hIconForWindowIcon_Large = (bmp2).GetHicon();
                             // xpだとこちらからSETICONしないといけないっぽいので
-                            SendMessage(this.Handle, WM_SETICON, (IntPtr)1, hIconForWindowIcon_Large);
+                            User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, hIconForWindowIcon_Large);
                         }
                         else
                         {
-                            SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
+                            User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
                         }
                         if (oldhIcon_Large != IntPtr.Zero)
                         {
-                            DestroyIcon(oldhIcon_Large);
+                            User32.DestroyIcon(oldhIcon_Large);
                         }
                     }));
                     if (coverArtImage == null)

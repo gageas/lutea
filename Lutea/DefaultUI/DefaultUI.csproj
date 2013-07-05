@@ -151,6 +151,7 @@
     <Compile Include="ToolStripXTrackbar.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="User32.cs" />
     <Compile Include="XTrackBar.cs">
       <SubType>UserControl</SubType>
     </Compile>
