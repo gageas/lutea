@@ -65,6 +65,11 @@ namespace Gageas.Lutea.DefaultUI
         Thread coverArtImageLoaderThread;
 
         /// <summary>
+        /// プレイリストのカバーアートをバックグラウンドで読み込むオブジェクト
+        /// </summary>
+        private BackgroundCoverartsLoader backgroundCoverartLoader;
+
+        /// <summary>
         /// スペアナを描画するクラスのオブジェクト
         /// </summary>
         SpectrumRenderer SpectrumRenderer = null;
@@ -548,10 +553,30 @@ namespace Gageas.Lutea.DefaultUI
 
             listView2.Columns[1].Width = listView2.Width;
             ResetProgressBar();
- 
+            backgroundCoverartLoader = new BackgroundCoverartsLoader(pref.CoverArtSizeInPlaylistView);
+            backgroundCoverartLoader.Complete += new BackgroundCoverartsLoader.LoadComplete(backgroundCoverartLoader_Complete);
+
             yomigana = new Yomigana(Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "yomiCache", this);
             InitFilterView();
             queryComboBox.Select();
+        }
+
+        void backgroundCoverartLoader_Complete(IEnumerable<int> indexes)
+        {
+            listView1.Invoke((Action)(() =>
+            {
+                foreach (var index in indexes)
+                {
+                    if (listView1.Visible && (index < listView1.VirtualListSize))
+                    {
+                        listView1.RedrawItems(index, index, true);
+                    }
+                    if (albumArtListView.Visible && (index < albumArtListView.VirtualListSize))
+                    {
+                        albumArtListView.RedrawItems(index, index, true);
+                    }
+                }
+            }));
         }
 
         private bool quitFromCore = false;
@@ -839,10 +864,7 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             // プレイリストが更新されてアイテムの位置が変わったらカバーアート読み込みキューを消去
-            lock (playlistViewImageLoadQueue)
-            {
-                playlistViewImageLoadQueue.Clear();
-            }
+            backgroundCoverartLoader.ClearQueue();
 
             if (sql != null)
             {
@@ -2160,9 +2182,9 @@ namespace Gageas.Lutea.DefaultUI
             var h = e.Bounds.Width - 4 - 3;
 
             // background
-            if (coverArts.ContainsKey(album))
+            if (backgroundCoverartLoader.IsCached(album))
             {
-                var coverArt = coverArts[album];
+                var coverArt = backgroundCoverartLoader.GetCache(album);
                 if (coverArt != null && coverArt.Width != 1)
                 {
                     hasCoverArtPic = true;
@@ -2184,27 +2206,7 @@ namespace Gageas.Lutea.DefaultUI
                 g.DrawRectangle(Pens.Silver, x + 2, y + 2, e.Bounds.Width - 4, e.Bounds.Height - 4);
                 if (!string.IsNullOrEmpty(album))
                 {
-                    lock (playlistViewImageLoadQueue)
-                    {
-                        if (playlistViewImageLoadQueue.Exists((_) => _.Key == album))
-                        {
-                            playlistViewImageLoadQueue.First((_) => _.Key == album).redrawIndexesAlbumlist = index;
-                        }
-                        else
-                        {
-                            playlistViewImageLoadQueue.Add(new ImageLoaderQueueEntry(album, file_name, new List<int>(new int[] { }), index));
-                        }
-                    }
-                    if (playlistViewImageLoader == null)
-                    {
-                        playlistViewImageLoader = new Thread(playlistViewImageLoadProc);
-                        playlistViewImageLoader.Priority = ThreadPriority.Lowest;
-                        playlistViewImageLoader.Start();
-                    }
-                    if (playlistViewImageLoaderInSleep)
-                    {
-                        playlistViewImageLoader.Interrupt();
-                    }
+                    backgroundCoverartLoader.Enqueue(album, file_name, index);
                 }
             }
 
@@ -2513,16 +2515,10 @@ namespace Gageas.Lutea.DefaultUI
             this.pref = pref;
             if (prevpref.CoverArtSizeInPlaylistView != pref.CoverArtSizeInPlaylistView)
             {
-                lock (coverArts)
+                backgroundCoverartLoader.Reset(pref.CoverArtSizeInPlaylistView);
+                if (tabControl1.SelectedIndex == 1)
                 {
-                    playlistViewImageLoader.Interrupt();
-                    playlistViewImageLoader = null;
-                    playlistViewImageLoaderInSleep = false;
-                    coverArts.Clear();
-                    if (tabControl1.SelectedIndex == 1)
-                    {
-                        InitAlbumArtList();
-                    }
+                    InitAlbumArtList();
                 }
             }
             ResetHotKeys();
@@ -2577,140 +2573,6 @@ namespace Gageas.Lutea.DefaultUI
         }
         #endregion
 
-        private Thread playlistViewImageLoader = null;
-        private bool playlistViewImageLoaderInSleep = false;
-        private void playlistViewImageLoadProc()
-        {
-            while (true)
-            {
-                try
-                {
-                    while (true)
-                    {
-                        // キューの先頭の要素を取得
-                        ImageLoaderQueueEntry task;
-                        lock (playlistViewImageLoadQueue)
-                        {
-                            if (playlistViewImageLoadQueue.Count > 0)
-                            {
-                                task = playlistViewImageLoadQueue.Last();
-                            }
-                            else
-                            {
-                                // キューが空になったら無限ループを向けて待ちに入る
-                                break;
-                            }
-                        }
-
-                        playlistViewImageLoadQueueItemConsume(task);
-
-                        //                        Thread.Sleep(50);
-                    }
-                    playlistViewImageLoaderInSleep = true;
-                    Thread.Sleep(Timeout.Infinite);
-                }
-                catch (ThreadInterruptedException)
-                {
-                    playlistViewImageLoaderInSleep = false;
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e);
-                }
-            }
-        }
-
-        private class ImageLoaderQueueEntry
-        {
-            public ImageLoaderQueueEntry(string key, string file_name, List<int> redrawIndexesPlaylist, int redrawIndexesAlbumlist = -1)
-            {
-                this.Key = key;
-                this.file_name = file_name;
-                this.redrawIndexesPlaylist = redrawIndexesPlaylist;
-                this.redrawIndexesAlbumlist = redrawIndexesAlbumlist;
-            }
-            public string Key;
-            public string file_name;
-            public List<int> redrawIndexesPlaylist;
-            public int redrawIndexesAlbumlist = -1;
-        }
-
-        private void playlistViewImageLoadQueueItemConsume(ImageLoaderQueueEntry tasks)
-        {
-            try
-            {
-                if (tasks.Key != null)
-                {
-                    var album = tasks.Key;
-                    if ((pref.CoverArtSizeInPlaylistView == 0) || (coverArts.ContainsKey(album)))
-                    {
-                        return;
-                    }
-                    var file_name = tasks.file_name.Trim(); //Controller.GetPlaylistRowColumn(task.Value[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)).ToString().Trim();
-                    var orig = Controller.CoverArtImageForFile(file_name);
-                    if (orig != null)
-                    {
-                        var size = pref.CoverArtSizeInPlaylistView;
-
-                        var resize = ImageUtil.GetResizedImageWithoutPadding(orig, size, size);
-                        var w = resize.Width;
-                        var h = resize.Height;
-                        var bordered = new Bitmap(w + 3, h + 3);
-                        using (var gg = Graphics.FromImage(bordered))
-                        {
-                            // ここでアルファ使うと描画が重くなる
-                            gg.FillRectangle(Brushes.Silver, new Rectangle(3, 3, w, h));
-                            gg.DrawImage(resize, 1, 1);
-                            gg.DrawRectangle(Pens.Gray, new Rectangle(0, 0, w + 1, h + 1));
-                        }
-                        lock (coverArts)
-                        {
-                            coverArts[album] = new GDI.GDIBitmap(bordered);
-                        }
-
-                    }
-                    else
-                    {
-                        coverArts[album] = dummyEmptyBitmapGDI;
-                    }
-                }
-            }
-            finally
-            {
-                List<int> rowsToUpdate = null;
-                int rowToUpdateAlbumList = -1;
-
-                lock (playlistViewImageLoadQueue)
-                {
-                    rowsToUpdate = tasks.redrawIndexesPlaylist;
-                    rowToUpdateAlbumList = tasks.redrawIndexesAlbumlist;
-                    playlistViewImageLoadQueue.Remove(tasks);
-                }
-
-                listView1.Invoke((MethodInvoker)(() =>
-                {
-                    foreach (var index in rowsToUpdate)
-                    {
-                        if (index < listView1.VirtualListSize)
-                        {
-                            listView1.RedrawItems(index, index, true);
-                        }
-                    }
-                    if (rowToUpdateAlbumList != -1)
-                    {
-                        if (rowToUpdateAlbumList < albumArtListView.VirtualListSize)
-                        {
-                            albumArtListView.RedrawItems(rowToUpdateAlbumList, rowToUpdateAlbumList, true);
-
-                        }
-                    }
-                }));
-            }
-        }
-        private List<ImageLoaderQueueEntry> playlistViewImageLoadQueue = new List<ImageLoaderQueueEntry>();
-        private Dictionary<string, GDI.GDIBitmap> coverArts = new Dictionary<string, GDI.GDIBitmap>();
-        WorkerThread worker = new WorkerThread(true);
-        private readonly GDI.GDIBitmap dummyEmptyBitmapGDI = new GDI.GDIBitmap(new Bitmap(1, 1));
         private void listView1_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
             var index = e.ItemIndex;
@@ -2772,29 +2634,9 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     if (!string.IsNullOrEmpty(album))
                     {
-                        if (((indexInGroup - 2) * bounds_Height) < pref.CoverArtSizeInPlaylistView && !coverArts.ContainsKey(album))
+                        if (((indexInGroup - 2) * bounds_Height) < pref.CoverArtSizeInPlaylistView && !backgroundCoverartLoader.IsCached(album))
                         {
-                            lock (playlistViewImageLoadQueue)
-                            {
-                                if (playlistViewImageLoadQueue.Exists((_) => _.Key == album))
-                                {
-                                    playlistViewImageLoadQueue.First((_) => _.Key == album).redrawIndexesPlaylist.Add(index);
-                                }
-                                else
-                                {
-                                    playlistViewImageLoadQueue.Add(new ImageLoaderQueueEntry(album, file_name, new List<int>(new int[] { index })));
-                                }
-                            }
-                            if (playlistViewImageLoader == null)
-                            {
-                                playlistViewImageLoader = new Thread(playlistViewImageLoadProc);
-                                playlistViewImageLoader.Priority = ThreadPriority.Lowest;
-                                playlistViewImageLoader.Start();
-                            }
-                            if (playlistViewImageLoaderInSleep)
-                            {
-                                playlistViewImageLoader.Interrupt();
-                            }
+                            backgroundCoverartLoader.Enqueue(album, file_name, index);
                         }
                     }
                 }
@@ -2863,9 +2705,9 @@ namespace Gageas.Lutea.DefaultUI
 
                     if (pref.ShowCoverArtInPlaylistView && col.Type == Library.LibraryColumnType.TrackNumber)
                     {
-                        if (coverArts.ContainsKey(album))
+                        if (backgroundCoverartLoader.IsCached(album))
                         {
-                            var img = coverArts[album];
+                            var img = backgroundCoverartLoader.GetCache(album);
                             var margin = 2;
                             if (img != null && img.Width > 1)
                             {
@@ -3080,22 +2922,14 @@ namespace Gageas.Lutea.DefaultUI
                     var e = albums[index];
                     var album = e[0].ToString();
                     var file_name = e[1].ToString();
-                    if (playlistViewImageLoadQueue.Count == 0)
+                    if (backgroundCoverartLoader.QueueCount == 0)
                     {
-                        if (coverArts.ContainsKey(album))
+                        if (backgroundCoverartLoader.IsCached(album))
                         {
                             index++;
                             continue;
                         }
-                        lock (playlistViewImageLoadQueue)
-                        {
-                            playlistViewImageLoadQueue.Add(new ImageLoaderQueueEntry(album, file_name, new List<int>(new int[] { }), index));
-                        }
-
-                        if (playlistViewImageLoaderInSleep)
-                        {
-                            playlistViewImageLoader.Interrupt();
-                        }
+                        backgroundCoverartLoader.Enqueue(album, file_name, index);
                         index++;
                     }
                     else
