@@ -139,6 +139,24 @@ namespace Gageas.Lutea.DefaultUI
             SendMessage(this.Handle, LVM_SETITEMSTATE, (IntPtr)(-1), ref lvitem);
         }
 
+        public void SelectItem(int index)
+        {
+            if (index < this.Items.Count && index >= 0)
+            {
+                foreach (int i in this.SelectedIndices)
+                {
+                    this.Items[i].Selected = false;
+                }
+                try
+                {
+                    this.Items[index].Selected = true;
+                    this.FocusedItem = this.Items[index];
+                    this.EnsureVisible(index);
+                }
+                catch { }
+            }
+        }
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         static extern IntPtr SendMessage(IntPtr hWnd, UInt32 uMsg, IntPtr wParam, ref LVITEM lParam);
 
