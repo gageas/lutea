@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackgroundCoverartsLoader.cs" />
     <Compile Include="Com.cs" />
     <Compile Include="ComponentManage.cs">
       <SubType>Form</SubType>
