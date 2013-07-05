@@ -56,7 +56,7 @@
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.listView1 = new Gageas.Lutea.DefaultUI.DoubleBufferedListView();
+            this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView();
             this.playlistViewContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.ScrollToPlayingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
@@ -383,35 +383,35 @@
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.listView1);
+            this.tabPage2.Controls.Add(this.playlistView);
             resources.ApplyResources(this.tabPage2, "tabPage2");
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // listView1
             // 
-            this.listView1.AllowColumnReorder = true;
-            this.listView1.BackColor = System.Drawing.SystemColors.Window;
-            this.listView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listView1.ContextMenuStrip = this.playlistViewContextMenuStrip;
-            this.listView1.Cursor = System.Windows.Forms.Cursors.Arrow;
-            resources.ApplyResources(this.listView1, "listView1");
-            this.listView1.FullRowSelect = true;
-            this.listView1.Name = "listView1";
-            this.listView1.OwnerDraw = true;
-            this.listView1.ShowGroups = false;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
-            this.listView1.VirtualMode = true;
-            this.listView1.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listView1_ColumnClick);
-            this.listView1.DrawColumnHeader += new System.Windows.Forms.DrawListViewColumnHeaderEventHandler(this.listView1_DrawColumnHeader);
-            this.listView1.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listView1_DrawItem);
-            this.listView1.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.listView1_ItemDrag);
-            this.listView1.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.playlistView_RetrieveVirtualItem);
-            this.listView1.DoubleClick += new System.EventHandler(this.playlistView_DoubleClick);
-            this.listView1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.playlistView_KeyDown);
-            this.listView1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseClick);
-            this.listView1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseMove);
+            this.playlistView.AllowColumnReorder = true;
+            this.playlistView.BackColor = System.Drawing.SystemColors.Window;
+            this.playlistView.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.playlistView.ContextMenuStrip = this.playlistViewContextMenuStrip;
+            this.playlistView.Cursor = System.Windows.Forms.Cursors.Arrow;
+            resources.ApplyResources(this.playlistView, "listView1");
+            this.playlistView.FullRowSelect = true;
+            this.playlistView.Name = "listView1";
+            this.playlistView.OwnerDraw = true;
+            this.playlistView.ShowGroups = false;
+            this.playlistView.UseCompatibleStateImageBehavior = false;
+            this.playlistView.View = System.Windows.Forms.View.Details;
+            this.playlistView.VirtualMode = true;
+            this.playlistView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listView1_ColumnClick);
+            this.playlistView.DrawColumnHeader += new System.Windows.Forms.DrawListViewColumnHeaderEventHandler(this.listView1_DrawColumnHeader);
+            this.playlistView.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listView1_DrawItem);
+            this.playlistView.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.listView1_ItemDrag);
+            this.playlistView.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.playlistView_RetrieveVirtualItem);
+            this.playlistView.DoubleClick += new System.EventHandler(this.playlistView_DoubleClick);
+            this.playlistView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.playlistView_KeyDown);
+            this.playlistView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseClick);
+            this.playlistView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseMove);
             // 
             // playlistViewContextMenuStrip
             // 
@@ -960,7 +960,7 @@
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage2;
-        private DoubleBufferedListView listView1;
+        private PlaylistView playlistView;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.TextBox albumArtListViewSearchTextBox;
         private DoubleBufferedListView albumArtListView;
