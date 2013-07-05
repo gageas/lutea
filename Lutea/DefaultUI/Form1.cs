@@ -805,15 +805,13 @@ namespace Gageas.Lutea.DefaultUI
                 listView1.RedrawItems(emphasizedRowId, emphasizedRowId, true);
             }
             catch { }
-            finally
+
+            emphasizedRowId = index;
+            try
             {
-                try
-                {
-                    emphasizedRowId = index;
-                    listView1.RedrawItems(index, index, true);
-                }
-                catch { }
+                listView1.RedrawItems(index, index, true);
             }
+            catch { }
         }
 
         private void selectRow(int index) // 指定した行を選択
