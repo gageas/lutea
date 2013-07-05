@@ -33,7 +33,15 @@ namespace Gageas.Lutea.DefaultUI
             Mode3 = 3,
             Mode4 = 4
         }
-
+        
+        /// <summary>
+        /// トラックナンバーの書式
+        /// </summary>
+        public enum TrackNumberFormats { 
+            N = 0,
+            NofM = 1 
+        }
+        
         /// <summary>
         /// PropertyGridに行間調整用intを表示するTypeConverter
         /// </summary>
@@ -54,6 +62,33 @@ namespace Gageas.Lutea.DefaultUI
             public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
             {
                 return true;
+            }
+        }
+
+        public class TrackNumberFormatConverter : EnumConverter
+        {
+            private Dictionary<TrackNumberFormats, string> dict = new Dictionary<TrackNumberFormats, string>() { 
+                {TrackNumberFormats.N, "1, 2, 3, ..."}, 
+                {TrackNumberFormats.NofM, "1/3, 2/3, 3/3, ..."} ,
+            };
+            public TrackNumberFormatConverter(Type type) : base(type) { }
+
+            public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+            {
+                if (destinationType == typeof(string))
+                {
+                    return dict[(TrackNumberFormats)value];
+                }
+                return base.ConvertTo(context, culture, value, destinationType);
+            }
+
+            public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+            {
+                if (value is string)
+                {
+                    return dict.First(_ => _.Value == (string)value).Key;
+                }
+                return base.ConvertFrom(context, culture, value);
             }
         }
 
@@ -237,6 +272,17 @@ namespace Gageas.Lutea.DefaultUI
             {
                 coloredAlbum = value;
             }
+        }
+
+        private TrackNumberFormats trackNumberFormat = TrackNumberFormats.NofM;
+        [Description("トラックナンバーの書式")]
+        [DefaultValue(TrackNumberFormats.NofM)]
+        [Category("Playlist View")]
+        [TypeConverter(typeof(TrackNumberFormatConverter))]
+        public TrackNumberFormats TrackNumberFormat
+        {
+            get { return trackNumberFormat; }
+            set { trackNumberFormat = value; }
         }
 
         private bool useMediaKey = false;
