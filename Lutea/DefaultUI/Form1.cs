@@ -156,28 +156,28 @@ namespace Gageas.Lutea.DefaultUI
 
         private void ResetPlaylistView()
         {
-            listView1.BeginUpdate();
-            listView1.Enabled = false;
+            playlistView.BeginUpdate();
+            playlistView.Enabled = false;
 
             // backup order/width
-            if (listView1.Columns.Count > 0)
+            if (playlistView.Columns.Count > 0)
             {
                 ColumnOrder.Clear();
                 ColumnWidth.Clear();
-                for (int i = 0; i < listView1.Columns.Count; i++)
+                for (int i = 0; i < playlistView.Columns.Count; i++)
                 {
-                    ColumnOrder[Columns[(int)listView1.Columns[i].Tag].Name] = listView1.Columns[i].DisplayIndex;
-                    ColumnWidth[Columns[(int)listView1.Columns[i].Tag].Name] = Math.Max(10, listView1.Columns[i].Width);
+                    ColumnOrder[Columns[(int)playlistView.Columns[i].Tag].Name] = playlistView.Columns[i].DisplayIndex;
+                    ColumnWidth[Columns[(int)playlistView.Columns[i].Tag].Name] = Math.Max(10, playlistView.Columns[i].Width);
                 }
             }
 
-            listView1.Clear();
+            playlistView.Clear();
 
             // set "dummy" font
-            listView1.Font = new Font(this.Font.FontFamily, pref.Font_playlistView.Height + pref.PlaylistViewLineHeightAdjustment, GraphicsUnit.Pixel);
+            playlistView.Font = new Font(this.Font.FontFamily, pref.Font_playlistView.Height + pref.PlaylistViewLineHeightAdjustment, GraphicsUnit.Pixel);
 
             // set "real" font
-            listView1.SetHeaderFont(pref.Font_playlistView);
+            playlistView.SetHeaderFont(pref.Font_playlistView);
 
             pref.DisplayColumns = pref.DisplayColumns.Where(_ => Controller.GetColumnIndexByName(_) >= 0).OrderBy((_) => ColumnOrder.ContainsKey(_) ? ColumnOrder[_] : ColumnOrder.Count).ToArray();
             foreach (string coltext in pref.DisplayColumns)
@@ -197,14 +197,14 @@ namespace Gageas.Lutea.DefaultUI
                         colheader.Width = defaultColumnDisplayWidth[Columns[col].Name];
                     }
                 }
-                listView1.Columns.Add(colheader);
+                playlistView.Columns.Add(colheader);
                 if (Columns[col].Name == LibraryDBColumnTextMinimum.statBitrate)
                 {
                     colheader.TextAlign = HorizontalAlignment.Right;
                 }
             }
 
-            foreach (ColumnHeader colheader in listView1.Columns)
+            foreach (ColumnHeader colheader in playlistView.Columns)
             {
                 var col = (int)(colheader.Tag);
                 if (ColumnOrder.ContainsKey(Columns[col].Name))
@@ -215,19 +215,19 @@ namespace Gageas.Lutea.DefaultUI
                     }
                     catch
                     {
-                        colheader.DisplayIndex = listView1.Columns.Count - 1;
+                        colheader.DisplayIndex = playlistView.Columns.Count - 1;
                     }
                 }
                 else
                 {
-                    colheader.DisplayIndex = listView1.Columns.Count - 1;
+                    colheader.DisplayIndex = playlistView.Columns.Count - 1;
                 }
             }
 
             playlistUpdated(null);
 
-            listView1.EndUpdate();
-            listView1.Enabled = true;
+            playlistView.EndUpdate();
+            playlistView.Enabled = true;
         }
 
         private void ResetSpectrumRenderer(bool forceReset = false)
@@ -319,7 +319,7 @@ namespace Gageas.Lutea.DefaultUI
                         }
                     }
                     xTrackBar1.Max = Controller.Current.Length;
-                    listView1.SelectItem(index);
+                    playlistView.SelectItem(index);
                     emphasizeRow(index);
                     coverArtImageLoaderThread.Interrupt();
                     if (index < 0)
@@ -563,13 +563,13 @@ namespace Gageas.Lutea.DefaultUI
 
         void backgroundCoverartLoader_Complete(IEnumerable<int> indexes)
         {
-            listView1.Invoke((Action)(() =>
+            playlistView.Invoke((Action)(() =>
             {
                 foreach (var index in indexes)
                 {
-                    if (listView1.Visible && (index < listView1.VirtualListSize))
+                    if (playlistView.Visible && (index < playlistView.VirtualListSize))
                     {
-                        listView1.RedrawItems(index, index, true);
+                        playlistView.RedrawItems(index, index, true);
                     }
                     if (albumArtListView.Visible && (index < albumArtListView.VirtualListSize))
                     {
@@ -592,7 +592,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (tabControl1.SelectedIndex == 0)
             {
-                listView1.Select();
+                playlistView.Select();
             }
             else if (tabControl1.SelectedIndex == 1)
             {
@@ -802,14 +802,14 @@ namespace Gageas.Lutea.DefaultUI
         {
             try
             {
-                listView1.RedrawItems(emphasizedRowId, emphasizedRowId, true);
+                playlistView.RedrawItems(emphasizedRowId, emphasizedRowId, true);
             }
             catch { }
 
             emphasizedRowId = index;
             try
             {
-                listView1.RedrawItems(index, index, true);
+                playlistView.RedrawItems(index, index, true);
             }
             catch { }
         }
@@ -848,23 +848,23 @@ namespace Gageas.Lutea.DefaultUI
 
             if (sql != null)
             {
-                listView1.SelectItem(index < 0 ? 0 : index);
+                playlistView.SelectItem(index < 0 ? 0 : index);
             }
-            listView1.VirtualListSize = itemCount;
-            listView1.Refresh();
+            playlistView.VirtualListSize = itemCount;
+            playlistView.Refresh();
             if (sql != null)
             {
-                listView1.SelectItem(index < 0 ? 0 : index);
+                playlistView.SelectItem(index < 0 ? 0 : index);
             }
             emphasizeRow(index);
         }
 
         private void SetRatingForSelected(int rate)
         {
-            if (listView1.SelectedIndices.Count > 0)
+            if (playlistView.SelectedIndices.Count > 0)
             {
                 List<string> filenames = new List<string>();
-                foreach (int i in listView1.SelectedIndices)
+                foreach (int i in playlistView.SelectedIndices)
                 {
                     filenames.Add(Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
                 }
@@ -1338,13 +1338,13 @@ namespace Gageas.Lutea.DefaultUI
             Logger.Debug("textBox1.keyDown " + e.KeyCode);
             if (e.KeyCode == (Keys.Escape | Keys.Return))
             {
-                listView1.Select();
+                playlistView.Select();
                 e.Handled = true;
                 e.SuppressKeyPress = true;
             }
             if (e.KeyCode == Keys.Return || e.KeyCode == Keys.Escape)
             {
-                listView1.Select();
+                playlistView.Select();
                 e.Handled = true;
                 e.SuppressKeyPress = true;
             }
@@ -1436,7 +1436,7 @@ namespace Gageas.Lutea.DefaultUI
                 m.ReleaseMutex();
                 try
                 {
-                    listView1.Select();
+                    playlistView.Select();
                 }
                 catch { }
             }
@@ -1458,9 +1458,9 @@ namespace Gageas.Lutea.DefaultUI
             switch (e.KeyCode)
             {
                 case Keys.Return:
-                    if (listView1.SelectedIndices.Count > 0)
+                    if (playlistView.SelectedIndices.Count > 0)
                     {
-                        Controller.PlayPlaylistItem(listView1.SelectedIndices[0]);
+                        Controller.PlayPlaylistItem(playlistView.SelectedIndices[0]);
                     }
                     e.Handled = true;
                     e.SuppressKeyPress = true;
@@ -1468,9 +1468,9 @@ namespace Gageas.Lutea.DefaultUI
                 case Keys.J:
                     if (e.Modifiers == Keys.Control) // Ctrl + J
                     {
-                        if (listView1.SelectedIndices.Count > 0)
+                        if (playlistView.SelectedIndices.Count > 0)
                         {
-                            Controller.PlayPlaylistItem(listView1.SelectedIndices[0]);
+                            Controller.PlayPlaylistItem(playlistView.SelectedIndices[0]);
                         }
                     }
                     else if (e.Modifiers == Keys.Shift) // Shift + J
@@ -1479,9 +1479,9 @@ namespace Gageas.Lutea.DefaultUI
                         string prev_album = null;
                         string album = null;
                         int idx = -1;
-                        if (listView1.SelectedIndices.Count > 0)
+                        if (playlistView.SelectedIndices.Count > 0)
                         {
-                            idx = listView1.SelectedIndices[0];
+                            idx = playlistView.SelectedIndices[0];
                         }
                         else if (Controller.Current.IndexInPlaylist > 0)
                         {
@@ -1493,27 +1493,27 @@ namespace Gageas.Lutea.DefaultUI
                             prev_album = Controller.GetPlaylistRowColumn(idx, Controller.GetColumnIndexByName("tagAlbum"));
                             do
                             {
-                                if ((idx + 1 == listView1.Items.Count))
+                                if ((idx + 1 == playlistView.Items.Count))
                                 {
                                     break;
                                 }
                                 idx++;
                                 album = Controller.GetPlaylistRowColumn(idx, Controller.GetColumnIndexByName("tagAlbum"));
                             } while (album == prev_album);
-                            listView1.SelectItem(idx);
-                            listView1.EnsureVisible(Math.Min(idx + 5, listView1.Items.Count - 1));
+                            playlistView.SelectItem(idx);
+                            playlistView.EnsureVisible(Math.Min(idx + 5, playlistView.Items.Count - 1));
                         }
                     }
                     else // J
                     {
                         // 次のトラックを選択
-                        if (listView1.SelectedIndices.Count > 0)
+                        if (playlistView.SelectedIndices.Count > 0)
                         {
-                            listView1.SelectItem(listView1.SelectedIndices[0] + 1);
+                            playlistView.SelectItem(playlistView.SelectedIndices[0] + 1);
                         }
                         else if (Controller.Current.IndexInPlaylist > 0)
                         {
-                            listView1.SelectItem(Controller.Current.IndexInPlaylist + 1);
+                            playlistView.SelectItem(Controller.Current.IndexInPlaylist + 1);
                         }
                         else
                         {
@@ -1526,9 +1526,9 @@ namespace Gageas.Lutea.DefaultUI
                 case Keys.M:
                     if (e.Modifiers == Keys.Control) // Ctrl + M
                     {
-                        if (listView1.SelectedIndices.Count > 0)
+                        if (playlistView.SelectedIndices.Count > 0)
                         {
-                            Controller.PlayPlaylistItem(listView1.SelectedIndices[0]);
+                            Controller.PlayPlaylistItem(playlistView.SelectedIndices[0]);
                         }
                     }
                     e.Handled = true;
@@ -1541,9 +1541,9 @@ namespace Gageas.Lutea.DefaultUI
                         string prev_album = null;
                         string album = null;
                         int idx = -1;
-                        if (listView1.SelectedIndices.Count > 0)
+                        if (playlistView.SelectedIndices.Count > 0)
                         {
-                            idx = listView1.SelectedIndices[0];
+                            idx = playlistView.SelectedIndices[0];
                         }
                         else if (Controller.Current.IndexInPlaylist > 0)
                         {
@@ -1562,19 +1562,19 @@ namespace Gageas.Lutea.DefaultUI
                                 }
                                 album = Controller.GetPlaylistRowColumn(idx - 1, Controller.GetColumnIndexByName("tagAlbum"));
                             } while (album == prev_album);
-                            listView1.SelectItem(idx);
+                            playlistView.SelectItem(idx);
                         }
                     }
                     else
                     {
                         // 前のトラックを選択
-                        if (listView1.SelectedIndices.Count > 0)
+                        if (playlistView.SelectedIndices.Count > 0)
                         {
-                            listView1.SelectItem(listView1.SelectedIndices[0] - 1);
+                            playlistView.SelectItem(playlistView.SelectedIndices[0] - 1);
                         }
                         else if (Controller.Current.IndexInPlaylist > 0)
                         {
-                            listView1.SelectItem(Controller.Current.IndexInPlaylist - 1);
+                            playlistView.SelectItem(Controller.Current.IndexInPlaylist - 1);
                         }
                         else
                         {
@@ -1585,12 +1585,12 @@ namespace Gageas.Lutea.DefaultUI
                     e.SuppressKeyPress = true;
                     break;
                 case Keys.H:
-                    listView1.SelectItem(0);
+                    playlistView.SelectItem(0);
                     e.Handled = true;
                     e.SuppressKeyPress = true;
                     break;
                 case Keys.L:
-                    listView1.SelectItem(listView1.Items.Count - 1);
+                    playlistView.SelectItem(playlistView.Items.Count - 1);
                     e.Handled = true;
                     e.SuppressKeyPress = true;
                     break;
@@ -1633,7 +1633,7 @@ namespace Gageas.Lutea.DefaultUI
                 case Keys.A:
                     if (e.Modifiers == Keys.Control)
                     {
-                        listView1.SelectAllItems();
+                        playlistView.SelectAllItems();
                     }
                     e.Handled = true;
                     e.SuppressKeyPress = true;
@@ -1680,9 +1680,9 @@ namespace Gageas.Lutea.DefaultUI
 
         private void playlistView_DoubleClick(object sender, EventArgs e)
         {
-            if (listView1.SelectedIndices.Count > 0)
+            if (playlistView.SelectedIndices.Count > 0)
             {
-                Controller.PlayPlaylistItem(listView1.SelectedIndices[0]);
+                Controller.PlayPlaylistItem(playlistView.SelectedIndices[0]);
             }
         }
 
@@ -1930,7 +1930,7 @@ namespace Gageas.Lutea.DefaultUI
             switch (tabControl1.SelectedIndex)
             {
                 case 0:
-                    listView1.Refresh();
+                    playlistView.Refresh();
                     break;
                 case 1:
                     InitAlbumArtList();
@@ -2019,32 +2019,32 @@ namespace Gageas.Lutea.DefaultUI
             var index = Controller.Current.IndexInPlaylist;
             if (index >= 0)
             {
-                listView1.EnsureVisible(index);
+                playlistView.EnsureVisible(index);
             }
         }
         
         private void propertyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listView1.SelectedIndices.Count > 0)
+            if (playlistView.SelectedIndices.Count > 0)
             {
-                Shell32.OpenPropertiesDialog(this.Handle, Controller.GetPlaylistRowColumn(listView1.SelectedIndices[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)).Trim());
+                Shell32.OpenPropertiesDialog(this.Handle, Controller.GetPlaylistRowColumn(playlistView.SelectedIndices[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)).Trim());
             }
         }
 
         private void explorerToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (listView1.SelectedIndices.Count > 0)
+            if (playlistView.SelectedIndices.Count > 0)
             {
-                System.Diagnostics.Process.Start("explorer.exe", "/SELECT, \"" + Controller.GetPlaylistRowColumn(listView1.SelectedIndices[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)) + "\"");
+                System.Diagnostics.Process.Start("explorer.exe", "/SELECT, \"" + Controller.GetPlaylistRowColumn(playlistView.SelectedIndices[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)) + "\"");
             }
         }
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             List<string> file_names = new List<string>();
-            if (listView1.SelectedIndices.Count > 0)
+            if (playlistView.SelectedIndices.Count > 0)
             {
-                foreach (int i in listView1.SelectedIndices)
+                foreach (int i in playlistView.SelectedIndices)
                 {
                     file_names.Add(Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
                 }
@@ -2092,12 +2092,12 @@ namespace Gageas.Lutea.DefaultUI
 
         private void ReImportToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int n = listView1.SelectedIndices.Count;
+            int n = playlistView.SelectedIndices.Count;
             if (n > 0)
             {
                 List<string> filenames = new List<string>();
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                foreach(int i in listView1.SelectedIndices)
+                foreach(int i in playlistView.SelectedIndices)
                 {
                     filenames.Add(Controller.GetPlaylistRowColumn(i, colIndexOfFilename));
                 }
@@ -2327,7 +2327,7 @@ namespace Gageas.Lutea.DefaultUI
 
         public void Init(object _setting)
         {
-            pref.Font_playlistView = pref.Font_playlistView ?? this.listView1.Font;
+            pref.Font_playlistView = pref.Font_playlistView ?? this.playlistView.Font;
             pref.Font_trackInfoView = pref.Font_trackInfoView ?? this.trackInfoText.Font;
             pref.splitContainer1_SplitterDistance = pref.splitContainer1_SplitterDistance ?? this.splitContainer1.SplitterDistance;
             pref.splitContainer2_SplitterDistance = pref.splitContainer2_SplitterDistance ?? this.splitContainer2.SplitterDistance;
@@ -2399,7 +2399,7 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 column_select.DropDownItems.Add(item);
             }
-            listView1.ContextMenuStrip.Items.Add(column_select);
+            playlistView.ContextMenuStrip.Items.Add(column_select);
 
             // カバーアート関連。これはこの順番で
             // 走らせっぱなしにし、必要な時にinterruptする
@@ -2450,10 +2450,10 @@ namespace Gageas.Lutea.DefaultUI
             this.pref.SplitContainer3_SplitterDistance = splitContainer3.SplitterDistance;
             this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
             this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
-            for (int i = 0; i < listView1.Columns.Count; i++)
+            for (int i = 0; i < playlistView.Columns.Count; i++)
             {
-                this.pref.PlaylistViewColumnOrder[Columns[(int)listView1.Columns[i].Tag].Name] = listView1.Columns[i].DisplayIndex;
-                this.pref.PlaylistViewColumnWidth[Columns[(int)listView1.Columns[i].Tag].Name] = Math.Max(10, listView1.Columns[i].Width);
+                this.pref.PlaylistViewColumnOrder[Columns[(int)playlistView.Columns[i].Tag].Name] = playlistView.Columns[i].DisplayIndex;
+                this.pref.PlaylistViewColumnWidth[Columns[(int)playlistView.Columns[i].Tag].Name] = Math.Max(10, playlistView.Columns[i].Width);
             }
             this.pref.WindowState = this.WindowState;
             if (this.WindowState == FormWindowState.Minimized)
@@ -2484,7 +2484,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             var prevpref = this.pref;
             var pref = (DefaultUIPreference)_pref;
-            pref.Font_playlistView = pref.Font_playlistView  ?? this.listView1.Font;
+            pref.Font_playlistView = pref.Font_playlistView  ?? this.playlistView.Font;
             pref.Font_trackInfoView = pref.Font_trackInfoView ?? this.trackInfoText.Font;
             this.pref = pref;
             if (prevpref.CoverArtSizeInPlaylistView != pref.CoverArtSizeInPlaylistView)
@@ -2624,8 +2624,8 @@ namespace Gageas.Lutea.DefaultUI
                 }
 
                 // columnを表示順にソート
-                var cols = new ColumnHeader[listView1.Columns.Count];
-                foreach (ColumnHeader head in listView1.Columns)
+                var cols = new ColumnHeader[playlistView.Columns.Count];
+                foreach (ColumnHeader head in playlistView.Columns)
                 {
                     cols[head.DisplayIndex] = head;
                 }
@@ -2765,7 +2765,7 @@ namespace Gageas.Lutea.DefaultUI
         private void listView1_MouseClick(object sender, MouseEventArgs e)
         {
             int starwidth = ratingRenderer.EachWidth;
-            var item = listView1.GetItemAt(e.X, e.Y);
+            var item = playlistView.GetItemAt(e.X, e.Y);
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
@@ -2800,40 +2800,40 @@ namespace Gageas.Lutea.DefaultUI
 
         private void listView1_MouseMove(object sender, MouseEventArgs e)
         {
-            var item = listView1.GetItemAt(e.X, e.Y);
+            var item = playlistView.GetItemAt(e.X, e.Y);
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
             if (Columns[Controller.GetColumnIndexByName(pref.DisplayColumns[item.SubItems.IndexOf(sub)])].Type == Library.LibraryColumnType.Rating)
             {
-                if (listView1.Cursor != Cursors.Hand)
+                if (playlistView.Cursor != Cursors.Hand)
                 {
-                    listView1.Cursor = Cursors.Hand;
+                    playlistView.Cursor = Cursors.Hand;
                 }
                 return;
             }
-            if (listView1.Cursor != Cursors.Arrow)
+            if (playlistView.Cursor != Cursors.Arrow)
             {
-                listView1.Cursor = Cursors.Arrow;
+                playlistView.Cursor = Cursors.Arrow;
             }
         }
 
         private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-            Controller.SetSortColumn(Columns[(int)listView1.Columns[e.Column].Tag].Name);
+            Controller.SetSortColumn(Columns[(int)playlistView.Columns[e.Column].Tag].Name);
         }
 
         private void OnPlaylistSortOrderChange(string columnText, Controller.SortOrders sortOrder)
         {
-            for (int i = 0; i < listView1.Columns.Count; i++)
+            for (int i = 0; i < playlistView.Columns.Count; i++)
             {
-                if ((int)listView1.Columns[i].Tag == Controller.GetColumnIndexByName(columnText))
+                if ((int)playlistView.Columns[i].Tag == Controller.GetColumnIndexByName(columnText))
                 {
-                    listView1.SetSortArrow(i, sortOrder == Controller.SortOrders.Asc ? SortOrder.Ascending : SortOrder.Descending);
+                    playlistView.SetSortArrow(i, sortOrder == Controller.SortOrders.Asc ? SortOrder.Ascending : SortOrder.Descending);
                 }
                 else
                 {
-                    listView1.SetSortArrow(i, SortOrder.None);
+                    playlistView.SetSortArrow(i, SortOrder.None);
                 }
             }
         }
@@ -2842,11 +2842,11 @@ namespace Gageas.Lutea.DefaultUI
         {
             try
             {
-                var count = listView1.SelectedIndices.Count;
+                var count = playlistView.SelectedIndices.Count;
                 if (count < 1) return;
                 List<string> filenames = new List<string>();
                 var colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                foreach(int i in listView1.SelectedIndices)
+                foreach(int i in playlistView.SelectedIndices)
                 {
                     filenames.Add(Controller.GetPlaylistRowColumn(i, colIndexOfFilename).Trim());
                 }

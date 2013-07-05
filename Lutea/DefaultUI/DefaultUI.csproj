@@ -118,6 +118,9 @@
     <Compile Include="NotifyPopup.Designer.cs">
       <DependentUpon>NotifyPopup.cs</DependentUpon>
     </Compile>
+    <Compile Include="PlaylistView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryDirectoryNew.cs">
       <SubType>Form</SubType>
