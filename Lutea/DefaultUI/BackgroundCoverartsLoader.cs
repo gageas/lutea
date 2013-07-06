@@ -17,7 +17,7 @@ namespace Gageas.Lutea.DefaultUI
         private readonly GDI.GDIBitmap dummyEmptyBitmapGDI = new GDI.GDIBitmap(new Bitmap(1, 1));
         private int size;
         private Thread thread = null;
-        private Stack<TaskEntry> tasks = new Stack<TaskEntry>(); // LIFOで処理するのでStackを使う
+        private List<TaskEntry> tasks = new List<TaskEntry>(); // LIFOで処理する
         private Dictionary<string, GDI.GDIBitmap> coverArts = new Dictionary<string, GDI.GDIBitmap>();
         private bool isInSleep = false;
 
@@ -78,10 +78,10 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 else
                 {
-                    tasks.Push(new TaskEntry(album, file_name, index));
+                    tasks.Add(new TaskEntry(album, file_name, index));
+                    Interrupt();
                 }
             }
-            Interrupt();
         }
 
         public int QueueCount
@@ -140,9 +140,13 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     // キューが空になったら無限ループを抜ける
                     if (tasks.Count == 0) break;
-                    task = tasks.Pop();
+                    task = tasks.Last();
                 }
                 consumeTask(task);
+                lock (tasks)
+                {
+                    tasks.Remove(task);
+                }
             }
         }
 
