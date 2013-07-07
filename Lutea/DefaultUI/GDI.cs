@@ -18,6 +18,9 @@ namespace Gageas.Lutea.DefaultUI
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "Rectangle")]
         public static extern bool Rectangle(IntPtr hdc, int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
 
+        [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "Polygon")]
+        private static extern bool Polygon(IntPtr hdc, Point[] points, int nCount);
+
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetTextExtentPoint32")]
         public static extern bool GetTextExtentPoint32(IntPtr hDC, String str, int length, out Size sz);
 
@@ -36,6 +39,11 @@ namespace Gageas.Lutea.DefaultUI
         public static UInt32 SetDCPenColor(IntPtr hdc, Color color)
         {
             return SetDCPenColor(hdc, (UInt32)(color.R | color.G << 8 | color.B << 16));
+        }
+
+        public static bool Polygon(IntPtr hdc, Point[] points)
+        {
+            return Polygon(hdc, points, points.Length);
         }
 
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "SetDCBrushColor")]
