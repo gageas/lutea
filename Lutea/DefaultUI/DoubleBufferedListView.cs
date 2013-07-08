@@ -54,6 +54,8 @@ namespace Gageas.Lutea.DefaultUI
             /* 以下略 */
         }
 
+        protected System.Drawing.Font realFont;
+
         public DoubleBufferedListView()
         {
             this.DoubleBuffered = true;
@@ -77,8 +79,9 @@ namespace Gageas.Lutea.DefaultUI
             base.WndProc(ref m);
         }
 
-        public void SetHeaderFont(System.Drawing.Font font)
+        public virtual void SetHeaderFont(System.Drawing.Font font)
         {
+            this.realFont = font;
             IntPtr hwndHdr = SendMessage(this.Handle, (0x1000 + 31), IntPtr.Zero, IntPtr.Zero);
             SendMessage(hwndHdr, WM_SETFONT, font.ToHfont(), (IntPtr)1);
         }
