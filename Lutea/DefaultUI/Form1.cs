@@ -67,7 +67,7 @@ namespace Gageas.Lutea.DefaultUI
         /// <summary>
         /// プレイリストのカバーアートをバックグラウンドで読み込むオブジェクト
         /// </summary>
-        private BackgroundCoverartsLoader backgroundCoverartLoader;
+        internal BackgroundCoverartsLoader backgroundCoverartLoader;
 
         /// <summary>
         /// スペアナを描画するクラスのオブジェクト
@@ -108,11 +108,6 @@ namespace Gageas.Lutea.DefaultUI
         string[] filterColumns = { "tagArtist", "tagAlbum", "tagDate", "tagGenre", LibraryDBColumnTextMinimum.infoCodec_sub, LibraryDBColumnTextMinimum.rating, };
 
         /// <summary>
-        /// Ratingの☆を描画
-        /// </summary>
-        RatingRenderer ratingRenderer;
-
-        /// <summary>
         /// ライブラリデータベースのカラム一覧のキャッシュ
         /// </summary>
         private Column[] Columns = null;
@@ -123,7 +118,7 @@ namespace Gageas.Lutea.DefaultUI
         private Size config_FormSize;
         private Point config_FormLocation;
 
-        DefaultUIPreference pref = new DefaultUIPreference(null);
+        private DefaultUIPreference pref = new DefaultUIPreference(null);
         
         private bool ShowNotifyBalloon
         {
@@ -147,11 +142,20 @@ namespace Gageas.Lutea.DefaultUI
 #endif
             Columns = Controller.Columns;
             InitializeComponent();
-            Thread.CurrentThread.Priority = ThreadPriority.Normal;
             trackInfoText.Text = "";
             queryComboBox.ForeColor = System.Drawing.SystemColors.WindowText;
             toolStripStatusLabel1.Text = "";
             toolStripXTrackbar1.GetControl.ThumbWidth = TextRenderer.MeasureText("100", this.Font).Width + 10;
+            playlistView.Setup(Columns);
+        }
+
+        internal void SelectQueryComboBox(bool selectText)
+        {
+            queryComboBox.Select();
+            if (selectText)
+            {
+                queryComboBox.SelectAll();
+            }
         }
 
         private void ResetPlaylistView()
@@ -178,6 +182,11 @@ namespace Gageas.Lutea.DefaultUI
 
             // set "real" font
             playlistView.SetHeaderFont(pref.Font_playlistView);
+
+            playlistView.UseColor = pref.ColoredAlbum;
+            playlistView.TrackNumberFormat = pref.TrackNumberFormat;
+            playlistView.ShowCoverArt = pref.ShowCoverArtInPlaylistView;
+            playlistView.CoverArtSize = pref.CoverArtSizeInPlaylistView;
 
             pref.DisplayColumns = pref.DisplayColumns.Where(_ => Controller.GetColumnIndexByName(_) >= 0).OrderBy((_) => ColumnOrder.ContainsKey(_) ? ColumnOrder[_] : ColumnOrder.Count).ToArray();
             foreach (string coltext in pref.DisplayColumns)
@@ -320,7 +329,7 @@ namespace Gageas.Lutea.DefaultUI
                     }
                     xTrackBar1.Max = Controller.Current.Length;
                     playlistView.SelectItem(index);
-                    emphasizeRow(index);
+                    playlistView.EmphasizeRow(index);
                     coverArtImageLoaderThread.Interrupt();
                     if (index < 0)
                     {
@@ -797,27 +806,9 @@ namespace Gageas.Lutea.DefaultUI
         #endregion
 
         #region playlistView utility methods
-        private int emphasizedRowId = -1;
-        private void emphasizeRow(int index) // 指定した行を強調表示
-        {
-            try
-            {
-                playlistView.RedrawItems(emphasizedRowId, emphasizedRowId, true);
-            }
-            catch { }
-
-            emphasizedRowId = index;
-            try
-            {
-                playlistView.RedrawItems(index, index, true);
-            }
-            catch { }
-        }
-
         private void refreshPlaylistView(string sql) // playlistの内容を更新
         {
             int itemCount = Controller.PlaylistRowCount;
-            int index = Controller.Current.IndexInPlaylist;
             if (sql != null)
             {
                 if (sql == queryComboBox.Text.Replace(@"\n", "\n"))
@@ -826,7 +817,6 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         queryComboBox.BackColor = statusColor[(int)QueryStatus.Normal];
                         setStatusText("Found " + itemCount + " Tracks.");
-
                     }
                     else
                     {
@@ -842,35 +832,10 @@ namespace Gageas.Lutea.DefaultUI
                     queryComboBox.Items.Add(sql);
                 }
             }
-
-            // プレイリストが更新されてアイテムの位置が変わったらカバーアート読み込みキューを消去
-            backgroundCoverartLoader.ClearQueue();
-
-            if (sql != null)
-            {
-                playlistView.SelectItem(index < 0 ? 0 : index);
-            }
-            playlistView.VirtualListSize = itemCount;
-            playlistView.Refresh();
-            if (sql != null)
-            {
-                playlistView.SelectItem(index < 0 ? 0 : index);
-            }
-            emphasizeRow(index);
+            int index = Controller.Current.IndexInPlaylist;
+            playlistView.RefreshPlaylist(sql != null, index, itemCount);
         }
 
-        private void SetRatingForSelected(int rate)
-        {
-            if (playlistView.SelectedIndices.Count > 0)
-            {
-                List<string> filenames = new List<string>();
-                foreach (int i in playlistView.SelectedIndices)
-                {
-                    filenames.Add(Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
-                }
-                Controller.SetRating(filenames.ToArray(), rate);
-            }
-        }
         #endregion
 
         #region queryView utility methods
@@ -1443,255 +1408,6 @@ namespace Gageas.Lutea.DefaultUI
         }
         #endregion
 
-        #region PlaylistView event
-
-        ListViewItem dummyPlaylistViewItem = new ListViewItem(new string[99]);
-        private void playlistView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
-        {
-            e.Item = dummyPlaylistViewItem;
-        }
-
-        private KeyEventArgs previousPressedKey = null;
-        private void playlistView_KeyDown(object sender, KeyEventArgs e)
-        {
-            Logger.Debug("Down" + e.KeyCode + e.KeyData + e.KeyValue);
-            switch (e.KeyCode)
-            {
-                case Keys.Return:
-                    if (playlistView.SelectedIndices.Count > 0)
-                    {
-                        Controller.PlayPlaylistItem(playlistView.SelectedIndices[0]);
-                    }
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.J:
-                    if (e.Modifiers == Keys.Control) // Ctrl + J
-                    {
-                        if (playlistView.SelectedIndices.Count > 0)
-                        {
-                            Controller.PlayPlaylistItem(playlistView.SelectedIndices[0]);
-                        }
-                    }
-                    else if (e.Modifiers == Keys.Shift) // Shift + J
-                    {
-                        // 次のアルバムの先頭トラックを選択
-                        string prev_album = null;
-                        string album = null;
-                        int idx = -1;
-                        if (playlistView.SelectedIndices.Count > 0)
-                        {
-                            idx = playlistView.SelectedIndices[0];
-                        }
-                        else if (Controller.Current.IndexInPlaylist > 0)
-                        {
-                            idx = Controller.Current.IndexInPlaylist;
-                        }
-
-                        if (idx != -1)
-                        {
-                            prev_album = Controller.GetPlaylistRowColumn(idx, Controller.GetColumnIndexByName("tagAlbum"));
-                            do
-                            {
-                                if ((idx + 1 == playlistView.Items.Count))
-                                {
-                                    break;
-                                }
-                                idx++;
-                                album = Controller.GetPlaylistRowColumn(idx, Controller.GetColumnIndexByName("tagAlbum"));
-                            } while (album == prev_album);
-                            playlistView.SelectItem(idx);
-                            playlistView.EnsureVisible(Math.Min(idx + 5, playlistView.Items.Count - 1));
-                        }
-                    }
-                    else // J
-                    {
-                        // 次のトラックを選択
-                        if (playlistView.SelectedIndices.Count > 0)
-                        {
-                            playlistView.SelectItem(playlistView.SelectedIndices[0] + 1);
-                        }
-                        else if (Controller.Current.IndexInPlaylist > 0)
-                        {
-                            playlistView.SelectItem(Controller.Current.IndexInPlaylist + 1);
-                        }
-                        else
-                        {
-                            goto case Keys.H;
-                        }
-                    }
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.M:
-                    if (e.Modifiers == Keys.Control) // Ctrl + M
-                    {
-                        if (playlistView.SelectedIndices.Count > 0)
-                        {
-                            Controller.PlayPlaylistItem(playlistView.SelectedIndices[0]);
-                        }
-                    }
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.K:
-                    if (e.Modifiers == Keys.Shift) // Shift + K
-                    {
-                        // 前のアルバムの先頭トラックを選択
-                        string prev_album = null;
-                        string album = null;
-                        int idx = -1;
-                        if (playlistView.SelectedIndices.Count > 0)
-                        {
-                            idx = playlistView.SelectedIndices[0];
-                        }
-                        else if (Controller.Current.IndexInPlaylist > 0)
-                        {
-                            idx = Controller.Current.IndexInPlaylist;
-                        }
-
-                        if (idx > 0)
-                        {
-                            prev_album = Controller.GetPlaylistRowColumn(idx - 1, Controller.GetColumnIndexByName("tagAlbum"));
-                            do
-                            {
-                                idx--;
-                                if (idx == 0)
-                                {
-                                    break;
-                                }
-                                album = Controller.GetPlaylistRowColumn(idx - 1, Controller.GetColumnIndexByName("tagAlbum"));
-                            } while (album == prev_album);
-                            playlistView.SelectItem(idx);
-                        }
-                    }
-                    else
-                    {
-                        // 前のトラックを選択
-                        if (playlistView.SelectedIndices.Count > 0)
-                        {
-                            playlistView.SelectItem(playlistView.SelectedIndices[0] - 1);
-                        }
-                        else if (Controller.Current.IndexInPlaylist > 0)
-                        {
-                            playlistView.SelectItem(Controller.Current.IndexInPlaylist - 1);
-                        }
-                        else
-                        {
-                            goto case Keys.L;
-                        }
-                    }
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.H:
-                    playlistView.SelectItem(0);
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.L:
-                    playlistView.SelectItem(playlistView.Items.Count - 1);
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.G:
-                    if (e.Modifiers == Keys.Shift)
-                    {
-                        // 末尾へ移動
-                        goto case Keys.L;
-                    }
-                    else
-                    {
-                        if (previousPressedKey != null && previousPressedKey.KeyCode == Keys.G && previousPressedKey.Modifiers == 0)
-                        {
-                            // 先頭へ移動
-                            goto case Keys.H;
-                        }
-                    }
-                    break;
-                case Keys.Escape:
-                    queryComboBox.Select();
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.N:
-                    if (e.Modifiers == Keys.Control)
-                    {
-                        Controller.NextTrack();
-                    }
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.P:
-                    if (e.Modifiers == Keys.Control)
-                    {
-                        Controller.PrevTrack();
-                    }
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.A:
-                    if (e.Modifiers == Keys.Control)
-                    {
-                        playlistView.SelectAllItems();
-                    }
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.OemQuestion: // FIXME: / キーはこれでいいの？
-                    queryComboBox.Select();
-                    queryComboBox.SelectAll();
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.D1:
-                    SetRatingForSelected(10);
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.D2:
-                    SetRatingForSelected(20);
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.D3:
-                    SetRatingForSelected(30);
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.D4:
-                    SetRatingForSelected(40);
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.D5:
-                    SetRatingForSelected(50);
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-                case Keys.D0:
-                    SetRatingForSelected(0);
-                    e.Handled = true;
-                    e.SuppressKeyPress = true;
-                    break;
-            }
-            previousPressedKey = e;
-        }
-
-        private void playlistView_DoubleClick(object sender, EventArgs e)
-        {
-            if (playlistView.SelectedIndices.Count > 0)
-            {
-                Controller.PlayPlaylistItem(playlistView.SelectedIndices[0]);
-            }
-        }
-
-        private void listView1_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
-        {
-            e.DrawDefault = true;
-        }
-        #endregion
-
         #region PlaybackOrderComboBox event
         void playbackOrderComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -2055,32 +1771,32 @@ namespace Gageas.Lutea.DefaultUI
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
         {
-            SetRatingForSelected(0);
+            playlistView.SetRatingForSelectedItems(0);
         }
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
-            SetRatingForSelected(10);
+            playlistView.SetRatingForSelectedItems(10);
         }
 
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
-            SetRatingForSelected(20);
+            playlistView.SetRatingForSelectedItems(20);
         }
 
         private void toolStripMenuItem5_Click(object sender, EventArgs e)
         {
-            SetRatingForSelected(30);
+            playlistView.SetRatingForSelectedItems(30);
         }
 
         private void toolStripMenuItem6_Click(object sender, EventArgs e)
         {
-            SetRatingForSelected(40);
+            playlistView.SetRatingForSelectedItems(40);
         }
 
         private void toolStripMenuItem7_Click(object sender, EventArgs e)
         {
-            SetRatingForSelected(50);
+            playlistView.SetRatingForSelectedItems(50);
         }
 
         private void removeDeadLinkToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2135,6 +1851,8 @@ namespace Gageas.Lutea.DefaultUI
         #endregion
 
         #region album art list view event
+
+        private ListViewItem dummyPlaylistViewItem = new ListViewItem(new string[99]);
         private void albumArtListView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
             e.Item = dummyPlaylistViewItem;
@@ -2343,9 +2061,6 @@ namespace Gageas.Lutea.DefaultUI
                 pref.DisplayColumns = Columns.Where(_ => !string.IsNullOrEmpty(_.MappedTagField)).OrderBy(_ => _.Type).Select(_ => _.Name).ToArray();
             }
 
-            // レーティングの☆描画準備
-            ratingRenderer = new RatingRenderer(@"components\rating_on.gif", @"components\rating_off.gif");
-
             // プレイリストビュー初期化
             ResetPlaylistView();
 
@@ -2547,282 +2262,6 @@ namespace Gageas.Lutea.DefaultUI
         }
         #endregion
 
-        private void listView1_DrawItem(object sender, DrawListViewItemEventArgs e)
-        {
-            var index = e.ItemIndex;
-            var row = Controller.GetPlaylistRow(index);
-            if (row == null) return;
-            var bounds = e.Bounds;
-            var isSelected = (e.State & ListViewItemStates.Selected) != 0;
-
-            int indexInGroup = 0;
-            var colIdOfAlbum = Controller.GetColumnIndexByName("tagAlbum");
-            var album = row[colIdOfAlbum].ToString();
-            var file_name = row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)].ToString();
-            while (album == Controller.GetPlaylistRowColumn(index - indexInGroup, colIdOfAlbum)) indexInGroup++;
-            var isCont = album == Controller.GetPlaylistRowColumn(index + 1, colIdOfAlbum);
-            var isFirstTrack = indexInGroup == 1;
-
-            using (var g = e.Graphics)
-            {
-                IntPtr hDC = g.GetHdc();
-                var bounds_X = bounds.X;
-                var bounds_Y = bounds.Y;
-                var bounds_Width = bounds.Width;
-                var bounds_Height = bounds.Height;
-
-
-                // 背景色描画
-                // SystemBrushはsolidBrushのはずだけど
-                GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.DC_BRUSH));
-                GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.DC_PEN));
-                if (pref.ColoredAlbum & !isSelected)
-                {
-                    int c = (album.GetHashCode() & 0xFFFFFF) | 0x00c0c0c0;
-                    int red = c >> 16;
-                    int green = (c >> 8) & 0xff;
-                    int blue = c & 0xff;
-                    if (index % 2 == 0)
-                    {
-                        red = 255 - (int)((255 - red) * 0.7);
-                        green = 255 - (int)((255 - green) * 0.7);
-                        blue = 255 - (int)((255 - blue) * 0.7);
-                    }
-                    GDI.SetDCBrushColor(hDC, red, green, blue);
-                    GDI.SetDCPenColor(hDC, red, green, blue);
-                }
-                else
-                {
-                    var fillcolor = ((SolidBrush)(isSelected
-                            ? SystemBrushes.Highlight
-                            : index % 2 == 0
-                                ? SystemBrushes.Window
-                                : SystemBrushes.ControlLight)).Color;
-                    GDI.SetDCBrushColor(hDC, fillcolor);
-                    GDI.SetDCPenColor(hDC, fillcolor);
-                }
-                GDI.Rectangle(hDC, bounds_X, bounds_Y, bounds_X + bounds_Width, bounds_Y + bounds_Height);
-
-                // カバアート読み込みをキューイング
-                if (pref.ShowCoverArtInPlaylistView)
-                {
-                    if (!string.IsNullOrEmpty(album))
-                    {
-                        if (((indexInGroup - 2) * bounds_Height) < pref.CoverArtSizeInPlaylistView && !backgroundCoverartLoader.IsCached(album))
-                        {
-                            backgroundCoverartLoader.Enqueue(album, file_name, index);
-                        }
-                    }
-                }
-
-                // アルバム先頭マーク描画
-                if (isFirstTrack)
-                {
-                    GDI.SetDCPenColor(hDC, SystemPens.ControlDark.Color);
-                    GDI.MoveToEx(hDC, bounds_X, bounds_Y, IntPtr.Zero);
-                    GDI.LineTo(hDC, bounds_X + bounds_Width, bounds_Y);
-                }
-
-                // columnを表示順にソート
-                var cols = new ColumnHeader[playlistView.Columns.Count];
-                foreach (ColumnHeader head in playlistView.Columns)
-                {
-                    cols[head.DisplayIndex] = head;
-                }
-
-                // 各column描画準備
-                int pc = 0;
-                IntPtr hFont = (emphasizedRowId == index ? new Font(pref.Font_playlistView, FontStyle.Bold) : pref.Font_playlistView).ToHfont();
-                IntPtr hOldFont = GDI.SelectObject(hDC, hFont);
-
-                // 強調枠描画
-                if (emphasizedRowId == index)
-                {
-                    GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.NULL_BRUSH));
-                    GDI.SetDCPenColor(hDC, Color.Navy);
-                    GDI.Rectangle(hDC, bounds_X, bounds_Y, bounds_X + bounds_Width, bounds_Y + bounds_Height);
-                }
-
-                Size size_dots;
-                GDI.GetTextExtentPoint32(hDC, "...", "...".Length, out size_dots);
-                int y = bounds_Y + (bounds_Height - size_dots.Height) / 2;
-                int size_dots_Width = size_dots.Width;
-
-                GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.WHITE_PEN));
-                GDI.SetTextColor(hDC, (uint)(isSelected ? SystemColors.HighlightText.ToArgb() : SystemColors.ControlText.ToArgb()) & 0xffffff);
-                GDI.SetBkMode(hDC, GDI.BkMode.TRANSPARENT);
-
-
-                // 各column描画
-                var row_Length = row.Length;
-                foreach (ColumnHeader head in cols)
-                {
-                    GDI.MoveToEx(hDC, bounds_X + pc - 1, bounds_Y, IntPtr.Zero);
-                    GDI.LineTo(hDC, bounds_X + pc - 1, bounds_Y + bounds_Height);
-                    int colidx = (int)head.Tag;
-
-                    if (colidx >= row_Length) continue;
-
-                    var col = Columns[colidx];
-
-                    if (col.Type == Library.LibraryColumnType.Rating)
-                    {
-                        int stars = 0;
-                        int.TryParse(row[colidx].ToString(), out stars);
-                        stars /= 10;
-                        g.ReleaseHdc(hDC);
-                        ratingRenderer.Draw(stars, g, bounds_X + pc + 2, bounds_Y, head.Width - 2, bounds_Height);
-                        hDC = g.GetHdc();
-                        pc += head.Width;
-                        continue;
-                    }
-
-                    if (pref.ShowCoverArtInPlaylistView && col.Type == Library.LibraryColumnType.TrackNumber)
-                    {
-                        if (backgroundCoverartLoader.IsCached(album))
-                        {
-                            var img = backgroundCoverartLoader.GetCache(album);
-                            var margin = 2;
-                            if (img != null && img.Width > 1)
-                            {
-                                GDI.BitBlt(hDC,
-                                    bounds_X + pc + (pref.CoverArtSizeInPlaylistView - img.Width) / 2 + margin,
-                                    bounds_Y + (indexInGroup == 1 ? margin : 0),
-                                    img.Width,
-                                    bounds_Height - (indexInGroup == 1 ? margin : 0),
-                                    img.HDC,
-                                    0,
-                                    (indexInGroup - 1) * bounds_Height - (indexInGroup != 1 ? margin : 0) + ((isFirstTrack && !isCont) ? (int)(img.Height*0.30-(bounds_Height/2)) : 0),
-                                    0x00CC0020);
-                            }
-                        }
-                    }
-
-                    var w = head.Width - 2;
-                    var str = row[colidx].ToString();
-                    switch (col.Type)
-                    {
-                        case Library.LibraryColumnType.Timestamp64:
-                            str = str == "0" ? "-" : Util.Util.timestamp2DateTime(long.Parse(str)).ToString();
-                            break;
-                        case Library.LibraryColumnType.Time:
-                            str = Util.Util.getMinSec(int.Parse(str));
-                            break;
-                        case Library.LibraryColumnType.Bitrate:
-                            str = str == "" ? "" : (int.Parse(str)) / 1000 + "kbps";
-                            break;
-                        case Library.LibraryColumnType.FileSize:
-                            int sz = int.Parse(str);
-                            str = sz > 1024 * 1024 ? String.Format("{0:0.00}MB", sz / 1024.0 / 1024) : String.Format("{0}KB", sz / 1024);
-                            break;
-                        case LibraryColumnType.TrackNumber:
-                            if (pref.TrackNumberFormat == DefaultUIPreference.TrackNumberFormats.N)
-                            {
-                                int tr = -1;
-                                if (Util.Util.tryParseInt(str, ref tr))
-                                {
-                                    str = tr.ToString();
-                                }
-                            }
-                            break;
-                        default:
-                            str = str.Replace("\n", "; ");
-                            break;
-                    }
-                    Size size;
-                    GDI.GetTextExtentPoint32(hDC, str, str.Length, out size);
-                    if (size.Width < w)
-                    {
-                        var padding = col.Type == Library.LibraryColumnType.TrackNumber || col.Type == Library.LibraryColumnType.Timestamp64 || col.Type == Library.LibraryColumnType.Bitrate || col.Type == Library.LibraryColumnType.Time ? (w - size.Width) - 1 : 1;
-                        GDI.TextOut(hDC, bounds_X + pc + padding, y, str, str.Length);
-                    }
-                    else
-                    {
-                        int cnt = str.Length + 1;
-                        // 文字のサイズが表示領域の倍以上ある場合一気に切り詰める
-                        if (size.Width > (w * 1.1))
-                        {
-                            cnt = (int)(cnt * (w * 1.1) / (size.Width));
-                        }
-                        if (w > size_dots_Width)
-                        {
-                            do
-                            {
-                                GDI.GetTextExtentPoint32(hDC, str, --cnt, out size);
-                            } while (size.Width + size_dots_Width > w && cnt > 0);
-                            GDI.TextOut(hDC, bounds_X + pc + 1, y, str.Substring(0, cnt) + "...", cnt + 3);
-                        }
-                    }
-                    pc += head.Width;
-                }
-
-                GDI.DeleteObject(GDI.SelectObject(hDC, hOldFont));
-                g.ReleaseHdc(hDC);
-
-            }
-        }
-
-        private void listView1_MouseClick(object sender, MouseEventArgs e)
-        {
-            int starwidth = ratingRenderer.EachWidth;
-            var item = playlistView.GetItemAt(e.X, e.Y);
-            if (item == null) return;
-            var sub = item.GetSubItemAt(e.X, e.Y);
-            if (sub == null) return;
-            if (Columns[Controller.GetColumnIndexByName(pref.DisplayColumns[item.SubItems.IndexOf(sub)])].Type == Library.LibraryColumnType.Rating)
-            {
-                if (item.GetSubItemAt(e.X - starwidth * 4, e.Y) == sub)
-                {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)), 50);
-                }
-                else if (item.GetSubItemAt(e.X - starwidth * 3, e.Y) == sub)
-                {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)), 40);
-                }
-                else if (item.GetSubItemAt(e.X - starwidth * 2, e.Y) == sub)
-                {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)), 30);
-                }
-                else if (item.GetSubItemAt(e.X - starwidth * 1, e.Y) == sub)
-                {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)), 20);
-                }
-                else if (item.GetSubItemAt(e.X - starwidth / 2, e.Y) == sub)
-                {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)), 10);
-                }
-                else
-                {
-                    Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)), 0);
-                }
-            }
-        }
-
-        private void listView1_MouseMove(object sender, MouseEventArgs e)
-        {
-            var item = playlistView.GetItemAt(e.X, e.Y);
-            if (item == null) return;
-            var sub = item.GetSubItemAt(e.X, e.Y);
-            if (sub == null) return;
-            if (Columns[Controller.GetColumnIndexByName(pref.DisplayColumns[item.SubItems.IndexOf(sub)])].Type == Library.LibraryColumnType.Rating)
-            {
-                if (playlistView.Cursor != Cursors.Hand)
-                {
-                    playlistView.Cursor = Cursors.Hand;
-                }
-                return;
-            }
-            if (playlistView.Cursor != Cursors.Arrow)
-            {
-                playlistView.Cursor = Cursors.Arrow;
-            }
-        }
-
-        private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
-        {
-            Controller.SetSortColumn(Columns[(int)playlistView.Columns[e.Column].Tag].Name);
-        }
-
         private void OnPlaylistSortOrderChange(string columnText, Controller.SortOrders sortOrder)
         {
             for (int i = 0; i < playlistView.Columns.Count; i++)
@@ -2835,27 +2274,6 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     playlistView.SetSortArrow(i, SortOrder.None);
                 }
-            }
-        }
-
-        private void listView1_ItemDrag(object sender, ItemDragEventArgs e)
-        {
-            try
-            {
-                var count = playlistView.SelectedIndices.Count;
-                if (count < 1) return;
-                List<string> filenames = new List<string>();
-                var colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                foreach(int i in playlistView.SelectedIndices)
-                {
-                    filenames.Add(Controller.GetPlaylistRowColumn(i, colIndexOfFilename).Trim());
-                }
-                DataObject dataObj = new DataObject(DataFormats.FileDrop, filenames.Distinct().ToArray());
-                DoDragDrop(dataObj, DragDropEffects.Copy);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
             }
         }
 

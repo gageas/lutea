@@ -56,7 +56,7 @@
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView();
+            this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView(this);
             this.playlistViewContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.ScrollToPlayingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
@@ -403,15 +403,6 @@
             this.playlistView.UseCompatibleStateImageBehavior = false;
             this.playlistView.View = System.Windows.Forms.View.Details;
             this.playlistView.VirtualMode = true;
-            this.playlistView.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listView1_ColumnClick);
-            this.playlistView.DrawColumnHeader += new System.Windows.Forms.DrawListViewColumnHeaderEventHandler(this.listView1_DrawColumnHeader);
-            this.playlistView.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listView1_DrawItem);
-            this.playlistView.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.listView1_ItemDrag);
-            this.playlistView.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.playlistView_RetrieveVirtualItem);
-            this.playlistView.DoubleClick += new System.EventHandler(this.playlistView_DoubleClick);
-            this.playlistView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.playlistView_KeyDown);
-            this.playlistView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseClick);
-            this.playlistView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseMove);
             // 
             // playlistViewContextMenuStrip
             // 
