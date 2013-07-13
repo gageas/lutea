@@ -146,7 +146,6 @@
     <Compile Include="RatingRenderer.cs" />
     <Compile Include="RevConv.cs" />
     <Compile Include="Shell32.cs" />
-    <Compile Include="SpectrumRenderer.cs" />
     <Compile Include="TaskbarExtension.cs" />
     <Compile Include="ToolStripComboBox.cs">
       <SubType>Component</SubType>
@@ -158,6 +157,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="User32.cs" />
+    <Compile Include="VisualizeView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="XTrackBar.cs">
       <SubType>UserControl</SubType>
     </Compile>

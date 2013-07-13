@@ -65,11 +65,6 @@ namespace Gageas.Lutea.DefaultUI
         internal BackgroundCoverartsLoader backgroundCoverartLoader;
 
         /// <summary>
-        /// スペアナを描画するクラスのオブジェクト
-        /// </summary>
-        SpectrumRenderer SpectrumRenderer = null;
-
-        /// <summary>
         /// Windows7の拡張タスクバーを制御
         /// </summary>
         TaskbarExtension TaskbarExt;
@@ -241,22 +236,14 @@ namespace Gageas.Lutea.DefaultUI
                 this.Invoke((Action)(() => { ResetSpectrumRenderer(forceReset); }));
                 return;
             }
-            if (forceReset && SpectrumRenderer != null)
+            if (forceReset)
             {
-                SpectrumRenderer.Abort();
-                SpectrumRenderer = null;
+                visualizeView.Abort();
             }
-
-            if (SpectrumRenderer == null)
-            {
-                pictureBox2.Top = trackInfoText.Top + trackInfoText.Height;
-                pictureBox2.Height = groupBox1.Height - pictureBox2.Top - 2;
-                if (pictureBox2.Height > 0)
-                {
-                    SpectrumRenderer = new SpectrumRenderer(this.pictureBox2, pref.FFTLogarithmic, pref.FFTNumber, pref.SpectrumColor1, pref.SpectrumColor2, pref.SpectrumMode);
-                    SpectrumRenderer.Start();
-                }
-            }
+            visualizeView.Top = trackInfoText.Top + trackInfoText.Height;
+            visualizeView.Height = groupBox1.Height - visualizeView.Top - 2;
+            visualizeView.Setup(pref.FFTLogarithmic, pref.FFTNumber, pref.SpectrumColor1, pref.SpectrumColor2, pref.SpectrumMode);
+            visualizeView.Start();
         }
 
         private void ResetTrackInfoView()
@@ -394,12 +381,8 @@ namespace Gageas.Lutea.DefaultUI
                         setFormTitle(null);
                         setStatusText("Ready ");
                         toolStripStatusLabel1.Text = "";
-                        if (SpectrumRenderer != null)
-                        {
-                            SpectrumRenderer.Abort();
-                            SpectrumRenderer.Clear();
-                            SpectrumRenderer = null;
-                        }
+                        visualizeView.Abort();
+                        visualizeView.Clear();
                         if (TaskbarExt != null)
                         {
                             TaskbarExt.Taskbar.SetProgressState(this.Handle, TaskbarExtension.TbpFlag.NoProgress);
@@ -792,10 +775,7 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     if (this.ShowInTaskbar == false)
                     {
-                        if (SpectrumRenderer != null)
-                        {
-                            SpectrumRenderer.Abort();
-                        }
+                        visualizeView.Abort();
                         this.ShowInTaskbar = true;
                         treeView1.ExpandAll();
                         ResetTaskbarExtButtonImage();
@@ -2076,7 +2056,7 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 try
                 {
-                    if (SpectrumRenderer != null) SpectrumRenderer.Abort();
+                    visualizeView.Abort();
                 }
                 catch { }
 
