@@ -101,7 +101,12 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (currentCoverArtResized == null) return;
             if (transitionFromImage == null) return;
-            e.Graphics.DrawImage(ImageUtil.GetAlphaComposedImage(transitionFromImage, currentCoverArtResized, (float)transitionPhase / TRANSITION_STEPS), 0, 0);
+            Bitmap img = (Bitmap)ImageUtil.GetAlphaComposedImage(transitionFromImage, currentCoverArtResized, (float)transitionPhase / TRANSITION_STEPS);
+            using(var gdiimg = new GDI.GDIBitmap(img)){
+                GDI.BitBlt(e.Graphics.GetHdc(), 0, 0, this.Width, this.Height, gdiimg.HDC, 0, 0, 0xCC0020);
+               e.Graphics.ReleaseHdc();
+            }
+//            e.Graphics.DrawImage(img, 0, 0);
         }
 
         /// <summary>
@@ -168,7 +173,11 @@ namespace Gageas.Lutea.DefaultUI
                     Bitmap bmp = new Bitmap(coverArtSize.Width, coverArtSize.Height);
                     this.Invoke((Action)(() =>
                     {
-                        DrawToBitmap(bmp, new Rectangle(0, 0, coverArtSize.Width, coverArtSize.Height));
+                        try
+                        {
+                            DrawToBitmap(bmp, new Rectangle(0, 0, coverArtSize.Width, coverArtSize.Height));
+                        }
+                        catch (Exception) { }
                     }));
                     transitionFromImage = bmp;
 
