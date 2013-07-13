@@ -57,6 +57,9 @@
     <Compile Include="ComponentManage.Designer.cs">
       <DependentUpon>ComponentManage.cs</DependentUpon>
     </Compile>
+    <Compile Include="CoverArtView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="CoverViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>
