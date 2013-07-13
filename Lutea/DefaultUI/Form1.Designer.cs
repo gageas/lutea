@@ -46,7 +46,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.splitContainer4 = new System.Windows.Forms.SplitContainer();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.coverArtView = new Gageas.Lutea.DefaultUI.CoverArtView();
             this.panel1 = new System.Windows.Forms.Panel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.listView2 = new System.Windows.Forms.ListView();
@@ -56,7 +56,7 @@
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView(this);
+            this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView();
             this.playlistViewContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.ScrollToPlayingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
@@ -132,7 +132,7 @@
             this.splitContainer4.Panel1.SuspendLayout();
             this.splitContainer4.Panel2.SuspendLayout();
             this.splitContainer4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).BeginInit();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -297,21 +297,20 @@
             // 
             // splitContainer4.Panel1
             // 
-            this.splitContainer4.Panel1.Controls.Add(this.pictureBox1);
+            this.splitContainer4.Panel1.Controls.Add(this.coverArtView);
             // 
             // splitContainer4.Panel2
             // 
             this.splitContainer4.Panel2.Controls.Add(this.panel1);
             this.splitContainer4.TabStop = false;
             // 
-            // pictureBox1
+            // coverArtView
             // 
-            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
-            resources.ApplyResources(this.pictureBox1, "pictureBox1");
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseClick);
-            this.pictureBox1.Resize += new System.EventHandler(this.pictureBox1_Resize);
+            this.coverArtView.BackColor = System.Drawing.Color.Transparent;
+            resources.ApplyResources(this.coverArtView, "coverArtView");
+            this.coverArtView.Name = "coverArtView";
+            this.coverArtView.TabStop = false;
+            this.coverArtView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.coverArtView_MouseClick);
             // 
             // panel1
             // 
@@ -388,18 +387,22 @@
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // listView1
+            // playlistView
             // 
             this.playlistView.AllowColumnReorder = true;
             this.playlistView.BackColor = System.Drawing.SystemColors.Window;
             this.playlistView.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.playlistView.ContextMenuStrip = this.playlistViewContextMenuStrip;
+            this.playlistView.CoverArtSize = 0;
             this.playlistView.Cursor = System.Windows.Forms.Cursors.Arrow;
-            resources.ApplyResources(this.playlistView, "listView1");
+            resources.ApplyResources(this.playlistView, "playlistView");
             this.playlistView.FullRowSelect = true;
-            this.playlistView.Name = "listView1";
+            this.playlistView.Name = "playlistView";
             this.playlistView.OwnerDraw = true;
+            this.playlistView.ShowCoverArt = false;
             this.playlistView.ShowGroups = false;
+            this.playlistView.TrackNumberFormat = Gageas.Lutea.DefaultUI.DefaultUIPreference.TrackNumberFormats.N;
+            this.playlistView.UseColor = false;
             this.playlistView.UseCompatibleStateImageBehavior = false;
             this.playlistView.View = System.Windows.Forms.View.Details;
             this.playlistView.VirtualMode = true;
@@ -855,11 +858,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
             this.splitContainer4.Panel1.ResumeLayout(false);
-            this.splitContainer4.Panel1.PerformLayout();
             this.splitContainer4.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer4)).EndInit();
             this.splitContainer4.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).EndInit();
             this.panel1.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
@@ -941,7 +943,7 @@
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.SplitContainer splitContainer4;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private CoverArtView coverArtView;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ListView listView2;

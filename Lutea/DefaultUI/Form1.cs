@@ -60,11 +60,6 @@ namespace Gageas.Lutea.DefaultUI
         FindDeadLinkDialog findDeadLinkDialog;
 
         /// <summary>
-        /// カバーアートをバックグラウンドで読み込むスレッドを保持
-        /// </summary>
-        Thread coverArtImageLoaderThread;
-
-        /// <summary>
         /// プレイリストのカバーアートをバックグラウンドで読み込むオブジェクト
         /// </summary>
         internal BackgroundCoverartsLoader backgroundCoverartLoader;
@@ -146,7 +141,7 @@ namespace Gageas.Lutea.DefaultUI
             queryComboBox.ForeColor = System.Drawing.SystemColors.WindowText;
             toolStripStatusLabel1.Text = "";
             toolStripXTrackbar1.GetControl.ThumbWidth = TextRenderer.MeasureText("100", this.Font).Width + 10;
-            playlistView.Setup(Columns);
+            playlistView.Setup(this, Columns);
         }
 
         internal void SelectQueryComboBox(bool selectText)
@@ -289,6 +284,24 @@ namespace Gageas.Lutea.DefaultUI
             xTrackBar1.Update();
         }
 
+        internal void OpenCoverViewForm()
+        {
+            try
+            {
+                if (coverViewForm != null)
+                {
+                    coverViewForm.Close();
+                    coverViewForm.Dispose();
+                    coverViewForm = null;
+                }
+                var CurrentCoverArt = Controller.Current.CoverArtImage();
+                if (CurrentCoverArt == null) return;
+                coverViewForm = new CoverViewerForm(CurrentCoverArt);
+                coverViewForm.Show();
+            }
+            catch { }
+        }
+
         #region Application core event handler
         private void TrackChangeNotifyPopup(int i)
         {
@@ -296,6 +309,50 @@ namespace Gageas.Lutea.DefaultUI
             var t1 = Controller.Current.MetaData("tagTitle");
             var t2 = Controller.Current.MetaData("tagArtist") + " - " + Controller.Current.MetaData("tagAlbum");
             NotifyPopup.DoNotify(t1, t2, Controller.Current.CoverArtImage(), pref.Font_trackInfoView);          
+        }
+
+        private void changeTaskbarIcon(int i)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke((Action)(() => { changeTaskbarIcon(i); }));
+                return;
+            }
+            var oldhIcon_Large = hIconForWindowIcon_Large;
+            hIconForWindowIcon_Large = IntPtr.Zero;
+            var coverArtImage = Controller.Current.CoverArtImage();
+            if (coverArtImage != null)
+            {
+                int size = Math.Max(coverArtImage.Width, coverArtImage.Height);
+                Bitmap bmp = new Bitmap(size, size);
+                int iconSize;
+                using (var g = Graphics.FromImage(bmp))
+                {
+                    g.DrawImage(coverArtImage, (size - coverArtImage.Width) / 2, (size - coverArtImage.Height) / 2, coverArtImage.Width, coverArtImage.Height);
+                    iconSize = g.DpiX > 96 ? 64 : 32;
+                }
+                Bitmap bmp2 = new Bitmap(iconSize, iconSize);
+                int outset = 1;
+                using (var g = Graphics.FromImage(bmp2))
+                {
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    g.DrawImage(bmp, -outset, -outset, bmp2.Width + outset * 2, bmp2.Height + outset * 2);
+                }
+
+                hIconForWindowIcon_Large = (bmp2).GetHicon();
+                // xpだとこちらからSETICONしないといけないっぽいので
+                User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, hIconForWindowIcon_Large);
+            }
+            else
+            {
+                {
+                    User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
+                }
+                if (oldhIcon_Large != IntPtr.Zero)
+                {
+                    User32.DestroyIcon(oldhIcon_Large);
+                }
+            }
         }
 
         private void trackChange(int index)
@@ -330,7 +387,6 @@ namespace Gageas.Lutea.DefaultUI
                     xTrackBar1.Max = Controller.Current.Length;
                     playlistView.SelectItem(index);
                     playlistView.EmphasizeRow(index);
-                    coverArtImageLoaderThread.Interrupt();
                     if (index < 0)
                     {
                         trackInfoText.Text = "";
@@ -534,6 +590,7 @@ namespace Gageas.Lutea.DefaultUI
             Controller.PlaylistUpdated += new Controller.PlaylistUpdatedEvent(playlistUpdated);
             Controller.onElapsedTimeChange += new Controller.VOIDINT(elapsedTimeChange);
             Controller.onTrackChange += new Controller.VOIDINT(trackChange);
+            Controller.onTrackChange += changeTaskbarIcon;
             if (pref.ShowNotifyBalloon)
             {
                 Controller.onTrackChange -= TrackChangeNotifyPopup;
@@ -615,6 +672,7 @@ namespace Gageas.Lutea.DefaultUI
         private const int WM_DWMSENDICONICTHUMBNAIL = 0x0323;
         private const int THBN_CLICKED = 0x1800;
         TaskbarExtension.ThumbButton[] taskbarThumbButtons = new TaskbarExtension.ThumbButton[4];
+        private static IntPtr hIconForWindowIcon_Large;
         protected override void WndProc(ref Message m)
         {
             bool omitBaseProc = false;
@@ -878,161 +936,16 @@ namespace Gageas.Lutea.DefaultUI
         }
         #endregion
 
-        /* CoverArt関連の関数群
-         * 
-         * 複数の場所から同時に同一のImageオブジェクトを触ると怒られるようなので、
-         * pictureBox.hogeのようなところはmutexで固めまくってる
-         * だいぶ汚くなってるけどちょっとでも弄るとすぐ怒られるので不用意に弄れない
-         */
-        #region CoverArt
-
-        /// <summary>
-        /// 現在表示しているCovertArtのリサイズしていないImageオブジェクトを保持。
-        /// 縮小版ImageをTagに持つ
-        /// </summary>
-        Image CurrentCoverArt;
-
-        /// <summary>
-        /// pictureBoxを触る時はmutexを取得する。
-        /// mutexの取得解放およびpictureBoxへの操作は全てメインスレッドから行う
-        /// </summary>
-        Mutex m = new Mutex();
-
-        /// <summary>
-        /// CoverArt画像をバックグラウンドで読み込むスレッドとして動作。
-        /// 常に起動したままで、平常時はsleepしている。
-        /// 必要になった時にInterruptする。
-        /// </summary>
-
-        int CoverArtWidth = 10;
-        int CoverArtHeight = 10;
-
-        private static IntPtr hIconForWindowIcon_Large;
-        private void CoverArtLoaderProc()
+        #region UI Component events
+        #region CoverArtView event
+        private void coverArtView_MouseClick(object sender, MouseEventArgs e)
         {
-            int TRANSITION_STEPS = 16;
-            int TRANSITION_INTERVAL = 20;
-            IEnumerator<int> counter;
-            while (true)
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                try
-                {
-                    // Nextを連打したような場合に実際の処理が走らないように少しウェイト
-                    Thread.Sleep(300);
-                    Image coverArtImage = Controller.Current.CoverArtImage();
-
-                    this.Invoke((MethodInvoker)(() =>
-                    {
-                        var oldhIcon_Large = hIconForWindowIcon_Large;
-                        hIconForWindowIcon_Large = IntPtr.Zero;
-                        if (coverArtImage != null)
-                        {
-                            int size = Math.Max(coverArtImage.Width, coverArtImage.Height);
-                            Bitmap bmp = new Bitmap(size, size);
-                            int iconSize;
-                            using (var g = Graphics.FromImage(bmp))
-                            {
-                                g.DrawImage(coverArtImage, (size - coverArtImage.Width) / 2, (size - coverArtImage.Height) / 2, coverArtImage.Width, coverArtImage.Height);
-                                iconSize = g.DpiX > 96 ? 64 : 32;
-                            }
-                            Bitmap bmp2 = new Bitmap(iconSize, iconSize);
-                            int outset = 1;
-                            using (var g = Graphics.FromImage(bmp2))
-                            {
-                                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                                g.DrawImage(bmp, -outset, -outset, bmp2.Width + outset * 2, bmp2.Height + outset * 2);
-                            }
-                            hIconForWindowIcon_Large = (bmp2).GetHicon();
-                            // xpだとこちらからSETICONしないといけないっぽいので
-                            User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, hIconForWindowIcon_Large);
-                        }
-                        else
-                        {
-                            User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
-                        }
-                        if (oldhIcon_Large != IntPtr.Zero)
-                        {
-                            User32.DestroyIcon(oldhIcon_Large);
-                        }
-                    }));
-                    if (coverArtImage == null)
-                    {
-                        try
-                        {
-                            using (var fs = new System.IO.FileStream("default.jpg", System.IO.FileMode.Open, System.IO.FileAccess.Read))
-                            {
-                                coverArtImage = System.Drawing.Image.FromStream(fs);
-                            }
-                        }
-                        catch { }
-                    }
-                    if (coverArtImage == null) coverArtImage = new Bitmap(1, 1);
-                    Image resized = null;
-
-                    Image transitionBeforeImage = null;
-
-                    try // Mutex ここから
-                    {
-                        // 新しい画像をリサイズ
-                        coverArtImage.Tag = ImageUtil.GetResizedImageWithPadding(coverArtImage, CoverArtWidth, CoverArtHeight);
-
-                        if (true)
-                        {
-                            // invoke自体は必須ではないのだが、FormsスレッドでのpictureBoxの描画とDrawImageが重なるとだめなので
-                            // Formsのスレッドで行う
-                            this.Invoke((MethodInvoker)(() =>
-                            {
-                                transitionBeforeImage = new Bitmap(pictureBox1.Image);
-                            }));
-                        }
-
-                        CurrentCoverArt = coverArtImage;
-                        counter = Util.Util.IntegerCounterIterator(0, TRANSITION_STEPS).GetEnumerator();
-
-                        for (int i = 0; i <= TRANSITION_STEPS; i++)
-                        {
-                            //                            Image transitionBeforeImage = null;
-                            // 実行開始時点でのpictureBoxの画像をCurrentCoverArt.Tagにコピー
-                            // 前のtransitionが途中で中断した場合、中断状態の画像からtransitionを継続するため(画像が急に飛ぶのを防ぐ)
-                            if (CurrentCoverArt != null)
-                            {
-                                // invoke自体は必須ではないのだが、FormsスレッドでのpictureBoxの描画とDrawImageが重なるとだめなので
-                                // Formsのスレッドで行う
-                                Image img = (Image)coverArtImage.Tag;
-                                this.Invoke((MethodInvoker)(() =>
-                                {
-                                    //                                    transitionBeforeImage = new Bitmap(pictureBox1.Image);
-                                    if ((resized == null) || (resized.Width != img.Width) || (resized.Height != img.Height))
-                                    {
-
-                                        // 1回目またはpictureBoxのリサイズがかかっている時、resizedイメージを生成しなおす
-                                        resized = new Bitmap((Image)coverArtImage.Tag);
-                                    }
-                                }));
-                            }
-                            Image composed = ImageUtil.GetAlphaComposedImage(transitionBeforeImage, resized, (float)i / TRANSITION_STEPS);
-                            this.Invoke((MethodInvoker)(() =>
-                            {
-                                Graphics.FromImage(pictureBox1.Image).DrawImage(composed, 0, 0);
-                                pictureBox1.Invalidate();
-                            }));
-                            Thread.Sleep(TRANSITION_INTERVAL);
-                        }
-                    }
-                    finally
-                    {
-                    }
-                    Thread.Sleep(Timeout.Infinite);
-                }
-                catch (ThreadInterruptedException)
-                {
-                }
+                OpenCoverViewForm();
             }
         }
-
         #endregion
-
-        #region UI Component events
 
         #region mainMenu event
         private void twToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1328,86 +1241,6 @@ namespace Gageas.Lutea.DefaultUI
         }
         #endregion
 
-        #region pictureBox event
-        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == System.Windows.Forms.MouseButtons.Left)
-            {
-                try
-                {
-                    if (coverViewForm != null)
-                    {
-                        coverViewForm.Close();
-                        coverViewForm.Dispose();
-                        coverViewForm = null;
-                    }
-                    if (CurrentCoverArt == null) return;
-                    coverViewForm = new CoverViewerForm(CurrentCoverArt);
-                    coverViewForm.Show();
-                }
-                catch { }
-            }
-        }
-
-        private void pictureBox1_Resize(object sender, EventArgs e)
-        {
-            if (!this.IsHandleCreated || !this.Created) return;
-            Image composed = null;
-            try
-            {
-                m.WaitOne();
-
-                // pictureBoxの新しいサイズを取得
-                var lambda = (MethodInvoker)(() =>
-                {
-                    CoverArtWidth = Math.Max(1, pictureBox1.Width);
-                    CoverArtHeight = Math.Max(1, pictureBox1.Height);
-                    composed = new Bitmap(CoverArtWidth, CoverArtHeight);
-                });
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(lambda);
-                }
-                else
-                {
-                    lambda.Invoke();
-                }
-
-                // 新しいサイズでカバーアートを描画
-                if (CurrentCoverArt != null)
-                {
-                    Image newSize = ImageUtil.GetResizedImageWithPadding(CurrentCoverArt, CoverArtWidth, CoverArtHeight);
-                    CurrentCoverArt.Tag = newSize;
-                    ImageUtil.AlphaComposedImage(composed, newSize, 1F);
-                }
-
-                // 描画したBitmapオブジェクトをpictureBoxに設定して再描画
-                var lambda2 = (MethodInvoker)(() =>
-                {
-                    pictureBox1.Image = composed;
-                    pictureBox1.Invalidate();
-                });
-                if (this.InvokeRequired)
-                {
-                    this.Invoke(lambda2);
-                }
-                else
-                {
-                    lambda2.Invoke();
-                }
-            }
-            finally
-            {
-                m.ReleaseMutex();
-                try
-                {
-                    playlistView.Select();
-                }
-                catch { }
-            }
-        }
-        #endregion
-
         #region PlaybackOrderComboBox event
         void playbackOrderComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1663,6 +1496,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             splitContainer4.SplitterDistance = splitContainer3.SplitterDistance;
             ResetSpectrumRenderer();
+            playlistView.Select();
         }
         #endregion
 
@@ -2084,9 +1918,8 @@ namespace Gageas.Lutea.DefaultUI
 
             // ウィンドウ表示
             this.Show();
-            pictureBox1.Width = pictureBox1.Height = splitContainer4.SplitterDistance = splitContainer3.SplitterDistance = pref.SplitContainer3_SplitterDistance;
+            coverArtView.Width = coverArtView.Height = splitContainer4.SplitterDistance = splitContainer3.SplitterDistance = pref.SplitContainer3_SplitterDistance;
             splitContainer3_SplitterMoved(null, null);
-            pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
 
             // プレイリストビューの右クリックにColumn選択を生成
             var column_select = new ToolStripMenuItem("表示する項目");
@@ -2116,13 +1949,7 @@ namespace Gageas.Lutea.DefaultUI
             }
             playlistView.ContextMenuStrip.Items.Add(column_select);
 
-            // カバーアート関連。これはこの順番で
-            // 走らせっぱなしにし、必要な時にinterruptする
-            coverArtImageLoaderThread = new Thread(CoverArtLoaderProc);
-            pictureBox1_Resize(null, null); // PictureBoxのサイズを憶えるためにここで実行する
-            coverArtImageLoaderThread.IsBackground = true;
-            coverArtImageLoaderThread.Start();
-
+            coverArtView.Setup();
             try
             {
                 TaskbarExt = new TaskbarExtension(this);
@@ -2255,8 +2082,6 @@ namespace Gageas.Lutea.DefaultUI
 
                 yomigana.Dispose();
             }));
-            coverArtImageLoaderThread.Abort();
-            coverArtImageLoaderThread.Join();
 
             this.Close();
         }

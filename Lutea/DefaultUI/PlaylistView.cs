@@ -168,14 +168,8 @@ namespace Gageas.Lutea.DefaultUI
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <remarks>引数はDefaultUIFormである必要があるが、引数をDefaultUIForm型にするとデザイナに怒られるためForm型にする</remarks>
-        /// <param name="form">Form</param>
-        public PlaylistView(Form form)
+        public PlaylistView()
         {
-            if (form is DefaultUIForm)
-            {
-                this.form = (DefaultUIForm)form;
-            }
             // レーティングの☆描画準備
             this.ratingRenderer = new RatingRenderer(@"components\rating_on.gif", @"components\rating_off.gif");
 
@@ -194,9 +188,11 @@ namespace Gageas.Lutea.DefaultUI
         /// <summary>
         /// 初期化
         /// </summary>
+        /// <param name="form">Form</param>
         /// <param name="columns">データベースのカラム</param>
-        public void Setup(Column[] columns)
+        public void Setup(DefaultUIForm form, Column[] columns)
         {
+            this.form = form;
             this.dbColumnsCache = columns;
         }
 
