@@ -53,7 +53,7 @@
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.trackInfoText = new System.Windows.Forms.Label();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.visualizeView = new VisualizeView();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView();
@@ -135,7 +135,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).BeginInit();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.visualizeView)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.playlistViewContextMenuStrip.SuspendLayout();
@@ -322,7 +322,7 @@
             // 
             this.groupBox1.Controls.Add(this.listView2);
             this.groupBox1.Controls.Add(this.trackInfoText);
-            this.groupBox1.Controls.Add(this.pictureBox2);
+            this.groupBox1.Controls.Add(this.visualizeView);
             resources.ApplyResources(this.groupBox1, "groupBox1");
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
@@ -364,9 +364,9 @@
             // 
             // pictureBox2
             // 
-            resources.ApplyResources(this.pictureBox2, "pictureBox2");
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.TabStop = false;
+            resources.ApplyResources(this.visualizeView, "pictureBox2");
+            this.visualizeView.Name = "pictureBox2";
+            this.visualizeView.TabStop = false;
             // 
             // tabControl1
             // 
@@ -864,7 +864,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).EndInit();
             this.panel1.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.visualizeView)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.playlistViewContextMenuStrip.ResumeLayout(false);
@@ -950,7 +950,7 @@
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.Label trackInfoText;
-        private System.Windows.Forms.PictureBox pictureBox2;
+        private VisualizeView visualizeView;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage2;
         private PlaylistView playlistView;

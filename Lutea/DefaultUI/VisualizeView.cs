@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Drawing;
 using System.Windows.Forms;
+using System.Drawing;
+using System.Threading;
 using Gageas.Lutea.Core;
 
 namespace Gageas.Lutea.DefaultUI
 {
-    class SpectrumRenderer
+    class VisualizeView : UserControl, System.ComponentModel.ISupportInitialize
     {
-        private PictureBox DestPictureBox = null;
         private Boolean FFTLogarithmic = false;
         private DefaultUIPreference.FFTNum FFTNum;
         private Color Color1;
@@ -19,9 +18,27 @@ namespace Gageas.Lutea.DefaultUI
         private int SpectrumMode;
         private Thread spectrumAnalyzerThread = null;
 
-        public SpectrumRenderer(PictureBox destPictureBox, Boolean FFTLogarithmic, DefaultUIPreference.FFTNum FFTNum, Color Color1, Color Color2, DefaultUIPreference.SpectrumModes SpectrumMode)
+        private Bitmap Image;
+
+        public VisualizeView()
         {
-            this.DestPictureBox = destPictureBox;
+            this.Paint += new PaintEventHandler(VisualizeView_Paint);
+            this.DoubleBuffered = true;
+        }
+
+        void VisualizeView_Paint(object sender, PaintEventArgs e)
+        {
+            if (this.Image == null) return;
+            using (var gdib = new GDI.GDIBitmap(new Bitmap(this.Image)))
+            {
+                var g = e.Graphics;
+                GDI.BitBlt(g.GetHdc(), 0, 0, this.Width, this.Height, gdib.HDC, 0, 0, 0xCC0020);
+                g.ReleaseHdc();
+            }
+        }
+
+        public void Setup(Boolean FFTLogarithmic, DefaultUIPreference.FFTNum FFTNum, Color Color1, Color Color2, DefaultUIPreference.SpectrumModes SpectrumMode)
+        {
             this.FFTLogarithmic = FFTLogarithmic;
             this.FFTNum = FFTNum;
             this.Color1 = Color1;
@@ -31,33 +48,31 @@ namespace Gageas.Lutea.DefaultUI
 
         public void Start()
         {
-            if(this.spectrumAnalyzerThread == null){
-                this.spectrumAnalyzerThread = new Thread(SpectrumAnalyzerProc);
-                this.spectrumAnalyzerThread.IsBackground = true;
+            if(spectrumAnalyzerThread == null){
+                spectrumAnalyzerThread = new Thread(SpectrumAnalyzerProc);
+                spectrumAnalyzerThread.IsBackground = true;
+                spectrumAnalyzerThread.Start();
             }
-            this.spectrumAnalyzerThread.Start();
         }
 
         public void Abort()
         {
-            if (this.spectrumAnalyzerThread != null)
+            if (spectrumAnalyzerThread != null)
             {
-                this.spectrumAnalyzerThread.Abort();
+                spectrumAnalyzerThread.Abort();
+                spectrumAnalyzerThread = null;
             }
         }
 
         public void Clear()
         {
-            if (DestPictureBox != null)
+            var img = new Bitmap(Math.Max(1, this.Width), Math.Max(1, this.Height));
+            using (var g = Graphics.FromImage(img))
             {
-                var img = new Bitmap(Math.Max(1, DestPictureBox.Width), Math.Max(1, DestPictureBox.Height));
-                using (var g = Graphics.FromImage(img))
-                {
-                    g.Clear(DestPictureBox.Parent.BackColor);
-                }
-                DestPictureBox.Image = img;
-                DestPictureBox.Refresh();
+                g.Clear(this.Parent.BackColor);
             }
+            this.Image = img;
+            this.Refresh();
         }
 
         private void SpectrumAnalyzerProc()
@@ -71,48 +86,44 @@ namespace Gageas.Lutea.DefaultUI
             int w = 0;
             int h = 0;
             Bitmap b = null;
-            SolidBrush opacityBackgroundBlush = new SolidBrush(Color.FromArgb(70, DestPictureBox.Parent.BackColor));
+            SolidBrush opacityBackgroundBlush = new SolidBrush(Color.FromArgb(70, this.Parent.BackColor));
             while (true)
             {
-                DestPictureBox.Invoke((MethodInvoker)(() =>
+                this.Invoke((MethodInvoker)(() =>
                 {
-                    w = DestPictureBox.Width;
-                    h = DestPictureBox.Height;
+                    w = this.Width;
+                    h = this.Height;
 
                     // 描画の条件が変わる等した場合
-                    if (b == null || DestPictureBox.Image == null || w != b.Width || h != b.Height)
+                    if (b == null || this.Image == null || w != b.Width || h != b.Height)
                     {
                         if (w * h > 0)
                         {
-                            b = new Bitmap(DestPictureBox.Width, DestPictureBox.Height);
+                            b = new Bitmap(this.Width, this.Height);
                             using (var g = Graphics.FromImage(b))
                             {
-                                g.Clear(DestPictureBox.Parent.BackColor);
+                                g.Clear(this.Parent.BackColor);
                             }
-                            DestPictureBox.Image = (Bitmap)b.Clone();
+                            this.Image = (Bitmap)b.Clone();
                             barPosition = null;
                             isLogarithmic = FFTLogarithmic;
                             fftNum = FFTNum;
                             fftdata = new float[(int)fftNum / 2];
                             points = new Point[fftdata.Length];
-                            for (int i = 0; i < points.Length; i++)
-                            {
-                                points[i] = new Point();
-                            }
                         }
                         else
                         {
-                            DestPictureBox.Image = null;
+                            this.Image = null;
                             b = null;
                         }
                     }
-                    if (DestPictureBox.Image != null && spectrumAnalyzerThread != null)
+                    if (this.Image != null && spectrumAnalyzerThread != null)
                     {
-                        using (var g = Graphics.FromImage(DestPictureBox.Image))
+                        using (var g = Graphics.FromImage(this.Image))
                         {
                             g.DrawImage(b, 0, 0);
                         }
-                        DestPictureBox.Refresh();
+                        this.Refresh();
                     }
                 }));
 
@@ -150,14 +161,17 @@ namespace Gageas.Lutea.DefaultUI
                         {
                             barPosition = new float[fftdata.Length];
                             barWidth = new float[fftdata.Length];
-                            for (int i = 1; i < n; i++)
+                            if (FFTLogarithmic)
                             {
-                                if (FFTLogarithmic)
+                                for (int i = 1; i < n; i++)
                                 {
                                     barPosition[i] = (float)(Math.Log10(i) / max * w);
                                     barWidth[i] = (float)((Math.Log10(i + 1) - Math.Log10(i)) / max * w);
                                 }
-                                else
+                            }
+                            else
+                            {
+                                for (int i = 1; i < n; i++)
                                 {
                                     barPosition[i] = (float)i * ww;
                                     barWidth[i] = ww;
@@ -213,7 +227,16 @@ namespace Gageas.Lutea.DefaultUI
                         }
                     }
                 }
+                this.Invalidate();
             }
+        }
+
+        public void BeginInit()
+        {
+        }
+
+        public void EndInit()
+        {
         }
     }
 }
