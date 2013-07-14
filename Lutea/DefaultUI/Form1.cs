@@ -75,24 +75,6 @@ namespace Gageas.Lutea.DefaultUI
         ImageList taskbarImageList;
 
         /// <summary>
-        /// 各Columnのでデフォルトの幅を定義
-        /// </summary>
-        Dictionary<string, int> defaultColumnDisplayWidth = new Dictionary<string, int>(){
-            {"tagTracknumber",130},
-            {"tagTitle",120},
-            {"tagArtist",120},
-            {"tagAlbum",80},
-            {"tagComment",120},
-            {"rating",84},
-        };
-
-        /// <summary>
-        /// playlistviewに表示するcolumnを定義
-        /// </summary>
-        Dictionary<string, int> ColumnOrder = new Dictionary<string, int>();
-        Dictionary<string, int> ColumnWidth = new Dictionary<string, int>();
-
-        /// <summary>
         /// filter viewに表示するcolumnを定義
         /// </summary>
         string[] filterColumns = { "tagArtist", "tagAlbum", "tagDate", "tagGenre", LibraryDBColumnTextMinimum.infoCodec_sub, LibraryDBColumnTextMinimum.rating, };
@@ -153,75 +135,13 @@ namespace Gageas.Lutea.DefaultUI
             playlistView.BeginUpdate();
             playlistView.Enabled = false;
 
-            // backup order/width
-            if (playlistView.Columns.Count > 0)
-            {
-                ColumnOrder.Clear();
-                ColumnWidth.Clear();
-                for (int i = 0; i < playlistView.Columns.Count; i++)
-                {
-                    ColumnOrder[Columns[(int)playlistView.Columns[i].Tag].Name] = playlistView.Columns[i].DisplayIndex;
-                    ColumnWidth[Columns[(int)playlistView.Columns[i].Tag].Name] = Math.Max(10, playlistView.Columns[i].Width);
-                }
-            }
-
-            playlistView.Clear();
-
-            // set "dummy" font
-            playlistView.Font = new Font(this.Font.FontFamily, pref.Font_playlistView.Height + pref.PlaylistViewLineHeightAdjustment, GraphicsUnit.Pixel);
-
-            // set "real" font
-            playlistView.SetHeaderFont(pref.Font_playlistView);
-
+            playlistView.Font = new Font(this.Font.FontFamily, pref.Font_playlistView.Height + pref.PlaylistViewLineHeightAdjustment, GraphicsUnit.Pixel); // set "dummy" font
+            playlistView.SetHeaderFont(pref.Font_playlistView); // set "real" font
             playlistView.UseColor = pref.ColoredAlbum;
             playlistView.TrackNumberFormat = pref.TrackNumberFormat;
             playlistView.ShowCoverArt = pref.ShowCoverArtInPlaylistView;
             playlistView.CoverArtSize = pref.CoverArtSizeInPlaylistView;
-
-            pref.DisplayColumns = pref.DisplayColumns.Where(_ => Controller.GetColumnIndexByName(_) >= 0).OrderBy((_) => ColumnOrder.ContainsKey(_) ? ColumnOrder[_] : ColumnOrder.Count).ToArray();
-            foreach (string coltext in pref.DisplayColumns)
-            {
-                var colheader = new ColumnHeader();
-                var col = Controller.GetColumnIndexByName(coltext);
-                colheader.Text = Columns[col].LocalText;
-                colheader.Tag = col;
-                if (ColumnWidth.ContainsKey(coltext))
-                {
-                    colheader.Width = ColumnWidth[coltext];
-                }
-                else
-                {
-                    if (defaultColumnDisplayWidth.ContainsKey(Columns[col].Name))
-                    {
-                        colheader.Width = defaultColumnDisplayWidth[Columns[col].Name];
-                    }
-                }
-                playlistView.Columns.Add(colheader);
-                if (Columns[col].Name == LibraryDBColumnTextMinimum.statBitrate)
-                {
-                    colheader.TextAlign = HorizontalAlignment.Right;
-                }
-            }
-
-            foreach (ColumnHeader colheader in playlistView.Columns)
-            {
-                var col = (int)(colheader.Tag);
-                if (ColumnOrder.ContainsKey(Columns[col].Name))
-                {
-                    try
-                    {
-                        colheader.DisplayIndex = ColumnOrder[Columns[col].Name];
-                    }
-                    catch
-                    {
-                        colheader.DisplayIndex = playlistView.Columns.Count - 1;
-                    }
-                }
-                else
-                {
-                    colheader.DisplayIndex = playlistView.Columns.Count - 1;
-                }
-            }
+            playlistView.ResetColumns(pref.DisplayColumns);
 
             playlistUpdated(null);
 
@@ -1827,8 +1747,8 @@ namespace Gageas.Lutea.DefaultUI
         private void parseSetting(Dictionary<string, object> _pref)
         {
             this.pref = new DefaultUIPreference(_pref);
-            ColumnOrder = (Dictionary<string, int>)pref.PlaylistViewColumnOrder;
-            ColumnWidth = (Dictionary<string, int>)pref.PlaylistViewColumnWidth;
+            playlistView.ColumnOrder = (Dictionary<string, int>)pref.PlaylistViewColumnOrder;
+            playlistView.ColumnWidth = (Dictionary<string, int>)pref.PlaylistViewColumnWidth;
             config_FormLocation = pref.WindowLocation;
             config_FormSize = pref.WindowSize;
             this.WindowState = pref.WindowState;
