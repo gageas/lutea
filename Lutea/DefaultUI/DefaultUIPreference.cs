@@ -38,6 +38,7 @@ namespace Gageas.Lutea.DefaultUI
         /// トラックナンバーの書式
         /// </summary>
         public enum TrackNumberFormats { 
+            Nothing = -1,
             N = 0,
             NofM = 1 
         }
@@ -68,6 +69,7 @@ namespace Gageas.Lutea.DefaultUI
         public class TrackNumberFormatConverter : EnumConverter
         {
             private Dictionary<TrackNumberFormats, string> dict = new Dictionary<TrackNumberFormats, string>() { 
+                {TrackNumberFormats.Nothing, ""},
                 {TrackNumberFormats.N, "1, 2, 3, ..."}, 
                 {TrackNumberFormats.NofM, "1/3, 2/3, 3/3, ..."} ,
             };

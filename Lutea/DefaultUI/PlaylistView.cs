@@ -92,6 +92,28 @@ namespace Gageas.Lutea.DefaultUI
         /// ListViewのColumnHeaderを表示順にソートしたキャッシュ
         /// </summary>
         private List<ColumnHeader> cols = null;
+
+        /// <summary>
+        /// 各Columnのでデフォルトの幅を定義
+        /// </summary>
+        private Dictionary<string, int> defaultColumnDisplayWidth = new Dictionary<string, int>(){
+            {"tagTracknumber",130},
+            {"tagTitle",120},
+            {"tagArtist",120},
+            {"tagAlbum",80},
+            {"tagComment",120},
+            {"rating",84},
+        };
+
+        /// <summary>
+        /// 表示するColumnの順番
+        /// </summary>
+        private Dictionary<string, int> columnOrder = new Dictionary<string, int>();
+
+        /// <summary>
+        /// 表示するColumnの幅
+        /// </summary>
+        private Dictionary<string, int> columnWidth = new Dictionary<string, int>();
         #endregion
 
         #region プロパティ
@@ -162,6 +184,22 @@ namespace Gageas.Lutea.DefaultUI
                 this.Invalidate();
             }
         }
+
+        /// <summary>
+        /// ColumnOrder
+        /// </summary>
+        internal Dictionary<string, int> ColumnOrder
+        {
+            set { this.columnOrder = new Dictionary<string, int>(value); }
+        }
+
+        /// <summary>
+        /// ColumnWidth
+        /// </summary>
+        internal Dictionary<string, int> ColumnWidth
+        {
+            set { this.columnWidth = new Dictionary<string, int>(value); }
+        }
         #endregion
 
         #region Publicメソッド
@@ -194,6 +232,73 @@ namespace Gageas.Lutea.DefaultUI
         {
             this.form = form;
             this.dbColumnsCache = columns;
+        }
+
+        /// <summary>
+        /// 表示するカラムをリセット
+        /// </summary>
+        /// <param name="displayColumns">表示するカラム</param>
+        public void ResetColumns(IEnumerable<string> displayColumns)
+        {
+            displayColumns = displayColumns.OrderBy((_) => columnOrder.ContainsKey(_) ? columnOrder[_] : columnOrder.Count).ToArray();
+
+            // backup order/width
+            if (Columns.Count > 0)
+            {
+                foreach (ColumnHeader col in Columns)
+                {
+                    var colName = dbColumnsCache[(int)col.Tag].Name;
+                    columnOrder[colName] = col.DisplayIndex;
+                    columnWidth[colName] = Math.Max(10, col.Width);
+                }
+            }
+
+            Clear();
+
+            foreach (string coltext in displayColumns)
+            {
+                var colheader = new ColumnHeader();
+                var col = Controller.GetColumnIndexByName(coltext);
+                colheader.Text = dbColumnsCache[col].LocalText;
+                colheader.Tag = col;
+                if (columnWidth.ContainsKey(coltext))
+                {
+                    colheader.Width = columnWidth[coltext];
+                }
+                else
+                {
+                    if (defaultColumnDisplayWidth.ContainsKey(dbColumnsCache[col].Name))
+                    {
+                        colheader.Width = defaultColumnDisplayWidth[dbColumnsCache[col].Name];
+                    }
+                }
+                if (dbColumnsCache[col].Name == LibraryDBColumnTextMinimum.statBitrate)
+                {
+                    colheader.TextAlign = HorizontalAlignment.Right;
+                }
+                Columns.Add(colheader);
+            }
+
+            foreach (ColumnHeader colheader in Columns)
+            {
+                var colName = dbColumnsCache[(int)colheader.Tag].Name;
+                if (columnOrder.ContainsKey(colName))
+                {
+                    try
+                    {
+                        colheader.DisplayIndex = columnOrder[colName];
+                    }
+                    catch
+                    {
+                        colheader.DisplayIndex = Columns.Count - 1;
+                    }
+                }
+                else
+                {
+                    colheader.DisplayIndex = Columns.Count - 1;
+                }
+            }
+            cols = null;
         }
 
         /// <summary>
@@ -962,6 +1067,10 @@ namespace Gageas.Lutea.DefaultUI
                     int sz = int.Parse(str);
                     return sz > 1024 * 1024 ? String.Format("{0:0.00}MB", sz / 1024.0 / 1024) : String.Format("{0}KB", sz / 1024);
                 case LibraryColumnType.TrackNumber:
+                    if (trackNumberFormat == DefaultUIPreference.TrackNumberFormats.Nothing)
+                    {
+                        return "";
+                    }
                     if (TrackNumberFormat == DefaultUIPreference.TrackNumberFormats.N)
                     {
                         int tr = -1;
