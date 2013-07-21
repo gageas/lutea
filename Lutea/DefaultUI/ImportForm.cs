@@ -14,6 +14,7 @@ namespace Gageas.Lutea.DefaultUI
     public partial class ImportForm : Form
     {
         Importer myImporter;
+        bool Completed = false;
         public ImportForm(string path, bool fastMode)
         {
             InitializeComponent();
@@ -23,7 +24,7 @@ namespace Gageas.Lutea.DefaultUI
             myImporter.Step_import += new Controller.VOIDVOID(() => { if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { progressBar2.PerformStep(); })); });
             myImporter.Step_read += new Controller.VOIDVOID(() => { if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { progressBar1.PerformStep(); })); });
             myImporter.Message += new Importer.Message_event((str) => { if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { textBox1.Text = str; })); });
-            myImporter.Complete += new Controller.VOIDVOID(() => { if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { this.Close(); this.Dispose(); })); });
+            myImporter.Complete += new Controller.VOIDVOID(() => { Completed = true; if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { this.Close(); this.Dispose(); })); });
         }
 
         public void Start()
@@ -33,7 +34,11 @@ namespace Gageas.Lutea.DefaultUI
 
         private void ImportForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            myImporter.Abort();
+            if (!Completed)
+            {
+                myImporter.Abort();
+            }
+            Completed = true;
         }
     }
 }
