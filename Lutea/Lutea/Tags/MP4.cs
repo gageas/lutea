@@ -105,12 +105,13 @@ namespace Gageas.Lutea.Tags
                     {
                         return (buf[0] << 8) + buf[1];
                     }
-                    else
+                    else if (length - 8 == 8)
                     {
                         var tr = ((buf[2] << 8) + buf[3]);
                         var tr_total = ((buf[4] << 8) + buf[5]);
                         return (tr_total == 0 ? tr.ToString() : (tr + "/" + tr_total));
                     }
+                    break;
 
                 case 0x0000000001000000: // Text
                     buf = new byte[length - 8];
