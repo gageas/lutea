@@ -13,6 +13,16 @@ namespace Gageas.Lutea.Tags
         private const int NODE_NAME_FIELD_SIZE = 4;
         private const int NODE_LIST_HEADER_SIZE = NODE_LENGTH_FIELD_SIZE + NODE_NAME_FIELD_SIZE;
 
+        private class NodeHeader
+        {
+            public byte[] name = new byte[4];
+            public string atom_name
+            {
+                get { return Encoding.ASCII.GetString(name, 0, NODE_NAME_FIELD_SIZE); }
+            }
+            public long atom_size;
+        }
+
         /// <summary>
         /// Read byte array as BIG-ENDIAN-UInt16(2bytes).
         /// </summary>
@@ -140,6 +150,38 @@ namespace Gageas.Lutea.Tags
         }
 
         /// <summary>
+        /// read node's header
+        /// </summary>
+        /// <param name="strm"></param>
+        /// <returns></returns>
+        private static NodeHeader readHeader(Stream strm)
+        {
+            NodeHeader header = new NodeHeader();
+            byte[] buffer = new byte[NODE_LIST_HEADER_SIZE];
+            strm.Read(buffer, 0, NODE_LIST_HEADER_SIZE);
+            Array.Copy(buffer, NODE_LENGTH_FIELD_SIZE, header.name, 0, NODE_NAME_FIELD_SIZE);
+            header.atom_size = BEUInt32(buffer, 0);
+
+            if (header.atom_size == 1)
+            {
+                byte[] large_size_buf = new byte[sizeof(UInt64)];
+                strm.Read(large_size_buf, 0, sizeof(UInt64));
+                var large_size = BEUInt64(large_size_buf, 0);
+                header.atom_size = (long)large_size;
+                header.atom_size -= (NODE_LIST_HEADER_SIZE + sizeof(UInt64));
+            }
+            else if (header.atom_size == 0)
+            {
+                throw new System.IO.FileFormatException("atom_size is zero");
+            }
+            else
+            {
+                header.atom_size -= NODE_LIST_HEADER_SIZE;
+            }
+            return header;
+        }
+
+        /// <summary>
         /// Read MP4 structure recursively and make a list of meta data.
         /// </summary>
         /// <param name="offset"></param>
@@ -152,45 +194,19 @@ namespace Gageas.Lutea.Tags
         {
             long p = 0;
             string lastTagKeyName = null;
-            byte[] header = new byte[NODE_LIST_HEADER_SIZE];
 
             while (p < length)
             {
-                strm.Read(header, 0, NODE_LIST_HEADER_SIZE);
-                Int64 atom_size = BEUInt32(header, 0);
-                if (atom_size > length)
-                {
-                    throw new System.IO.FileFormatException("atom size greater than parents size");
-                }
-                string atom_name = Encoding.ASCII.GetString(header, NODE_LENGTH_FIELD_SIZE, NODE_NAME_FIELD_SIZE);
-                if (atom_size == 1)
-                {
-                    byte[] large_size_buf = new byte[sizeof(UInt64)];
-                    strm.Read(large_size_buf, 0, sizeof(UInt64));
-                    var large_size = BEUInt64(large_size_buf, 0);
-                    if (large_size > ulong.MaxValue || large_size > (ulong)(length - p))
-                    {
-                        throw new System.IO.FileFormatException("atom size greater than parents size");
-                    }
-                    atom_size = (long)large_size;
-                    p += atom_size;
-                    atom_size -= (NODE_LIST_HEADER_SIZE + sizeof(UInt64));
-                }else if(atom_size == 0){
-                    p = length;
-                    atom_size = (length - p) - NODE_LIST_HEADER_SIZE;
-                }else{
-                    p += atom_size;
-                    atom_size -= NODE_LIST_HEADER_SIZE;
-                }
-                if (atom_size < 0)
-                {
-                    throw new System.IO.FileFormatException("atom size greater than parents size");
-                }
+                var header = readHeader(strm);
+                if ((header.atom_size > (length - p)) || (header.atom_size < 0)) return;
 
                 long initial_pos = strm.Position;
-                switch (atom_name)
+                switch (header.atom_name)
                 {
                     case "moov":
+                        ReadRecurse(strm, header.atom_size, tags, createImageObject);
+                        return;
+
                     case "udta":
                     case "ilst":
                     case "disk":
@@ -199,17 +215,17 @@ namespace Gageas.Lutea.Tags
                     case "mdia":
                     case "minf":
                     case "stbl":
-                        ReadRecurse(strm, atom_size, tags, createImageObject);
+                        ReadRecurse(strm, header.atom_size, tags, createImageObject);
                         break;
 
                     case "meta":
                         strm.Seek(4, SeekOrigin.Current);
-                        ReadRecurse(strm, atom_size - 4, tags, createImageObject);
+                        ReadRecurse(strm, header.atom_size - 4, tags, createImageObject);
                         break;
 
                     case "stsd":
                         strm.Seek(8, SeekOrigin.Current);
-                        ReadRecurse(strm, atom_size - 8, tags, createImageObject);
+                        ReadRecurse(strm, header.atom_size - 8, tags, createImageObject);
                         break;
 
                     case "mvhd":
@@ -249,7 +265,7 @@ namespace Gageas.Lutea.Tags
                     case "data":
                         if (lastTagKeyName == null) lastTagKeyName = tagKey;
                         if (lastTagKeyName == null) break;
-                        object data = ReadData(strm, (int)atom_size, createImageObject);
+                        object data = ReadData(strm, (int)header.atom_size, createImageObject);
                         if (data == null)
                         {
                             lastTagKeyName = null;
@@ -270,7 +286,7 @@ namespace Gageas.Lutea.Tags
                             if ((data is string) && (alreadyExisting.Key != null))
                             {
                                 tags.Remove(alreadyExisting);
-                                tags.Add(new KeyValuePair<string, object>(lastTagKeyName, (string)(alreadyExisting.Value) + "\0" + data));
+                                tags.Add(new KeyValuePair<string, object>(lastTagKeyName, ((string)(alreadyExisting.Value)).Split('\0').Concat(new string[] { data.ToString() }).Distinct().Aggregate((a, b) => a + '\0' + b)));
                             }
                             else
                             {
@@ -281,65 +297,65 @@ namespace Gageas.Lutea.Tags
                         break;
 
                     case "trkn":
-                        ReadRecurse(strm, atom_size, tags, createImageObject, "TRACK");
+                        ReadRecurse(strm, header.atom_size, tags, createImageObject, "TRACK");
                         break;
 
                     case "aART":
-                        ReadRecurse(strm, atom_size, tags, createImageObject, "ALBUM ARTIST");
+                        ReadRecurse(strm, header.atom_size, tags, createImageObject, "ALBUM ARTIST");
                         break;
 
                     case "gnre":
                         try
                         {
-                            ReadRecurse(strm, atom_size, tags, createImageObject, "GENRE");
+                            ReadRecurse(strm, header.atom_size, tags, createImageObject, "GENRE");
                         }
                         catch { }
                         break;
 
                     case "covr":
-                        ReadRecurse(strm, atom_size, tags, createImageObject, "COVER ART");
+                        ReadRecurse(strm, header.atom_size, tags, createImageObject, "COVER ART");
                         break;
 
                     case "name":
-                        string name = ReadName(strm, (int)atom_size);
+                        string name = ReadName(strm, (int)header.atom_size);
                         lastTagKeyName = name.ToUpper();
                         break;
 
                     // Non-Text node name. Read as hex.
                     default:
-                        switch (BitConverter.ToUInt32(header, NODE_NAME_FIELD_SIZE)) // NOTICE: for Little Endian
+                        switch (BitConverter.ToUInt32(header.name, 0)) // NOTICE: for Little Endian
                         {
                             case 0x545241A9: // .ART Artist
-                                ReadRecurse(strm, atom_size, tags, createImageObject, "ARTIST");
+                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "ARTIST");
                                 break;
                             case 0x6D616EA9: // .nam Track
-                                ReadRecurse(strm, atom_size, tags, createImageObject, "TITLE");
+                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "TITLE");
                                 break;
                             case 0x626C61A9: // .alb Album
-                                ReadRecurse(strm, atom_size, tags, createImageObject, "ALBUM");
+                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "ALBUM");
                                 break;
                             case 0x6E6567A9: // .gen Genre
-                                ReadRecurse(strm, atom_size, tags, createImageObject, "GENRE");
+                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "GENRE");
                                 break;
                             case 0x796164A9: // .dat Date
-                                ReadRecurse(strm, atom_size, tags, createImageObject, "DATE");
+                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "DATE");
                                 break;
                             case 0x746D63A9: // .cmt Comment
-                                ReadRecurse(strm, atom_size, tags, createImageObject, "COMMENT");
+                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "COMMENT");
                                 break;
                             case 0x747277A9: // .wrt Writer
-                                ReadRecurse(strm, atom_size, tags, createImageObject, "COMPOSER");
+                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "COMPOSER");
                                 break;
                             case 0x72796CA9: // .lyr Lyrics
-                                ReadRecurse(strm, atom_size, tags, createImageObject, "LYRICS");
+                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "LYRICS");
                                 break;
                             default:
                                 break;
                         }
                         break;
                 }
-
-                strm.Seek(initial_pos += atom_size, SeekOrigin.Begin);
+                p += header.atom_size;
+                strm.Seek(initial_pos += header.atom_size, SeekOrigin.Begin);
             }
         }
     }
