@@ -11,19 +11,25 @@ namespace Gageas.Lutea.DefaultUI
 {
     public partial class NotifyPopupForm : Form
     {
+        private const int MaxWidth = 7;
         private const int OverSample = 4;
         private const int Pad = 5;
-        private const int Title1LenLimit = 25;
-        private const int Title2LenLimit = 40;
         private const float Title1Size = 18.0F;
         private const float Title2Size = 14.0F;
         private const float StartOpacity = 0.95F;
         private const int BeforeFadeInWaitTicks = 10;
         private const int BeforeFadeOutWaitTicks = 120;
+        private const TextFormatFlags TFFlags = TextFormatFlags.SingleLine | TextFormatFlags.Top | TextFormatFlags.Left | TextFormatFlags.NoPrefix;
 
         private Timer t;
-        private int BeforeFadeInWaitTicksRemain;
-        private int BeforeFadeOutWaitTicksRemain;
+
+        private class TransitContext
+        {
+            public int beforeFadeInRemain = BeforeFadeInWaitTicks;
+            public int beforeFadeOutRemain = BeforeFadeOutWaitTicks;
+            public int h_norm;
+            public int w_norm;
+        }
 
         /// <summary>
         /// Alt+Tabで列挙させない
@@ -53,32 +59,23 @@ namespace Gageas.Lutea.DefaultUI
             EndNotify();
             title = title.Replace("\n", "; ");
             title2 = title2.Replace("\n", "; ");
-            TextFormatFlags tfFlags = TextFormatFlags.NoClipping | TextFormatFlags.SingleLine | TextFormatFlags.Top | TextFormatFlags.Left | TextFormatFlags.NoPrefix;
-            if (title.Length > Title1LenLimit)
-            {
-                title = title.Substring(0, Title1LenLimit) + "...";
-            }
-
-            if (title2.Length > Title2LenLimit)
-            {
-                title2 = title2.Substring(0, Title2LenLimit) + "...";
-            }
-
             Font font1 = new Font(font.FontFamily, Title1Size * OverSample);
             Font font2 = new Font(font.FontFamily, Title2Size * OverSample);
-            var h = font1.Height + font2.Height + Pad * 3 * OverSample;
-            var h_norm = h / OverSample;
+            var h_OverSample = font1.Height + font2.Height + Pad * 3 * OverSample;
+            var h = h_OverSample / OverSample;
             if (image != null)
             {
-                image = Gageas.Lutea.Util.ImageUtil.GetResizedImageWithoutPadding(image, h_norm - Pad * 2, h_norm - Pad * 2);
+                image = Gageas.Lutea.Util.ImageUtil.GetResizedImageWithoutPadding(image, h - Pad * 2, h - Pad * 2);
             }
             var hasImage = image != null;
             var gw = (hasImage ? (image.Width + Pad) : 0) + Pad;
 
-            var w = Math.Max(TextRenderer.MeasureText(title, font1, new Size(), tfFlags).Width, TextRenderer.MeasureText(title2, font2, new Size(), tfFlags).Width) + (gw + Pad) * OverSample;
-            var w_norm = w / OverSample;
+            var textw1 = TextRenderer.MeasureText(title, font1, new Size(), TFFlags | TextFormatFlags.NoClipping).Width;
+            var textw2 =TextRenderer.MeasureText(title2, font2, new Size(), TFFlags | TextFormatFlags.NoClipping).Width;
+            var w_OverSample = Math.Min(h_OverSample * MaxWidth, Math.Max(textw1, textw2)) + (gw + Pad) * OverSample;
+            var w = w_OverSample / OverSample;
 
-            Bitmap bg = new Bitmap(w, h);
+            Bitmap bg = new Bitmap(w_OverSample, h_OverSample);
 
             this.Invoke((Action)(() =>
             {
@@ -86,61 +83,67 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
                     g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-                    TextRenderer.DrawText(g, title, font1, new Rectangle(0, 0, bg.Width, bg.Height), SystemColors.WindowText, tfFlags);
-                    TextRenderer.DrawText(g, title2, font2, new Rectangle(0, font1.Height + Pad * OverSample, bg.Width, bg.Height), SystemColors.WindowText, tfFlags);
-
+                    var rect1 = new Rectangle(0, 0, bg.Width - ((gw + Pad) * OverSample), bg.Height);
+                    var rect2 = new Rectangle(0, font1.Height + Pad * OverSample, bg.Width - ((gw + Pad) * OverSample), bg.Height);
+                    TextRenderer.DrawText(g, title, font1, rect1, SystemColors.WindowText, TFFlags | TextFormatFlags.EndEllipsis);
+                    TextRenderer.DrawText(g, title2, font2, rect2, SystemColors.WindowText, TFFlags | TextFormatFlags.EndEllipsis);
                 }
-                this.BackgroundImage = new Bitmap(w_norm, h_norm);
+                this.BackgroundImage = new Bitmap(w, h);
                 using (Graphics g = Graphics.FromImage(this.BackgroundImage))
                 {
-                    g.DrawRectangle(SystemPens.ActiveBorder, 0, 0, w_norm - 1, h_norm - 1);
+                    g.DrawRectangle(SystemPens.ActiveBorder, 0, 0, w - 1, h - 1);
 
                     if (hasImage)
                     {
                         g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bicubic;
-                        g.DrawImage(image, Pad, (h_norm - image.Height) / 2);
+                        g.DrawImage(image, Pad, (h - image.Height) / 2);
                     }
                     g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
-                    g.DrawImage(bg, gw, Pad, w_norm, h_norm);
+                    g.DrawImage(bg, gw, Pad, w, h);
                 }
-                var wa = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
-                BeforeFadeOutWaitTicksRemain = BeforeFadeOutWaitTicks;
-                BeforeFadeInWaitTicksRemain = BeforeFadeInWaitTicks;
+                var wa = Screen.PrimaryScreen.WorkingArea;
                 t = new Timer();
                 t.Interval = 30;
-                t.Tick += (_, __) =>
-                {
-                    BeforeFadeInWaitTicksRemain--;
-                    if (BeforeFadeInWaitTicksRemain > 0)
-                    {
-                        return;
-                    }
-                    else if (BeforeFadeInWaitTicksRemain == 0)
-                    {
-                        this.Opacity = StartOpacity;
-                    }
-                    if (this.Width < w_norm)
-                    {
-                        this.Location = new Point(wa.Right - this.Width - Pad, wa.Bottom - h_norm - Pad);
-                        this.Width += Math.Max(1, (w_norm - this.Width) / 5);
-                        this.Invalidate();
-                    }
-                    if (BeforeFadeOutWaitTicksRemain > 0)
-                    {
-                        BeforeFadeOutWaitTicksRemain--;
-                        return;
-                    }
-                    this.Opacity -= 0.01;
-                    if (this.Opacity <= 0)
-                    {
-                        t.Stop();
-                    }
-                };
+                t.Tag = new TransitContext() { h_norm = h, w_norm = w };
+                t.Tick += new EventHandler(t_Tick);
                 t.Start();
-                this.Size = new System.Drawing.Size(0, h_norm);
-                this.Location = new Point(wa.Right - w_norm - Pad, wa.Bottom - h_norm - Pad);
+                this.Size = new System.Drawing.Size(0, h);
+                this.Location = new Point(wa.Right - w - Pad, wa.Bottom - h - Pad);
                 this.Opacity = 0.0F;
             }));
+        }
+
+        void t_Tick(object sender, EventArgs e)
+        {
+            var self = (Timer)sender;
+            var context = (TransitContext)self.Tag;
+            var wa = Screen.PrimaryScreen.WorkingArea;
+
+            context.beforeFadeInRemain--;
+            if (context.beforeFadeInRemain > 0)
+            {
+                return;
+            }
+            else if (context.beforeFadeInRemain == 0)
+            {
+                this.Opacity = StartOpacity;
+            }
+            if (this.Width < context.w_norm)
+            {
+                this.Location = new Point(wa.Right - this.Width - Pad, wa.Bottom - context.h_norm - Pad);
+                this.Width += Math.Max(1, (context.w_norm - this.Width) / 5);
+                this.Invalidate();
+            }
+            if (context.beforeFadeOutRemain > 0)
+            {
+                context.beforeFadeOutRemain--;
+                return;
+            }
+            this.Opacity -= 0.01;
+            if (this.Opacity <= 0)
+            {
+                t.Stop();
+            }
         }
 
         public void EndNotify()
@@ -163,7 +166,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void NotifyPopupForm_MouseMove(object sender, MouseEventArgs e)
         {
-            BeforeFadeOutWaitTicksRemain = BeforeFadeOutWaitTicks;
+            ((TransitContext)t.Tag).beforeFadeOutRemain = BeforeFadeOutWaitTicks;
             this.Opacity = StartOpacity;
         }
     }
