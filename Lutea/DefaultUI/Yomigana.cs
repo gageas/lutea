@@ -122,6 +122,7 @@ namespace Gageas.Lutea.DefaultUI
             char first = ' ';
             string leading = GetLeadingChars(name);
 
+            Logger.Log(name);
             if (leading.Length == 1) //
             {
                 first = leading[0];
@@ -136,7 +137,25 @@ namespace Gageas.Lutea.DefaultUI
                     }
                     else
                     {
-                        form.Invoke((MethodInvoker)(() => { yomiCache[leading] = ime.GetYomi(leading)[0]; }));
+                        form.Invoke((MethodInvoker)(() => {
+                            var yomi = ime.GetYomi(leading);
+                            if (yomi.Length > 0)
+                            {
+                                yomiCache[leading] = yomi[0];
+                            }
+                            else
+                            {
+                                var yomia = ime.GetYomi(name);
+                                if (yomia.Length > 0)
+                                {
+                                    yomiCache[leading] = yomia[0];
+                                }
+                                else
+                                {
+                                    Logger.Error("cannot get yomi for " + name);
+                                }
+                            }
+                            }));
                     }
                 }
                 first = yomiCache[leading];
