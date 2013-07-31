@@ -19,9 +19,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             InitializeComponent();
             myImporter = new Importer(path, fastMode);
-            myImporter.SetMaximum_import += new Controller.VOIDINT((i) => { if(!this.IsDisposed)this.Invoke((MethodInvoker)(() => { progressBar2.Maximum = i; })); });
             myImporter.SetMaximum_read += new Controller.VOIDINT((i) => { if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { progressBar1.Maximum = i; })); });
-            myImporter.Step_import += new Controller.VOIDVOID(() => { if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { progressBar2.PerformStep(); })); });
             myImporter.Step_read += new Controller.VOIDVOID(() => { if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { progressBar1.PerformStep(); })); });
             myImporter.Message += new Importer.Message_event((str) => { if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { textBox1.Text = str; })); });
             myImporter.Complete += new Controller.VOIDVOID(() => { Completed = true; if (!this.IsDisposed)this.Invoke((MethodInvoker)(() => { this.Close(); this.Dispose(); })); });
