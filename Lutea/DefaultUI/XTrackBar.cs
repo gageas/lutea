@@ -222,6 +222,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             if(!Capture){
                 thumbState = TrackBarThumbState.Normal;
+                this.Invalidate();
             }
         }
     }
