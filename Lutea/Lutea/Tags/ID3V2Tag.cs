@@ -457,12 +457,16 @@ namespace Gageas.Lutea.Tags
         static void decodeUnsync(ref byte[] src)
         {
             int pos = 0;
+            bool lastByteIsEscaped = (src[src.Length - 2] == 0xFF) && (src[src.Length - 1] == 0x00);
             for (var i = 0; i < src.Length - 1; i++, pos++)
             {
                 src[pos] = src[i];
                 if ((src[i] == 0xFF) && (src[i + 1] == 0x00)) { i++; }
             }
-            src[pos++] = src[src.Length - 1]; // 最後の1バイトはここでコピー
+            if (!lastByteIsEscaped)
+            {
+                src[pos++] = src[src.Length - 1]; // 最後の1バイトはここでコピー
+            }
             Array.Resize(ref src, pos);
         }
 
