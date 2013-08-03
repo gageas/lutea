@@ -8,26 +8,33 @@ namespace Gageas.Lutea.Tags
 {
     public class MetaTag
     {
-        private static List<KeyValuePair<string, object>> ID3ToTag(ID3V2Tag.id3tag id3)
+        private static List<KeyValuePair<string, object>> ID3ToTag(ID3V2Tag.ID3tag id3)
         {
             if (id3 == null) return null;
             List<KeyValuePair<string, object>> tag = new List<KeyValuePair<string, object>>();
             id3.frame.ForEach((x) => {
-                if (ID3V2Tag.FRAMES[x.id_x].name4 == "TXXX")
+                if (x.ID.Name4 == "APIC")
                 {
-                    tag.Add(new KeyValuePair<string, object>(x.extid, x.extvalue));
+                    if (x.Image != null)
+                    {
+                        tag.Add(new KeyValuePair<string, object>(x.Extid, x.Image));
+                    }
                 }
-                else if (ID3V2Tag.FRAMES[x.id_x].name4 == "COMM" && !string.IsNullOrEmpty(x.extid))
+                else if (x.ID.Name4 == "TXXX")
                 {
-                    tag.Add(new KeyValuePair<string, object>(x.extid, x.extvalue));
+                    tag.Add(new KeyValuePair<string, object>(x.Extid, x.Value));
                 }
-                else if (ID3V2Tag.FRAMES[x.id_x].name4 == "USLT" && !string.IsNullOrEmpty(x.extid))
+                else if (x.ID.Name4 == "COMM" && !string.IsNullOrEmpty(x.Extid))
                 {
-                    tag.Add(new KeyValuePair<string, object>(ID3V2Tag.FRAMES[x.id_x].asApe, x.extvalue));
+                    tag.Add(new KeyValuePair<string, object>(x.Extid, x.Value));
+                }
+                else if (x.ID.Name4 == "USLT" && !string.IsNullOrEmpty(x.Extid))
+                {
+                    tag.Add(new KeyValuePair<string, object>(x.ID.AsApe, x.Value));
                 }
                 else
                 {
-                    tag.Add(new KeyValuePair<string, object>(ID3V2Tag.FRAMES[x.id_x].asApe, x.value));
+                    tag.Add(new KeyValuePair<string, object>(x.ID.AsApe, x.Value));
                 }
             });
             return tag;
@@ -81,10 +88,10 @@ namespace Gageas.Lutea.Tags
                             try
                             {
                                 fs.Seek(0, System.IO.SeekOrigin.Begin);
-                                var tag_id3v2 = ID3ToTag(ID3V2Tag.read_id3tag(fs, createImageObject));
+                                var tag_id3v2 = ID3ToTag(ID3V2Tag.readID3tag(fs, createImageObject));
                                 if (tag_id3v2 != null) tag.AddRange(tag_id3v2);
                             }
-                            catch { }
+                            catch (Exception ex) { Logger.Error(ex); }
                             try
                             {
                                 fs.Seek(0, System.IO.SeekOrigin.Begin);
