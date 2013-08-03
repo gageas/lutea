@@ -323,23 +323,55 @@ namespace Gageas.Lutea.Tags
             byte[] buf = strm.ReadBytes(0, frameHeaderSize);
             var frame = readFrameHeader(buf, tag.head.Version);
 
-            if (frame.Size <= 0) throw new Exception();
+            if (frame.Size <= 0) throw new EndOfTagException();
             if (frame.Size > strm.Length) throw new EndOfTagException();
 
             int readsize = frameHeaderSize + frame.Size;
             if (readsize > strm.Length) throw new EndOfTagException();
 
-            if (frame.ID == null) return null;
-            if (frame.Flag.HasFlag(FRAME_FLAG.CRYPTED)) return null; // 暗号化なんて知りませんよっと
-            if (frame.Flag.HasFlag(FRAME_FLAG.COMPRESSED)) return null; // 圧縮は実装してない
+            int extraHeaderLen = 0;
+            bool unsupported = false;
+            if (frame.ID == null)
+            {
+                unsupported = true;
+            }
 
-            int offset = 0;
+            // 暗号化なんて知りませんよっと
+            if (frame.Flag.HasFlag(FRAME_FLAG.CRYPTED))
+            {
+                unsupported = true;
+                extraHeaderLen += 1;
+            }
+
+            // 圧縮は実装してない
+            if (frame.Flag.HasFlag(FRAME_FLAG.COMPRESSED))
+            {
+                unsupported = true;
+                extraHeaderLen += 4;
+            }
+
+            // グループ識別子を無視
+            if (frame.Flag.HasFlag(FRAME_FLAG.GROUPED))
+            {
+                // unsupportedにはしない
+                extraHeaderLen += 1;
+            }
+
+            strm.Seek(extraHeaderLen, SeekOrigin.Current);
+
+            if (unsupported)
+            {
+                strm.Seek(frame.Size, SeekOrigin.Current);
+                return null;
+            }
+
             byte[] buffer = strm.ReadBytes(0, frame.Size);
             if (frame.Flag.HasFlag(FRAME_FLAG.UNSYNC) && tag.head.Version == ID3V2_VER.ID3V24)
             {
                 decodeUnsync(ref buffer);
             }
 
+            int offset = 0;
             // DATALENGTHを飛ばす
             if (frame.Flag.HasFlag(FRAME_FLAG.DATALENGTH))  
             {
@@ -395,7 +427,11 @@ namespace Gageas.Lutea.Tags
         {
             if (fr.ID.Type == FRAME_TYPE.FR_APIC)
             {
-                if (!createImageObject) return;
+                if (!createImageObject)
+                {
+                    sr.Seek(sr.Length, SeekOrigin.Current);
+                    return;
+                }
                 var tmp = sr.ReadBytes(0, (int)sr.Length);
                 int offset = 0;
                 string imgtype = Encoding.ASCII.GetString(tmp, 1, 3);
