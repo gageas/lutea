@@ -8,12 +8,15 @@ namespace Gageas.Lutea.Util
 {
     static class StreamUtil
     {
-        public static int ReadOrThrow(this Stream stream, byte[] buffer, int offset, int count)
+        public static byte[] ReadBytes(this Stream stream, int offset, int count)
         {
-            int read = 0;
-            read = stream.Read(buffer, offset, count);
-            if (read == 0) throw new System.IO.EndOfStreamException();
-            return read;
+            byte[] buffer = new byte[count];
+            var read = stream.Read(buffer, offset, count);
+            if (read != count)
+            {
+                throw new System.IO.EndOfStreamException();
+            }
+            return buffer;
         }
     }
 }
