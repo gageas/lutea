@@ -122,7 +122,6 @@ namespace Gageas.Lutea.DefaultUI
             char first = ' ';
             string leading = GetLeadingChars(name);
 
-            Logger.Log(name);
             if (leading.Length == 1) //
             {
                 first = leading[0];
