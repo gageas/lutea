@@ -81,6 +81,7 @@ namespace Gageas.Lutea.Core
 
         private void FromDictionary(Dictionary<string, object> dict)
         {
+            if (dict == null) return;
             var props = this.GetType().GetProperties();
             foreach (var prop in props)
             {
