@@ -153,7 +153,6 @@ namespace Gageas.Lutea.DefaultUI
                 try
                 {
                     this.Items[index].Selected = true;
-                    this.FocusedItem = this.Items[index];
                     this.EnsureVisible(index);
                 }
                 catch { }
