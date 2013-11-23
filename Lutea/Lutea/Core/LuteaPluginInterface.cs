@@ -87,13 +87,16 @@ namespace Gageas.Lutea.Core
             {
                 if (prop.CanRead && prop.CanWrite)
                 {
-                    try
+                    if (dict.ContainsKey(prop.Name))
                     {
-                        prop.SetValue(this, dict[prop.Name], null);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Error(e);
+                        try
+                        {
+                            prop.SetValue(this, dict[prop.Name], null);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error(e);
+                        }
                     }
                 }
             }
