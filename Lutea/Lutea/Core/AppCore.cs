@@ -1141,7 +1141,8 @@ namespace Gageas.Lutea.Core
         {
             Logger.Log("preSync");
             var th = new Thread(() => {
-                var row = Controller.GetPlaylistRow(getSuccTrackIndex());
+                var succIndex = getSuccTrackIndex();
+                var row = Controller.GetPlaylistRow(succIndex);
                 if (row == null) return;
                 string filename = (string)row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)];
                 List<KeyValuePair<string,object>> tag = null;
@@ -1158,7 +1159,7 @@ namespace Gageas.Lutea.Core
                     }
                     tag = MetaTag.readTagByFilename(filename, false);
                 }
-                CoreEnqueue(() => prepareNextStream(getSuccTrackIndex(), tag));
+                CoreEnqueue(() => prepareNextStream(succIndex, tag));
             });
             th.Priority = ThreadPriority.Lowest;
             th.Start();
