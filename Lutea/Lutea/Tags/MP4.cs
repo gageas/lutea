@@ -296,6 +296,10 @@ namespace Gageas.Lutea.Tags
                         lastTagKeyName = null;
                         break;
 
+                    case "purd":
+                        ReadRecurse(strm, header.atom_size, tags, createImageObject, "PURCHASE DATE");
+                        break;
+
                     case "trkn":
                         ReadRecurse(strm, header.atom_size, tags, createImageObject, "TRACK");
                         break;
