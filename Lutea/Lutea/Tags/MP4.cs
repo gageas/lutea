@@ -13,14 +13,334 @@ namespace Gageas.Lutea.Tags
         private const int NODE_NAME_FIELD_SIZE = 4;
         private const int NODE_LIST_HEADER_SIZE = NODE_LENGTH_FIELD_SIZE + NODE_NAME_FIELD_SIZE;
 
-        private class NodeHeader
+        private static readonly Dictionary<UInt32, String> KnownItunesTagAtoms = new Dictionary<UInt32, String>(){
+            {0x74726B6E, "TRACK"},         // trkn
+            {0x61415254, "ALBUM ARTIST"},  // aART
+            {0x636F7672, "COVER ART"},     // covr
+            {0xA9415254, "ARTIST"},        // .ART
+            {0xA96E616D, "TITLE"},         // .nam
+            {0xA9616C62, "ALBUM"},         // .alb
+            {0xA967656E, "GENRE"},         // .gen
+            {0xA9646179, "DATE"},          // .dat
+            {0xA9636D74, "COMMENT"},       // .cmt
+            {0xA9777274, "COMPOSER"},      // .wrt
+            {0xA96C7972, "LYRICS"},        // .lyr
+            {0x70757264, "PURCHASE DATE"}, // purd
+        };
+
+        private static readonly Dictionary<UInt32, int> KnownListAtoms = new Dictionary<uint, int>()
         {
-            public byte[] name = new byte[4];
-            public string atom_name
+            // name,internal nodes offset
+            {0x6D6F6F76, 0}, // moov
+            {0x75647461, 0}, // udta
+            {0x696C7374, 0}, // ilst
+            {0x6469736B, 0}, // disk
+            {0x7472616B, 0}, // trak
+            {0x6D646961, 0}, // mdia
+            {0x6D696E66, 0}, // minf
+            {0x7374626C, 0}, // stbl
+            {0x6D657461, 4}, // meta
+            {0x73747364, 8}, // stsd
+        };
+
+        private Stream strm;
+        private List<KeyValuePair<string, object>> tags;
+        private bool createImageObject = true;
+        private string tagKey;
+        private object tagValue;
+        private List<System.Drawing.Image> tagValuePicture = new List<System.Drawing.Image>();
+
+        /// <summary>
+        /// Read MP4 audio meta data.
+        /// </summary>
+        /// <param name="strm">MP4 input data stream</param>
+        /// <param name="createImageObject">Read embedded Cover Art(=true) or not(=false)</param>
+        /// <returns>List of meta data or null</returns>
+        public static List<KeyValuePair<string, object>> Read(Stream strm, bool createImageObject = true)
+        {
+            var parser = new MP4(strm, createImageObject);
+
+            try
             {
-                get { return Encoding.ASCII.GetString(name, 0, NODE_NAME_FIELD_SIZE); }
+                parser.ReadRecurse(strm.Length);
             }
-            public long atom_size;
+            catch (Exception) { }
+
+            return parser.tags;
+        }
+
+        private MP4(Stream strm, bool createImageObject)
+        {
+            this.strm = strm;
+            this.createImageObject = createImageObject;
+            this.tags = new List<KeyValuePair<string, object>>();
+        }
+
+        /// <summary>
+        /// Read MP4 structure recursively and make a list of meta data.
+        /// </summary>
+        private void ReadRecurse(long length)
+        {
+            long p = 0;
+            while (true)
+            {
+                // read ATOM header
+                byte[] buffer = new byte[NODE_LIST_HEADER_SIZE];
+                strm.Read(buffer, 0, NODE_LIST_HEADER_SIZE);
+                long atom_size = BEUInt32(buffer, 0);
+                UInt32 atom_name = BEUInt32(buffer, 4);
+
+                if (atom_size == 1)
+                {
+                    byte[] large_size_buf = new byte[sizeof(UInt64)];
+                    strm.Read(large_size_buf, 0, sizeof(UInt64));
+                    var large_size = BEUInt64(large_size_buf, 0);
+                    atom_size = (long)large_size;
+                    atom_size -= (NODE_LIST_HEADER_SIZE + sizeof(UInt64));
+                }
+                else if (atom_size == 0)
+                {
+                    throw new System.IO.FileFormatException("atom_size is zero");
+                }
+                else
+                {
+                    atom_size -= NODE_LIST_HEADER_SIZE;
+                }
+
+                if ((atom_size > (length - p)) || (atom_size < 0)) return;
+
+                long initial_pos = strm.Position;
+
+                switch (atom_name)
+                {
+                    case 0x64617461: // data
+                        if (tagValue == null)
+                        {
+                            ReadData((int)atom_size);
+                        }
+                        break;
+                    case 0x6E616D65: // name
+                        tagKey = ReadName((int)atom_size).ToUpper();
+                        break;
+                    case 0x676E7265: // gnre
+                        tagValue = null;
+                        try
+                        {
+                            ReadRecurse(atom_size);
+                            if (tagValue == null) break;
+                            if (!(tagValue is int)) break;
+                            var genreStr = ID3.GetGenreString((int)tagValue - 1);
+                            if (genreStr == null) break;
+                            tags.Add(new KeyValuePair<string, object>("GENRE", genreStr));
+                        }
+                        catch { }
+                        break;
+                    case 0x6D703461: // mp4a
+                        ReadMp4a((int)atom_size);
+                        break;
+                    case 0x6D766864: // mvhd
+                        ReadMvhd((int)atom_size);
+                        break;
+                    case 0x2D2D2D2D: // ----
+                        Read____((int)atom_size);
+                        break;
+                    default:
+                        if (KnownListAtoms.ContainsKey(atom_name))
+                        {
+                            var offset = KnownListAtoms[atom_name];
+                            if (offset != 0)
+                            {
+                                strm.Seek(offset, SeekOrigin.Current);
+                            }
+                            ReadRecurse(atom_size - offset);
+                        }
+                        else if (KnownItunesTagAtoms.ContainsKey(atom_name))
+                        {
+                            tagValue = null;
+                            ReadRecurse(atom_size);
+                            if (tagValue != null) AddToTag(KnownItunesTagAtoms[atom_name]);
+                        }
+                        else
+                        {
+                            strm.Seek(atom_size, SeekOrigin.Current);
+                        }
+                        break;
+                }
+
+                p += atom_size;
+                initial_pos += atom_size;
+                if (p >= length)
+                {
+                    return;
+                }
+                if (strm.Position != initial_pos)
+                {
+                    strm.Seek(initial_pos, SeekOrigin.Begin);
+                }
+            }
+        }
+
+        private void AddToTag(string tagKey)
+        {
+            if (tagKey == "COVER ART")
+            {
+                tags.AddRange(tagValuePicture.Select(_ => new KeyValuePair<string, object>("COVER ART", _)));
+                tagValuePicture.Clear();
+            }
+            else
+            {
+                var alreadyExisting = tags.Find(_ => _.Key == tagKey && _.Value is string);
+                /* 同じフィールド名のstringのフィールドが存在するとき，\0をセパレータとして連結する */
+                if ((tagValue is string) && (alreadyExisting.Key != null))
+                {
+                    tags.Remove(alreadyExisting);
+                    tags.Add(new KeyValuePair<string, object>(tagKey, ((string)(alreadyExisting.Value)).Split('\0').Concat(new string[] { tagValue.ToString() }).Distinct().Aggregate((a, b) => a + '\0' + b)));
+                }
+                else
+                {
+                    tags.Add(new KeyValuePair<string, object>(tagKey, tagValue));
+                }
+                tagValue = null;
+            }
+        }
+
+        private void ReadMvhd(int length)
+        {
+            if (length < 4) return;
+            byte[] buf = new byte[4];
+            strm.Read(buf, 0, 4);
+            UInt32 version = BEUInt32(buf, 0);
+            if (version == 0)
+            {
+                byte[] buf2 = new byte[4 * 4];
+                if (length < 4 + buf2.Length) return;
+                strm.Read(buf2, 0, buf2.Length);
+                UInt32 creation_time = BEUInt32(buf2, 0);
+                UInt32 modification_time = BEUInt32(buf2, 0);
+                UInt32 timescale = BEUInt32(buf2, 8);
+                UInt32 duration = BEUInt32(buf2, 12);
+                tags.Add(new KeyValuePair<string, object>("__X-LUTEA-DURATION__", ((int)(duration / timescale)).ToString()));
+            }
+            else if (version == 1)
+            {
+                byte[] buf2 = new byte[8 + 8 + 4 + 8];
+                if (length < 4 + buf2.Length) return;
+                strm.Read(buf2, 0, buf2.Length);
+                UInt64 creation_time = BEUInt64(buf2, 0);
+                UInt64 modification_time = BEUInt64(buf2, 8);
+                UInt32 timescale = BEUInt32(buf2, 16);
+                UInt64 duration = BEUInt64(buf2, 20);
+                tags.Add(new KeyValuePair<string, object>("__X-LUTEA-DURATION__", ((int)(duration / timescale)).ToString()));
+            }
+        }
+
+        private void ReadMp4a(int length)
+        {
+            int size = 8 + 8 + 2 + 2 + 2 + 2 + 4;
+            if (length < size) return;
+            byte[] buf_audio_sample_entry = new byte[size];
+            strm.Read(buf_audio_sample_entry, 0, size);
+            UInt16 channelcount = BEUInt16(buf_audio_sample_entry, 8 + 8);
+            UInt16 samplesize = BEUInt16(buf_audio_sample_entry, 8 + 8 + 2);
+            UInt32 samplerate = BEUInt32(buf_audio_sample_entry, 8 + 8 + 2 + 2 + 2 + 2);
+            tags.Add(new KeyValuePair<string, object>("__X-LUTEA-CHANS__", channelcount.ToString()));
+            tags.Add(new KeyValuePair<string, object>("__X-LUTEA-BITS__", samplesize.ToString()));
+            tags.Add(new KeyValuePair<string, object>("__X-LUTEA-FREQ__", (samplerate >> 16).ToString()));
+        }
+
+        private void Read____(int length)
+        {
+            tagKey = null;
+            tagValue = null;
+            ReadRecurse(length);
+            if ((tagKey != null) && (tagValue != null))
+            {
+                var alreadyExisting = tags.Find(_ => _.Key == tagKey && _.Value is string);
+                /* 同じフィールド名のstringのフィールドが存在するとき，\0をセパレータとして連結する */
+                if ((tagValue is string) && (alreadyExisting.Key != null))
+                {
+                    tags.Remove(alreadyExisting);
+                    tags.Add(new KeyValuePair<string, object>(tagKey, ((string)(alreadyExisting.Value)).Split('\0').Concat(new string[] { tagValue.ToString() }).Distinct().Aggregate((a, b) => a + '\0' + b)));
+                }
+                else
+                {
+                    tags.Add(new KeyValuePair<string, object>(tagKey, tagValue));
+                }
+            }
+            tagKey = null;
+            tagValue = null;
+        }
+
+        /// <summary>
+        /// Read "name" node.
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        private string ReadName(int length)
+        {
+            var buf = new byte[length];
+            strm.Read(buf, 0, length);
+            return Encoding.ASCII.GetString(buf, 4, (int)length - 4);
+        }
+
+        /// <summary>
+        /// Read "data" node.
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        private void ReadData(int length)
+        {
+            if (length <= 8)
+            {
+                return;
+            }
+            byte[] buf;
+            var buf_type = new byte[8];
+            strm.Read(buf_type, 0, (int)8);
+            switch (BitConverter.ToUInt64(buf_type, 0))
+            {
+                case 0: // trkn or disk. "nn/mm" style.
+                    buf = new byte[length - 8];
+                    strm.Read(buf, 0, buf.Length);
+                    if (length - 8 == 2)
+                    {
+                        tagValue = (buf[0] << 8) + buf[1];
+                    }
+                    else if (length - 8 == 8)
+                    {
+                        var tr = ((buf[2] << 8) + buf[3]);
+                        var tr_total = ((buf[4] << 8) + buf[5]);
+                        tagValue = (tr_total == 0 ? tr.ToString() : (tr + "/" + tr_total));
+                    }
+                    break;
+
+                case 0x0000000001000000: // Text
+                    buf = new byte[length - 8];
+                    strm.Read(buf, 0, buf.Length);
+                    tagValue = Encoding.UTF8.GetString(buf, 0, buf.Length);
+                    break;
+
+                default: // 画像データになる場合のtype値が色々あって把握できないのでdefaultで画像として読んでみるようにする
+                    if (createImageObject)
+                    {
+                        buf = new byte[length - 8];
+                        strm.Read(buf, 0, buf.Length);
+                        try
+                        {
+                            tagValuePicture.Add(System.Drawing.Image.FromStream(new MemoryStream(buf, 0, buf.Length)));
+                        }
+                        catch (Exception)
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        strm.Seek(length - 8, SeekOrigin.Current);
+                    }
+                    break;
+            }
+            return;
         }
 
         /// <summary>
@@ -53,314 +373,8 @@ namespace Gageas.Lutea.Tags
         /// <returns>Read UInt64 value</returns>
         private static UInt64 BEUInt64(byte[] buf, int offset)
         {
-            return ((UInt64)buf[0 + offset] << 56) + ((UInt64)buf[1 + offset] << 48) + ((UInt64)buf[2 + offset] << 40) + ((UInt64)buf[3 + offset] << 32) + 
+            return ((UInt64)buf[0 + offset] << 56) + ((UInt64)buf[1 + offset] << 48) + ((UInt64)buf[2 + offset] << 40) + ((UInt64)buf[3 + offset] << 32) +
                    ((UInt64)buf[4 + offset] << 24) + ((UInt64)buf[5 + offset] << 16) + ((UInt64)buf[6 + offset] << 8) + ((UInt64)buf[7 + offset]);
-        }
-
-        /// <summary>
-        /// Read MP4 audio meta data.
-        /// </summary>
-        /// <param name="strm">MP4 input data stream</param>
-        /// <param name="createImageObject">Read embedded Cover Art(=true) or not(=false)</param>
-        /// <returns>List of meta data or null</returns>
-        public static List<KeyValuePair<string, object>> Read(Stream strm, bool createImageObject = true)
-        {
-            List<KeyValuePair<string, object>> tag = new List<KeyValuePair<string, object>>();
-
-            try
-            {
-                ReadRecurse(strm, strm.Length, tag, createImageObject);
-            }
-            catch (Exception) { }
-
-            return tag;
-        }
-
-        /// <summary>
-        /// Read "name" node.
-        /// </summary>
-        /// <param name="strm"></param>
-        /// <param name="offset"></param>
-        /// <param name="length"></param>
-        /// <returns></returns>
-        private static string ReadName(Stream strm, int length)
-        {
-            var buf = new byte[length];
-            strm.Read(buf, 0, length);
-            return Encoding.ASCII.GetString(buf, 4, (int)length - 4);
-        }
-
-        /// <summary>
-        /// Read "data" node.
-        /// </summary>
-        /// <param name="strm"></param>
-        /// <param name="offset"></param>
-        /// <param name="length"></param>
-        /// <param name="createImageObject">Read embedded Cover Art(=true) or not(=false)</param>
-        /// <returns></returns>
-        private static object ReadData(Stream strm, int length, bool createImageObject)
-        {
-            if(length <= 8){
-                return null;
-            }
-            byte[] buf;
-            var buf_type = new byte[8];
-            strm.Read(buf_type, 0, (int)8);
-            switch (BitConverter.ToUInt64(buf_type, 0))
-            {
-                case 0: // trkn or disk. "nn/mm" style.
-                    buf = new byte[length - 8];
-                    strm.Read(buf,0,buf.Length);
-                    if (length - 8 == 2)
-                    {
-                        return (buf[0] << 8) + buf[1];
-                    }
-                    else if (length - 8 == 8)
-                    {
-                        var tr = ((buf[2] << 8) + buf[3]);
-                        var tr_total = ((buf[4] << 8) + buf[5]);
-                        return (tr_total == 0 ? tr.ToString() : (tr + "/" + tr_total));
-                    }
-                    break;
-
-                case 0x0000000001000000: // Text
-                    buf = new byte[length - 8];
-                    strm.Read(buf, 0, buf.Length);
-                    return Encoding.UTF8.GetString(buf, 0, buf.Length);
-
-//                case 0x000000000D000000: // Image
-//                case 0x000000000E000000: // Image
-//                case 0x0D0000000D000000: // Image moraで見つけた
-                default: // 画像データになる場合のtype値が色々あって把握できないのでdefaultで画像として読んでみるようにする
-                    if (createImageObject)
-                    {
-                        buf = new byte[length - 8];
-                        strm.Read(buf, 0, buf.Length);
-                        try
-                        {
-                            return System.Drawing.Image.FromStream(new MemoryStream(buf, 0, buf.Length));
-                        }
-                        catch (Exception) {
-                            return null;
-                        }
-                    }
-                    break;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// read node's header
-        /// </summary>
-        /// <param name="strm"></param>
-        /// <returns></returns>
-        private static NodeHeader readHeader(Stream strm)
-        {
-            NodeHeader header = new NodeHeader();
-            byte[] buffer = new byte[NODE_LIST_HEADER_SIZE];
-            strm.Read(buffer, 0, NODE_LIST_HEADER_SIZE);
-            Array.Copy(buffer, NODE_LENGTH_FIELD_SIZE, header.name, 0, NODE_NAME_FIELD_SIZE);
-            header.atom_size = BEUInt32(buffer, 0);
-
-            if (header.atom_size == 1)
-            {
-                byte[] large_size_buf = new byte[sizeof(UInt64)];
-                strm.Read(large_size_buf, 0, sizeof(UInt64));
-                var large_size = BEUInt64(large_size_buf, 0);
-                header.atom_size = (long)large_size;
-                header.atom_size -= (NODE_LIST_HEADER_SIZE + sizeof(UInt64));
-            }
-            else if (header.atom_size == 0)
-            {
-                throw new System.IO.FileFormatException("atom_size is zero");
-            }
-            else
-            {
-                header.atom_size -= NODE_LIST_HEADER_SIZE;
-            }
-            return header;
-        }
-
-        /// <summary>
-        /// Read MP4 structure recursively and make a list of meta data.
-        /// </summary>
-        /// <param name="offset"></param>
-        /// <param name="length"></param>
-        /// <param name="tags"></param>
-        /// <param name="strm"></param>
-        /// <param name="createImageObject"></param>
-        /// <param name="tagKey">Use this string as tag-key (and "data" node's value as tag-value). This string will provided from "data" node's parent or previous node.</param>
-        private static void ReadRecurse(Stream strm, long length, List<KeyValuePair<string, object>> tags, bool createImageObject = true, string tagKey = null)
-        {
-            long p = 0;
-            string lastTagKeyName = null;
-
-            while (p < length)
-            {
-                var header = readHeader(strm);
-                if ((header.atom_size > (length - p)) || (header.atom_size < 0)) return;
-
-                long initial_pos = strm.Position;
-                switch (header.atom_name)
-                {
-                    case "moov":
-                        ReadRecurse(strm, header.atom_size, tags, createImageObject);
-                        return;
-
-                    case "udta":
-                    case "ilst":
-                    case "disk":
-                    case "----":
-                    case "trak":
-                    case "mdia":
-                    case "minf":
-                    case "stbl":
-                        ReadRecurse(strm, header.atom_size, tags, createImageObject);
-                        break;
-
-                    case "meta":
-                        strm.Seek(4, SeekOrigin.Current);
-                        ReadRecurse(strm, header.atom_size - 4, tags, createImageObject);
-                        break;
-
-                    case "stsd":
-                        strm.Seek(8, SeekOrigin.Current);
-                        ReadRecurse(strm, header.atom_size - 8, tags, createImageObject);
-                        break;
-
-                    case "mvhd":
-                        byte[] buf = new byte[4];
-                        strm.Read(buf, 0, 4);
-                        UInt32 version = BEUInt32(buf, 0);
-                        if(version == 0){
-                            byte[] buf2 = new byte[4 * 4];
-                            strm.Read(buf2, 0, 4*4);
-                            UInt32 creation_time = BEUInt32(buf2, 0);
-                            UInt32 modification_time = BEUInt32(buf2, 0);
-                            UInt32 timescale = BEUInt32(buf2, 8);
-                            UInt32 duration = BEUInt32(buf2, 12);
-                            tags.Add(new KeyValuePair<string,object>("__X-LUTEA-DURATION__", ((int)(duration / timescale)).ToString()));
-                        }else if(version == 1){
-                            byte[] buf2 = new byte[8+8+4+8];
-                            strm.Read(buf2, 0, 8 + 8 + 4 + 8);
-                            UInt64 creation_time = BEUInt64(buf2, 0);
-                            UInt64 modification_time = BEUInt64(buf2, 8);
-                            UInt32 timescale = BEUInt32(buf2, 16);
-                            UInt64 duration = BEUInt64(buf2, 20);
-                            tags.Add(new KeyValuePair<string, object>("__X-LUTEA-DURATION__", ((int)(duration / timescale)).ToString()));
-                        }
-                        break;
-
-                    case "mp4a":
-                        byte[] buf_audio_sample_entry = new byte[8 + 8 + 2 + 2 + 2 + 2 + 4];
-                        strm.Read(buf_audio_sample_entry, 0, 8 + 8 + 2 + 2 + 2 + 2 + 4);
-                        UInt16 channelcount = BEUInt16(buf_audio_sample_entry, 8 + 8);
-                        UInt16 samplesize = BEUInt16(buf_audio_sample_entry, 8 + 8 + 2);
-                        UInt32 samplerate = BEUInt32(buf_audio_sample_entry, 8 + 8 + 2 + 2 + 2 + 2);
-                        tags.Add(new KeyValuePair<string, object>("__X-LUTEA-CHANS__", channelcount.ToString()));
-                        tags.Add(new KeyValuePair<string, object>("__X-LUTEA-BITS__", samplesize.ToString()));
-                        tags.Add(new KeyValuePair<string, object>("__X-LUTEA-FREQ__", (samplerate>>16).ToString()));
-                        break;
-
-                    case "data":
-                        if (lastTagKeyName == null) lastTagKeyName = tagKey;
-                        if (lastTagKeyName == null) break;
-                        object data = ReadData(strm, (int)header.atom_size, createImageObject);
-                        if (data == null)
-                        {
-                            lastTagKeyName = null;
-                            break;
-                        }
-                        if (tagKey == "GENRE" && data is int)
-                        {
-                            var genreStr = ID3.GetGenreString((int)data - 1);
-                            if (genreStr != null)
-                            {
-                                tags.Add(new KeyValuePair<string, object>(lastTagKeyName, genreStr));
-                            }
-                        }
-                        else
-                        {
-                            var alreadyExisting = tags.Find(_ => _.Key == lastTagKeyName && _.Value is string);
-                            /* 同じフィールド名のstringのフィールドが存在するとき，\0をセパレータとして連結する */
-                            if ((data is string) && (alreadyExisting.Key != null))
-                            {
-                                tags.Remove(alreadyExisting);
-                                tags.Add(new KeyValuePair<string, object>(lastTagKeyName, ((string)(alreadyExisting.Value)).Split('\0').Concat(new string[] { data.ToString() }).Distinct().Aggregate((a, b) => a + '\0' + b)));
-                            }
-                            else
-                            {
-                                tags.Add(new KeyValuePair<string, object>(lastTagKeyName, data));
-                            }
-                        }
-                        lastTagKeyName = null;
-                        break;
-
-                    case "purd":
-                        ReadRecurse(strm, header.atom_size, tags, createImageObject, "PURCHASE DATE");
-                        break;
-
-                    case "trkn":
-                        ReadRecurse(strm, header.atom_size, tags, createImageObject, "TRACK");
-                        break;
-
-                    case "aART":
-                        ReadRecurse(strm, header.atom_size, tags, createImageObject, "ALBUM ARTIST");
-                        break;
-
-                    case "gnre":
-                        try
-                        {
-                            ReadRecurse(strm, header.atom_size, tags, createImageObject, "GENRE");
-                        }
-                        catch { }
-                        break;
-
-                    case "covr":
-                        ReadRecurse(strm, header.atom_size, tags, createImageObject, "COVER ART");
-                        break;
-
-                    case "name":
-                        string name = ReadName(strm, (int)header.atom_size);
-                        lastTagKeyName = name.ToUpper();
-                        break;
-
-                    // Non-Text node name. Read as hex.
-                    default:
-                        switch (BitConverter.ToUInt32(header.name, 0)) // NOTICE: for Little Endian
-                        {
-                            case 0x545241A9: // .ART Artist
-                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "ARTIST");
-                                break;
-                            case 0x6D616EA9: // .nam Track
-                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "TITLE");
-                                break;
-                            case 0x626C61A9: // .alb Album
-                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "ALBUM");
-                                break;
-                            case 0x6E6567A9: // .gen Genre
-                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "GENRE");
-                                break;
-                            case 0x796164A9: // .dat Date
-                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "DATE");
-                                break;
-                            case 0x746D63A9: // .cmt Comment
-                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "COMMENT");
-                                break;
-                            case 0x747277A9: // .wrt Writer
-                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "COMPOSER");
-                                break;
-                            case 0x72796CA9: // .lyr Lyrics
-                                ReadRecurse(strm, header.atom_size, tags, createImageObject, "LYRICS");
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                }
-                p += header.atom_size;
-                strm.Seek(initial_pos += header.atom_size, SeekOrigin.Begin);
-            }
         }
     }
 }
