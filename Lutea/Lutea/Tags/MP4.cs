@@ -158,7 +158,7 @@ namespace Gageas.Lutea.Tags
                         {
                             tagValue = null;
                             ReadRecurse(atom_size);
-                            if (tagValue != null) AddToTag(KnownItunesTagAtoms[atom_name]);
+                            if ((tagValue != null) || (tagValuePicture != null)) AddToTag(KnownItunesTagAtoms[atom_name]);
                         }
                         else
                         {
