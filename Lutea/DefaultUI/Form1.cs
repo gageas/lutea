@@ -1561,7 +1561,14 @@ namespace Gageas.Lutea.DefaultUI
             var setstr = playlistView.lastSelectedString;
             if (!String.IsNullOrEmpty(setstr))
             {
-                Clipboard.SetText(setstr);
+                try
+                {
+                    Clipboard.SetDataObject(setstr, true, 10, 50);
+                }
+                catch (Exception)
+                {
+                    // なんか成功しても例外吐いてくることあって意味分からんから握りつぶす
+                }
             }
         }
 
