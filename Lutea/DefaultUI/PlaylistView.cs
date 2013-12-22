@@ -290,6 +290,12 @@ namespace Gageas.Lutea.DefaultUI
                 }
             }
         }
+
+        public string lastSelectedString
+        {
+            get;
+            private set;
+        }
         #endregion
 
         #region Publicメソッド
@@ -846,36 +852,46 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="e"></param>
         private void playlistView_MouseClick(object sender, MouseEventArgs e)
         {
-            int starwidth = ratingRenderer.EachWidth;
+            lastSelectedString = null;
             var item = this.GetItemAt(e.X, e.Y);
             if (item == null) return;
-            if (isDummyRow(item.Index)) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (dbColumnsCache[(int)(this.Columns[item.SubItems.IndexOf(sub)].Tag)].Type != Library.LibraryColumnType.Rating) return;
-            var x = e.X - TextMargin;
-            int rate = 0;
-            if (item.GetSubItemAt(x - starwidth * 4, e.Y) == sub)
+            switch (e.Button)
             {
-                rate = 50;
+                case System.Windows.Forms.MouseButtons.Right:
+                    var oid = getObjectIDByViewID(item.Index);
+                    lastSelectedString = Controller.GetPlaylistRowColumn(oid, (int)(this.Columns[item.SubItems.IndexOf(sub)].Tag));
+                    break;
+                case System.Windows.Forms.MouseButtons.Left:
+                    if (isDummyRow(item.Index)) return;
+                    int starwidth = ratingRenderer.EachWidth;
+                    if (dbColumnsCache[(int)(this.Columns[item.SubItems.IndexOf(sub)].Tag)].Type != Library.LibraryColumnType.Rating) return;
+                    var x = e.X - TextMargin;
+                    int rate = 0;
+                    if (item.GetSubItemAt(x - starwidth * 4, e.Y) == sub)
+                    {
+                        rate = 50;
+                    }
+                    else if (item.GetSubItemAt(x - starwidth * 3, e.Y) == sub)
+                    {
+                        rate = 40;
+                    }
+                    else if (item.GetSubItemAt(x - starwidth * 2, e.Y) == sub)
+                    {
+                        rate = 30;
+                    }
+                    else if (item.GetSubItemAt(x - starwidth * 1, e.Y) == sub)
+                    {
+                        rate = 20;
+                    }
+                    else if (item.GetSubItemAt(x - starwidth / 2, e.Y) == sub)
+                    {
+                        rate = 10;
+                    }
+                    Controller.SetRating(Controller.GetPlaylistRowColumn(getObjectIDByViewID(item.Index), colIdOfFilename), rate);
+                    break;
             }
-            else if (item.GetSubItemAt(x - starwidth * 3, e.Y) == sub)
-            {
-                rate = 40;
-            }
-            else if (item.GetSubItemAt(x - starwidth * 2, e.Y) == sub)
-            {
-                rate = 30;
-            }
-            else if (item.GetSubItemAt(x - starwidth * 1, e.Y) == sub)
-            {
-                rate = 20;
-            }
-            else if (item.GetSubItemAt(x - starwidth / 2, e.Y) == sub)
-            {
-                rate = 10;
-            }
-            Controller.SetRating(Controller.GetPlaylistRowColumn(getObjectIDByViewID(item.Index), colIdOfFilename), rate);
         }
 
         /// <summary>
