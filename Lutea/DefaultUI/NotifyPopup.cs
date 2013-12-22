@@ -11,6 +11,7 @@ namespace Gageas.Lutea.DefaultUI
 {
     public partial class NotifyPopupForm : Form
     {
+        private float CoverArtSizeRatio = 1.6F;
         private const int MaxWidth = 7;
         private const int OverSample = 4;
         private const int Pad = 5;
@@ -63,9 +64,10 @@ namespace Gageas.Lutea.DefaultUI
             Font font2 = new Font(font.FontFamily, Title2Size * OverSample);
             var h_OverSample = font1.Height + font2.Height + Pad * 3 * OverSample;
             var h = h_OverSample / OverSample;
+            var hCover = (int)(h * CoverArtSizeRatio);
             if (image != null)
             {
-                image = Gageas.Lutea.Util.ImageUtil.GetResizedImageWithoutPadding(image, h - Pad * 2, h - Pad * 2);
+                image = Gageas.Lutea.Util.ImageUtil.GetResizedImageWithoutPadding(image, hCover - Pad * 2, hCover - Pad * 2);
             }
             var hasImage = image != null;
             var gw = (hasImage ? (image.Width + Pad) : 0) + Pad;
@@ -88,27 +90,39 @@ namespace Gageas.Lutea.DefaultUI
                     TextRenderer.DrawText(g, title, font1, rect1, SystemColors.WindowText, TFFlags | TextFormatFlags.EndEllipsis);
                     TextRenderer.DrawText(g, title2, font2, rect2, SystemColors.WindowText, TFFlags | TextFormatFlags.EndEllipsis);
                 }
-                this.BackgroundImage = new Bitmap(w, h);
+                this.BackgroundImage = new Bitmap(w, hCover);
                 using (Graphics g = Graphics.FromImage(this.BackgroundImage))
                 {
-                    g.DrawRectangle(SystemPens.ActiveBorder, 0, 0, w - 1, h - 1);
+                    g.FillRectangle(Brushes.Fuchsia, 0, 0, w, hCover - h);
+                    g.DrawRectangle(SystemPens.ActiveBorder, 0, hCover - h, w - 1, h - 1);
 
                     if (hasImage)
                     {
                         g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bicubic;
-                        g.DrawImage(image, Pad, (h - image.Height) / 2);
+                        int top = 0;
+                        if (image.Height < h)
+                        {
+                            top = (int)((hCover - image.Height) / CoverArtSizeRatio);
+                        }
+                        else
+                        {
+                            top = hCover - image.Height - Pad;
+                        }
+                        g.DrawImage(image, w-gw+Pad, top);
+                        g.DrawRectangle(Pens.Silver, w - gw + Pad, top, image.Width, image.Height);
                     }
                     g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
-                    g.DrawImage(bg, gw, Pad, w, h);
+                    g.DrawImage(bg, Pad, hCover - h + Pad, w, h);
                 }
                 var wa = Screen.PrimaryScreen.WorkingArea;
                 t = new Timer();
                 t.Interval = 30;
-                t.Tag = new TransitContext() { h_norm = h, w_norm = w };
+                t.Tag = new TransitContext() { h_norm = hCover, w_norm = w };
                 t.Tick += new EventHandler(t_Tick);
                 t.Start();
-                this.Size = new System.Drawing.Size(0, h);
-                this.Location = new Point(wa.Right - w - Pad, wa.Bottom - h - Pad);
+                this.Size = new System.Drawing.Size(0, hCover);
+                this.TransparencyKey = Color.Fuchsia;
+                this.Location = new Point(wa.Right - w - Pad, wa.Bottom - hCover - Pad);
                 this.Opacity = 0.0F;
             }));
         }
