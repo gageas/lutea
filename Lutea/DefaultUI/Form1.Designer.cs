@@ -59,6 +59,7 @@
             this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView();
             this.playlistViewContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.ScrollToPlayingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.コピーToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.propertyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.explorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,7 +73,6 @@
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
             this.再読み込みToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.clearSortOrderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.albumArtListViewSearchTextBox = new System.Windows.Forms.TextBox();
@@ -413,15 +413,15 @@
             // 
             this.playlistViewContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ScrollToPlayingToolStripMenuItem,
+            this.clearSortOrderToolStripMenuItem,
             this.toolStripSeparator6,
             this.propertyToolStripMenuItem,
             this.explorerToolStripMenuItem,
+            this.コピーToolStripMenuItem,
             this.toolStripSeparator4,
             this.ratingToolStripMenuItem,
             this.再読み込みToolStripMenuItem,
-            this.deleteToolStripMenuItem,
-            this.toolStripSeparator5,
-            this.clearSortOrderToolStripMenuItem});
+            this.deleteToolStripMenuItem});
             this.playlistViewContextMenuStrip.Name = "playlistViewContextMenuStrip";
             resources.ApplyResources(this.playlistViewContextMenuStrip, "playlistViewContextMenuStrip");
             // 
@@ -430,6 +430,12 @@
             this.ScrollToPlayingToolStripMenuItem.Name = "ScrollToPlayingToolStripMenuItem";
             resources.ApplyResources(this.ScrollToPlayingToolStripMenuItem, "ScrollToPlayingToolStripMenuItem");
             this.ScrollToPlayingToolStripMenuItem.Click += new System.EventHandler(this.ScrollToPlayingToolStripMenuItem_Click);
+            // 
+            // コピーToolStripMenuItem
+            // 
+            this.コピーToolStripMenuItem.Name = "コピーToolStripMenuItem";
+            resources.ApplyResources(this.コピーToolStripMenuItem, "コピーToolStripMenuItem");
+            this.コピーToolStripMenuItem.Click += new System.EventHandler(this.CopyToolStripMenuItem_Click);
             // 
             // toolStripSeparator6
             // 
@@ -512,11 +518,6 @@
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
             resources.ApplyResources(this.deleteToolStripMenuItem, "deleteToolStripMenuItem");
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator5
-            // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            resources.ApplyResources(this.toolStripSeparator5, "toolStripSeparator5");
             // 
             // clearSortOrderToolStripMenuItem
             // 
@@ -915,7 +916,6 @@
         private System.Windows.Forms.ToolStripMenuItem clearSortOrderToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 再読み込みToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem logToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
@@ -970,6 +970,7 @@
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.ContextMenuStrip notifyIconContextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem notifyIconToolStripMenuItem_ShowBalloon;
+        private System.Windows.Forms.ToolStripMenuItem コピーToolStripMenuItem;
     }
 }
 

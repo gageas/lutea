@@ -1556,6 +1556,15 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var setstr = playlistView.lastSelectedString;
+            if (!String.IsNullOrEmpty(setstr))
+            {
+                Clipboard.SetText(setstr);
+            }
+        }
+
         /// <summary>
         /// プレイリストのソート条件をクリアする
         /// PlaylistView→ContextMenuStrip→ソート解除を選択したときのハンドラ

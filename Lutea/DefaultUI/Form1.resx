@@ -721,6 +721,12 @@
   <data name="ScrollToPlayingToolStripMenuItem.Text" xml:space="preserve">
     <value>再生中にスクロール</value>
   </data>
+  <data name="clearSortOrderToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>211, 24</value>
+  </data>
+  <data name="clearSortOrderToolStripMenuItem.Text" xml:space="preserve">
+    <value>ソート解除</value>
+  </data>
   <data name="toolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
     <value>208, 6</value>
   </data>
@@ -735,6 +741,12 @@
   </data>
   <data name="explorerToolStripMenuItem.Text" xml:space="preserve">
     <value>エクスプローラで表示...</value>
+  </data>
+  <data name="コピーToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>211, 24</value>
+  </data>
+  <data name="コピーToolStripMenuItem.Text" xml:space="preserve">
+    <value>この値をコピー</value>
   </data>
   <data name="toolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
     <value>208, 6</value>
@@ -793,17 +805,8 @@
   <data name="deleteToolStripMenuItem.Text" xml:space="preserve">
     <value>ライブラリから削除...</value>
   </data>
-  <data name="toolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>208, 6</value>
-  </data>
-  <data name="clearSortOrderToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 24</value>
-  </data>
-  <data name="clearSortOrderToolStripMenuItem.Text" xml:space="preserve">
-    <value>ソート解除</value>
-  </data>
   <data name="playlistViewContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>212, 190</value>
+    <value>212, 208</value>
   </data>
   <data name="&gt;&gt;playlistViewContextMenuStrip.Name" xml:space="preserve">
     <value>playlistViewContextMenuStrip</value>
@@ -11744,6 +11747,12 @@
   <data name="&gt;&gt;ScrollToPlayingToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;コピーToolStripMenuItem.Name" xml:space="preserve">
+    <value>コピーToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;コピーToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;toolStripSeparator6.Name" xml:space="preserve">
     <value>toolStripSeparator6</value>
   </data>
@@ -11821,12 +11830,6 @@
   </data>
   <data name="&gt;&gt;deleteToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripSeparator5.Name" xml:space="preserve">
-    <value>toolStripSeparator5</value>
-  </data>
-  <data name="&gt;&gt;toolStripSeparator5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;clearSortOrderToolStripMenuItem.Name" xml:space="preserve">
     <value>clearSortOrderToolStripMenuItem</value>
