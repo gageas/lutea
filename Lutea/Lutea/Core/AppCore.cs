@@ -68,6 +68,7 @@ namespace Gageas.Lutea.Core
         internal static StreamObject PreparedStream;
 
         internal static object[][] PlaylistCache;
+        internal static int[] TagAlbumContinuousCount;
 
         private static Object DBlock = new Object();
 
@@ -243,48 +244,24 @@ namespace Gageas.Lutea.Core
         {
             // 参照コピー
             var _current = CurrentStream;
-            var _prepare = PreparedStream;
             uint read1 = 0xffffffff;
-            uint read2 = 0xffffffff;
-
-            // prepareからも読み込めなかった時、バッファをゼロフィルして返す（無音）
-            ZeroMemory(buffer, length);
-            // BASSのデフォルトで0.01秒毎ぐらいにコールされるっぽい。(WASAPI時?)
-            // try-catchのコストが気になるのでリリースビルドでは除去する。通常例外おきないはず。
-#if DEBUG
-            try
+            // currentStreamから読み出し
+            if ((!OutputChannelIsReady) || (!OutputManager.Available)) return 0;
+            if (_current != null && _current.stream != null && _current.ready)
             {
-#endif
-            if (OutputChannelIsReady && OutputManager.Available)
+                uint toread = length;
+                if ((_current.cueLength > 0) && length + _current.stream.position > _current.cueLength + _current.cueOffset)
+                {
+                    toread = (uint)(_current.cueLength + _current.cueOffset - _current.stream.position);
+                }
+                read1 = ReadStreamGained(buffer, toread, _current.stream, _current.gain == null ? MyCoreComponent.NoReplaygainGainBoost : (MyCoreComponent.ReplaygainGainBoost + _current.gain ?? 0));
+            }
+            if (read1 == 0xffffffff || read1 == 0)
             {
-                // currentStreamから読み出し
-                if (_current != null && _current.stream != null && _current.ready)
-                {
-                    if ((_current.cueLength > 0) && length + _current.stream.position > _current.cueLength + _current.cueOffset)
-                    {
-                        uint toread = (uint)(_current.cueLength + _current.cueOffset - _current.stream.position);
-                        read1 = ReadStreamGained(buffer, toread, _current.stream, _current.gain == null ? MyCoreComponent.NoReplaygainGainBoost : (MyCoreComponent.ReplaygainGainBoost + _current.gain ?? 0));
-                    }
-                    else
-                    {
-                        read1 = ReadStreamGained(buffer, length, _current.stream, _current.gain == null ? MyCoreComponent.NoReplaygainGainBoost : (MyCoreComponent.ReplaygainGainBoost + _current.gain ?? 0));
-                    }
-                }
-                if (read1 != 0xffffffff && ((read1 &= 0x7fffffff) == length)) return length;
-
-                // バッファの最後まで読み込めなかった時、prepareStreamからの読み込みを試す
-                if (read1 == 0xffffffff) read1 = 0;
-                if (_prepare != null && _prepare.stream != null && _prepare.ready)
-                {
-                    read2 = ReadStreamGained((IntPtr)((ulong)buffer + read1), length - read1, _prepare.stream, _prepare.gain == null ? MyCoreComponent.NoReplaygainGainBoost : (MyCoreComponent.ReplaygainGainBoost + _prepare.gain ?? 0));
-                }
+                read1 = 0;
                 onFinish(BASS.SYNC_TYPE.END, _current);
             }
-#if DEBUG
-            }
-            catch (Exception e) { Logger.Log(e.ToString()); }
-#endif
-            return length;
+            return read1;
         }
         #endregion
 
@@ -516,7 +493,6 @@ namespace Gageas.Lutea.Core
         private static Thread playlistCreateThread;
         private static String playlistQueryQueue = null;
         private static Boolean PlayOnCreate = false;
-//        internal static String latestPlaylistQuery = "SELECT * FROM list;";
         internal static String LatestPlaylistQueryExpanded = "";
         private static readonly object playlistQueryQueueLock = new object();
         internal static void createPlaylist(String sql, bool playOnCreate = false)
@@ -609,7 +585,13 @@ namespace Gageas.Lutea.Core
                 Logger.Log(ee);
             }
 
-            if (MyCoreComponent.PlaylistSortColumn == null) return;
+            if (MyCoreComponent.PlaylistSortColumn == null)
+            {
+                LuteaHelper.ClearRepeatCount(currentPlaylistRows);
+                h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM unordered_playlist ;");
+                TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
+                return;
+            }
 
             var orderPhrase = "";
             orderPhrase = " ORDER BY ";
@@ -640,6 +622,10 @@ namespace Gageas.Lutea.Core
                 catch (SQLite3DB.SQLite3Exception) { }
                 Thread.Sleep(50);
             }
+
+            LuteaHelper.ClearRepeatCount(currentPlaylistRows);
+            h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM " + GetPlaylistTableName() + " ;");
+            TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
         }
 
         delegate string CreatePlaylistParser();
@@ -705,12 +691,16 @@ namespace Gageas.Lutea.Core
 
                         using (SQLite3DB.STMT tmt2 = h2k6db.Prepare("SELECT COUNT(*) FROM unordered_playlist ;"))
                         {
-                            Logger.Debug("Creating new playlist " + sql);
                             tmt2.Evaluate((o) => currentPlaylistRows = int.Parse(o[0].ToString()));
-                            Logger.Debug("Start Playlist Loader");
                             if (MyCoreComponent.PlaylistSortColumn != null)
                             {
                                 CreateOrderedPlaylistTableInDB();
+                            }
+                            else
+                            {
+                                LuteaHelper.ClearRepeatCount(currentPlaylistRows);
+                                h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM " + GetPlaylistTableName() + " ;");
+                                TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
                             }
 
                             // プレイリストキャッシュ用の配列を作成
@@ -785,6 +775,7 @@ namespace Gageas.Lutea.Core
             if (_cache.Length <= index) return null;
             object[] value = null;
             if (_cache[index] == null) _cache[index] = h2k6db.FetchRow(GetPlaylistTableName(), index + 1);
+            if ((_cache[index].Length == 0) || (_cache[index][0] == null)) return null;
             value = _cache[index];
             if (value == null || value.Length == 0) return null;
             return value;
@@ -1091,20 +1082,17 @@ namespace Gageas.Lutea.Core
             var currentIndexInPlaylist = Controller.Current.IndexInPlaylist;
             int count = int.Parse(Controller.Current.MetaData(Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.playcount))) + 1;
             string file_name = Controller.Current.MetaData(Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name));
-            Logger.Log("再生カウントを更新しまつ" + file_name + ",  " + count);
             CoreEnqueue(() =>
             {
+                Logger.Log("再生カウントを更新しまつ" + file_name + ",  " + count);
                 // db書き込み
-                CoreEnqueue(() =>
+                using (var db = Library.Connect(false))
                 {
-                    using (var db = Library.Connect(false))
+                    using (var stmt = db.Prepare("UPDATE list SET " + LibraryDBColumnTextMinimum.lastplayed + " = current_timestamp64(), " + LibraryDBColumnTextMinimum.playcount + " = " + count + " WHERE " + LibraryDBColumnTextMinimum.file_name + " = '" + file_name.EscapeSingleQuotSQL() + "';"))
                     {
-                        using (var stmt = db.Prepare("UPDATE list SET " + LibraryDBColumnTextMinimum.lastplayed + " = current_timestamp64(), " + LibraryDBColumnTextMinimum.playcount + " = " + count + " WHERE " + LibraryDBColumnTextMinimum.file_name + " = '" + file_name.EscapeSingleQuotSQL() + "';"))
-                        {
-                            stmt.Evaluate(null);
-                        }
+                        stmt.Evaluate(null);
                     }
-                });
+                }
                 var row = Controller.GetPlaylistRow(currentIndexInPlaylist);
                 if (row != null)
                 {
@@ -1145,21 +1133,7 @@ namespace Gageas.Lutea.Core
                 var row = Controller.GetPlaylistRow(succIndex);
                 if (row == null) return;
                 string filename = (string)row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)];
-                List<KeyValuePair<string,object>> tag = null;
-                if (File.Exists(filename))
-                {
-                    byte[] buf = new byte[10 * 1000];
-                    using (var f = File.OpenRead(filename))
-                    {
-                        for (int i = 0; i < 10; i++)
-                        {
-                            f.Read(buf, 0, buf.Count());
-                            Thread.Sleep(0);
-                        }
-                    }
-                    tag = MetaTag.readTagByFilename(filename, false);
-                }
-                CoreEnqueue(() => prepareNextStream(succIndex, tag));
+                CoreEnqueue(() => prepareNextStream(succIndex, null));
             });
             th.Priority = ThreadPriority.Lowest;
             th.Start();

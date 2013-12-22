@@ -856,6 +856,16 @@ namespace Gageas.Lutea.Core
             }
 
         }
+
+        /// <summary>
+        /// tagAlbumの連続数行列を返す
+        /// </summary>
+        /// <returns></returns>
+        public static int[] GetTagAlbumContinuousCount()
+        {
+            if (AppCore.TagAlbumContinuousCount == null) return null;
+            return (int[])AppCore.TagAlbumContinuousCount.Clone();
+        }
         #endregion
 
         #region Interface between Core

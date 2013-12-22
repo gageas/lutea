@@ -53,7 +53,7 @@
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.trackInfoText = new System.Windows.Forms.Label();
-            this.visualizeView = new VisualizeView();
+            this.visualizeView = new Gageas.Lutea.DefaultUI.VisualizeView();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView();
@@ -362,10 +362,10 @@
             this.trackInfoText.Name = "trackInfoText";
             this.trackInfoText.UseMnemonic = false;
             // 
-            // pictureBox2
+            // visualizeView
             // 
-            resources.ApplyResources(this.visualizeView, "pictureBox2");
-            this.visualizeView.Name = "pictureBox2";
+            resources.ApplyResources(this.visualizeView, "visualizeView");
+            this.visualizeView.Name = "visualizeView";
             this.visualizeView.TabStop = false;
             // 
             // tabControl1
@@ -400,7 +400,9 @@
             this.playlistView.Name = "playlistView";
             this.playlistView.OwnerDraw = true;
             this.playlistView.ShowCoverArt = false;
+            this.playlistView.ShowGroup = false;
             this.playlistView.ShowGroups = false;
+            this.playlistView.ShowVerticalGrid = false;
             this.playlistView.TrackNumberFormat = Gageas.Lutea.DefaultUI.DefaultUIPreference.TrackNumberFormats.N;
             this.playlistView.UseColor = false;
             this.playlistView.UseCompatibleStateImageBehavior = false;
