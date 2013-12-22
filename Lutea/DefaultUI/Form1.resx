@@ -568,31 +568,31 @@
   <data name="&gt;&gt;trackInfoText.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="pictureBox2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+  <data name="visualizeView.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
-  <data name="pictureBox2.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="visualizeView.Location" type="System.Drawing.Point, System.Drawing">
     <value>8, 57</value>
   </data>
-  <data name="pictureBox2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="visualizeView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
-  <data name="pictureBox2.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="visualizeView.Size" type="System.Drawing.Size, System.Drawing">
     <value>488, 52</value>
   </data>
-  <data name="pictureBox2.TabIndex" type="System.Int32, mscorlib">
+  <data name="visualizeView.TabIndex" type="System.Int32, mscorlib">
     <value>100</value>
   </data>
-  <data name="&gt;&gt;pictureBox2.Name" xml:space="preserve">
-    <value>pictureBox2</value>
+  <data name="&gt;&gt;visualizeView.Name" xml:space="preserve">
+    <value>visualizeView</value>
   </data>
-  <data name="&gt;&gt;pictureBox2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;visualizeView.Type" xml:space="preserve">
+    <value>Gageas.Lutea.DefaultUI.VisualizeView, DefaultUI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
-  <data name="&gt;&gt;pictureBox2.Parent" xml:space="preserve">
+  <data name="&gt;&gt;visualizeView.Parent" xml:space="preserve">
     <value>groupBox1</value>
   </data>
-  <data name="&gt;&gt;pictureBox2.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;visualizeView.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
   <data name="groupBox1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
@@ -814,6 +814,9 @@
   <data name="playlistView.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
+  <data name="playlistView.Font" type="System.Drawing.Font, System.Drawing">
+    <value>MS UI Gothic, 10.2pt</value>
+  </data>
   <data name="playlistView.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
   </data>
@@ -866,13 +869,13 @@
     <value>Top, Right</value>
   </data>
   <data name="albumArtListViewSearchTextBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>553, 0</value>
+    <value>697, 0</value>
   </data>
   <data name="albumArtListViewSearchTextBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="albumArtListViewSearchTextBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>132, 24</value>
+    <value>113, 24</value>
   </data>
   <data name="albumArtListViewSearchTextBox.TabIndex" type="System.Int32, mscorlib">
     <value>25</value>

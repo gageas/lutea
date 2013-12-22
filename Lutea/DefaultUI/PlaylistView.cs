@@ -19,7 +19,7 @@ namespace Gageas.Lutea.DefaultUI
         /// <summary>
         /// カバーアートのマージン(Vertical, Horizontal)
         /// </summary>
-        private const int CoverArtMargin = 2;
+        private const int CoverArtMargin = 3;
 
         /// <summary>
         /// 文字のマージン(Vertical)
@@ -64,6 +64,16 @@ namespace Gageas.Lutea.DefaultUI
         private bool showCoverArt;
 
         /// <summary>
+        /// グループ表示をするかどうか
+        /// </summary>
+        private bool showGroup;
+
+        /// <summary>
+        /// カラム区切りを表示するかどうか
+        /// </summary>
+        private bool showVerticalGrid;
+
+        /// <summary>
         /// カバーアートのサイズ
         /// </summary>
         private int coverArtSize;
@@ -94,6 +104,26 @@ namespace Gageas.Lutea.DefaultUI
         private List<ColumnHeader> cols = null;
 
         /// <summary>
+        /// tagAlbumのカラムID
+        /// </summary>
+        private int colIdOfAlbum;
+
+        /// <summary>
+        /// file_nameのカラムID
+        /// </summary>
+        private int colIdOfFilename;
+
+        /// <summary>
+        /// Object数
+        /// </summary>
+        private int numObjects = 0;
+
+        /// <summary>
+        /// アルバム連続数のキャッシュ
+        /// </summary>
+        private int[] tagAlbumContinuousCount;
+
+        /// <summary>
         /// 各Columnのでデフォルトの幅を定義
         /// </summary>
         private Dictionary<string, int> defaultColumnDisplayWidth = new Dictionary<string, int>(){
@@ -114,7 +144,20 @@ namespace Gageas.Lutea.DefaultUI
         /// 表示するColumnの幅
         /// </summary>
         private Dictionary<string, int> columnWidth = new Dictionary<string, int>();
+
+        /// <summary>
+        /// ViewIDからObjectIDへのマッピング。
+        /// nullの場合,ViewIDとObjectIDが直接対応する
+        /// </summary>
+        private int[] v2oMap;
+
+        /// <summary>
+        /// ObjectIDからViewIDへのマッピング。
+        /// nullの場合,ObjectIDとViewIDが直接対応する
+        /// </summary>
+        private int[] o2vMap;
         #endregion
+
 
         #region プロパティ
         /// <summary>
@@ -169,6 +212,40 @@ namespace Gageas.Lutea.DefaultUI
         }
 
         /// <summary>
+        /// グループとして表示
+        /// </summary>
+        public bool ShowGroup
+        {
+            get
+            {
+                return this.showGroup;
+            }
+            set
+            {
+                if (this.showGroup == value) return;
+                this.showGroup = value;
+                this.Invalidate();
+            }
+        }
+
+        /// <summary>
+        /// カラム区切りを表示
+        /// </summary>
+        public bool ShowVerticalGrid
+        {
+            get
+            {
+                return this.showVerticalGrid;
+            }
+            set
+            {
+                if (this.showVerticalGrid == value) return;
+                this.showVerticalGrid = value;
+                this.Invalidate();
+            }
+        }
+
+        /// <summary>
         /// カバーアート表示の大きさ
         /// </summary>
         public int CoverArtSize
@@ -200,6 +277,19 @@ namespace Gageas.Lutea.DefaultUI
         {
             set { this.columnWidth = new Dictionary<string, int>(value); }
         }
+
+        private int itemHeight = int.MaxValue;
+        private int ItemHeight
+        {
+            set
+            {
+                if (value != itemHeight)
+                {
+                    itemHeight = value;
+                    RefreshPlaylist(false, -1);
+                }
+            }
+        }
         #endregion
 
         #region Publicメソッド
@@ -213,6 +303,7 @@ namespace Gageas.Lutea.DefaultUI
 
             // イベントハンドラの登録
             this.DrawItem += playlistView_DrawItem;
+            this.ItemDrag += playlistView_ItemDrag;
             this.MouseMove += playlistView_MouseMove;
             this.MouseClick += playlistView_MouseClick;
             this.ColumnClick += playlistView_ColumnClick;
@@ -232,6 +323,8 @@ namespace Gageas.Lutea.DefaultUI
         {
             this.form = form;
             this.dbColumnsCache = columns;
+            colIdOfAlbum = Controller.GetColumnIndexByName("tagAlbum");
+            colIdOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
         }
 
         /// <summary>
@@ -259,6 +352,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 var colheader = new ColumnHeader();
                 var col = Controller.GetColumnIndexByName(coltext);
+                if (col == -1) continue;
                 colheader.Text = dbColumnsCache[col].LocalText;
                 colheader.Tag = col;
                 if (columnWidth.ContainsKey(coltext))
@@ -317,41 +411,112 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         /// <param name="moveToIndex">SelectItemをindexに移動</param>
         /// <param name="index">選択されているindex</param>
-        /// <param name="itemCount">項目数</param>
-        public void RefreshPlaylist(bool moveToIndex, int index, int itemCount)
+        public void RefreshPlaylist(bool moveToIndex, int index)
         {
             // プレイリストが更新されてアイテムの位置が変わったらカバーアート読み込みキューを消去
             form.backgroundCoverartLoader.ClearQueue();
 
             if (moveToIndex)
             {
-                this.SelectItem(index < 0 ? 0 : index);
+                if (index < 0)
+                {
+                    SelectItemIndirect(0);
+                }
+                else
+                {
+                    SelectItemIndirect(index);
+                }
             }
-            this.VirtualListSize = itemCount;
+            tagAlbumContinuousCount = Controller.GetTagAlbumContinuousCount();
+            if (tagAlbumContinuousCount != null)
+            {
+                numObjects = tagAlbumContinuousCount.Length;
+            }
+            else
+            {
+                numObjects = 0;
+            }
+            genMapTable(tagAlbumContinuousCount);
+            this.VirtualListSize = v2oMap != null ? v2oMap.Length : numObjects;
             this.Refresh();
             if (moveToIndex)
             {
-                this.SelectItem(index < 0 ? 0 : index);
+                if (index < 0)
+                {
+                    SelectItemIndirect(0);
+                }
+                else
+                {
+                    SelectItemIndirect(index);
+                }
             }
-            this.EmphasizeRow(index);
+            this.EmphasizeRowIndirect(index);
+        }
+
+        /// <summary>
+        /// 選択されているオブジェクトのIDの配列を返す
+        /// </summary>
+        /// <returns></returns>
+        public int[] GetSelectedObjects()
+        {
+            List<int> result = new List<int>();
+            foreach (int viewid in SelectedIndices)
+            {
+                result.Add(getObjectIDByViewID(viewid));
+            }
+            return result.Distinct().ToArray();
+        }
+
+        /// <summary>
+        /// オブジェクトを選択状態にする
+        /// </summary>
+        /// <param name="oid"></param>
+        public void SelectItemIndirect(int oid)
+        {
+            var vid = getViewIDByObjectID(oid);
+            if (vid < 0) return;
+            if (vid >= VirtualListSize) return;
+            SelectItem(vid);
+        }
+
+        /// <summary>
+        /// オブジェクトを画面内に表示する
+        /// </summary>
+        /// <param name="oid"></param>
+        public void EnsureVisibleIndirect(int oid)
+        {
+            var vid = getViewIDByObjectID(oid);
+            if (vid < 0) return;
+            if (vid >= VirtualListSize) return;
+            EnsureVisible(vid);
         }
 
         /// <summary>
         /// 指定した行を強調表示(再生中)
         /// </summary>
-        /// <param name="index">行</param>
-        public void EmphasizeRow(int index)
+        /// <param name="oid">行</param>
+        public void EmphasizeRowIndirect(int oid)
         {
+            var prev = emphasizedRowId;
+            emphasizedRowId = oid;
+
             try
             {
-                this.RedrawItems(emphasizedRowId, emphasizedRowId, true);
+                var vid = getViewIDByObjectID(prev);
+                if (vid != -1)
+                {
+                    this.RedrawItems(vid, vid, true);
+                }
             }
             catch { }
 
-            emphasizedRowId = index;
             try
             {
-                this.RedrawItems(index, index, true);
+                var vid = getViewIDByObjectID(emphasizedRowId);
+                if (vid != -1)
+                {
+                    this.RedrawItems(vid, vid, true);
+                }
             }
             catch { }
         }
@@ -364,12 +529,9 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (this.SelectedIndices.Count > 0)
             {
-                List<string> filenames = new List<string>();
-                foreach (int i in this.SelectedIndices)
-                {
-                    filenames.Add(Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
-                }
-                Controller.SetRating(filenames.ToArray(), rate);
+                Controller.SetRating(
+                        GetSelectedObjects()
+                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIdOfFilename)).ToArray(), rate);
             }
         }
 
@@ -380,7 +542,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (this.SelectedIndices.Count > 0)
             {
-                Controller.PlayPlaylistItem(this.SelectedIndices[0]);
+                Controller.PlayPlaylistItem(getObjectIDByViewID(SelectedIndices[0]));
             }
         }
         #endregion
@@ -392,25 +554,18 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private void moveToNextAlbum()
         {
-            int idx = -1;
-            if (this.SelectedIndices.Count > 0)
-            {
-                idx = this.SelectedIndices[0];
-            }
-            else if (Controller.Current.IndexInPlaylist > 0)
-            {
-                idx = Controller.Current.IndexInPlaylist;
-            }
-
-            if (idx == -1) return;
-
-            var album = Controller.GetPlaylistRowColumn(idx, Controller.GetColumnIndexByName("tagAlbum"));
+            int oid = getCurrentObjectID();
+            if (oid == -1) return;
             do
             {
-                idx++;
-            } while ((Controller.GetPlaylistRowColumn(idx, Controller.GetColumnIndexByName("tagAlbum")) == album) && (idx + 1 != this.Items.Count));
-            this.SelectItem(idx);
-            this.EnsureVisible(Math.Min(idx + 5, this.Items.Count - 1));
+                oid++;
+            } while ((oid < numObjects) && (tagAlbumContinuousCount[oid] != 0));
+            if (oid == numObjects)
+            {
+                oid = numObjects - 1;
+            }
+            SelectItemIndirect(oid);
+            EnsureVisible(Math.Min(getViewIDByObjectID(oid) + ((this.coverArtSize + 5) / itemHeight), VirtualListSize - 1));
         }
 
         /// <summary>
@@ -418,23 +573,14 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private void moveToPrevAlbum()
         {
-            int idx = -1;
-            if (this.SelectedIndices.Count > 0)
-            {
-                idx = this.SelectedIndices[0];
-            }
-            else if (Controller.Current.IndexInPlaylist > 0)
-            {
-                idx = Controller.Current.IndexInPlaylist;
-            }
-
-            if ((idx == -1) || (idx == 0)) return;
-            var album = Controller.GetPlaylistRowColumn(idx - 1, Controller.GetColumnIndexByName("tagAlbum"));
+            int oid = getCurrentObjectID();
+            if (oid <= 0) return;
             do
             {
-                idx--;
-            } while ((Controller.GetPlaylistRowColumn(idx - 1, Controller.GetColumnIndexByName("tagAlbum")) == album) && (idx != 0));
-            this.SelectItem(idx);
+                oid--;
+            } while ((oid >= 0) && (tagAlbumContinuousCount[oid] != 0));
+            SelectItemIndirect(oid);
+            EnsureVisible(Math.Max(getViewIDByObjectID(oid) - 1, 0));
         }
 
         /// <summary>
@@ -442,18 +588,7 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private void moveToNextTrack()
         {
-            if (this.SelectedIndices.Count > 0)
-            {
-                this.SelectItem(this.SelectedIndices[0] + 1);
-            }
-            else if (Controller.Current.IndexInPlaylist > 0)
-            {
-                this.SelectItem(Controller.Current.IndexInPlaylist + 1);
-            }
-            else
-            {
-                moveToFirstTrack();
-            }
+            SelectItemIndirect(getCurrentObjectID() + 1);
         }
 
         /// <summary>
@@ -461,17 +596,13 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private void moveToPrevTrack()
         {
-            if (this.SelectedIndices.Count > 0)
+            int oid = getCurrentObjectID();
+            if (oid < 0) oid = numObjects - 1;
+            if (oid == 0) return;
+            SelectItemIndirect(oid - 1);
+            if (getViewIDByObjectID(oid - 1) > 0)
             {
-                this.SelectItem(this.SelectedIndices[0] - 1);
-            }
-            else if (Controller.Current.IndexInPlaylist > 0)
-            {
-                this.SelectItem(Controller.Current.IndexInPlaylist - 1);
-            }
-            else
-            {
-                moveToLastTrack();
+                EnsureVisible(getViewIDByObjectID(oid - 1) - 1);
             }
         }
 
@@ -480,7 +611,7 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private void moveToFirstTrack()
         {
-            this.SelectItem(0);
+            this.SelectItemIndirect(0);
         }
 
         /// <summary>
@@ -488,7 +619,9 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private void moveToLastTrack()
         {
-            this.SelectItem(this.Items.Count - 1);
+            if (numObjects == 0) return;
+            this.SelectItemIndirect(numObjects - 1);
+            this.EnsureVisible(VirtualListSize - 1);
         }
         #endregion
 
@@ -513,6 +646,42 @@ namespace Gageas.Lutea.DefaultUI
             Logger.Debug("Down" + e.KeyCode + e.KeyData + e.KeyValue);
             switch (e.KeyCode)
             {
+                case Keys.PageUp:
+                    if (ShowGroup)
+                    {
+                        moveToPrevAlbum();
+                        e.Handled = true;
+                        e.SuppressKeyPress = true;
+                    }
+                    break;
+                case Keys.PageDown:
+                    if (ShowGroup)
+                    {
+                        moveToNextAlbum();
+                        e.Handled = true;
+                        e.SuppressKeyPress = true;
+                    }
+                    break;
+                case Keys.Up:
+                    moveToPrevTrack();
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    break;
+                case Keys.Down:
+                    moveToNextTrack();
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    break;
+                case Keys.Home:
+                    moveToFirstTrack();
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    break;
+                case Keys.End:
+                    moveToLastTrack();
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                    break;
                 case Keys.Return:
                     playFirstSelectedItem();
                     e.Handled = true;
@@ -656,7 +825,8 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (dbColumnsCache[(int)(this.Columns[item.SubItems.IndexOf(sub)].Tag)].Type == Library.LibraryColumnType.Rating)
+            if ((!isDummyRow(item.Index)) 
+                && (dbColumnsCache[(int)(this.Columns[item.SubItems.IndexOf(sub)].Tag)].Type == Library.LibraryColumnType.Rating))
             {
                 if (this.Cursor != Cursors.Hand)
                 {
@@ -679,6 +849,7 @@ namespace Gageas.Lutea.DefaultUI
             int starwidth = ratingRenderer.EachWidth;
             var item = this.GetItemAt(e.X, e.Y);
             if (item == null) return;
+            if (isDummyRow(item.Index)) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
             if (dbColumnsCache[(int)(this.Columns[item.SubItems.IndexOf(sub)].Tag)].Type != Library.LibraryColumnType.Rating) return;
@@ -704,7 +875,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 rate = 10;
             }
-            Controller.SetRating(Controller.GetPlaylistRowColumn(item.Index, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)), rate);
+            Controller.SetRating(Controller.GetPlaylistRowColumn(getObjectIDByViewID(item.Index), colIdOfFilename), rate);
         }
 
         /// <summary>
@@ -712,17 +883,16 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void listView1_ItemDrag(object sender, ItemDragEventArgs e)
+        private void playlistView_ItemDrag(object sender, ItemDragEventArgs e)
         {
             try
             {
                 var count = this.SelectedIndices.Count;
                 if (count < 1) return;
                 List<string> filenames = new List<string>();
-                var colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                foreach (int i in this.SelectedIndices)
+                foreach (int viewid in SelectedIndices)
                 {
-                    filenames.Add(Controller.GetPlaylistRowColumn(i, colIndexOfFilename).Trim());
+                    filenames.Add(Controller.GetPlaylistRowColumn(getObjectIDByViewID(viewid), colIdOfFilename));
                 }
                 DataObject dataObj = new DataObject(DataFormats.FileDrop, filenames.Distinct().ToArray());
                 DoDragDrop(dataObj, DragDropEffects.Copy);
@@ -750,10 +920,7 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="e"></param>
         private void playlistView_DoubleClick(object sender, EventArgs e)
         {
-            if (this.SelectedIndices.Count > 0)
-            {
-                Controller.PlayPlaylistItem(this.SelectedIndices[0]);
-            }
+            playFirstSelectedItem();
         }
 
         /// <summary>
@@ -783,19 +950,23 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="e"></param>
         private void playlistView_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
+            if (this.itemHeight != e.Bounds.Height)
+            {
+                this.ItemHeight = e.Bounds.Height;
+                return;
+            }
             var index = e.ItemIndex;
-            var row = Controller.GetPlaylistRow(index);
+            if (index >= VirtualListSize) return;
+            int oid = getObjectIDByViewID(index);
+            int indexInGroup = getIndexInGroup(index);
+            bool isFirstOfAlbum = indexInGroup == (showGroup ? 0 : 1);
+            var row = Controller.GetPlaylistRow(oid);
             if (row == null) return;
             var bounds = e.Bounds;
             var isSelected = (e.State & ListViewItemStates.Selected) != 0;
 
-            int indexInGroup = 0;
-            var colIdOfAlbum = Controller.GetColumnIndexByName("tagAlbum");
             var album = row[colIdOfAlbum].ToString();
-            var file_name = row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)].ToString();
-            while (album == Controller.GetPlaylistRowColumn(index - indexInGroup, colIdOfAlbum)) indexInGroup++;
-            var isLastOfAlbum = album != Controller.GetPlaylistRowColumn(index + 1, colIdOfAlbum);
-            var isFirstOfAlbum = indexInGroup == 1;
+            var file_name = row[colIdOfFilename].ToString();
 
             using (var g = e.Graphics)
             {
@@ -820,41 +991,79 @@ namespace Gageas.Lutea.DefaultUI
                 }
 
                 // 各column描画準備
-                IntPtr hFont = (emphasizedRowId == index ? new Font(realFont, FontStyle.Bold) : realFont).ToHfont();
-                IntPtr hOldFont = GDI.SelectObject(hDC, hFont);
-                if (sizeOfTruncateStringCache.Width == 0)
-                {
-                    GDI.GetTextExtentPoint32(hDC, PostTruncateString, PostTruncateString.Length, out sizeOfTruncateStringCache);
-                }
-
-                GDI.SetTextColor(hDC, (uint)(isSelected ? SystemColors.HighlightText.ToArgb() : SystemColors.ControlText.ToArgb()) & 0xffffff);
                 GDI.SetBkMode(hDC, GDI.BkMode.TRANSPARENT);
                 int offsetX = bounds.X;
+                IntPtr hOldFont;
 
                 // 各column描画
-                foreach (ColumnHeader head in cols)
+                if (indexInGroup == 0)
                 {
-                    int colidx = (int)head.Tag;
-                    if (colidx >= row.Length) continue;
-                    drawColumnSeparator(hDC, offsetX, bounds.Y, bounds.Height);
-                    var col = dbColumnsCache[colidx];
-                    if (col.Type == Library.LibraryColumnType.Rating)
+                    GDI.SetTextColor(hDC, (uint)(SystemColors.ControlText.ToArgb()) & 0xffffff);
+                    IntPtr hFont = (new Font(realFont, FontStyle.Bold)).ToHfont();
+                    hOldFont = GDI.SelectObject(hDC, hFont);
+                    var albumArtist = row[Controller.GetColumnIndexByName("tagAlbumArtist")].ToString();
+                    var artist = row[Controller.GetColumnIndexByName("tagArtist")].ToString();
+                    var groupText = album + " / " + (string.IsNullOrEmpty(albumArtist) ? artist : albumArtist);
+                    var textWidth = drawStringTruncate(hDC, offsetX + TextMargin * 2, bounds.Y + (bounds.Height - sizeOfTruncateStringCache.Height) / 2, bounds.Width, TextMargin, groupText, sizeOfTruncateStringCache.Width, false);
+                    textWidth = offsetX + TextMargin * 6 + textWidth;
+                    if (textWidth < bounds.Width)
                     {
-                        int rate = 0;
-                        int.TryParse(row[colidx].ToString(), out rate);
-                        g.ReleaseHdc(hDC);
-                        ratingRenderer.Draw(rate / 10, g, offsetX + TextMargin, bounds.Y, head.Width - TextMargin, bounds.Height);
-                        hDC = g.GetHdc();
+                        GDI.MoveToEx(hDC, textWidth, bounds.Y + bounds.Height / 2, IntPtr.Zero);
+                        GDI.LineTo(hDC, offsetX + bounds.Width, bounds.Y + bounds.Height / 2);
                     }
-                    else
+
+                    foreach (ColumnHeader head in cols)
                     {
-                        if (ShowCoverArt && col.Type == Library.LibraryColumnType.TrackNumber)
+                        if (showVerticalGrid && offsetX > textWidth)
                         {
-                            drawItemCoverArt(hDC, offsetX, bounds.Y, bounds.Height, CoverArtMargin, album, indexInGroup, isLastOfAlbum);
+                            drawGridLine(hDC, offsetX, bounds.Y + bounds.Height / 2 + 1, bounds.Height - bounds.Height / 2 - 1);
                         }
-                        drawStringTruncate(hDC, offsetX, bounds.Y + (bounds.Height - sizeOfTruncateStringCache.Height) / 2, head.Width, TextMargin, prettyColumnString(col, row[colidx].ToString()), sizeOfTruncateStringCache.Width, isColumnPadRight(col));
+                        offsetX += head.Width;
                     }
-                    offsetX += head.Width;
+                }
+                else
+                {
+                    GDI.SetTextColor(hDC, (uint)(isSelected ? SystemColors.HighlightText.ToArgb() : SystemColors.ControlText.ToArgb()) & 0xffffff);
+                    IntPtr hFont = (emphasizedRowId >= 0 && getViewIDByObjectID(emphasizedRowId) == index ? new Font(realFont, FontStyle.Bold) : realFont).ToHfont();
+                    hOldFont = GDI.SelectObject(hDC, hFont);
+                    if (sizeOfTruncateStringCache.Width == 0)
+                    {
+                        GDI.GetTextExtentPoint32(hDC, PostTruncateString, PostTruncateString.Length, out sizeOfTruncateStringCache);
+                    }
+
+                    foreach (ColumnHeader head in cols)
+                    {
+                        int colidx = (int)head.Tag;
+                        if (colidx >= row.Length) continue;
+                        if (showVerticalGrid)
+                        {
+                            drawGridLine(hDC, offsetX, bounds.Y, bounds.Height);
+                        }
+                        var col = dbColumnsCache[colidx];
+                        if (col.Type == Library.LibraryColumnType.Rating)
+                        {
+                            if (!isDummyRow(index))
+                            {
+                                int rate = 0;
+                                int.TryParse(row[colidx].ToString(), out rate);
+                                g.ReleaseHdc(hDC);
+                                ratingRenderer.Draw(rate / 10, g, offsetX + TextMargin, bounds.Y, head.Width - TextMargin, bounds.Height);
+                                hDC = g.GetHdc();
+                            }
+                        }
+                        else
+                        {
+                            if (ShowCoverArt && col.Type == Library.LibraryColumnType.TrackNumber)
+                            {
+                                drawItemCoverArt(hDC, offsetX, bounds.Y, bounds.Height, CoverArtMargin, album, indexInGroup, ShowGroup ? 0 : getGroupItemCount(index));
+                            }
+                            if (!isDummyRow(index))
+                            {
+                                drawStringTruncate(hDC, offsetX, bounds.Y + (bounds.Height - sizeOfTruncateStringCache.Height) / 2, head.Width, TextMargin, prettyColumnString(col, row[colidx].ToString()), sizeOfTruncateStringCache.Width, isColumnPadRight(col));
+                            }
+                        }
+                        offsetX += head.Width;
+                    }
                 }
                 GDI.DeleteObject(GDI.SelectObject(hDC, hOldFont));
                 g.ReleaseHdc(hDC);
@@ -896,8 +1105,9 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="offsetX"></param>
         /// <param name="offsetY"></param>
         /// <param name="height"></param>
-        private void drawColumnSeparator(IntPtr hDC, int offsetX, int offsetY, int height)
+        private void drawGridLine(IntPtr hDC, int offsetX, int offsetY, int height)
         {
+            if (offsetX <= 0) return;
             GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.DC_PEN));
             GDI.SetDCPenColor(hDC, SystemPens.ControlDark.Color);
             GDI.MoveToEx(hDC, offsetX - 1, offsetY, IntPtr.Zero);
@@ -917,12 +1127,12 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="index"></param>
         /// <param name="isSelected"></param>
         /// <param name="isFirstTrack"></param>
-        private void drawItemBackground(IntPtr hDC, string album, Rectangle bounds, int index,  bool isSelected, bool isFirstTrack)
+        private void drawItemBackground(IntPtr hDC, string album, Rectangle bounds, int index, bool isSelected, bool isFirstTrack)
         {
             GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.DC_BRUSH));
             GDI.SelectObject(hDC, GDI.GetStockObject(GDI.StockObjects.DC_PEN));
             var isEvenRow = index % 2 == 0;
-            if (isSelected)
+            if (isSelected && !isDummyRow(index))
             {
                 var color = ((SolidBrush)SystemBrushes.Highlight).Color;
                 GDI.SetDCBrushColor(hDC, color);
@@ -963,7 +1173,7 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             // 強調描画
-            if (emphasizedRowId == index)
+            if (emphasizedRowId >= 0 && !isDummyRow(index) && emphasizedRowId == getObjectIDByViewID(index))
             {
                 drawEmphasizedIndicator(hDC, bounds);
             }
@@ -979,25 +1189,39 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="margin">余白</param>
         /// <param name="album">アルバム名</param>
         /// <param name="index">アルバム内の位置</param>
-        /// <param name="isLast">最終トラックかどうか</param>
-        private void drawItemCoverArt(IntPtr hDC, int offsetX, int offsetY, int height, int margin, string album, int index, bool isLast)
+        /// <param name="numOfGroup">最終トラックかどうか</param>
+        private void drawItemCoverArt(IntPtr hDC, int offsetX, int offsetY, int height, int margin, string album, int index, int numOfGroup)
         {
             if (form.backgroundCoverartLoader.IsCached(album))
             {
                 var img = form.backgroundCoverartLoader.GetCache(album);
                 var isFirstTrack = index == 1;
-                if (img != null && img.Width > 1)
+                if (img == null) return;
+                if (img.Width <= 1) return;
+
+                var virtheight = img.Height + margin + margin;
+                int imageOffset;
+                int topMargin;
+                if (numOfGroup > 0 && virtheight > numOfGroup * height)
                 {
-                    GDI.BitBlt(hDC,
-                        offsetX + (CoverArtSize - img.Width) / 2 + margin,
-                        offsetY + (isFirstTrack ? margin : 0),
-                        img.Width,
-                        height - (isFirstTrack ? margin : 0),
-                        img.HDC,
-                        0,
-                        (index - 1) * height - (isFirstTrack ? 0 : margin) + ((isFirstTrack && isLast) ? (int)(img.Height * 0.30 - (height / 2)) : 0),
-                        0x00CC0020);
+                    topMargin = (isFirstTrack ? 1 : 0);
+                    imageOffset = (int)((numOfGroup * height / 2.0) - (0.3 * img.Height));
+                    if (imageOffset > 0) imageOffset = ((numOfGroup * height) - img.Height) / 2;
                 }
+                else
+                {
+                    topMargin = (isFirstTrack ? margin : 0);
+                    imageOffset = margin;
+                }
+                GDI.BitBlt(hDC,
+                    offsetX + (CoverArtSize - img.Width) / 2 + margin,
+                    offsetY + topMargin,
+                    img.Width,
+                    height - topMargin,
+                    img.HDC,
+                    0,
+                    (index - 1) * height - imageOffset + topMargin,
+                    0x00CC0020);
             }
         }
 
@@ -1012,7 +1236,8 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="str">文字列</param>
         /// <param name="widthTruncateString">"..."の幅</param>
         /// <param name="padRight">右寄せ</param>
-        private void drawStringTruncate(IntPtr hDC, int offsetX, int offsetY, int width, int margin, string str, int widthTruncateString, bool padRight)
+        /// <returns>描画幅(px)</returns>
+        private int drawStringTruncate(IntPtr hDC, int offsetX, int offsetY, int width, int margin, string str, int widthTruncateString, bool padRight)
         {
             width -= margin * 2;
             Size size;
@@ -1021,6 +1246,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 var paddingLeft = margin + (padRight ? (width - size.Width) : 0);
                 GDI.TextOut(hDC, offsetX + paddingLeft, offsetY, str, str.Length);
+                return size.Width;
             }
             else
             {
@@ -1043,6 +1269,11 @@ namespace Gageas.Lutea.DefaultUI
                         }
                     } while (rangeWidth > 1);
                     GDI.TextOut(hDC, offsetX + margin, offsetY, str.Substring(0, rangeMin) + PostTruncateString, rangeMin + PostTruncateString.Length);
+                    return size.Width + widthTruncateString;
+                }
+                else
+                {
+                    return 0;
                 }
             }
         }
@@ -1103,7 +1334,163 @@ namespace Gageas.Lutea.DefaultUI
                     return false;
             }
         }
+
+        /// <summary>
+        /// 表示の行IDとプレイリストのオブジェクトのマッピングテーブルを作る
+        /// </summary>
+        /// <param name="albumCounts"></param>
+        private void genMapTable(int[] albumCounts)
+        {
+            if (ShowGroup)
+            {
+                int minNum = ((this.coverArtSize + CoverArtMargin + CoverArtMargin) / itemHeight);
+                if ((albumCounts == null) || (albumCounts.Length == 0))
+                {
+                    v2oMap = new int[0];
+                    o2vMap = new int[0];
+                    return;
+                }
+                var v2imap = new int[albumCounts.Length * (minNum + 2)];
+                o2vMap = new int[albumCounts.Length];
+                int iv2imap = 0;
+                int ii2vmap = 0;
+                int c = 0;
+                v2imap[iv2imap++] = int.MinValue;
+                v2imap[iv2imap++] = 0;
+                c++;
+                o2vMap[ii2vmap++] = c++;
+                for (int i = 1, I = albumCounts.Length; i < I; i++)
+                {
+                    if (albumCounts[i] == 0)
+                    {
+                        for (int j = 0, J = minNum - albumCounts[i - 1]; j < J; j++)
+                        {
+                            v2imap[iv2imap++] = -j - 1;
+                            c++;
+                        }
+                        v2imap[iv2imap++] = int.MinValue;
+                        c++;
+                    }
+                    v2imap[iv2imap++] = i;
+                    o2vMap[ii2vmap++] = c++;
+                }
+                for (int j = 0, J = minNum - albumCounts[albumCounts.Length - 1]; j < J; j++)
+                {
+                    v2imap[iv2imap++] = -j - 1;
+                }
+                Array.Resize<int>(ref v2imap, iv2imap);
+                v2oMap = v2imap;
+            }
+            else
+            {
+                o2vMap = null;
+                v2oMap = null;
+            }
+        }
+
+        /// <summary>
+        /// ViewIDからObjectIDを取得
+        /// </summary>
+        /// <param name="vid"></param>
+        /// <returns></returns>
+        private int getObjectIDByViewID(int vid)
+        {
+            if (v2oMap == null) return vid;
+            if (v2oMap[vid] == int.MinValue) return v2oMap[vid + 1];
+            if (v2oMap[vid] < 0) return v2oMap[vid + v2oMap[vid]];
+            return v2oMap[vid];
+        }
+
+        /// <summary>
+        /// ObjectIDからViewIDを取得
+        /// </summary>
+        /// <param name="oid"></param>
+        /// <returns></returns>
+        private int getViewIDByObjectID(int oid)
+        {
+            if (o2vMap == null) return oid;
+            if (oid < 0) return -1;
+            if (oid >= o2vMap.Length) return -1;
+            return o2vMap[oid];
+        }
+
+        /// <summary>
+        /// ViewIDがダミー行かどうか
+        /// </summary>
+        /// <param name="vid"></param>
+        /// <returns></returns>
+        private bool isDummyRow(int vid)
+        {
+            if (v2oMap == null) return false;
+            return v2oMap[vid] < 0;
+        }
+
+        /// <summary>
+        /// ViewIDがグループヘッダの行かどうか
+        /// </summary>
+        /// <param name="vid"></param>
+        /// <returns></returns>
+        private bool isGroupHeaderRow(int vid)
+        {
+            if(v2oMap == null)return false;
+            return v2oMap[vid] == int.MinValue;
+        }
+
+        /// <summary>
+        /// ViewIDからAlbum内の行番号を取得
+        /// </summary>
+        /// <param name="vid">ViewID</param>
+        /// <returns>Album内の行番号</returns>
+        private int getIndexInGroup(int vid)
+        {
+            if (isGroupHeaderRow(vid)) return 0;
+            var tmp = v2oMap == null ? vid : v2oMap[vid];
+            var cnt = tagAlbumContinuousCount;
+            var oid = getObjectIDByViewID(vid);
+            if (oid >= cnt.Length) return -1;
+            return 1 + cnt[oid] - (tmp < 0 ? tmp : 0);
+        }
+
+        /// <summary>
+        /// グループのアイテム数を取得
+        /// </summary>
+        /// <param name="vid"></param>
+        /// <returns></returns>
+        private int getGroupItemCount(int vid)
+        {
+            int oid = getObjectIDByViewID(vid);
+            do
+            {
+                oid++;
+            } while ((oid < numObjects) && (tagAlbumContinuousCount[oid] != 0));
+            return tagAlbumContinuousCount[oid - 1]+1;
+        }
+
+        /// <summary>
+        /// アクティブなオブジェクトのIDを取得
+        /// </summary>
+        /// <returns></returns>
+        private int getCurrentObjectID()
+        {
+            if (this.SelectedIndices.Count > 0)
+            {
+                return getObjectIDByViewID(SelectedIndices[0]);
+            }
+            else if (Controller.Current.IndexInPlaylist > 0)
+            {
+                return Controller.Current.IndexInPlaylist;
+            }
+            else
+            {
+                return -1;
+            }
+        }
         #endregion
+
+        private void InitializeComponent()
+        {
+
+        }
         #endregion
     }
 }

@@ -90,7 +90,7 @@ namespace Gageas.Lutea.DefaultUI
         private Size config_FormSize;
         private Point config_FormLocation;
 
-        private DefaultUIPreference pref = new DefaultUIPreference(null);
+        private DefaultUIPreference pref = new DefaultUIPreference();
         
         private bool ShowNotifyBalloon
         {
@@ -140,6 +140,8 @@ namespace Gageas.Lutea.DefaultUI
             playlistView.UseColor = pref.ColoredAlbum;
             playlistView.TrackNumberFormat = pref.TrackNumberFormat;
             playlistView.ShowCoverArt = pref.ShowCoverArtInPlaylistView;
+            playlistView.ShowGroup = pref.ShowGroup;
+            playlistView.ShowVerticalGrid = pref.ShowVerticalGrid;
             playlistView.CoverArtSize = pref.CoverArtSizeInPlaylistView;
             playlistView.ResetColumns(pref.DisplayColumns);
 
@@ -292,8 +294,8 @@ namespace Gageas.Lutea.DefaultUI
                         }
                     }
                     xTrackBar1.Max = Controller.Current.Length;
-                    playlistView.SelectItem(index);
-                    playlistView.EmphasizeRow(index);
+                    playlistView.SelectItemIndirect(index);
+                    playlistView.EmphasizeRowIndirect(index);
                     if (index < 0)
                     {
                         trackInfoText.Text = "";
@@ -429,11 +431,14 @@ namespace Gageas.Lutea.DefaultUI
 
         private void playlistUpdated(string sql)
         {
-            try
+            if (this.IsHandleCreated)
             {
-                this.Invoke(new Controller.PlaylistUpdatedEvent(refreshPlaylistView), new object[] { sql });
+                try
+                {
+                    this.Invoke(new Controller.PlaylistUpdatedEvent(refreshPlaylistView), new object[] { sql });
+                }
+                catch (Exception) { }
             }
-            catch (Exception) { }
         }
 
         private void RefreshAll()
@@ -791,7 +796,7 @@ namespace Gageas.Lutea.DefaultUI
                 }
             }
             int index = Controller.Current.IndexInPlaylist;
-            playlistView.RefreshPlaylist(sql != null, index, itemCount);
+            playlistView.RefreshPlaylist(sql != null, index);
         }
 
         #endregion
@@ -1469,7 +1474,7 @@ namespace Gageas.Lutea.DefaultUI
             var index = Controller.Current.IndexInPlaylist;
             if (index >= 0)
             {
-                playlistView.EnsureVisible(index);
+                playlistView.EnsureVisibleIndirect(index);
             }
         }
         
@@ -1477,7 +1482,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (playlistView.SelectedIndices.Count > 0)
             {
-                Shell32.OpenPropertiesDialog(this.Handle, Controller.GetPlaylistRowColumn(playlistView.SelectedIndices[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)).Trim());
+                Shell32.OpenPropertiesDialog(this.Handle, Controller.GetPlaylistRowColumn(playlistView.GetSelectedObjects()[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)).Trim());
             }
         }
 
@@ -1485,22 +1490,21 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (playlistView.SelectedIndices.Count > 0)
             {
-                System.Diagnostics.Process.Start("explorer.exe", "/SELECT, \"" + Controller.GetPlaylistRowColumn(playlistView.SelectedIndices[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)) + "\"");
+                System.Diagnostics.Process.Start("explorer.exe", "/SELECT, \"" + Controller.GetPlaylistRowColumn(playlistView.GetSelectedObjects()[0], Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)) + "\"");
             }
         }
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            List<string> file_names = new List<string>();
             if (playlistView.SelectedIndices.Count > 0)
             {
-                foreach (int i in playlistView.SelectedIndices)
-                {
-                    file_names.Add(Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)));
-                }
+                int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
+                var dlg = new DeleteFilesDialog(
+                    playlistView
+                        .GetSelectedObjects()
+                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray());
+                dlg.ShowDialog(this);
             }
-            var dlg = new DeleteFilesDialog(file_names.ToArray());
-            dlg.ShowDialog(this);
         }
 
         private void toolStripMenuItem2_Click(object sender, EventArgs e)
@@ -1542,16 +1546,12 @@ namespace Gageas.Lutea.DefaultUI
 
         private void ReImportToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int n = playlistView.SelectedIndices.Count;
-            if (n > 0)
+            if (playlistView.SelectedIndices.Count > 0)
             {
-                List<string> filenames = new List<string>();
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                foreach(int i in playlistView.SelectedIndices)
-                {
-                    filenames.Add(Controller.GetPlaylistRowColumn(i, colIndexOfFilename));
-                }
-                var importer = new Importer(filenames);
+                var importer = new Importer(playlistView
+                        .GetSelectedObjects()
+                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray());
                 importer.Start();
             }
         }

@@ -26,6 +26,10 @@ namespace Gageas{
 			static map<string, re2::RE2*> regex_cache; // コンパイル済み正規表現のキャッシュ(regex関数用)
 			static map<string, re2::RE2*> migemo_cache; // コンパイル済み正規表現のキャッシュ(migemo関数用)
 
+			static char prev[2048]; // 連続数カウンタ用：前回のデータ
+			static int repNum; // 連続数カウンタ用：前回までの連続数 
+			static int counterIndex = 0; // 連続数カウンタ用：呼び出し回
+
 			/* H2k6 LCMapUpper相当のSQL関数 */
 			void __cdecl LCMapUpper( sqlite3_context *ctx, int argc, sqlite3_value *argv[] )  {
 				if((argc != 1) || (argv[0] == NULL)){
@@ -44,6 +48,18 @@ namespace Gageas{
 				}
 				sqlite3_result_text16(ctx, buffer, maplen*2, SQLITE_TRANSIENT);
 				delete [] buffer;
+			};
+			
+			/* 同じ値の繰り返し数をカウント */
+			void __cdecl __x_lutea_count_continuous( sqlite3_context *ctx, int argc, sqlite3_value *argv[] )  {
+				const char* src = (const char*)sqlite3_value_text(argv[0]);
+				if(strcmp(src, prev) != 0){
+					strncpy(prev, src, sizeof(prev)-1);
+					repNum = 0;
+				}else{
+					repNum++;
+				}
+				LuteaHelper::counter[counterIndex++] = repNum;
 			};
 
 			/* H2k6 current_timestamp64相当のSQL関数 */
@@ -147,6 +163,7 @@ namespace Gageas{
 				sqlite3_create_function(db, "regexp", 2, SQLITE_UTF8, 0, regex, NULL, NULL);
 				sqlite3_create_function(db, "migemo", 2, SQLITE_UTF8, 0, migemo, NULL, NULL);
 				sqlite3_create_function(db, "LCMapUpper", 1, SQLITE_UTF16, 0, LCMapUpper, NULL, NULL);
+				sqlite3_create_function(db, "__x_lutea_count_continuous", 1, SQLITE_UTF8, 0, __x_lutea_count_continuous, NULL, NULL);
 			};
 
 			/* オーディオサンプルデータ(floatの配列)にリプレイゲインを適用する */
@@ -157,6 +174,15 @@ namespace Gageas{
 				{
 					dest[i] *= (float)gain_l;
 				}
+			};
+
+			/* 連続数カウンタを初期化 */
+			void LuteaHelper::ClearRepeatCount(int num){
+				memset(prev, 0xff, 32); // 実際のアルバム名とstrcmpして絶対に一致しないようなゴミデータを書き込み
+				prev[32] = 0x00; // NULL終端
+				counterIndex = 0;
+				if(LuteaHelper::counter != nullptr) delete LuteaHelper::counter;
+				LuteaHelper::counter = gcnew array<int>(num);
 			};
 		};
 	};

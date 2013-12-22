@@ -242,6 +242,37 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private Boolean showGroup = true;
+        [Description("グループ表示")]
+        [DefaultValue(true)]
+        [Category("Playlist View")]
+        public Boolean ShowGroup
+        {
+            get
+            {
+                return showGroup;
+            }
+            set
+            {
+                showGroup = value;
+            }
+        }
+
+        private Boolean showVerticalGrid = true;
+        [Description("カラム区切りを表示")]
+        [DefaultValue(true)]
+        [Category("Playlist View")]
+        public Boolean ShowVerticalGrid
+        {
+            get
+            {
+                return showVerticalGrid;
+            }
+            set
+            {
+                showVerticalGrid = value;
+            }
+        }
 
         private int coverArtSizeInPlaylistView = 80;
         [Description("プレイリストに表示するカバーアートのサイズ")]
@@ -255,6 +286,8 @@ namespace Gageas.Lutea.DefaultUI
             }
             set
             {
+                if (value < 0) value = 0;
+                if (value > 200) value = 200;
                 coverArtSizeInPlaylistView = value;
             }
         }
