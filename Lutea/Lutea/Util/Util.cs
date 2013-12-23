@@ -127,6 +127,7 @@ namespace Gageas.Lutea.Util
 
         public static bool tryParseInt(string src, ref int result)
         {
+            if (src == null) return false;
             var match = intRe.Match(src);
             if (match.Success)
             {
