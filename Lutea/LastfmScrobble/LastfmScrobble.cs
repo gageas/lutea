@@ -262,6 +262,7 @@ namespace Gageas.Lutea.LastfmScrobble
 
             [Category("Enable")]
             [DefaultValue(false)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
             [Description("Scrobbleを有効にする")]
             public bool ScrobbleEnabled
             {
@@ -271,6 +272,7 @@ namespace Gageas.Lutea.LastfmScrobble
 
             [Category("Enable")]
             [DefaultValue(false)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
             [Description("NowPlayingの更新を有効にする")]
             public bool UpdateNowPlayingEnabled
             {
@@ -324,6 +326,7 @@ namespace Gageas.Lutea.LastfmScrobble
 
             [Category("Auth")]
             [DefaultValue(false)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
             [Description("認証に成功したかどうか")]
             public bool Authenticated
             {

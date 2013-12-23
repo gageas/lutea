@@ -88,6 +88,7 @@ namespace Gageas.Lutea.HTTPController
             }
 
             [DefaultValue(false)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
             [Description("有効にする")]
             public bool Enabled
             {

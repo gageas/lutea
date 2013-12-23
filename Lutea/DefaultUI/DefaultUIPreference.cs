@@ -113,6 +113,7 @@ namespace Gageas.Lutea.DefaultUI
         private bool _FFTLogarithmic = false;
         [Description("スペクトラムアナライザで横軸を対数にする")]
         [DefaultValue(false)]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [Category("Spectrum Analyzer")]
         public bool FFTLogarithmic
         {
@@ -229,6 +230,7 @@ namespace Gageas.Lutea.DefaultUI
         private Boolean showCoverArtInPlaylistView = true;
         [Description("プレイリストにカバーアートを表示する")]
         [DefaultValue(true)]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [Category("Playlist View")]
         public Boolean ShowCoverArtInPlaylistView
         {
@@ -245,6 +247,7 @@ namespace Gageas.Lutea.DefaultUI
         private Boolean showGroup = true;
         [Description("グループ表示")]
         [DefaultValue(true)]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [Category("Playlist View")]
         public Boolean ShowGroup
         {
@@ -261,6 +264,7 @@ namespace Gageas.Lutea.DefaultUI
         private Boolean showVerticalGrid = true;
         [Description("カラム区切りを表示")]
         [DefaultValue(true)]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [Category("Playlist View")]
         public Boolean ShowVerticalGrid
         {
@@ -296,6 +300,7 @@ namespace Gageas.Lutea.DefaultUI
         private bool coloredAlbum = true;
         [Description("アルバムごとに色分けする\n適当")]
         [DefaultValue(true)]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [Category("Playlist View")]
         public bool ColoredAlbum
         {
@@ -323,6 +328,7 @@ namespace Gageas.Lutea.DefaultUI
         private bool useMediaKey = false;
         [Description("マルチメディアキーを使用する")]
         [DefaultValue(false)]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [Category("Hotkey")]
         public bool UseMediaKey
         {
@@ -412,6 +418,7 @@ namespace Gageas.Lutea.DefaultUI
         private bool hideIntoTrayOnMinimize = false;
         [Description("最小化時にタスクトレイに収納する")]
         [DefaultValue(false)]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [Category("TaskTray")]
         public bool HideIntoTrayOnMinimize
         {
