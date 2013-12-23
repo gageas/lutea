@@ -177,6 +177,14 @@ namespace Gageas.Lutea.Core
                 return MyCoreComponent.LatestPlaylistQuery;
             }
         }
+
+        public static Importer.ImportableTypes TypesToImport
+        {
+            get
+            {
+                return MyCoreComponent.ImportTypes.ToEnum();
+            }
+        }
         #endregion
 
         public static void CoreEnqueue(Controller.VOIDVOID d)

@@ -18,9 +18,141 @@ namespace Gageas.Lutea.Core
     {
         private const string PseudoDeviceNameForDefaultOutput = "(Default)";
 
+        [Serializable]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public class ImportTypeSelector
+        {
+            public override string ToString()
+            {
+                var enabledProps = this.GetType().GetProperties().Where(prop => (bool)prop.GetValue(this, null));
+                if(enabledProps.Count() == 0){
+                    return "";
+                }else{
+                    return enabledProps.Select(_ => _.Name).Aggregate((x, y) => x + ", " + y);
+                }
+            }
+
+            class ImportableTypeMappingAttr : Attribute {
+                public Library.Importer.ImportableTypes map;
+                public ImportableTypeMappingAttr(Library.Importer.ImportableTypes map)
+                {
+                    this.map = map;
+                }
+            }
+
+            public ImportTypeSelector()
+            {
+                var props = this.GetType().GetProperties();
+                foreach (var prop in props)
+                {
+                    var defVal = (DefaultValueAttribute[])prop.GetCustomAttributes(typeof(DefaultValueAttribute), false);
+                    prop.SetValue(this, defVal[0].Value, null);
+                }
+            }
+
+            public Library.Importer.ImportableTypes ToEnum()
+            {
+                Library.Importer.ImportableTypes result = 0;
+                var props = this.GetType().GetProperties();
+                foreach (var prop in props)
+                {
+                    var value = (bool)prop.GetValue(this, null);
+                    if (value)
+                    {
+                        var mapVal = (ImportableTypeMappingAttr[])prop.GetCustomAttributes(typeof(ImportableTypeMappingAttr), false);
+                        result |= mapVal[0].map;
+                    }
+                }
+                return result;
+            }
+
+            public void FromEnum(Library.Importer.ImportableTypes typeEnum)
+            {
+                var props = this.GetType().GetProperties();
+                foreach (var prop in props)
+                {
+                    var mapVal = (ImportableTypeMappingAttr[])prop.GetCustomAttributes(typeof(ImportableTypeMappingAttr), false);
+                    prop.SetValue(this, (typeEnum & mapVal[0].map) != 0, null);
+                }
+            }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.MP2)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool mp2 { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.MP3)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool mp3 { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.MP4)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool mp4 { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.M4A)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [Description("一般のm4aファイル")]
+            [DefaultValue(true)]
+            public bool m4a_others { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.M4AiTunes)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [Description("iTunes Storeで購入したm4aファイル")]
+            [DefaultValue(true)]
+            public bool m4a_iTunesStore { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.OGG)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool ogg { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.WMA)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool wma { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.ASF)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool asf { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.FLAC)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool flac { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.TTA)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool tta { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.APE)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool ape { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.WV)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool wv { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.TAK)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool tak { get; set; }
+
+            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.CUE)]
+            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+            [DefaultValue(true)]
+            public bool cue { get; set; }
+        }
+
         bool enableReplayGain = true;
         [Category("ReplayGain")]
         [Description("Replaygainを有効にする")]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [DefaultValue(true)]
         public bool EnableReplayGain
         {
@@ -74,6 +206,7 @@ namespace Gageas.Lutea.Core
         bool enableWASAPIExclusive = true;
         [Category("Output")]
         [Description("WASAPIで排他モードを使用する\n※ 停止後に反映されます")]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [DefaultValue(true)]
         public bool EnableWASAPIExclusive
         {
@@ -93,6 +226,7 @@ namespace Gageas.Lutea.Core
         bool fadeInOutOnSkip = false;
         [Category("Output")]
         [Description("曲間のプチノイズ対策にフェードインを利用する\n曲間のノイズが気になる場合有効にしてください(非WASAPI時のみ有効)")]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [DefaultValue(false)]
         public bool FadeInOutOnSkip
         {
@@ -168,6 +302,7 @@ namespace Gageas.Lutea.Core
         bool useMigemo = true;
         [Category("Query")]
         [Description("あいまい検索にMigemoを使う（検索のレスポンスが遅くなります）")]
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
         [DefaultValue(true)]
         public bool UseMigemo
         {
@@ -227,6 +362,15 @@ namespace Gageas.Lutea.Core
             {
                 latestPlaylistQuery = value;
             }
+        }
+
+        ImportTypeSelector importTypes = new ImportTypeSelector();
+        [Description("ライブラリに取り込むファイル種別")]
+        [Category("Library")]
+        public ImportTypeSelector ImportTypes
+        {
+            get { return importTypes; }
+            set { if(value != null)importTypes = value; }
         }
 
         /// <summary>
