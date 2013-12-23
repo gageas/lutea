@@ -19,6 +19,32 @@ namespace Gageas.Lutea.Core
         bool GetEnable();
     }
 
+    public class BooleanYesNoTypeConverter : BooleanConverter
+    {
+        private static Dictionary<string, Tuple<string, string>> yesNoStr = new Dictionary<string, Tuple<string, string>>(){
+                {"ja-JP", new Tuple<string, string>("はい", "いいえ")},
+                {"", new Tuple<string, string>("Yes", "No")}
+            };
+        public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+        {
+            if (value is String)
+            {
+                var cultureName = yesNoStr.ContainsKey(culture.Name) ? culture.Name : "";
+                return (string)value == yesNoStr[cultureName].Item1;
+            }
+            return base.ConvertFrom(context, culture, value);
+        }
+        public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+        {
+            if (destinationType == typeof(String))
+            {
+                var cultureName = yesNoStr.ContainsKey(culture.Name) ? culture.Name : "";
+                return (Boolean)value ? yesNoStr[cultureName].Item1 : yesNoStr[cultureName].Item2;
+            }
+            return base.ConvertTo(context, culture, value, destinationType);
+        }
+    }
+
     class LuteaComponentPreferenceTypeConverter : TypeConverter
     {
         public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes)
