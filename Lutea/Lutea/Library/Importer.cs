@@ -14,10 +14,43 @@ namespace Gageas.Lutea.Library
 {
     public sealed class Importer
     {
+        [Flags]
+        public enum ImportableTypes
+        {
+            MP2 = (1 << 0),
+            MP3 = (1 << 1),
+            MP4 = (1 << 2),
+            M4A = (1 << 3),
+            M4AiTunes = (1 << 4),
+            OGG = (1 << 5),
+            WMA = (1 << 6),
+            ASF = (1 << 7),
+            FLAC = (1 << 8),
+            TTA = (1 << 9),
+            APE = (1 << 10),
+            WV = (1 << 11),
+            TAK = (1 << 12),
+            CUE = (1 << 13),
+        };
         private const int WORKER_THREADS_N = 8;
         private const string SelectModifySTMT = "SELECT modify FROM list WHERE file_name = ? OR file_name = ?;";
         private static object LOCKOBJ = new object();
-        private readonly string[] supportedExtensions = new string[] { ".MP3", ".MP2", ".M4A", ".MP4", ".TAK", ".FLAC", ".TTA", ".OGG", ".APE", ".WV", ".WMA", ".ASF"};
+        private Dictionary<ImportableTypes, string> type2ext = new Dictionary<ImportableTypes, string>() { 
+            { ImportableTypes.MP2, ".MP2" } ,
+            { ImportableTypes.MP3, ".MP3" } ,
+            { ImportableTypes.MP4, ".MP4" } ,
+            { ImportableTypes.M4A, ".M4A" } ,
+            { ImportableTypes.M4AiTunes, ".M4A" } ,
+            { ImportableTypes.OGG, ".OGG" } ,
+            { ImportableTypes.WMA, ".WMA" } ,
+            { ImportableTypes.ASF, ".ASF" } ,
+            { ImportableTypes.FLAC, ".FLAC" } ,
+            { ImportableTypes.TTA, ".TTA" } ,
+            { ImportableTypes.APE, ".APE" } ,
+            { ImportableTypes.WV, ".WV" } ,
+            { ImportableTypes.TAK, ".TAK" } ,
+            { ImportableTypes.CUE, ".CUE" } 
+        };
         private static readonly Regex regex_year = new Regex(@"(?<1>\d{4})");
         private static readonly Regex regex_date = new Regex(@"(?<1>\d{4})[\-\/\.](?<2>\d+)[\-\/\.](?<3>\d+)");
 
@@ -29,6 +62,7 @@ namespace Gageas.Lutea.Library
         private List<LuteaAudioTrack> ToBeImportTracks = new List<LuteaAudioTrack>();
         private List<string> AlreadyAnalyzedFiles = new List<string>();
         private bool IsFastMode; // ファイルのタイムスタンプを見て省略するモード
+        private ImportableTypes TypesToImport;
 
         public event Controller.VOIDINT SetMaximum_read = new Controller.VOIDINT((i) => { });
         public event Controller.VOIDVOID Step_read = new Controller.VOIDVOID(() => { });
@@ -68,6 +102,7 @@ namespace Gageas.Lutea.Library
             ImporterThread.Priority = ThreadPriority.BelowNormal;
             ImporterThread.IsBackground = true; 
             ImporterThread.Start();
+            TypesToImport = AppCore.TypesToImport;
         }
 
         /// <summary>
@@ -315,6 +350,17 @@ namespace Gageas.Lutea.Library
                     }
                 }
                 tr.tag = tag;
+                if (tr.file_ext == "M4A")
+                {
+                    if (tag.Exists(_ => _.Key == "PURCHASE DATE"))
+                    {
+                        if ((TypesToImport & ImportableTypes.M4AiTunes) == 0) return;
+                    }
+                    else
+                    {
+                        if ((TypesToImport & ImportableTypes.M4A) == 0) return;
+                    }
+                }
                 threadLocalResultQueue.Add(tr);
             }
         }
@@ -372,7 +418,7 @@ namespace Gageas.Lutea.Library
 
                     var cuefiles = System.IO.Directory.GetFiles(directory_name, "*.CUE", System.IO.SearchOption.TopDirectoryOnly);
                     var otherfiles = System.IO.Directory.GetFiles(directory_name, "*.*", System.IO.SearchOption.TopDirectoryOnly)
-                        .Where(e => supportedExtensions.Contains(System.IO.Path.GetExtension(e).ToUpper()));
+                        .Where(e => type2ext.Where(_=>TypesToImport.HasFlag(_.Key)).Select(_=>_.Value).Distinct().Contains(System.IO.Path.GetExtension(e).ToUpper()));
                     DoAnalyze(cuefiles, otherfiles, threadLocalResults, selectModifySTMT);
                 }
                 lock (ToBeImportTracks)
@@ -438,7 +484,11 @@ namespace Gageas.Lutea.Library
                         .Select(_ => _.Trim())
                         .Distinct()
                         .Where(_ => System.IO.File.Exists(_));
-                    var filenameOfCUEs = filenames.Where(_ => System.IO.Path.GetExtension(_).ToUpper() == ".CUE");
+                    IEnumerable<string> filenameOfCUEs = new List<string>();
+                    if (TypesToImport.HasFlag(ImportableTypes.CUE))
+                    {
+                        filenameOfCUEs = filenames.Where(_ => System.IO.Path.GetExtension(_).ToUpper() == ".CUE");
+                    }
                     var filenameOthers = filenames.Except(filenameOfCUEs);
                     // シングルスレッドで回すのでスレッドローカルのキューは不要（スレッドローカルキューとしてToBeImportTracksを与える）
                     DoAnalyze(filenameOfCUEs, filenameOthers, ToBeImportTracks, selectModifySTMT);
