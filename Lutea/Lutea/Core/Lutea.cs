@@ -236,7 +236,7 @@ namespace Gageas.Lutea.Core
             }));
         }
 
-        public static void NextTrack(bool stopCurrent = true)
+        public static void NextTrack()
         {
             Logger.Log("next Track");
             AppCore.CoreEnqueue((VOIDVOID)(() => {
@@ -262,7 +262,7 @@ namespace Gageas.Lutea.Core
                     }
                 }
                 icache = id;
-                AppCore.PlayPlaylistItem(id, stopCurrent);
+                AppCore.PlayPlaylistItem(id);
             }));
         }
 

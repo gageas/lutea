@@ -242,6 +242,16 @@ namespace Gageas.Wrapper.BASS
             });
         }
 
+        public override bool CanAbort()
+        {
+            return false;
+        }
+
+        public override bool Abort()
+        {
+            return false;
+        }
+
         public override bool Start()
         {
             if (disposed) return false;

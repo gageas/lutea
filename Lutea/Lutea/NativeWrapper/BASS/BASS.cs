@@ -272,6 +272,8 @@ namespace Gageas.Wrapper.BASS
             public abstract bool Resume();
             public abstract bool Stop();
             public abstract bool Pause();
+            public abstract bool CanAbort();
+            public abstract bool Abort();
             public abstract bool SetVolume(float vol);
             public abstract bool SetVolume(float vol,uint timespan);
             public abstract uint GetFreq();
@@ -286,6 +288,7 @@ namespace Gageas.Wrapper.BASS
         public abstract class Channel : IPlayable
         {
             private _SyncProc dSyncProcProxyInvoker;
+            private UInt64 positionCache = 0;
             protected bool disposed = false;
 
             // コンストラクタ
@@ -324,6 +327,14 @@ namespace Gageas.Wrapper.BASS
             ~Channel(){
                 this.Dispose();
             }
+            public override bool CanAbort()
+            {
+                return true;
+            }
+            public override bool Abort()
+            {
+                return _BASS_ChannelStop(this.handle);
+            }
             public override bool Start()
             {
                 return Start(true);
@@ -338,10 +349,8 @@ namespace Gageas.Wrapper.BASS
             }
             public override bool Stop()
             {
-                // _BASS_ChannelStopを使うと再開に難があるくさいので
-                this.Pause();
-                this.Start(true);
-                return this.Pause();
+                positionCache = 0;
+                return _BASS_ChannelStop(this.handle);
             }
             public override bool Pause()
             {
@@ -383,12 +392,14 @@ namespace Gageas.Wrapper.BASS
             {
                 get
                 {
-                    return _BASS_ChannelGetPosition(handle, BASS_POS_BYTE);
+                    if (positionCache != 0) return positionCache;
+                    return positionCache = _BASS_ChannelGetPosition(handle, BASS_POS_BYTE);
                 }
                 set
                 {
                     float v = volume;
                     volume = 0;
+                    positionCache = 0;
                     _BASS_ChannelSetPosition(handle, value, BASS_POS_BYTE);
                     volume = v;
                 }
@@ -459,12 +470,16 @@ namespace Gageas.Wrapper.BASS
 
             public override uint GetData(IntPtr buffer, uint length)
             {
-                return _BASS_ChannelGetData(handle, buffer, length);
+                var readlen = _BASS_ChannelGetData(handle, buffer, length);
+                positionCache += readlen;
+                return readlen;
             }
 
             public override uint GetDataFFT(float[] buf, IPlayable.FFT fft)
             {
-                return _BASS_ChannelGetData(handle, buf, (uint)fft);
+                var readlen = _BASS_ChannelGetData(handle, buf, (uint)fft);
+                positionCache += readlen;
+                return readlen;
             }
 
             public override bool SetVolume(float vol)
