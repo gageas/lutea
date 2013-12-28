@@ -155,12 +155,13 @@ namespace Gageas.Lutea.Core
 
         internal void SetVolume(float vol, uint timespan)
         {
-            outputChannel.SetVolume(vol, timespan);
+            if (Available) outputChannel.SetVolume(vol, timespan);
         }
 
         internal uint GetDataFFT(float[] buffer, Wrapper.BASS.BASS.IPlayable.FFT fftopt)
         {
-            return outputChannel.GetDataFFT(buffer, fftopt);
+            if (Available) return outputChannel.GetDataFFT(buffer, fftopt);
+            return 0;
         }
 
         /// <summary>
