@@ -9,8 +9,6 @@ namespace Gageas.Lutea.Core
 {
     class OutputManager
     {
-//        private const int BASS_BUFFFER_LEN = 1500;
-
         private delegate BASS.IPlayable OutputChannelBuilder(uint freq, uint chans, string preferredDeviceName, uint bufferLength);
 
         /// <summary>
@@ -123,6 +121,21 @@ namespace Gageas.Lutea.Core
         }
         #endregion
 
+        internal bool CanAbort
+        {
+            get
+            {
+                if (Available) return outputChannel.CanAbort();
+                return false;
+            }
+        }
+
+        internal bool Abort()
+        {
+            if (Available) return outputChannel.Abort();
+            return false;
+        }
+
         internal void Resume()
         {
             _pause = false;
@@ -147,6 +160,14 @@ namespace Gageas.Lutea.Core
 
         internal uint GetDataFFT(float[] buffer, Wrapper.BASS.BASS.IPlayable.FFT fftopt)
         {
+            outputChannel.GetDataFFT(buffer, fftopt);
+            outputChannel.GetDataFFT(buffer, fftopt);
+            outputChannel.GetDataFFT(buffer, fftopt);
+            outputChannel.GetDataFFT(buffer, fftopt);
+            outputChannel.GetDataFFT(buffer, fftopt);
+            outputChannel.GetDataFFT(buffer, fftopt);
+            outputChannel.GetDataFFT(buffer, fftopt);
+            outputChannel.GetDataFFT(buffer, fftopt);
             return outputChannel.GetDataFFT(buffer, fftopt);
         }
 
@@ -178,7 +199,7 @@ namespace Gageas.Lutea.Core
         /// 再生を停止し、出力デバイスを解放する
         /// </summary>
         /// <param name="waitsync">現在のバッファの内容を使い切る程度の時間待機してから停止</param>
-        internal void KillOutputChannel(bool waitsync = false)
+        internal void KillOutputChannel()
         {
             var _outputChannel = outputChannel;
             lock (outputChannelLock)
@@ -186,10 +207,6 @@ namespace Gageas.Lutea.Core
                 if (outputChannel != null)
                 {
                     outputChannel = null;
-                    if (waitsync)
-                    {
-                        Thread.Sleep(0);
-                    }
                     _outputChannel.Stop();
                     _outputChannel.Dispose();
                 }
@@ -332,7 +349,7 @@ namespace Gageas.Lutea.Core
                         break;
                     }
                 }
-                BASS.BASS_Init(deviceid, freq, bufferLen);
+                BASS.BASS_Init(deviceid, freq, 1500);
                 outdev = GetInitializedBassRealOutputDevice();
             }
             BASS.BASS_SetDevice(outdev);

@@ -221,26 +221,6 @@ namespace Gageas.Lutea.Core
         }
 
         /// <summary>
-        /// 曲間プチノイズ対策
-        /// </summary>
-        bool fadeInOutOnSkip = false;
-        [Category("Output")]
-        [Description("曲間のプチノイズ対策にフェードインを利用する\n曲間のノイズが気になる場合有効にしてください(非WASAPI時のみ有効)")]
-        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-        [DefaultValue(false)]
-        public bool FadeInOutOnSkip
-        {
-            get
-            {
-                return fadeInOutOnSkip;
-            }
-            set
-            {
-                fadeInOutOnSkip = value;
-            }
-        }
-
-        /// <summary>
         /// バッファサイズ
         /// </summary>
         uint bufferLength = 500;
