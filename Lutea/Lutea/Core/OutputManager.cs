@@ -160,14 +160,6 @@ namespace Gageas.Lutea.Core
 
         internal uint GetDataFFT(float[] buffer, Wrapper.BASS.BASS.IPlayable.FFT fftopt)
         {
-            outputChannel.GetDataFFT(buffer, fftopt);
-            outputChannel.GetDataFFT(buffer, fftopt);
-            outputChannel.GetDataFFT(buffer, fftopt);
-            outputChannel.GetDataFFT(buffer, fftopt);
-            outputChannel.GetDataFFT(buffer, fftopt);
-            outputChannel.GetDataFFT(buffer, fftopt);
-            outputChannel.GetDataFFT(buffer, fftopt);
-            outputChannel.GetDataFFT(buffer, fftopt);
             return outputChannel.GetDataFFT(buffer, fftopt);
         }
 
