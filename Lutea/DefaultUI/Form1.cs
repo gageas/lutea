@@ -115,6 +115,7 @@ namespace Gageas.Lutea.DefaultUI
             Columns = Controller.Columns;
             InitializeComponent();
             trackInfoText.Text = "";
+            trackInfoText2.Text = "";
             queryComboBox.ForeColor = System.Drawing.SystemColors.WindowText;
             toolStripStatusLabel1.Text = "";
             toolStripXTrackbar1.GetControl.ThumbWidth = TextRenderer.MeasureText("100", this.Font).Width + 10;
@@ -162,17 +163,19 @@ namespace Gageas.Lutea.DefaultUI
             {
                 visualizeView.Abort();
             }
-            visualizeView.Top = trackInfoText.Top + trackInfoText.Height;
-            visualizeView.Height = groupBox1.Height - visualizeView.Top - 2;
+            visualizeView.Top = trackInfoText2.Bottom;
+            visualizeView.Height = panel1.Height - visualizeView.Top - 2;
             visualizeView.Setup(pref.FFTLogarithmic, pref.FFTNumber, pref.SpectrumColor1, pref.SpectrumColor2, pref.SpectrumMode);
             visualizeView.Start();
         }
 
         private void ResetTrackInfoView()
         {
+            trackInfoText2.Font = new Font(pref.Font_trackInfoView.FontFamily, (float)Math.Max(this.Font.Size, pref.Font_trackInfoView.Size * 0.6));
+            trackInfoText2.Height = trackInfoText2.Font.Height;
             trackInfoText.Font = pref.Font_trackInfoView;
             trackInfoText.Height = trackInfoText.Font.Height;
-            groupBox1.Font = new Font(pref.Font_trackInfoView.FontFamily, (float)Math.Max(this.Font.Size, pref.Font_trackInfoView.Size * 0.6));
+            trackInfoText.Top = trackInfoText2.Bottom;
             ResetSpectrumRenderer(true);
         }
 
@@ -270,7 +273,7 @@ namespace Gageas.Lutea.DefaultUI
             var artist = Controller.Current.MetaData("tagArtist");
             var genre = Controller.Current.MetaData("tagGenre");
             var lyrics = Controller.Current.GetLyrics();
-            groupBox1.ContextMenuStrip = null;
+            panel1.ContextMenuStrip = null;
             ContextMenuStrip cms = null;
             try
             {
@@ -299,7 +302,7 @@ namespace Gageas.Lutea.DefaultUI
                     if (index < 0)
                     {
                         trackInfoText.Text = "";
-                        groupBox1.Text = "";
+                        trackInfoText2.Text = "";
                         setFormTitle(null);
                         setStatusText("Ready ");
                         toolStripStatusLabel1.Text = "";
@@ -323,7 +326,7 @@ namespace Gageas.Lutea.DefaultUI
                     else
                     {
                         setStatusText("Playing " + Controller.Current.StreamFilename);
-                        groupBox1.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData("tagTracknumber"))).Replace("&", "&&");
+                        trackInfoText2.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData("tagTracknumber"))).Replace("&", "&&");
                         trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}",
                             Controller.Current.MetaData("tagTitle"),
                             Util.Util.FormatIfExists(" - {0}",
@@ -410,7 +413,7 @@ namespace Gageas.Lutea.DefaultUI
                             new ToolStripMenuItem(_.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagGenre) like '%" + _.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); })
                         ).ToArray()
                     );
-                    groupBox1.ContextMenuStrip = cms;
+                    panel1.ContextMenuStrip = cms;
                 }));
             }
             catch (Exception e)

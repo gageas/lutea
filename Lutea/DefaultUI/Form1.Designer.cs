@@ -48,21 +48,22 @@
             this.splitContainer4 = new System.Windows.Forms.SplitContainer();
             this.coverArtView = new Gageas.Lutea.DefaultUI.CoverArtView();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.trackInfoText2 = new System.Windows.Forms.Label();
+            this.trackInfoText = new System.Windows.Forms.Label();
             this.listView2 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.trackInfoText = new System.Windows.Forms.Label();
             this.visualizeView = new Gageas.Lutea.DefaultUI.VisualizeView();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView();
             this.playlistViewContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.ScrollToPlayingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.コピーToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearSortOrderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.propertyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.explorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.コピーToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.ratingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
@@ -73,7 +74,6 @@
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
             this.再読み込みToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.clearSortOrderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.albumArtListViewSearchTextBox = new System.Windows.Forms.TextBox();
             this.albumArtListView = new Gageas.Lutea.DefaultUI.DoubleBufferedListView();
@@ -134,7 +134,6 @@
             this.splitContainer4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).BeginInit();
             this.panel1.SuspendLayout();
-            this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.visualizeView)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -314,18 +313,25 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.groupBox1);
+            this.panel1.Controls.Add(this.trackInfoText2);
+            this.panel1.Controls.Add(this.trackInfoText);
+            this.panel1.Controls.Add(this.listView2);
+            this.panel1.Controls.Add(this.visualizeView);
             resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Name = "panel1";
             // 
-            // groupBox1
+            // trackInfoText2
             // 
-            this.groupBox1.Controls.Add(this.listView2);
-            this.groupBox1.Controls.Add(this.trackInfoText);
-            this.groupBox1.Controls.Add(this.visualizeView);
-            resources.ApplyResources(this.groupBox1, "groupBox1");
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.TabStop = false;
+            resources.ApplyResources(this.trackInfoText2, "trackInfoText2");
+            this.trackInfoText2.Name = "trackInfoText2";
+            // 
+            // trackInfoText
+            // 
+            resources.ApplyResources(this.trackInfoText, "trackInfoText");
+            this.trackInfoText.AutoEllipsis = true;
+            this.trackInfoText.BackColor = System.Drawing.Color.Transparent;
+            this.trackInfoText.Name = "trackInfoText";
+            this.trackInfoText.UseMnemonic = false;
             // 
             // listView2
             // 
@@ -353,14 +359,6 @@
             // columnHeader2
             // 
             resources.ApplyResources(this.columnHeader2, "columnHeader2");
-            // 
-            // trackInfoText
-            // 
-            resources.ApplyResources(this.trackInfoText, "trackInfoText");
-            this.trackInfoText.AutoEllipsis = true;
-            this.trackInfoText.BackColor = System.Drawing.Color.Transparent;
-            this.trackInfoText.Name = "trackInfoText";
-            this.trackInfoText.UseMnemonic = false;
             // 
             // visualizeView
             // 
@@ -431,11 +429,11 @@
             resources.ApplyResources(this.ScrollToPlayingToolStripMenuItem, "ScrollToPlayingToolStripMenuItem");
             this.ScrollToPlayingToolStripMenuItem.Click += new System.EventHandler(this.ScrollToPlayingToolStripMenuItem_Click);
             // 
-            // コピーToolStripMenuItem
+            // clearSortOrderToolStripMenuItem
             // 
-            this.コピーToolStripMenuItem.Name = "コピーToolStripMenuItem";
-            resources.ApplyResources(this.コピーToolStripMenuItem, "コピーToolStripMenuItem");
-            this.コピーToolStripMenuItem.Click += new System.EventHandler(this.CopyToolStripMenuItem_Click);
+            this.clearSortOrderToolStripMenuItem.Name = "clearSortOrderToolStripMenuItem";
+            resources.ApplyResources(this.clearSortOrderToolStripMenuItem, "clearSortOrderToolStripMenuItem");
+            this.clearSortOrderToolStripMenuItem.Click += new System.EventHandler(this.clearSortOrderToolStripMenuItem_Click);
             // 
             // toolStripSeparator6
             // 
@@ -453,6 +451,12 @@
             this.explorerToolStripMenuItem.Name = "explorerToolStripMenuItem";
             resources.ApplyResources(this.explorerToolStripMenuItem, "explorerToolStripMenuItem");
             this.explorerToolStripMenuItem.Click += new System.EventHandler(this.explorerToolStripMenuItem_Click);
+            // 
+            // コピーToolStripMenuItem
+            // 
+            this.コピーToolStripMenuItem.Name = "コピーToolStripMenuItem";
+            resources.ApplyResources(this.コピーToolStripMenuItem, "コピーToolStripMenuItem");
+            this.コピーToolStripMenuItem.Click += new System.EventHandler(this.CopyToolStripMenuItem_Click);
             // 
             // toolStripSeparator4
             // 
@@ -518,12 +522,6 @@
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
             resources.ApplyResources(this.deleteToolStripMenuItem, "deleteToolStripMenuItem");
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
-            // 
-            // clearSortOrderToolStripMenuItem
-            // 
-            this.clearSortOrderToolStripMenuItem.Name = "clearSortOrderToolStripMenuItem";
-            resources.ApplyResources(this.clearSortOrderToolStripMenuItem, "clearSortOrderToolStripMenuItem");
-            this.clearSortOrderToolStripMenuItem.Click += new System.EventHandler(this.clearSortOrderToolStripMenuItem_Click);
             // 
             // tabPage3
             // 
@@ -866,7 +864,6 @@
             this.splitContainer4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).EndInit();
             this.panel1.ResumeLayout(false);
-            this.groupBox1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.visualizeView)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
@@ -947,7 +944,6 @@
         private System.Windows.Forms.SplitContainer splitContainer4;
         private CoverArtView coverArtView;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ListView listView2;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
@@ -971,6 +967,7 @@
         private System.Windows.Forms.ContextMenuStrip notifyIconContextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem notifyIconToolStripMenuItem_ShowBalloon;
         private System.Windows.Forms.ToolStripMenuItem コピーToolStripMenuItem;
+        private System.Windows.Forms.Label trackInfoText2;
     }
 }
 
