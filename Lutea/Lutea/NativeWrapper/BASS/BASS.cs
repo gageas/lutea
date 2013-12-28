@@ -399,8 +399,8 @@ namespace Gageas.Wrapper.BASS
                 {
                     float v = volume;
                     volume = 0;
-                    positionCache = 0;
                     _BASS_ChannelSetPosition(handle, value, BASS_POS_BYTE);
+                    positionCache = _BASS_ChannelGetPosition(handle, BASS_POS_BYTE);
                     volume = v;
                 }
             }
