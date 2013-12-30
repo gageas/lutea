@@ -60,7 +60,7 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// 再生モード列挙体
         /// </summary>
-        public enum PlaybackOrder { Default, Track, Random };
+        public enum PlaybackOrder { Default, Endless, Track, Random };
         #endregion
 
         #region Event definition
@@ -255,9 +255,14 @@ namespace Gageas.Lutea.Core
                 }
                 else
                 {
-                    id = (i) + 1;
+                    id = i + 1;
                     if (id >= PlaylistRowCount)
                     {
+                        if (playbackOrder == PlaybackOrder.Default)
+                        {
+                            Stop();
+                            return;
+                        }
                         id = 0;
                     }
                 }
