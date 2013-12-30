@@ -1171,28 +1171,36 @@ namespace Gageas.Lutea.Core
         internal static int getSuccTrackIndex() // ストリーム終端に達した場合の次のトラックを取得
         {
             int id;
-            if (MyCoreComponent.PlaybackOrder == Controller.PlaybackOrder.Track)
+            switch (MyCoreComponent.PlaybackOrder)
             {
-                return Controller.Current.IndexInPlaylist;
+                case Controller.PlaybackOrder.Track:
+                    return Controller.Current.IndexInPlaylist;
+
+                case Controller.PlaybackOrder.Random:
+                    if (currentPlaylistRows == 1) return 0;
+                    do
+                    {
+                        id = (new Random()).Next(currentPlaylistRows);
+                    } while (id == Controller.Current.IndexInPlaylist);
+                    return id;
+
+                case Controller.PlaybackOrder.Default:
+                    id = (Controller.Current.IndexInPlaylist) + 1;
+                    if (id >= currentPlaylistRows)
+                    {
+                        return -1;
+                    }
+                    return id;
+
+                case Controller.PlaybackOrder.Endless:
+                    id = (Controller.Current.IndexInPlaylist) + 1;
+                    if (id >= currentPlaylistRows)
+                    {
+                        id = 0;
+                    }
+                    return id;
             }
-            if (MyCoreComponent.PlaybackOrder == Controller.PlaybackOrder.Random)
-            {
-                if (currentPlaylistRows == 1) return 0;
-                do
-                {
-                    id = (new Random()).Next(currentPlaylistRows);
-                } while (id == Controller.Current.IndexInPlaylist);
-                return id;
-            }
-            else
-            {
-                id = (Controller.Current.IndexInPlaylist) + 1;
-                if (id >= currentPlaylistRows)
-                {
-                    id = 0;
-                }
-                return id;
-            }
+            return 0;
         }
         #endregion
 
