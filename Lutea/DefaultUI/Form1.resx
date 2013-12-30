@@ -599,13 +599,13 @@
     <value>Top, Bottom, Left, Right</value>
   </data>
   <data name="visualizeView.Location" type="System.Drawing.Point, System.Drawing">
-    <value>23, 62</value>
+    <value>8, 62</value>
   </data>
   <data name="visualizeView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="visualizeView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>488, 52</value>
+    <value>504, 52</value>
   </data>
   <data name="visualizeView.TabIndex" type="System.Int32, mscorlib">
     <value>100</value>
