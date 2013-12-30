@@ -20,7 +20,7 @@ namespace Gageas.Lutea.HTTPController
         /// <summary>
         /// HttpListenerインスタンス
         /// </summary>
-        private HttpListener listener;
+        private MyHttpListener listener;
 
         /// <summary>
         /// 待ちうけているポート番号
@@ -32,7 +32,7 @@ namespace Gageas.Lutea.HTTPController
         /// </summary>
         /// <param name="req">HTTPリクエスト</param>
         /// <param name="res">HTTPレスポンス</param>
-        private delegate void HTTPRequestHandler(HttpListenerContext ctx);
+        private delegate void HTTPRequestHandler(MyHttpListenerContext ctx);
 
         /// <summary>
         /// 各modeに対するハンドラを保持するテーブル
@@ -41,12 +41,13 @@ namespace Gageas.Lutea.HTTPController
 
         private List<HttpListenerContextHolder> holdingConnections_Info = new List<HttpListenerContextHolder>();
         private List<HttpListenerContextHolder> holdingConnections_Playlist = new List<HttpListenerContextHolder>();
+        private List<HttpListenerContextHolder> releasedConnections_Playlist = new List<HttpListenerContextHolder>();
 
         private struct HttpListenerContextHolder
         {
-            public HttpListenerContext ctx;
+            public MyHttpListenerContext ctx;
             public readonly long tick;
-            public HttpListenerContextHolder(HttpListenerContext ctx)
+            public HttpListenerContextHolder(MyHttpListenerContext ctx)
             {
                 this.ctx = ctx;
                 tick = System.DateTime.Now.Ticks;
@@ -72,14 +73,12 @@ namespace Gageas.Lutea.HTTPController
                 tcpsock.Stop();
             }
             catch (Exception e) { Logger.Error(e); }
-            listener = new HttpListener();
-            listener.Prefixes.Add("http://*:" + port + "/");
+            listener = new MyHttpListener(port);
             HTTPHandlers.Add("cover", ReturnCover);
             HTTPHandlers.Add("coverorigsize", ReturnCoverOriginalSize);
             HTTPHandlers.Add("xml", ReturnXML);
             HTTPHandlers.Add("control", KickAPI);
             HTTPHandlers.Add("blank", ReturnBlank);
-            listener.Start();
             Controller.onTrackChange += (x) => {
                 lock (holdingConnections_Info)
                 {
@@ -101,6 +100,12 @@ namespace Gageas.Lutea.HTTPController
                 lock (holdingConnections_Playlist)
                 {
                     CachedXML_Playlist = null;
+                    releasedConnections_Playlist.ForEach((session) =>
+                    {
+                        session.ctx.Response.Abort();
+                    });
+                    releasedConnections_Playlist.Clear();
+                    releasedConnections_Playlist.AddRange(holdingConnections_Playlist);
                     holdingConnections_Playlist.ForEach((session) => 
                         System.Threading.ThreadPool.QueueUserWorkItem((_) =>
                         {
@@ -118,24 +123,7 @@ namespace Gageas.Lutea.HTTPController
         #region Start stop server
         public void Start()
         {
-            try
-            {
-                // Run Async
-                listener.BeginGetContext(listenerCallback, listener);
-            }
-            catch { }
-        }
-
-        private void listenerCallback(IAsyncResult result)
-        {
-            try
-            {
-                HttpListener lsnr = (HttpListener)result.AsyncState;
-                var context = lsnr.EndGetContext(result);
-                lsnr.BeginGetContext(listenerCallback, lsnr);
-                HandleHTTPContext(context);
-            }
-            catch { }
+            listener.Start(HandleHTTPContext);
         }
 
         public void Abort()
@@ -145,7 +133,7 @@ namespace Gageas.Lutea.HTTPController
         #endregion
 
         #region Handle each request mode
-        private void KickAPI(HttpListenerContext ctx)
+        private void KickAPI(MyHttpListenerContext ctx)
         {
             var req = ctx.Request;
             var res = ctx.Response;
@@ -188,7 +176,7 @@ namespace Gageas.Lutea.HTTPController
             res.Close();
         }
 
-        private void ReturnBlank(HttpListenerContext ctx)
+        private void ReturnBlank(MyHttpListenerContext ctx)
         {
             var res = ctx.Response;
             res.ContentEncoding = Encoding.UTF8;
@@ -203,7 +191,7 @@ namespace Gageas.Lutea.HTTPController
             res.Close();
         }
 
-        private void ReturnDefault(HttpListenerContext ctx)
+        private void ReturnDefault(MyHttpListenerContext ctx)
         {
             var res = ctx.Response;
             var req = ctx.Request;
@@ -243,41 +231,50 @@ namespace Gageas.Lutea.HTTPController
             return (Controller.Current.Filename + "").GetHashCode(); // null文字を空文字列にする
         }
 
-        private void ReturnXML_Playlist(HttpListenerRequest req, HttpListenerResponse res)
+        private void ReturnXML_Playlist(MyHttpListenerRequest req, MyHttpListenerResponse res)
         {
             var useGzip = req.Headers["Accept-Encoding"].Split(',').Contains("gzip");
             if (useGzip) res.AppendHeader("Content-Encoding", "gzip");
 
             byte[] xml = CachedXML_Playlist;
-            if (xml == null)
+            lock (this)
             {
-                var doc = new System.Xml.XmlDocument();
-                var lutea = doc.CreateElement("lutea");
-                doc.AppendChild(lutea);
-                var comet_id = doc.CreateElement("comet_id");
-                lutea.AppendChild(comet_id);
-
-                var playlist = doc.CreateElement("playlist");
-                for (int i = 0; i < Controller.PlaylistRowCount; i++)
+                if (xml == null)
                 {
-                    var item = doc.CreateElement("item");
-                    item.SetAttribute("index", i.ToString());
-                    item.SetAttribute("file_name", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName(Library.LibraryDBColumnTextMinimum.file_name)));
-                    item.SetAttribute("tagAlbum", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName("tagAlbum")));
-                    item.SetAttribute("tagArtist", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName("tagArtist")));
-                    item.SetAttribute("tagTitle", Controller.GetPlaylistRowColumn(i, Controller.GetColumnIndexByName("tagTitle")));
-                    playlist.AppendChild(item);
+                    var doc = new System.Xml.XmlDocument();
+                    var lutea = doc.CreateElement("lutea");
+                    doc.AppendChild(lutea);
+                    var comet_id = doc.CreateElement("comet_id");
+                    lutea.AppendChild(comet_id);
+
+                    var playlist = doc.CreateElement("playlist");
+                    var cifn = Controller.GetColumnIndexByName(Library.LibraryDBColumnTextMinimum.file_name);
+                    var cital = Controller.GetColumnIndexByName("tagAlbum");
+                    var citar = Controller.GetColumnIndexByName("tagArtist");
+                    var citt = Controller.GetColumnIndexByName("tagTitle");
+
+                    for (int i = 0; i < Controller.PlaylistRowCount; i++)
+                    {
+                        var row = Controller.GetPlaylistRow(i);
+                        if (row == null || row.Length <= 1) continue;
+                        var item = doc.CreateElement("item");
+                        item.SetAttribute("file_name", (row[cifn] ?? "").ToString());
+                        item.SetAttribute("tagAlbum", (row[cital] ?? "").ToString());
+                        item.SetAttribute("tagArtist", (row[citar] ?? "").ToString());
+                        item.SetAttribute("tagTitle", (row[citt] ?? "").ToString());
+                        playlist.AppendChild(item);
+                    }
+
+                    lutea.AppendChild(playlist);
+
+                    // cometセッション識別子セット
+                    comet_id.InnerText = GetCometContext_XMLPlaylist().ToString();
+
+                    var ms = new System.IO.MemoryStream();
+                    var xw = new System.Xml.XmlTextWriter(ms, Encoding.UTF8);
+                    doc.Save(xw);
+                    xml = CachedXML_Playlist = ms.GetBuffer().Take((int)ms.Length).ToArray();
                 }
-
-                lutea.AppendChild(playlist);
-
-                // cometセッション識別子セット
-                comet_id.InnerText = GetCometContext_XMLPlaylist().ToString();
-
-                var ms = new System.IO.MemoryStream();
-                var xw = new System.Xml.XmlTextWriter(ms, Encoding.UTF8);
-                doc.Save(xw);
-                xml = CachedXML_Playlist = ms.GetBuffer().Take((int)ms.Length).ToArray();
             }
 
             using (var os = res.OutputStream)
@@ -292,7 +289,7 @@ namespace Gageas.Lutea.HTTPController
             res.Close();
         }
 
-        private void ReturnXML_Info(HttpListenerRequest req, HttpListenerResponse res)
+        private void ReturnXML_Info(MyHttpListenerRequest req, MyHttpListenerResponse res)
         {
             var useGzip = req.Headers["Accept-Encoding"].Split(',').Contains("gzip");
             if (useGzip) res.AppendHeader("Content-Encoding", "gzip");
@@ -342,7 +339,7 @@ namespace Gageas.Lutea.HTTPController
             res.Close();
         }
 
-        private void ReturnXML(HttpListenerContext ctx)
+        private void ReturnXML(MyHttpListenerContext ctx)
         {
             var req = ctx.Request;
             var res = ctx.Response;
@@ -394,7 +391,7 @@ namespace Gageas.Lutea.HTTPController
             holdingConnections_Info.RemoveAll(_ => expiredConnections.Contains(_));
         }
 
-        private void ReturnCover(HttpListenerContext ctx)
+        private void ReturnCover(MyHttpListenerContext ctx)
         {
             var res = ctx.Response;
             res.ContentType = "image/png";
@@ -416,7 +413,7 @@ namespace Gageas.Lutea.HTTPController
             res.Close();
         }
 
-        private void ReturnCoverOriginalSize(HttpListenerContext ctx)
+        private void ReturnCoverOriginalSize(MyHttpListenerContext ctx)
         {
             var res = ctx.Response;
             res.ContentType = "image/jpeg";
@@ -436,12 +433,12 @@ namespace Gageas.Lutea.HTTPController
         #endregion
 
         #region Handle http listener context
-        private void HandleHTTPContext(HttpListenerContext ctx)
+        private void HandleHTTPContext(MyHttpListenerContext ctx)
         {
             var req = ctx.Request;
             var res = ctx.Response;
-            res.AddHeader("Pragma", "no-cache");
-            res.AddHeader("Cache-Control", "no-cache");
+            res.AppendHeader("Pragma", "no-cache");
+            res.AppendHeader("Cache-Control", "no-cache");
 
             string mode = "";
             if (req.QueryString.AllKeys.Contains("mode"))
