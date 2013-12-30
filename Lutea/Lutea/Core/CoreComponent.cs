@@ -223,10 +223,10 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// バッファサイズ
         /// </summary>
-        uint bufferLength = 500;
+        uint bufferLength = 0;
         [Category("Output")]
         [Description("出力バッファサイズ(ms)\nWASAPI使用時に適用されます。\n0で自動設定になります\n※ 停止後に反映されます")]
-        [DefaultValue(500)]
+        [DefaultValue(0)]
         public int BufferLength
         {
             get
