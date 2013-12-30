@@ -810,8 +810,19 @@ namespace Gageas.Lutea.Core
             if (_cache == null) return null;
             if (_cache.Length <= index) return null;
             object[] value = null;
-            if (_cache[index] == null) _cache[index] = h2k6db.FetchRow(GetPlaylistTableName(), index + 1);
-            if ((_cache[index].Length == 0) || (_cache[index][0] == null)) return null;
+            for (int i = 0; i < 5; i++)
+            {
+                if (_cache[index] == null) _cache[index] = h2k6db.FetchRow(GetPlaylistTableName(), index + 1);
+                if ((_cache[index].Length == 0) || (_cache[index][0] == null))
+                {
+                    _cache[index] = null;
+                    Thread.Sleep(1);
+                }
+                else
+                {
+                    break;
+                }
+            }
             value = _cache[index];
             if (value == null || value.Length == 0) return null;
             return value;
