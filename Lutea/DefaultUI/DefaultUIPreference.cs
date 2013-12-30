@@ -278,9 +278,9 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private int coverArtSizeInPlaylistView = 80;
+        private int coverArtSizeInPlaylistView = 100;
         [Description("プレイリストに表示するカバーアートのサイズ")]
-        [DefaultValue(80)]
+        [DefaultValue(100)]
         [Category("Playlist View")]
         public int CoverArtSizeInPlaylistView
         {
