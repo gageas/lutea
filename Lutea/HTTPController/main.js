@@ -84,6 +84,7 @@ function setInfoView(file_name, xml) {
 
     if (file_name == null || file_name.match(/^\s+$/)) {
         $("infoView").innerHTML = "Stop";
+        emphasize("");
     } else {
         env.fields.album = getTagValue(xml, "tagAlbum");
         env.fields.tracknumber = getTagValue(xml, "tagTracknumber");
@@ -225,7 +226,7 @@ function commitQuery(query){
 	commitQueryTimer = setTimeout(function () {
 	    $('queryInput').style.backgroundColor = "#E6E682";
 	    location.hash = encodeURIComponent(query);
-	    hitPath("./?mode=control&operation=createPlaylist&query=" + encodeURIComponent(escape(query)));
+	    hitPath("./?mode=control&operation=createPlaylist&query=" + encodeURIComponent(query));
 	}, 20);
 }
 

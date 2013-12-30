@@ -1,5 +1,6 @@
 ﻿body,html
 {
+    font-family : 'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
     height : 100%;
     margin : 0px;
     padding : 0px;
@@ -28,10 +29,8 @@ div#img_over
     width:166px;
     height:166px;
     border : outset 2px #aaa; /*aaa*/
-       border-radius: 14px;         /* CSS3 */
-   -moz-border-radius: 14px;    /* Firefox */
-   -webkit-border-radius: 14px; /* Safari,Chrome */
-   opacity : 0.8;
+    border-radius: 14px;         /* CSS3 */
+    opacity : 0.8;
 }
 
 div#img_over_out
@@ -42,9 +41,7 @@ div#img_over_out
     width:170px;
     height:170px;
     border : solid 6px white;
-       border-radius: 20px;         /* CSS3 */
-   -moz-border-radius: 20px;    /* Firefox */
-   -webkit-border-radius: 20px; /* Safari,Chrome */
+    border-radius: 20px;         /* CSS3 */
 }
 
 td#playlistViewWrap
@@ -60,7 +57,7 @@ div#infoView
     padding : 5px;
     vertical-align : top;
     height : 100%;
-    font-family : メイリオ;
+    font-family : 'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
     font-size : 150%;
     color : navy;
     text-shadow: 2px 2px 2px silver;
@@ -153,4 +150,9 @@ input#queryInput
 input#queryInput:active, input#queryInput:focus
 {
     font-weight : bold;
+}
+
+/* iOSでbuttonの角丸を解除 */
+input[type="button"],input[type="submit"] {
+    -webkit-appearance: none;
 }

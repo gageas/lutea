@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <title>Lutea</title>
-<meta http-equiv="Content-type" content="text/html; charset=utf8" /><meta http-equiv="X-UA-Compatible" content="IE=8" />
+<meta http-equiv="Content-type" content="text/html; charset=utf8" /><meta http-equiv="X-UA-Compatible" content="IE=11" />
 <!script type="text/javascript" src="https://github.com/gageas/JSTitleFormatting/raw/master/tf.js"><!/script>
 <script type="text/javascript">
 %%SCRIPT%%
@@ -74,8 +74,11 @@ var playlistItemTF = TitleFormatting.Prepare("$h([$if($greater($length(%album%),
 <body onload="init()"><! style="overflow:hidden;">
 <table id="layoutTable">
     <tr>
-        <td width="0" rowspan="2">
-            <a href="./?mode=coverorigsize" target="_blank" style="border:0px;" onclick="showLargeCover();return false;"><div id="img_over_out"></div><div id="img_over"></div><img src="./?mode=cover" width="%%IMAGE_SIZE%%" height="%%IMAGE_SIZE%%" id="coverArt" alt="coverArt" /></a>
+        <td width="0" rowspan="2" style="vertical-align:top;">
+            <a href="./?mode=coverorigsize" target="_blank" style="border:0px;" onclick="showLargeCover();return false;">
+            <div id="img_over_out"></div>
+            <div id="img_over"></div>
+            <img src="./?mode=cover" width="%%IMAGE_SIZE%%" height="%%IMAGE_SIZE%%" id="coverArt" alt="coverArt" /></a>
         </td>
         <td width="100%">
             <div id="infoView"></div>

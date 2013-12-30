@@ -120,6 +120,7 @@ namespace Gageas.Lutea.HTTPController
         public void SetEnable(bool enable)
         {
             pref.Enabled = enable;
+            Setup();
         }
 
         public bool GetEnable()
