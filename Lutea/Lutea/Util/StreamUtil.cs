@@ -8,10 +8,10 @@ namespace Gageas.Lutea.Util
 {
     static class StreamUtil
     {
-        public static byte[] ReadBytes(this Stream stream, int offset, int count)
+        public static byte[] ReadBytes(this Stream stream, int count)
         {
             byte[] buffer = new byte[count];
-            var read = stream.Read(buffer, offset, count);
+            var read = stream.Read(buffer, 0, count);
             if (read != count)
             {
                 throw new System.IO.EndOfStreamException();
