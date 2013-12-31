@@ -326,10 +326,12 @@ namespace Gageas.Lutea.Tags
             if (frame.Size <= 0) throw new EndOfTagException();
             if (frame.Size > strm.Length) throw new EndOfTagException();
 
-            int readsize = frameHeaderSize + frame.Size;
-            if (readsize > strm.Length) throw new EndOfTagException();
+//            int readsize = frame.Size;
+            if (frame.Size > strm.Length) throw new EndOfTagException();
 
-            int extraHeaderLen = 0;
+//            int extraHeaderLen = 0;
+
+            int offset = 0;
             bool unsupported = false;
             if (frame.ID == null)
             {
@@ -340,24 +342,26 @@ namespace Gageas.Lutea.Tags
             if (frame.Flag.HasFlag(FRAME_FLAG.CRYPTED))
             {
                 unsupported = true;
-                extraHeaderLen += 1;
             }
 
             // 圧縮は実装してない
             if (frame.Flag.HasFlag(FRAME_FLAG.COMPRESSED))
             {
                 unsupported = true;
-                extraHeaderLen += 4;
             }
 
             // グループ識別子を無視
             if (frame.Flag.HasFlag(FRAME_FLAG.GROUPED))
             {
                 // unsupportedにはしない
-                extraHeaderLen += 1;
+                offset += 1;
             }
 
-            strm.Seek(extraHeaderLen, SeekOrigin.Current);
+            // DATALENGTHを飛ばす
+            if (frame.Flag.HasFlag(FRAME_FLAG.DATALENGTH))  
+            {
+                offset += 4;
+            }
 
             if (unsupported)
             {
@@ -365,20 +369,13 @@ namespace Gageas.Lutea.Tags
                 return null;
             }
 
-            byte[] buffer = strm.ReadBytes(0, frame.Size);
+            byte[] buffer = strm.ReadBytes(offset, frame.Size - offset);
             if (frame.Flag.HasFlag(FRAME_FLAG.UNSYNC) && tag.head.Version == ID3V2_VER.ID3V24)
             {
                 decodeUnsync(ref buffer);
             }
 
-            int offset = 0;
-            // DATALENGTHを飛ばす
-            if (frame.Flag.HasFlag(FRAME_FLAG.DATALENGTH))  
-            {
-                offset += 4;
-            }
-
-            MemoryStream frameBodyStream = new MemoryStream(buffer, offset, buffer.Length - offset);
+            MemoryStream frameBodyStream = new MemoryStream(buffer);
             readFrameBody(frameBodyStream, frame, createImageObject);
             return frame;
         }
