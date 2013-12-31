@@ -232,7 +232,7 @@ namespace Gageas.Lutea.Tags
         public static ID3tag readID3tag(System.IO.Stream strm, bool createImageObject)
         {
             // ヘッダ読み込み
-            byte[] id3_header = strm.ReadBytes(0, HEADER_LEN);
+            byte[] id3_header = strm.ReadBytes(HEADER_LEN);
             Header header = readHeader(id3_header);
             if (header == null) return null;
             if (header.Size >= strm.Length) return null;
@@ -242,7 +242,7 @@ namespace Gageas.Lutea.Tags
             // 拡張ヘッダがあるときサイズだけ読んでスキップ
             if (tag.head.Flag.HasFlag(HEADER_FLAG.EXTENSION))
             {
-                byte[] ext_header = strm.ReadBytes(0, EXT_HEADER_LEN);
+                byte[] ext_header = strm.ReadBytes(EXT_HEADER_LEN);
                 var size = tag.head.Version == ID3V2_VER.ID3V23
                     ? ReadUInt32(ext_header, 0)
                     : ReadUInt28(ext_header, 0) - EXT_HEADER_LEN; // v3とv4でEXT_HEADER_LENの扱いが違う
@@ -250,7 +250,7 @@ namespace Gageas.Lutea.Tags
             }
 
             // 全Frameのデータ領域を読み出す
-            byte[] frame_buf = strm.ReadBytes(0, header.Size);
+            byte[] frame_buf = strm.ReadBytes(header.Size);
 
             // .2, .3の場合は非同期化の解除
             if (header.Version != ID3V2_VER.ID3V24 && header.Flag.HasFlag(HEADER_FLAG.UNSYNC))
@@ -319,17 +319,12 @@ namespace Gageas.Lutea.Tags
         private static Frame readFrame(Stream strm, ID3tag tag, bool createImageObject)
         {
             int frameHeaderSize = (tag.head.Version == ID3V2_VER.ID3V22) ? FRAME_HEADER_LEN_2 : FRAME_HEADER_LEN_34;
-            if (strm.Length < frameHeaderSize) throw new EndOfTagException();
-            byte[] buf = strm.ReadBytes(0, frameHeaderSize);
+            if (strm.Length-strm.Position < frameHeaderSize) throw new EndOfTagException();
+            byte[] buf = strm.ReadBytes(frameHeaderSize);
             var frame = readFrameHeader(buf, tag.head.Version);
 
             if (frame.Size <= 0) throw new EndOfTagException();
-            if (frame.Size > strm.Length) throw new EndOfTagException();
-
-//            int readsize = frame.Size;
-            if (frame.Size > strm.Length) throw new EndOfTagException();
-
-//            int extraHeaderLen = 0;
+            if (strm.Length - strm.Position < frame.Size) throw new EndOfTagException();
 
             int offset = 0;
             bool unsupported = false;
@@ -369,7 +364,8 @@ namespace Gageas.Lutea.Tags
                 return null;
             }
 
-            byte[] buffer = strm.ReadBytes(offset, frame.Size - offset);
+            strm.Seek(offset, SeekOrigin.Current);
+            byte[] buffer = strm.ReadBytes(frame.Size - offset);
             if (frame.Flag.HasFlag(FRAME_FLAG.UNSYNC) && tag.head.Version == ID3V2_VER.ID3V24)
             {
                 decodeUnsync(ref buffer);
@@ -429,7 +425,7 @@ namespace Gageas.Lutea.Tags
                     sr.Seek(sr.Length, SeekOrigin.Current);
                     return;
                 }
-                var tmp = sr.ReadBytes(0, (int)sr.Length);
+                var tmp = sr.ReadBytes((int)sr.Length);
                 int offset = 0;
                 string imgtype = Encoding.ASCII.GetString(tmp, 1, 3);
                 if ((imgtype == "JPG") || (imgtype == "PNG"))
@@ -452,7 +448,7 @@ namespace Gageas.Lutea.Tags
             }
             else
             {
-                var tmp = sr.ReadBytes(0, (int)sr.Length);
+                var tmp = sr.ReadBytes((int)sr.Length);
                 Encoding enc = ID32Encodings[0]; // default
                 int offset = 0;
                 if (tmp[0] < ID32Encodings.Length)
