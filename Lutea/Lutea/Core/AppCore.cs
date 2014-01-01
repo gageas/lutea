@@ -194,7 +194,7 @@ namespace Gageas.Lutea.Core
         {
             get
             {
-                return MyCoreComponent.ImportTypes.ToEnum();
+                return MyCoreComponent.ImportTypes;
             }
         }
         #endregion
