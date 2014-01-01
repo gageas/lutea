@@ -144,6 +144,9 @@ namespace Gageas.Lutea.Tags
                     case 0x2D2D2D2D: // ----
                         Read____((int)atom_size);
                         break;
+                    case 0x70696E66: // pinf
+                        tags.Add(new KeyValuePair<string, object>("PURCHASED", "true"));
+                        break;
                     default:
                         if (KnownListAtoms.ContainsKey(atom_name))
                         {
@@ -246,6 +249,10 @@ namespace Gageas.Lutea.Tags
             tags.Add(new KeyValuePair<string, object>("__X-LUTEA-CHANS__", channelcount.ToString()));
             tags.Add(new KeyValuePair<string, object>("__X-LUTEA-BITS__", samplesize.ToString()));
             tags.Add(new KeyValuePair<string, object>("__X-LUTEA-FREQ__", (samplerate >> 16).ToString()));
+            if (length - size > 0)
+            {
+                ReadRecurse(length - size);
+            }
         }
 
         private void Read____(int length)
