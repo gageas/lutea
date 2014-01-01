@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
-
+using System.Drawing.Design;
+using System.Windows.Forms.Design;
 using System.ComponentModel;
 using Gageas.Wrapper.BASS;
 
@@ -17,137 +18,6 @@ namespace Gageas.Lutea.Core
     public class CoreComponent : LuteaComponentInterface
     {
         private const string PseudoDeviceNameForDefaultOutput = "(Default)";
-
-        [Serializable]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
-        public class ImportTypeSelector
-        {
-            public override string ToString()
-            {
-                var enabledProps = this.GetType().GetProperties().Where(prop => (bool)prop.GetValue(this, null));
-                if(enabledProps.Count() == 0){
-                    return "";
-                }else{
-                    return enabledProps.Select(_ => _.Name).Aggregate((x, y) => x + ", " + y);
-                }
-            }
-
-            class ImportableTypeMappingAttr : Attribute {
-                public Library.Importer.ImportableTypes map;
-                public ImportableTypeMappingAttr(Library.Importer.ImportableTypes map)
-                {
-                    this.map = map;
-                }
-            }
-
-            public ImportTypeSelector()
-            {
-                var props = this.GetType().GetProperties();
-                foreach (var prop in props)
-                {
-                    var defVal = (DefaultValueAttribute[])prop.GetCustomAttributes(typeof(DefaultValueAttribute), false);
-                    prop.SetValue(this, defVal[0].Value, null);
-                }
-            }
-
-            public Library.Importer.ImportableTypes ToEnum()
-            {
-                Library.Importer.ImportableTypes result = 0;
-                var props = this.GetType().GetProperties();
-                foreach (var prop in props)
-                {
-                    var value = (bool)prop.GetValue(this, null);
-                    if (value)
-                    {
-                        var mapVal = (ImportableTypeMappingAttr[])prop.GetCustomAttributes(typeof(ImportableTypeMappingAttr), false);
-                        result |= mapVal[0].map;
-                    }
-                }
-                return result;
-            }
-
-            public void FromEnum(Library.Importer.ImportableTypes typeEnum)
-            {
-                var props = this.GetType().GetProperties();
-                foreach (var prop in props)
-                {
-                    var mapVal = (ImportableTypeMappingAttr[])prop.GetCustomAttributes(typeof(ImportableTypeMappingAttr), false);
-                    prop.SetValue(this, (typeEnum & mapVal[0].map) != 0, null);
-                }
-            }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.MP2)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool mp2 { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.MP3)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool mp3 { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.MP4)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool mp4 { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.M4A)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [Description("一般のm4aファイル")]
-            [DefaultValue(true)]
-            public bool m4a_others { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.M4AiTunes)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [Description("iTunes Storeで購入したm4aファイル")]
-            [DefaultValue(true)]
-            public bool m4a_iTunesStore { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.OGG)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool ogg { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.WMA)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool wma { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.ASF)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool asf { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.FLAC)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool flac { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.TTA)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool tta { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.APE)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool ape { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.WV)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool wv { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.TAK)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool tak { get; set; }
-
-            [ImportableTypeMappingAttr(Library.Importer.ImportableTypes.CUE)]
-            [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-            [DefaultValue(true)]
-            public bool cue { get; set; }
-        }
 
         bool enableReplayGain = true;
         [Category("ReplayGain")]
@@ -344,13 +214,21 @@ namespace Gageas.Lutea.Core
             }
         }
 
-        ImportTypeSelector importTypes = new ImportTypeSelector();
+        private Library.Importer.ImportableTypes importTypes = Library.Importer.AllImportableTypes;
         [Description("ライブラリに取り込むファイル種別")]
         [Category("Library")]
-        public ImportTypeSelector ImportTypes
+        [Editor(typeof(FileTypeUITypeEditor), typeof(UITypeEditor))]
+        [DefaultValue(Library.Importer.AllImportableTypes)]
+        public Library.Importer.ImportableTypes ImportTypes
         {
-            get { return importTypes; }
-            set { if(value != null)importTypes = value; }
+            get
+            {
+                return importTypes;
+            }
+            set
+            {
+                importTypes = value;
+            }
         }
 
         /// <summary>
@@ -466,6 +344,23 @@ namespace Gageas.Lutea.Core
         public bool GetEnable()
         {
             return true;
+        }
+
+        public class FileTypeUITypeEditor : UITypeEditor
+        {
+            public override System.Drawing.Design.UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+            {
+                return System.Drawing.Design.UITypeEditorEditStyle.DropDown;
+            }
+            public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+            {
+                IWindowsFormsEditorService edSvc = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
+                if (edSvc == null) return value;
+                EnumFlagsUITypeEdotorEditControl mpc = new EnumFlagsUITypeEdotorEditControl(typeof(Library.Importer.ImportableTypes), (int)value);
+                mpc.Size = new System.Drawing.Size(50, 300);
+                edSvc.DropDownControl(mpc);
+                return mpc.Value;
+            }
         }
     }
 }

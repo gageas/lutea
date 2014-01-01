@@ -32,6 +32,12 @@ namespace Gageas.Lutea.Library
             TAK = (1 << 12),
             CUE = (1 << 13),
         };
+        public const ImportableTypes AllImportableTypes
+            = ImportableTypes.MP2 | ImportableTypes.MP3 | ImportableTypes.MP4
+            | ImportableTypes.M4A | ImportableTypes.M4AiTunes
+            | ImportableTypes.OGG | ImportableTypes.WMA | ImportableTypes.ASF
+            | ImportableTypes.FLAC | ImportableTypes.TTA | ImportableTypes.APE
+            | ImportableTypes.WV | ImportableTypes.TAK | ImportableTypes.CUE;
         private const int WORKER_THREADS_N = 8;
         private const string SelectModifySTMT = "SELECT modify FROM list WHERE file_name = ? OR file_name = ?;";
         private static object LOCKOBJ = new object();

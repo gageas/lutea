@@ -104,6 +104,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\EnumFlagsUITypeEdotorEditControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Core\EnumFlagsUITypeEdotorEditControl.Designer.cs">
+      <DependentUpon>EnumFlagsUITypeEdotorEditControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Core\Lametag.cs" />
     <Compile Include="Core\Lutea.cs" />
     <Compile Include="Core\CoreComponent.cs" />
@@ -141,6 +147,9 @@
     <Compile Include="Util\LuteaLastfm.cs" />
     <Compile Include="Util\StreamUtil.cs" />
     <Compile Include="Util\Util.cs" />
+    <EmbeddedResource Include="Core\EnumFlagsUITypeEdotorEditControl.resx">
+      <DependentUpon>EnumFlagsUITypeEdotorEditControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
