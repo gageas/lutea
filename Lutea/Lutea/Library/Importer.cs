@@ -352,7 +352,7 @@ namespace Gageas.Lutea.Library
                 tr.tag = tag;
                 if (tr.file_ext == "M4A")
                 {
-                    if (tag.Exists(_ => _.Key == "PURCHASE DATE"))
+                    if (tag.Exists(_ => (_.Key == "PURCHASE DATE") || (_.Key == "PURCHASED")))
                     {
                         if ((TypesToImport & ImportableTypes.M4AiTunes) == 0) return;
                     }
