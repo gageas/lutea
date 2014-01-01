@@ -1060,7 +1060,7 @@ namespace Gageas.Lutea.Core
                 }
                 object[] row = Controller.GetPlaylistRow(index);
                 string filename = (string)row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)];
-                BASS.Stream.StreamFlag flag = BASS.Stream.StreamFlag.BASS_STREAM_DECODE;
+                BASS.Stream.StreamFlag flag = BASS.Stream.StreamFlag.BASS_STREAM_DECODE | BASS.Stream.StreamFlag.BASS_STREAM_ASYNCFILE;
                 if (UseFloatingPointOutput) flag |= BASS.Stream.StreamFlag.BASS_STREAM_FLOAT;
                 StreamObject nextStream = null;
                 try

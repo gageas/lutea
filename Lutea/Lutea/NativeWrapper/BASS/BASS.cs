@@ -9,7 +9,6 @@ namespace Gageas.Wrapper.BASS
     public class BASS
     {
         internal const uint BASS_UNICODE = 0x80000000;
-        internal const uint BASS_ASYNCFILE = 0x40000000;
         internal const uint BASS_POS_BYTE = 0;
 
         public delegate UInt32 StreamProc(IntPtr bffer, UInt32 length);
@@ -524,6 +523,7 @@ namespace Gageas.Wrapper.BASS
                 BASS_STREAM_DECODE = 0x200000,
                 BASS_STREAM_AUTOFREE =  0x40000,
                 BASS_STREAM_FLOAT = 256,
+                BASS_STREAM_ASYNCFILE = 0x40000000,
             }
             override public void Dispose()
             {
@@ -556,7 +556,7 @@ namespace Gageas.Wrapper.BASS
         {
             public FileStream(String filename, StreamFlag flags = 0, ulong offset = 0, ulong length = 0)
             {
-                IntPtr ret = _BASS_StreamCreateFile(false, filename, offset, length, (BASS_UNICODE | BASS_ASYNCFILE | (uint)flags));
+                IntPtr ret = _BASS_StreamCreateFile(false, filename, offset, length, (BASS_UNICODE | (uint)flags));
                 if (ret == IntPtr.Zero)
                 {
                     throw (new Exception("Could not create stream.\ncode is " + BASS_ErrorGetCode()));
