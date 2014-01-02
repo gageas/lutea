@@ -17,7 +17,6 @@ namespace Gageas.Lutea.DefaultUI
         private Color Color2;
         private int SpectrumMode;
         private Thread spectrumAnalyzerThread = null;
-
         private Bitmap Image;
 
         public VisualizeView()
@@ -49,7 +48,7 @@ namespace Gageas.Lutea.DefaultUI
         public void Start()
         {
             if(spectrumAnalyzerThread == null){
-                spectrumAnalyzerThread = new Thread(SpectrumAnalyzerProc);
+                spectrumAnalyzerThread = new Thread(() => { try { SpectrumAnalyzerProc(); } catch (ThreadInterruptedException) { } });
                 spectrumAnalyzerThread.IsBackground = true;
                 spectrumAnalyzerThread.Start();
             }
@@ -59,7 +58,8 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (spectrumAnalyzerThread != null)
             {
-                spectrumAnalyzerThread.Abort();
+                spectrumAnalyzerThread.Interrupt();
+                spectrumAnalyzerThread.Join();
                 spectrumAnalyzerThread = null;
             }
         }
@@ -89,43 +89,49 @@ namespace Gageas.Lutea.DefaultUI
             SolidBrush opacityBackgroundBlush = new SolidBrush(Color.FromArgb(70, this.Parent.BackColor));
             while (true)
             {
-                this.Invoke((MethodInvoker)(() =>
-                {
-                    w = this.Width;
-                    h = this.Height;
+                if(Controller.IsPlaying){
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        try
+                        {
+                            w = this.Width;
+                            h = this.Height;
 
-                    // 描画の条件が変わる等した場合
-                    if (b == null || this.Image == null || w != b.Width || h != b.Height)
-                    {
-                        if (w * h > 0)
-                        {
-                            b = new Bitmap(this.Width, this.Height);
-                            using (var g = Graphics.FromImage(b))
+                            // 描画の条件が変わる等した場合
+                            if (b == null || this.Image == null || w != b.Width || h != b.Height)
                             {
-                                g.Clear(this.Parent.BackColor);
+                                if (w * h > 0)
+                                {
+                                    b = new Bitmap(this.Width, this.Height);
+                                    using (var g = Graphics.FromImage(b))
+                                    {
+                                        g.Clear(this.Parent.BackColor);
+                                    }
+                                    this.Image = (Bitmap)b.Clone();
+                                    barPosition = null;
+                                    isLogarithmic = FFTLogarithmic;
+                                    fftNum = FFTNum;
+                                    fftdata = new float[(int)fftNum / 2];
+                                    points = new Point[fftdata.Length];
+                                }
+                                else
+                                {
+                                    this.Image = null;
+                                    b = null;
+                                }
                             }
-                            this.Image = (Bitmap)b.Clone();
-                            barPosition = null;
-                            isLogarithmic = FFTLogarithmic;
-                            fftNum = FFTNum;
-                            fftdata = new float[(int)fftNum / 2];
-                            points = new Point[fftdata.Length];
+                            if (this.Image != null && spectrumAnalyzerThread != null)
+                            {
+                                using (var g = Graphics.FromImage(this.Image))
+                                {
+                                    g.DrawImage(b, 0, 0);
+                                }
+                                this.Refresh();
+                            }
                         }
-                        else
-                        {
-                            this.Image = null;
-                            b = null;
-                        }
-                    }
-                    if (this.Image != null && spectrumAnalyzerThread != null)
-                    {
-                        using (var g = Graphics.FromImage(this.Image))
-                        {
-                            g.DrawImage(b, 0, 0);
-                        }
-                        this.Refresh();
-                    }
-                }));
+                        catch (Exception) { }
+                    }));
+                }
 
                 Thread.Sleep(20);
                 if (SpectrumMode < 0 || SpectrumMode > 4 || !Controller.IsPlaying)
