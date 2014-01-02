@@ -286,7 +286,7 @@ namespace Gageas.Lutea.DefaultUI
                 if (value != itemHeight)
                 {
                     itemHeight = value;
-                    RefreshPlaylist(false, -1);
+                    RefreshPlaylist(false, emphasizedRowId);
                 }
             }
         }
