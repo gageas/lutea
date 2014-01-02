@@ -188,7 +188,7 @@ namespace Gageas.Lutea.Core
 
         float volume = 1.0F;
         [Browsable(false)]
-        internal float Volume
+        public float Volume
         {
             get
             {
