@@ -1270,10 +1270,7 @@ namespace Gageas.Lutea.DefaultUI
 
             this.Invoke((MethodInvoker)(() =>
             {
-                dummyFilterTab.Enabled = false;
-                list.Items.Clear();
                 setStatusText("読み仮名を取得しています");
-                list.BeginUpdate();
             }));
 
             ListViewItem selected = null;
@@ -1330,10 +1327,13 @@ namespace Gageas.Lutea.DefaultUI
                 item_allFiles.Tag = null;
                 items.Add(item_allFiles);
 
-                var grpList = groups.Select((_) => _.Value).ToList().OrderBy((_) => _.Header).ToArray();
+                var grpList = groups.Select((_) => _.Value).OrderBy((_) => _.Header).ToArray();
                 this.Invoke((MethodInvoker)(() =>
                 {
                     setStatusText("　 ");
+                    dummyFilterTab.Enabled = false;
+                    list.BeginUpdate();
+                    list.Items.Clear();
                     list.Groups.AddRange(grpList);
                     list.Items.AddRange(items.ToArray());
                     createFilterIndex(list, grpList);
