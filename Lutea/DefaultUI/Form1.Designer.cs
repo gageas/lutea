@@ -48,12 +48,14 @@
             this.splitContainer4 = new System.Windows.Forms.SplitContainer();
             this.coverArtView = new Gageas.Lutea.DefaultUI.CoverArtView();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.trackInfoText2 = new System.Windows.Forms.Label();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.visualizeView = new Gageas.Lutea.DefaultUI.VisualizeView();
             this.trackInfoText = new System.Windows.Forms.Label();
+            this.trackInfoText2 = new System.Windows.Forms.Label();
             this.listView2 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.visualizeView = new Gageas.Lutea.DefaultUI.VisualizeView();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView();
@@ -134,6 +136,8 @@
             this.splitContainer4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).BeginInit();
             this.panel1.SuspendLayout();
+            this.panel2.SuspendLayout();
+            this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.visualizeView)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -313,35 +317,55 @@
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.trackInfoText2);
-            this.panel1.Controls.Add(this.trackInfoText);
+            this.panel1.Controls.Add(this.panel2);
             this.panel1.Controls.Add(this.listView2);
-            this.panel1.Controls.Add(this.visualizeView);
             resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Name = "panel1";
             // 
-            // trackInfoText2
+            // panel2
             // 
-            resources.ApplyResources(this.trackInfoText2, "trackInfoText2");
-            this.trackInfoText2.Name = "trackInfoText2";
+            this.panel2.Controls.Add(this.panel3);
+            this.panel2.Controls.Add(this.trackInfoText2);
+            resources.ApplyResources(this.panel2, "panel2");
+            this.panel2.Name = "panel2";
+            // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.visualizeView);
+            this.panel3.Controls.Add(this.trackInfoText);
+            resources.ApplyResources(this.panel3, "panel3");
+            this.panel3.Name = "panel3";
+            // 
+            // visualizeView
+            // 
+            resources.ApplyResources(this.visualizeView, "visualizeView");
+            this.visualizeView.Name = "visualizeView";
+            this.visualizeView.TabStop = false;
             // 
             // trackInfoText
             // 
-            resources.ApplyResources(this.trackInfoText, "trackInfoText");
             this.trackInfoText.AutoEllipsis = true;
-            this.trackInfoText.BackColor = System.Drawing.Color.Transparent;
+            this.trackInfoText.BackColor = System.Drawing.SystemColors.Control;
+            resources.ApplyResources(this.trackInfoText, "trackInfoText");
             this.trackInfoText.Name = "trackInfoText";
             this.trackInfoText.UseMnemonic = false;
+            // 
+            // trackInfoText2
+            // 
+            this.trackInfoText2.AutoEllipsis = true;
+            resources.ApplyResources(this.trackInfoText2, "trackInfoText2");
+            this.trackInfoText2.Name = "trackInfoText2";
+            this.trackInfoText2.UseMnemonic = false;
             // 
             // listView2
             // 
             this.listView2.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            resources.ApplyResources(this.listView2, "listView2");
             this.listView2.BackColor = System.Drawing.SystemColors.ControlLight;
             this.listView2.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listView2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2});
+            resources.ApplyResources(this.listView2, "listView2");
             this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
             this.listView2.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
@@ -359,12 +383,6 @@
             // columnHeader2
             // 
             resources.ApplyResources(this.columnHeader2, "columnHeader2");
-            // 
-            // visualizeView
-            // 
-            resources.ApplyResources(this.visualizeView, "visualizeView");
-            this.visualizeView.Name = "visualizeView";
-            this.visualizeView.TabStop = false;
             // 
             // tabControl1
             // 
@@ -864,6 +882,9 @@
             this.splitContainer4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).EndInit();
             this.panel1.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
+            this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.visualizeView)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
@@ -968,6 +989,8 @@
         private System.Windows.Forms.ToolStripMenuItem notifyIconToolStripMenuItem_ShowBalloon;
         private System.Windows.Forms.ToolStripMenuItem コピーToolStripMenuItem;
         private System.Windows.Forms.Label trackInfoText2;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel panel3;
     }
 }
 
