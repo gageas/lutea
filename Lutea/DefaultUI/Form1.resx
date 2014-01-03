@@ -127,13 +127,13 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="queryComboBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 513</value>
+    <value>0, 400</value>
   </data>
   <data name="queryComboBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="queryComboBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1068, 23</value>
+    <value>801, 20</value>
   </data>
   <data name="queryComboBox.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -157,7 +157,7 @@
     <value>Fill</value>
   </data>
   <data name="tableLayoutPanel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 27</value>
+    <value>0, 24</value>
   </data>
   <data name="tableLayoutPanel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
@@ -166,7 +166,7 @@
     <value>2</value>
   </data>
   <data name="tableLayoutPanel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1068, 536</value>
+    <value>801, 420</value>
   </data>
   <data name="tableLayoutPanel1.TabIndex" type="System.Int32, mscorlib">
     <value>25</value>
@@ -184,16 +184,16 @@
     <value>3</value>
   </data>
   <data name="tableLayoutPanel1.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="queryComboBox" Row="1" RowSpan="1" Column="0" ColumnSpan="2" /&gt;&lt;Control Name="splitContainer1" Row="0" RowSpan="1" Column="0" ColumnSpan="2" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,160,Percent,100" /&gt;&lt;Rows Styles="Percent,100,AutoSize,0,Absolute,25" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="queryComboBox" Row="1" RowSpan="1" Column="0" ColumnSpan="2" /&gt;&lt;Control Name="splitContainer1" Row="0" RowSpan="1" Column="0" ColumnSpan="2" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,120,Percent,100" /&gt;&lt;Rows Styles="Percent,100,AutoSize,0,Absolute,20" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="splitContainer1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
   <data name="splitContainer1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 3</value>
+    <value>0, 2</value>
   </data>
   <data name="splitContainer1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 3, 0, 0</value>
+    <value>0, 2, 0, 0</value>
   </data>
   <data name="splitContainer2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -202,7 +202,7 @@
     <value>0, 0</value>
   </data>
   <data name="splitContainer2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="splitContainer2.Orientation" type="System.Windows.Forms.Orientation, System.Windows.Forms">
     <value>Horizontal</value>
@@ -211,49 +211,49 @@
     <value>62, 36</value>
   </metadata>
   <data name="クエリ作成ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 24</value>
+    <value>165, 22</value>
   </data>
   <data name="クエリ作成ToolStripMenuItem.Text" xml:space="preserve">
     <value>クエリ作成...</value>
   </data>
   <data name="editToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 24</value>
+    <value>165, 22</value>
   </data>
   <data name="editToolStripMenuItem.Text" xml:space="preserve">
     <value>クエリ編集...</value>
   </data>
   <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>189, 6</value>
+    <value>162, 6</value>
   </data>
   <data name="newDirectoryToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 24</value>
+    <value>165, 22</value>
   </data>
   <data name="newDirectoryToolStripMenuItem.Text" xml:space="preserve">
     <value>新しいフォルダ...</value>
   </data>
   <data name="reloadToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 24</value>
+    <value>165, 22</value>
   </data>
   <data name="reloadToolStripMenuItem.Text" xml:space="preserve">
     <value>最新の情報に更新</value>
   </data>
   <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>189, 6</value>
+    <value>162, 6</value>
   </data>
   <data name="削除ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 24</value>
+    <value>165, 22</value>
   </data>
   <data name="削除ToolStripMenuItem.Text" xml:space="preserve">
     <value>削除...</value>
   </data>
   <data name="名前の変更ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>192, 24</value>
+    <value>165, 22</value>
   </data>
   <data name="名前の変更ToolStripMenuItem.Text" xml:space="preserve">
     <value>名前の変更...</value>
   </data>
   <data name="queryTreeViewContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>193, 160</value>
+    <value>166, 148</value>
   </data>
   <data name="&gt;&gt;queryTreeViewContextMenuStrip1.Name" xml:space="preserve">
     <value>queryTreeViewContextMenuStrip1</value>
@@ -271,7 +271,7 @@
     <value>0, 0</value>
   </data>
   <data name="treeView1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="treeView1.Nodes" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
@@ -326,16 +326,16 @@
     <value>FlatButtons</value>
   </data>
   <data name="tabPage1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 28</value>
+    <value>4, 25</value>
   </data>
   <data name="tabPage1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="tabPage1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>215, 284</value>
+    <value>215, 176</value>
   </data>
   <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -368,7 +368,7 @@
     <value>0, 0</value>
   </data>
   <data name="dummyFilterTab.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 316</value>
+    <value>223, 205</value>
   </data>
   <data name="dummyFilterTab.TabIndex" type="System.Int32, mscorlib">
     <value>25</value>
@@ -398,13 +398,10 @@
     <value>1</value>
   </data>
   <data name="splitContainer2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 510</value>
+    <value>223, 398</value>
   </data>
   <data name="splitContainer2.SplitterDistance" type="System.Int32, mscorlib">
     <value>189</value>
-  </data>
-  <data name="splitContainer2.SplitterWidth" type="System.Int32, mscorlib">
-    <value>5</value>
   </data>
   <data name="splitContainer2.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -443,7 +440,7 @@
     <value>0, 0</value>
   </data>
   <data name="splitContainer3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="splitContainer3.Orientation" type="System.Windows.Forms.Orientation, System.Windows.Forms">
     <value>Horizontal</value>
@@ -458,13 +455,16 @@
     <value>0, 0</value>
   </data>
   <data name="splitContainer4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="coverArtView.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
   <data name="coverArtView.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
+  </data>
+  <data name="coverArtView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
   </data>
   <data name="coverArtView.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 120</value>
@@ -496,14 +496,104 @@
   <data name="&gt;&gt;splitContainer4.Panel1.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="trackInfoText2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+  <data name="visualizeView.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="visualizeView.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="visualizeView.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="visualizeView.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 31</value>
+  </data>
+  <data name="visualizeView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 2, 3, 2</value>
+  </data>
+  <data name="visualizeView.Size" type="System.Drawing.Size, System.Drawing">
+    <value>294, 63</value>
+  </data>
+  <data name="visualizeView.TabIndex" type="System.Int32, mscorlib">
+    <value>100</value>
+  </data>
+  <data name="&gt;&gt;visualizeView.Name" xml:space="preserve">
+    <value>visualizeView</value>
+  </data>
+  <data name="&gt;&gt;visualizeView.Type" xml:space="preserve">
+    <value>Gageas.Lutea.DefaultUI.VisualizeView, DefaultUI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;visualizeView.Parent" xml:space="preserve">
+    <value>panel3</value>
+  </data>
+  <data name="&gt;&gt;visualizeView.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="trackInfoText.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Top</value>
+  </data>
+  <data name="trackInfoText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>メイリオ, 15.75pt</value>
+  </data>
+  <data name="trackInfoText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="trackInfoText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>294, 31</value>
+  </data>
+  <data name="trackInfoText.TabIndex" type="System.Int32, mscorlib">
+    <value>99</value>
+  </data>
+  <data name="trackInfoText.Text" xml:space="preserve">
+    <value>trackInfoText</value>
+  </data>
+  <data name="&gt;&gt;trackInfoText.Name" xml:space="preserve">
+    <value>trackInfoText</value>
+  </data>
+  <data name="&gt;&gt;trackInfoText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;trackInfoText.Parent" xml:space="preserve">
+    <value>panel3</value>
+  </data>
+  <data name="&gt;&gt;trackInfoText.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="panel3.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="panel3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 24</value>
+  </data>
+  <data name="panel3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>294, 94</value>
+  </data>
+  <data name="panel3.TabIndex" type="System.Int32, mscorlib">
+    <value>103</value>
+  </data>
+  <data name="&gt;&gt;panel3.Name" xml:space="preserve">
+    <value>panel3</value>
+  </data>
+  <data name="&gt;&gt;panel3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel3.Parent" xml:space="preserve">
+    <value>panel2</value>
+  </data>
+  <data name="&gt;&gt;panel3.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="trackInfoText2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Top</value>
   </data>
   <data name="trackInfoText2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 4</value>
+    <value>0, 0</value>
+  </data>
+  <data name="trackInfoText2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 0, 2, 0</value>
   </data>
   <data name="trackInfoText2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>508, 30</value>
+    <value>294, 24</value>
   </data>
   <data name="trackInfoText2.TabIndex" type="System.Int32, mscorlib">
     <value>102</value>
@@ -518,49 +608,37 @@
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;trackInfoText2.Parent" xml:space="preserve">
-    <value>panel1</value>
+    <value>panel2</value>
   </data>
   <data name="&gt;&gt;trackInfoText2.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="trackInfoText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="trackInfoText.Font" type="System.Drawing.Font, System.Drawing">
-    <value>メイリオ, 15.75pt</value>
-  </data>
-  <data name="trackInfoText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 21</value>
-  </data>
-  <data name="trackInfoText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
-  </data>
-  <data name="trackInfoText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>507, 38</value>
-  </data>
-  <data name="trackInfoText.TabIndex" type="System.Int32, mscorlib">
-    <value>99</value>
-  </data>
-  <data name="trackInfoText.Text" xml:space="preserve">
-    <value>trackInfoText</value>
-  </data>
-  <data name="trackInfoText.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleCenter</value>
-  </data>
-  <data name="&gt;&gt;trackInfoText.Name" xml:space="preserve">
-    <value>trackInfoText</value>
-  </data>
-  <data name="&gt;&gt;trackInfoText.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;trackInfoText.Parent" xml:space="preserve">
-    <value>panel1</value>
-  </data>
-  <data name="&gt;&gt;trackInfoText.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="listView2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Right</value>
+  <data name="panel2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="panel2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 0</value>
+  </data>
+  <data name="panel2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 5, 0</value>
+  </data>
+  <data name="panel2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>299, 118</value>
+  </data>
+  <data name="panel2.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;panel2.Name" xml:space="preserve">
+    <value>panel2</value>
+  </data>
+  <data name="&gt;&gt;panel2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel2.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;panel2.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="columnHeader1.Width" type="System.Int32, mscorlib">
     <value>0</value>
@@ -568,17 +646,20 @@
   <data name="columnHeader2.Width" type="System.Int32, mscorlib">
     <value>142</value>
   </data>
+  <data name="listView2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Right</value>
+  </data>
   <data name="listView2.Font" type="System.Drawing.Font, System.Drawing">
     <value>MS UI Gothic, 8.25pt</value>
   </data>
   <data name="listView2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>519, 3</value>
+    <value>302, 0</value>
   </data>
   <data name="listView2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="listView2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>190, 114</value>
+    <value>142, 118</value>
   </data>
   <data name="listView2.TabIndex" type="System.Int32, mscorlib">
     <value>101</value>
@@ -593,34 +674,7 @@
     <value>panel1</value>
   </data>
   <data name="&gt;&gt;listView2.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="visualizeView.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
-  </data>
-  <data name="visualizeView.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 62</value>
-  </data>
-  <data name="visualizeView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
-  </data>
-  <data name="visualizeView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>504, 52</value>
-  </data>
-  <data name="visualizeView.TabIndex" type="System.Int32, mscorlib">
-    <value>100</value>
-  </data>
-  <data name="&gt;&gt;visualizeView.Name" xml:space="preserve">
-    <value>visualizeView</value>
-  </data>
-  <data name="&gt;&gt;visualizeView.Type" xml:space="preserve">
-    <value>Gageas.Lutea.DefaultUI.VisualizeView, DefaultUI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;visualizeView.Parent" xml:space="preserve">
-    <value>panel1</value>
-  </data>
-  <data name="&gt;&gt;visualizeView.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>1</value>
   </data>
   <data name="panel1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -632,13 +686,13 @@
     <value>0, 0</value>
   </data>
   <data name="panel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="panel1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 8, 3</value>
+    <value>3, 0, 6, 2</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>713, 120</value>
+    <value>450, 120</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
     <value>26</value>
@@ -668,13 +722,10 @@
     <value>1</value>
   </data>
   <data name="splitContainer4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>839, 120</value>
+    <value>574, 120</value>
   </data>
   <data name="splitContainer4.SplitterDistance" type="System.Int32, mscorlib">
     <value>120</value>
-  </data>
-  <data name="splitContainer4.SplitterWidth" type="System.Int32, mscorlib">
-    <value>6</value>
   </data>
   <data name="splitContainer4.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -710,97 +761,97 @@
     <value>364, 30</value>
   </metadata>
   <data name="ScrollToPlayingToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 24</value>
+    <value>182, 22</value>
   </data>
   <data name="ScrollToPlayingToolStripMenuItem.Text" xml:space="preserve">
     <value>再生中にスクロール</value>
   </data>
   <data name="clearSortOrderToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 24</value>
+    <value>182, 22</value>
   </data>
   <data name="clearSortOrderToolStripMenuItem.Text" xml:space="preserve">
     <value>ソート解除</value>
   </data>
   <data name="toolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>208, 6</value>
+    <value>179, 6</value>
   </data>
   <data name="propertyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 24</value>
+    <value>182, 22</value>
   </data>
   <data name="propertyToolStripMenuItem.Text" xml:space="preserve">
     <value>プロパティ...</value>
   </data>
   <data name="explorerToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 24</value>
+    <value>182, 22</value>
   </data>
   <data name="explorerToolStripMenuItem.Text" xml:space="preserve">
     <value>エクスプローラで表示...</value>
   </data>
   <data name="コピーToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 24</value>
+    <value>182, 22</value>
   </data>
   <data name="コピーToolStripMenuItem.Text" xml:space="preserve">
     <value>この値をコピー</value>
   </data>
   <data name="toolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>208, 6</value>
+    <value>179, 6</value>
   </data>
   <data name="toolStripMenuItem2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 24</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem2.Text" xml:space="preserve">
     <value>☆☆☆☆☆</value>
   </data>
   <data name="toolStripMenuItem3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 24</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem3.Text" xml:space="preserve">
     <value>★☆☆☆☆</value>
   </data>
   <data name="toolStripMenuItem4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 24</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem4.Text" xml:space="preserve">
     <value>★★☆☆☆</value>
   </data>
   <data name="toolStripMenuItem5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 24</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem5.Text" xml:space="preserve">
     <value>★★★☆☆</value>
   </data>
   <data name="toolStripMenuItem6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 24</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem6.Text" xml:space="preserve">
     <value>★★★★☆</value>
   </data>
   <data name="toolStripMenuItem7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 24</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem7.Text" xml:space="preserve">
     <value>★★★★★</value>
   </data>
   <data name="ratingToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 24</value>
+    <value>182, 22</value>
   </data>
   <data name="ratingToolStripMenuItem.Text" xml:space="preserve">
     <value>評価</value>
   </data>
   <data name="再読み込みToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 24</value>
+    <value>182, 22</value>
   </data>
   <data name="再読み込みToolStripMenuItem.Text" xml:space="preserve">
     <value>再読み込み</value>
   </data>
   <data name="deleteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 24</value>
+    <value>182, 22</value>
   </data>
   <data name="deleteToolStripMenuItem.Text" xml:space="preserve">
     <value>ライブラリから削除...</value>
   </data>
   <data name="playlistViewContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>212, 208</value>
+    <value>183, 192</value>
   </data>
   <data name="&gt;&gt;playlistViewContextMenuStrip.Name" xml:space="preserve">
     <value>playlistViewContextMenuStrip</value>
@@ -817,8 +868,11 @@
   <data name="playlistView.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
   </data>
+  <data name="playlistView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 2, 2, 2</value>
+  </data>
   <data name="playlistView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>831, 342</value>
+    <value>566, 231</value>
   </data>
   <data name="playlistView.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -842,7 +896,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>831, 342</value>
+    <value>566, 231</value>
   </data>
   <data name="tabPage2.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -866,13 +920,13 @@
     <value>Top, Right</value>
   </data>
   <data name="albumArtListViewSearchTextBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>697, 0</value>
+    <value>523, 0</value>
   </data>
   <data name="albumArtListViewSearchTextBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="albumArtListViewSearchTextBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>113, 24</value>
+    <value>86, 20</value>
   </data>
   <data name="albumArtListViewSearchTextBox.TabIndex" type="System.Int32, mscorlib">
     <value>25</value>
@@ -905,7 +959,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="albumArtListView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>831, 342</value>
+    <value>566, 231</value>
   </data>
   <data name="albumArtListView.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -929,7 +983,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="tabPage3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>831, 342</value>
+    <value>566, 231</value>
   </data>
   <data name="tabPage3.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -953,13 +1007,13 @@
     <value>Fill</value>
   </data>
   <data name="richTextBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 3</value>
+    <value>3, 2</value>
   </data>
   <data name="richTextBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="richTextBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>823, 336</value>
+    <value>560, 227</value>
   </data>
   <data name="richTextBox1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -983,13 +1037,13 @@
     <value>4, 39</value>
   </data>
   <data name="tabPage4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="tabPage4.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="tabPage4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>831, 342</value>
+    <value>566, 231</value>
   </data>
   <data name="tabPage4.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -1031,7 +1085,7 @@
     <value>5, 3</value>
   </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>839, 385</value>
+    <value>574, 274</value>
   </data>
   <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1064,13 +1118,10 @@
     <value>0</value>
   </data>
   <data name="splitContainer3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>839, 510</value>
+    <value>574, 398</value>
   </data>
   <data name="splitContainer3.SplitterDistance" type="System.Int32, mscorlib">
     <value>120</value>
-  </data>
-  <data name="splitContainer3.SplitterWidth" type="System.Int32, mscorlib">
-    <value>5</value>
   </data>
   <data name="splitContainer3.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1103,13 +1154,10 @@
     <value>0</value>
   </data>
   <data name="splitContainer1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1068, 510</value>
+    <value>801, 398</value>
   </data>
   <data name="splitContainer1.SplitterDistance" type="System.Int32, mscorlib">
     <value>223</value>
-  </data>
-  <data name="splitContainer1.SplitterWidth" type="System.Int32, mscorlib">
-    <value>6</value>
   </data>
   <data name="splitContainer1.TabIndex" type="System.Int32, mscorlib">
     <value>99</value>
@@ -1133,16 +1181,16 @@
     <value>False</value>
   </data>
   <data name="xTrackBar1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>644, 0</value>
+    <value>483, 0</value>
   </data>
   <data name="xTrackBar1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="xTrackBar1.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>44, 18</value>
+    <value>33, 14</value>
   </data>
   <data name="xTrackBar1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>424, 32</value>
+    <value>318, 26</value>
   </data>
   <data name="xTrackBar1.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -1175,7 +1223,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="toolStripStatusLabel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>668, 29</value>
+    <value>461, 29</value>
   </data>
   <data name="toolStripStatusLabel2.Text" xml:space="preserve">
     <value>toolStripStatusLabel2</value>
@@ -1184,7 +1232,7 @@
     <value>MiddleLeft</value>
   </data>
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>174, 29</value>
+    <value>140, 29</value>
   </data>
   <data name="toolStripStatusLabel1.Text" xml:space="preserve">
     <value>toolStripStatusLabel1</value>
@@ -1199,16 +1247,16 @@
     <value>toolStripXTrackbar1</value>
   </data>
   <data name="toolStripComboBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>92, 32</value>
+    <value>70, 32</value>
   </data>
   <data name="statusStrip1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 563</value>
+    <value>0, 444</value>
   </data>
   <data name="statusStrip1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 0, 18, 0</value>
+    <value>2, 0, 14, 0</value>
   </data>
   <data name="statusStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1068, 34</value>
+    <value>801, 34</value>
   </data>
   <data name="statusStrip1.TabIndex" type="System.Int32, mscorlib">
     <value>19</value>
@@ -1229,70 +1277,70 @@
     <value>6</value>
   </data>
   <data name="tweetNowPlayingToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>224, 24</value>
+    <value>191, 22</value>
   </data>
   <data name="tweetNowPlayingToolStripMenuItem.Text" xml:space="preserve">
     <value>tweet NowPlaying...</value>
   </data>
   <data name="logToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>224, 24</value>
+    <value>191, 22</value>
   </data>
   <data name="logToolStripMenuItem.Text" xml:space="preserve">
     <value>ログ...</value>
   </data>
   <data name="exitToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>224, 24</value>
+    <value>191, 22</value>
   </data>
   <data name="exitToolStripMenuItem.Text" xml:space="preserve">
     <value>終了</value>
   </data>
   <data name="fileToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 23</value>
+    <value>70, 20</value>
   </data>
   <data name="fileToolStripMenuItem.Text" xml:space="preserve">
     <value>ファイル(&amp;F)</value>
   </data>
   <data name="importFullToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>240, 24</value>
+    <value>203, 22</value>
   </data>
   <data name="importFullToolStripMenuItem1.Text" xml:space="preserve">
     <value>ディレクトリの追加(完全)...</value>
   </data>
   <data name="importToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 24</value>
+    <value>208, 22</value>
   </data>
   <data name="importToolStripMenuItem1.Text" xml:space="preserve">
     <value>ディレクトリの追加(高速)...</value>
   </data>
   <data name="removeDeadLinkToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 24</value>
+    <value>208, 22</value>
   </data>
   <data name="removeDeadLinkToolStripMenuItem.Text" xml:space="preserve">
     <value>存在しないファイルの削除</value>
   </data>
   <data name="libraryDBのカスタマイズToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 24</value>
+    <value>208, 22</value>
   </data>
   <data name="libraryDBのカスタマイズToolStripMenuItem.Text" xml:space="preserve">
     <value>LibraryDBのカスタマイズ...</value>
   </data>
   <data name="importToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>97, 23</value>
+    <value>79, 20</value>
   </data>
   <data name="importToolStripMenuItem.Text" xml:space="preserve">
     <value>ライブラリ(&amp;D)</value>
   </data>
   <data name="pluginsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>244, 24</value>
+    <value>208, 22</value>
   </data>
   <data name="pluginsToolStripMenuItem.Text" xml:space="preserve">
     <value>コンポーネントの詳細設定...</value>
   </data>
   <data name="toolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>241, 6</value>
+    <value>205, 6</value>
   </data>
   <data name="componentToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 23</value>
+    <value>101, 20</value>
   </data>
   <data name="componentToolStripMenuItem.Text" xml:space="preserve">
     <value>コンポーネント(&amp;C)</value>
@@ -1300,7 +1348,7 @@
   <data name="toolStripMenuItem8.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAAAmSURBVDhPYxg84D+JAKoNAaCCROFRA0YNAGHaGUAKgGob
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAmSURBVDhPYxg84D+JAKoNAaCCROFRA0YNAGHaGUAKgGob
         cMDAAAD+qRL8B/YOvgAAAABJRU5ErkJggg==
 </value>
   </data>
@@ -1311,7 +1359,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="toolStripMenuItem8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>28, 23</value>
+    <value>28, 20</value>
   </data>
   <data name="toolStripMenuItem8.Text" xml:space="preserve">
     <value>toolStripMenuItem8</value>
@@ -1326,7 +1374,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="toolStripMenuItem9.Size" type="System.Drawing.Size, System.Drawing">
-    <value>28, 23</value>
+    <value>28, 20</value>
   </data>
   <data name="toolStripMenuItem9.Text" xml:space="preserve">
     <value>toolStripMenuItem9</value>
@@ -1337,7 +1385,7 @@
   <data name="toolStripMenuItem1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACQAAAAQCAYAAAB+690jAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAADpSURBVEhLlYwBCsNAEALz/0+3nrggNibbgcPoaq7kI2TX
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADpSURBVEhLlYwBCsNAEALz/0+3nrggNibbgcPoaq7kI2TX
         aMM3e34sON2KCu/FYHb65NazyQ+ZQTs+eC2LtvFclmQG7fw9AL7xvueyJDNoJweKHke+8a7nsiQzaCcH
         89rQ+9nxmyzJDNrJgb+7sffz7jdZkhm0k4N8+QPvP91kSWbQTg7y+Q+86/ngd1mSGbSTA3859m7eDn6X
         JZlBOzmYl0Pv5W3wjizJDNrJgaKfkffu7gfvyJLMoJ3twHubjizJDNrxQStvOgfvyZLMoJ0ZPBWno89V
@@ -1351,7 +1399,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="toolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>48, 23</value>
+    <value>48, 20</value>
   </data>
   <data name="toolStripMenuItem1.Text" xml:space="preserve">
     <value>toolStripMenuItem1</value>
@@ -1366,7 +1414,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="toolStripMenuItem10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>28, 23</value>
+    <value>28, 20</value>
   </data>
   <data name="toolStripMenuItem10.Text" xml:space="preserve">
     <value>toolStripMenuItem10</value>
@@ -1380,8 +1428,11 @@
   <data name="menuStrip1.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
   </data>
+  <data name="menuStrip1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 2, 0, 2</value>
+  </data>
   <data name="menuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1068, 27</value>
+    <value>801, 24</value>
   </data>
   <data name="menuStrip1.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
@@ -1465,13 +1516,13 @@
     <value>136, 71</value>
   </metadata>
   <data name="notifyIconToolStripMenuItem_ShowBalloon.Size" type="System.Drawing.Size, System.Drawing">
-    <value>242, 24</value>
+    <value>206, 22</value>
   </data>
   <data name="notifyIconToolStripMenuItem_ShowBalloon.Text" xml:space="preserve">
     <value>曲名通知ポップアップを表示</value>
   </data>
   <data name="notifyIconContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>243, 28</value>
+    <value>207, 26</value>
   </data>
   <data name="&gt;&gt;notifyIconContextMenuStrip.Name" xml:space="preserve">
     <value>notifyIconContextMenuStrip</value>
@@ -6578,10 +6629,10 @@
     <value>100</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>8, 15</value>
+    <value>6, 12</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>1068, 597</value>
+    <value>801, 478</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -11670,7 +11721,7 @@
 </value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>3, 2, 3, 2</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Form1</value>

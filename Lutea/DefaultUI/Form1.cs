@@ -163,8 +163,6 @@ namespace Gageas.Lutea.DefaultUI
             {
                 visualizeView.Abort();
             }
-            visualizeView.Top = trackInfoText2.Bottom;
-            visualizeView.Height = panel1.Height - visualizeView.Top - 2;
             visualizeView.Setup(pref.FFTLogarithmic, pref.FFTNumber, pref.SpectrumColor1, pref.SpectrumColor2, pref.SpectrumMode);
             visualizeView.Start();
         }
@@ -172,10 +170,9 @@ namespace Gageas.Lutea.DefaultUI
         private void ResetTrackInfoView()
         {
             trackInfoText2.Font = new Font(pref.Font_trackInfoView.FontFamily, (float)Math.Max(this.Font.Size, pref.Font_trackInfoView.Size * 0.6));
-            trackInfoText2.Height = trackInfoText2.Font.Height;
             trackInfoText.Font = pref.Font_trackInfoView;
+            trackInfoText2.Height = trackInfoText2.Font.Height;
             trackInfoText.Height = trackInfoText.Font.Height;
-            trackInfoText.Top = trackInfoText2.Bottom;
             ResetSpectrumRenderer(true);
         }
 
