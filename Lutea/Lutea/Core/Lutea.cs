@@ -49,11 +49,11 @@ namespace Gageas.Lutea.Core
         public enum Resolutions
         {
             Unknown,
-            Float_32Bit,
-            Integer_8bit,
-            Integer_16bit,
-            Integer_24bit,
-            Integer_32bit,
+            float_32bit,
+            integer_8bit,
+            integer_16bit,
+            integer_24bit,
+            integer_32bit,
         }
 
 
