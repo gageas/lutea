@@ -721,7 +721,13 @@ namespace Gageas.Lutea.DefaultUI
         #region Form utility methods
         private void setFormTitle(String title)
         {
-            this.Invoke((MethodInvoker)(() => this.Text = (string.IsNullOrEmpty(title) ? "" : title + " - ") + "Lutea✻" + Controller.OutputMode.ToString()));
+            this.Invoke((MethodInvoker)(
+                () => this.Text
+                    = (string.IsNullOrEmpty(title) ? "" : title + " - ") 
+                    + "Lutea✻" 
+                    + Controller.OutputMode.ToString()
+                    + (Controller.IsPlaying ? "@" + Controller.OutputResolution.ToString() : "")
+                ));
         }
 
         private void setStatusText(String text)
