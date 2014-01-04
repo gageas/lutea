@@ -68,6 +68,10 @@ namespace Gageas.Lutea.Core
             try
             {
                 Logger.Debug("Start Application");
+                Logger.Debug("Environment.OSVersion = " + Environment.OSVersion);
+                Logger.Debug("Environment.Is64BitOperatingSystem = " + Environment.Is64BitOperatingSystem);
+                Logger.Debug("Environment.Is64BitProcess = " + Environment.Is64BitProcess);
+                Logger.Debug("Environment.Version = " + Environment.Version);
                 var mainform = AppCore.Init();
                 Logger.Debug("Application core initialized.");
 
