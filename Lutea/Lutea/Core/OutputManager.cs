@@ -63,11 +63,11 @@ namespace Gageas.Lutea.Core
                 if (!Available) return Controller.Resolutions.Unknown;
                 if(outputChannel is BASSWASAPIOutput){
                     switch(((BASSWASAPIOutput)outputChannel).Info.Format){
-                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_FLOAT: return Controller.Resolutions.Float_32Bit;
-                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_8BIT: return Controller.Resolutions.Integer_8bit;
-                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_16BIT: return Controller.Resolutions.Integer_16bit;
-                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_24BIT: return Controller.Resolutions.Integer_24bit;
-                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_32BIT: return Controller.Resolutions.Integer_32bit;
+                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_FLOAT: return Controller.Resolutions.float_32bit;
+                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_8BIT: return Controller.Resolutions.integer_8bit;
+                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_16BIT: return Controller.Resolutions.integer_16bit;
+                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_24BIT: return Controller.Resolutions.integer_24bit;
+                        case BASSWASAPIOutput.BASS_WASAPI_INFO.Formats.BASS_WASAPI_FORMAT_32BIT: return Controller.Resolutions.integer_32bit;
                         default: return Controller.Resolutions.Unknown;
                     }
                 }
