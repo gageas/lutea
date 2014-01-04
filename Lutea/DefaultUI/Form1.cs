@@ -530,6 +530,8 @@ namespace Gageas.Lutea.DefaultUI
             backgroundCoverartLoader = new BackgroundCoverartsLoader(pref.CoverArtSizeInPlaylistView);
             backgroundCoverartLoader.Complete += new BackgroundCoverartsLoader.LoadComplete(backgroundCoverartLoader_Complete);
 
+            albumArtListViewSearchTextBox.Left = albumArtListViewSearchTextBox.Parent.ClientSize.Width - albumArtListViewSearchTextBox.Width - SystemInformation.VerticalScrollBarWidth;
+
             yomigana = new Yomigana(Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "yomiCache", this);
             InitFilterView();
             queryComboBox.Select();
