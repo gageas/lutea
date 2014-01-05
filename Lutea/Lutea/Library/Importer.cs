@@ -154,6 +154,7 @@ namespace Gageas.Lutea.Library
                         case LibraryDBColumnTextMinimum.modify: return MusicLibrary.currentTimestamp.ToString();
                         default:
                             if (!track.tag.Exists((e) => e.Key == col.MappedTagField)) return "";
+                            if (track.tag.First((e) => e.Key == col.MappedTagField).Value == null) return "";
                             var tagValue = track.tag.First((e) => e.Key == col.MappedTagField).Value.ToString();
                             // DATEの表現形式を正規化して格納する
                             return col.MappedTagField == "DATE"
