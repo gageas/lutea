@@ -472,8 +472,16 @@ namespace Gageas.Lutea.Tags
                 if (fr.ID.Type == FRAME_TYPE.FR_TXT_EX || fr.ID.Type == FRAME_TYPE.FR_TXT_EX_LNG)
                 {
                     int idx = fr.Value.IndexOf('\0');
-                    fr.Extid = fr.Value.Substring(0, idx).ToUpper();
-                    fr.Value = fr.Value.Substring(idx + 1).TrimEnd(new char[] { '\0' }).Replace("\0", "\r\n"); // FIXME?: foobar2kでいうmultiple Valueの時、区切りの\0を改行で置換（暫定処置）
+                    if (idx == -1)
+                    {
+                        fr.Extid = "";
+                        fr.Value = "";
+                    }
+                    else
+                    {
+                        fr.Extid = fr.Value.Substring(0, idx).ToUpper();
+                        fr.Value = fr.Value.Substring(idx + 1).TrimEnd(new char[] { '\0' }).Replace("\0", "\r\n"); // FIXME?: foobar2kでいうmultiple Valueの時、区切りの\0を改行で置換（暫定処置）
+                    }
                 }
             }
         }
