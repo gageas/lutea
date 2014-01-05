@@ -283,7 +283,7 @@ namespace Gageas.Lutea.DefaultUI
                         {
                             tabPage4.ImageIndex = 2;
                         }
-                        richTextBox1.Font = this.Font;
+                        richTextBox1.Font = pref.Font_playlistView;
                         richTextBox1.AppendText(string.Join("\n", Util.Util.StripLyricsTimetag(lyrics)));
                     }
                     else
