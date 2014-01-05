@@ -166,8 +166,33 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        private string playlistSortColumn;
         [Browsable(false)]
-        public string PlaylistSortColumn { get; set; }
+        public string PlaylistSortColumn
+        {
+            get
+            {
+                if (Controller.GetColumnIndexByName(playlistSortColumn) == -1)
+                {
+                    return null;
+                }
+                else
+                {
+                    return playlistSortColumn;
+                }
+            }
+            set
+            {
+                if (Controller.GetColumnIndexByName(value) == -1)
+                {
+                    playlistSortColumn = null;
+                }
+                else
+                {
+                    playlistSortColumn = value;
+                }
+            }
+        }
 
         private Controller.SortOrders playlistSortOrder = Controller.SortOrders.Asc;
         [Browsable(false)]
