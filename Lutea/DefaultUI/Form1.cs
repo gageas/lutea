@@ -119,6 +119,7 @@ namespace Gageas.Lutea.DefaultUI
             queryComboBox.ForeColor = System.Drawing.SystemColors.WindowText;
             toolStripStatusLabel1.Text = "";
             toolStripXTrackbar1.GetControl.ThumbWidth = TextRenderer.MeasureText("100", this.Font).Width + 10;
+            toolStripXTrackbar1.GetControl.MinimumSize = new System.Drawing.Size(toolStripXTrackbar1.GetControl.ThumbWidth * 3, toolStripXTrackbar1.GetControl.Height);
             playlistView.Setup(this, Columns);
         }
 
@@ -1696,11 +1697,12 @@ namespace Gageas.Lutea.DefaultUI
         #region album art list view search text box event
         private void albumArtListViewSearchTextBox_MouseHover(object sender, EventArgs e)
         {
-            if (albumArtListViewSearchTextBox.Width < 20)
+            if (albumArtListViewSearchTextBox.Width <= albumArtListViewSearchTextBox.Height)
             {
                 var w = albumArtListViewSearchTextBox.Width;
-                albumArtListViewSearchTextBox.Width = 100;
-                albumArtListViewSearchTextBox.Left -= (100 - w);
+                var xw = TextRenderer.MeasureText("ABCDEFGHIJ", albumArtListViewSearchTextBox.Font).Width; // 適当な文字数分の長さ
+                albumArtListViewSearchTextBox.Width = xw;
+                albumArtListViewSearchTextBox.Left -= (xw - w);
                 albumArtListViewSearchTextBox.Select();
             }
         }
@@ -1708,8 +1710,8 @@ namespace Gageas.Lutea.DefaultUI
         private void albumArtListViewSearchTextBox_Leave(object sender, EventArgs e)
         {
             var w = albumArtListViewSearchTextBox.Width;
-            albumArtListViewSearchTextBox.Width = 15;
-            albumArtListViewSearchTextBox.Left += (w - 15);
+            albumArtListViewSearchTextBox.Width = albumArtListViewSearchTextBox.Height;
+            albumArtListViewSearchTextBox.Left += (w - albumArtListViewSearchTextBox.Height);
         }
 
         private void albumArtListViewSearchTextBox_TextChanged(object sender, EventArgs e)

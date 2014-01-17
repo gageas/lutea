@@ -35,7 +35,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void listView2_Resize(object sender, EventArgs e)
         {
-            this.Columns[1].Width = 45;
+            this.Columns[1].Width = TextRenderer.MeasureText("88888", this.Font).Width;
             this.Columns[0].Width = this.ClientSize.Width - this.Columns[1].Width - 2;
         }
 
