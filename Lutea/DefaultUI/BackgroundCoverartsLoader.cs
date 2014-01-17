@@ -46,17 +46,16 @@ namespace Gageas.Lutea.DefaultUI
         {
             this.size = size;
             ClearQueue();
-            lock (coverArts)
+            var oldCoverArts = coverArts;
+            coverArts = new Dictionary<string, GDI.GDIBitmap>();
+            foreach (var bmp in oldCoverArts)
             {
-                foreach (var bmp in coverArts)
+                if (bmp.Value != dummyEmptyBitmapGDI)
                 {
-                    if (bmp.Value != dummyEmptyBitmapGDI)
-                    {
-                        bmp.Value.Dispose();
-                    }
+                    bmp.Value.Dispose();
                 }
-                coverArts.Clear();
             }
+            oldCoverArts.Clear();
         }
 
         public void Interrupt()
@@ -136,13 +135,25 @@ namespace Gageas.Lutea.DefaultUI
             while (true)
             {
                 TaskEntry task;
+                var tasksCopyRef = tasks;
                 lock (tasks)
                 {
                     // キューが空になったら無限ループを抜ける
                     if (tasks.Count == 0) break;
                     task = tasks.Last();
                 }
-                consumeTask(task);
+                var resizedBitmap = consumeTask(task);
+                if (resizedBitmap != null)
+                {
+                    if (tasks == tasksCopyRef)
+                    {
+                        coverArts[task.Key] = resizedBitmap;
+                        if (Complete != null)
+                        {
+                            Complete.Invoke(task.callbackObjectIds.Distinct());
+                        }
+                    }
+                }
                 lock (tasks)
                 {
                     tasks.Remove(task);
@@ -150,17 +161,18 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private void consumeTask(TaskEntry tasks)
+        private GDI.GDIBitmap consumeTask(TaskEntry task)
         {
             try
             {
-                if (size == 0) return;
-                if (tasks.Key == null) return;
+                if (size == 0) return null;
+                if (task.Key == null) return null;
 
-                var album = tasks.Key;
-                if (coverArts.ContainsKey(album)) return;
+                var album = task.Key;
+                if (coverArts.ContainsKey(album)) return null;
 
-                var orig = Controller.CoverArtImageForFile(tasks.file_name.Trim());
+                var orig = Controller.CoverArtImageForFile(task.file_name.Trim());
+                GDI.GDIBitmap resizedBitmap;
                 if (orig != null)
                 {
                     var resize = ImageUtil.GetResizedImageWithoutPadding(orig, size, size);
@@ -174,20 +186,15 @@ namespace Gageas.Lutea.DefaultUI
                         gg.DrawImage(resize, 1, 1);
                         gg.DrawRectangle(Pens.Gray, new Rectangle(0, 0, w + 1, h + 1));
                     }
-                    coverArts[album] = new GDI.GDIBitmap(bordered);
+                    return new GDI.GDIBitmap(bordered);
                 }
                 else
                 {
-                    coverArts[album] = dummyEmptyBitmapGDI;
+                    return dummyEmptyBitmapGDI;
                 }
+
             }
-            finally
-            {
-                if (Complete != null)
-                {
-                    Complete.Invoke(tasks.callbackObjectIds.Distinct());
-                }
-            }
+            catch (Exception) { return null; }
         }
     }
 }
