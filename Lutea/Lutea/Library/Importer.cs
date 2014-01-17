@@ -174,7 +174,7 @@ namespace Gageas.Lutea.Library
         /// <param name="OptimizeDB">完了後にデータベースの最適化を実施するかどうか</param>
         private void RunInsertUpdateQuery(bool OptimizeDB)
         {
-            using (var libraryDB = AppCore.Library.Connect(true))
+            using (var libraryDB = AppCore.Library.Connect())
             using (var stmt_insert = GetInsertPreparedStatement(libraryDB))
             using (var stmt_update = GetUpdatePreparedStatement(libraryDB))
             using (var stmt_test = libraryDB.Prepare("SELECT rowid FROM list WHERE file_name = ?;"))

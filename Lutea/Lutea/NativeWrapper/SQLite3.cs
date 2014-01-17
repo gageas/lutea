@@ -25,8 +25,6 @@ namespace Gageas.Wrapper.SQLite3
     public class SQLite3DB : IDisposable
     {
         private IntPtr dbPtr = (IntPtr)0;
-        private IntPtr dbPtrForLock = (IntPtr)0;
-        bool locked = false;
 
         internal IntPtr GetHandle()
         {
@@ -49,21 +47,11 @@ namespace Gageas.Wrapper.SQLite3
 
         #region Constructor
         public SQLite3DB(string filename)
-            : this(filename, false)
-        {
-        }
-
-        public SQLite3DB(string filename, bool lockable)
         {
             int ret;
             try
             {
                 ret = sqlite3_open16(filename, out dbPtr);
-                if (lockable)
-                {
-                    ret = sqlite3_open16(filename, out dbPtrForLock);
-                }
-
             }
             catch (Exception)
             {
@@ -103,78 +91,6 @@ namespace Gageas.Wrapper.SQLite3
         {
             sqlite3_interrupt(dbPtr);
         }
-
-        #region Lock
-        /*
-         * DB.GetLockによってLockオブジェクトを取得することにより、DBをロック（書き込みを拒否）することができる。
-         * LockオブジェクトをDisposeすることによりロックが開放される。
-         */
-        public Lock GetLock(string tableName)
-        {
-            lock (this)
-            {
-                if (locked) return null;
-                if (dbPtrForLock != IntPtr.Zero)
-                {
-                    int ret = -1;
-                    try
-                    {
-                        ret = sqlite3_exec(dbPtrForLock, "BEGIN;SELECT rowid FROM " + tableName + " LIMIT 1;", null, IntPtr.Zero, IntPtr.Zero);
-                    }
-                    finally
-                    {
-                    }
-                    if (ret != SQLite3.SQLITE3_OK)
-                    {
-                        return null;
-                    }
-                    locked = true;
-                    return new _Lock(this);
-                }
-                return null;
-            }
-        }
-
-        // Lockを外に公開するインターフェース
-        public interface Lock : IDisposable { }
-        
-        // Lockの実体
-        private class _Lock : Lock
-        {
-            SQLite3DB db;
-            public _Lock(SQLite3DB db)
-            {
-                this.db = db;
-            }
-            public void Dispose()
-            {
-                db.UnLock();
-                GC.SuppressFinalize(this);
-            }
-            ~_Lock(){
-                this.Dispose();
-            }
-        }
-
-        private void UnLock()
-        {
-            lock (this)
-            {
-                if (!locked) return;
-                if (dbPtrForLock != IntPtr.Zero)
-                {
-                    try
-                    {
-                        sqlite3_exec(dbPtrForLock, "ROLLBACK;", null, IntPtr.Zero, IntPtr.Zero);
-                    }
-                    finally
-                    {
-                    }
-                    locked = false;
-                }
-            }
-        }
-        #endregion
 
         public object[] FetchRow(string table, int rowid) // FIXME: NOT SECURE?
         {
@@ -259,6 +175,7 @@ namespace Gageas.Wrapper.SQLite3
             public abstract void Dispose();
             public abstract void Reset();
             public abstract void Bind(int index,string value);
+            public abstract bool IsReadOnly();
         }
 
         private class _STMT : STMT
@@ -375,6 +292,10 @@ namespace Gageas.Wrapper.SQLite3
                 Reset();
                 return o;
             }
+            public override bool IsReadOnly()
+            {
+                return sqlite3_stmt_readonly(this.stmt);
+            }
         }
 
         #region DLL Import
@@ -404,6 +325,9 @@ namespace Gageas.Wrapper.SQLite3
 
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_finalize", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         private static extern int sqlite3_finalize(IntPtr stmt);
+
+        [DllImport("sqlite3.dll", EntryPoint = "sqlite3_stmt_readonly", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool sqlite3_stmt_readonly(IntPtr stmt);
 
         [DllImport("sqlite3.dll", EntryPoint = "sqlite3_column_count", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         private static extern int sqlite3_column_count(IntPtr stmt);

@@ -599,7 +599,7 @@ namespace Gageas.Lutea.Core
         /// <returns></returns>
         public static SQLite3DB GetDBConnection()
         {
-            return AppCore.Library.Connect(false);
+            return AppCore.Library.Connect();
         }
         #endregion
 
