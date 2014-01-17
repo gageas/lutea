@@ -151,22 +151,34 @@ namespace Gageas.Lutea.DefaultUI
                         DeleteObject(this.hBMP);
                     }
                     catch { }
+                    finally { this.hBMP = IntPtr.Zero; }
                 }
-                if (g != null)
+                if (this.hDC != IntPtr.Zero)
                 {
                     try
                     {
-                        g.Dispose();
+                        this.g.ReleaseHdc(this.hDC);
                     }
                     catch { }
+                    finally { this.hDC = IntPtr.Zero; }
                 }
-                if (bitmap != null)
+                if (this.g != null)
                 {
                     try
                     {
-                        bitmap.Dispose();
+                        this.g.Dispose();
                     }
                     catch { }
+                    finally { this.g = null; }
+                }
+                if (this.bitmap != null)
+                {
+                    try
+                    {
+                        this.bitmap.Dispose();
+                    }
+                    catch { }
+                    finally { this.bitmap = null; }
                 }
                 GC.SuppressFinalize(this);
             }
