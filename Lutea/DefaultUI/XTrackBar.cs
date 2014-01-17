@@ -157,7 +157,6 @@ namespace Gageas.Lutea.DefaultUI
             if (Enabled && ThumbText != null)
             {
                 TextRenderer.DrawText(g, ThumbText, this.Font, thumb, this.ForeColor, TextFormatFlags.NoClipping | TextFormatFlags.NoPrefix | TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding);
-//                g.DrawString(ThumbText, this.Font, SystemBrushes.ControlText, thumb, sf);
             }
         }
 
