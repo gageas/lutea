@@ -262,7 +262,7 @@ namespace Gageas.Lutea
             {
                 try
                 {
-                    using (var db = this.Connect(false))
+                    using (var db = this.Connect())
                     {
                         Columns = LuteaMinimumColumns.Concat(LuteaDefaultExtraColumns).ToArray();
                         InitializeLibraryDB(db, Columns);
@@ -311,7 +311,7 @@ namespace Gageas.Lutea
 
         internal void AlternateLibraryDB(Column[] extraColumns)
         {
-            using (var db = this.Connect(true))
+            using (var db = this.Connect())
             {
                 try
                 {
@@ -337,7 +337,7 @@ namespace Gageas.Lutea
 
         private Column[] LoadColumnDefinitionFromDB()
         {
-            using (var db = this.Connect(false))
+            using (var db = this.Connect())
             {
                 var colCount = 0;
                 using (SQLite3DB.STMT tmt2 = db.Prepare("SELECT COUNT(*) FROM library_definition ;"))
@@ -384,8 +384,8 @@ namespace Gageas.Lutea
         // ネイティブ側から呼び出されるデリゲート．GCに回収されないように参照を保持する．
         private Core.LuteaHelper.MigemoGenerator migemoGeneratorDlg;
 
-        public SQLite3DB Connect(bool lockable){
-            SQLite3DB db = new SQLite3DB(dbPath, lockable);
+        public SQLite3DB Connect(){
+            SQLite3DB db = new SQLite3DB(dbPath);
             db.EnableLoadExtension = true;
             db.Exec("PRAGMA temp_store = MEMORY;");
             db.Exec("PRAGMA encoding = \"UTF-8\"; ");
@@ -396,7 +396,7 @@ namespace Gageas.Lutea
 
         public SQLite3DB.STMT PrepareForInsert()
         {
-            SQLite3DB db = this.Connect(true);
+            SQLite3DB db = this.Connect();
             return db.Prepare("");
         }
     }

@@ -597,10 +597,14 @@ namespace Gageas.Lutea.Core
 
         private static SQLite3DB.STMT prepareForCreatePlaylistView(SQLite3DB db, string subquery)
         {
-            var stmt = db.Prepare("CREATE TEMP TABLE unordered_playlist AS " + subquery + " ;");
-            // prepareが成功した場合のみ以下が実行される
-            LatestPlaylistQueryExpanded = subquery;
-            return stmt;
+            using (var tmpstmt = db.Prepare(subquery + " ;"))
+            {
+                if (!tmpstmt.IsReadOnly()) throw new SQLite3DB.SQLite3Exception("Query is not readonly");
+                var stmt = db.Prepare("CREATE TEMP TABLE unordered_playlist AS " + subquery + " ;");
+                // prepareが成功した場合のみ以下が実行される
+                LatestPlaylistQueryExpanded = subquery;
+                return stmt;
+            }
         }
 
         internal static void CreateOrderedPlaylist(string column, Controller.SortOrders sortOrder)
@@ -692,57 +696,54 @@ namespace Gageas.Lutea.Core
                     }
                 }
 
-                using (SQLite3DB.Lock dbLock = h2k6db.GetLock("list"))
-                {
-                    SQLite3DB.STMT tmt = null;
-                    foreach (var dlg in new CreatePlaylistParser[]{
+                SQLite3DB.STMT tmt = null;
+                foreach (var dlg in new CreatePlaylistParser[]{
                         ()=>sql==""?"SELECT * FROM list":sql,
                         ()=>GetRegexpSTMT(sql),
                         ()=>GetMigemoSTMT(sql),
                         ()=>"SELECT * FROM list WHERE " + String.Join("||'\n'||", GetSearchTargetColumns()) + " like '%" + sql.EscapeSingleQuotSQL() + "%';"})
+                {
+                    try
+                    {
+                        tmt = prepareForCreatePlaylistView(h2k6db, dlg());
+                        break;
+                    }
+                    catch (Exception ex) { Logger.Error(ex); }
+                };
+                if (tmt == null) return;
+                using (tmt)
+                {
+                    for (int i = 0; i < 10; i++)
                     {
                         try
                         {
-                            tmt = prepareForCreatePlaylistView(h2k6db, dlg());
+                            tmt.Evaluate(null);
                             break;
                         }
-                        catch (Exception) { }
-                    };
-                    if (tmt == null) return;
-                    using (tmt)
+                        catch (SQLite3DB.SQLite3Exception) { }
+                        Thread.Sleep(50);
+                    }
+
+                    //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
+                    Thread.Sleep(10);
+
+                    using (SQLite3DB.STMT tmt2 = h2k6db.Prepare("SELECT COUNT(*) FROM unordered_playlist ;"))
                     {
-                        for (int i = 0; i < 10; i++)
+                        tmt2.Evaluate((o) => currentPlaylistRows = int.Parse(o[0].ToString()));
+                        if (MyCoreComponent.PlaylistSortColumn != null)
                         {
-                            try
-                            {
-                                tmt.Evaluate(null);
-                                break;
-                            }
-                            catch (SQLite3DB.SQLite3Exception) { }
-                            Thread.Sleep(50);
+                            CreateOrderedPlaylistTableInDB();
+                        }
+                        else
+                        {
+                            LuteaHelper.ClearRepeatCount(currentPlaylistRows);
+                            h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM " + GetPlaylistTableName() + " ;");
+                            TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
                         }
 
-                        //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
-                        Thread.Sleep(10);
-
-                        using (SQLite3DB.STMT tmt2 = h2k6db.Prepare("SELECT COUNT(*) FROM unordered_playlist ;"))
-                        {
-                            tmt2.Evaluate((o) => currentPlaylistRows = int.Parse(o[0].ToString()));
-                            if (MyCoreComponent.PlaylistSortColumn != null)
-                            {
-                                CreateOrderedPlaylistTableInDB();
-                            }
-                            else
-                            {
-                                LuteaHelper.ClearRepeatCount(currentPlaylistRows);
-                                h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM " + GetPlaylistTableName() + " ;");
-                                TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
-                            }
-
-                            // プレイリストキャッシュ用の配列を作成
-                            PlaylistCache = new object[currentPlaylistRows][];
-                            MyCoreComponent.LatestPlaylistQuery = sql;
-                        }
+                        // プレイリストキャッシュ用の配列を作成
+                        PlaylistCache = new object[currentPlaylistRows][];
+                        MyCoreComponent.LatestPlaylistQuery = sql;
                     }
                 }
             }
@@ -755,7 +756,7 @@ namespace Gageas.Lutea.Core
         {
             while (true)
             {
-                h2k6db = h2k6db ?? Library.Connect(true);
+                h2k6db = h2k6db ?? Library.Connect();
                 try
                 {
                     String sql;
@@ -1126,7 +1127,7 @@ namespace Gageas.Lutea.Core
             {
                 Logger.Log("再生カウントを更新しまつ" + file_name + ",  " + count);
                 // db書き込み
-                using (var db = Library.Connect(false))
+                using (var db = Library.Connect())
                 {
                     using (var stmt = db.Prepare("UPDATE list SET " + LibraryDBColumnTextMinimum.lastplayed + " = current_timestamp64(), " + LibraryDBColumnTextMinimum.playcount + " = " + count + " WHERE " + LibraryDBColumnTextMinimum.file_name + " = '" + file_name.EscapeSingleQuotSQL() + "';"))
                     {
