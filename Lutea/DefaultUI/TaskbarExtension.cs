@@ -58,7 +58,9 @@ namespace Gageas.Lutea.DefaultUI
             void SetOverlayIcon(IntPtr hWnd, IntPtr hIcon, [MarshalAs(UnmanagedType.LPWStr)]string pszDescription);
             void SetThumbnailTooltip(IntPtr hWnd, [MarshalAs(UnmanagedType.LPWStr)]string pszTip);
             void SetThumbnailClip(IntPtr hWnd, ref tagRECT prcClip);
-
+            #endregion
+            #region ITaskbarList4
+            IntPtr SetTabProperties(IntPtr hWndTab, StpFlag stpFlags);
             #endregion
         }
         [ComImport(), Guid("56FDF344-FD6D-11d0-958A-006097C9A090"), ClassInterface(ClassInterfaceType.None)]
@@ -93,6 +95,16 @@ namespace Gageas.Lutea.DefaultUI
             NoBackground = 0x04, //不标示按钮边框，只显示按钮图像
             Hidden = 0x08, //隐藏按钮
             NonInterActive = 0x10 //该按钮启用，但没有互动，没有按下按钮的状态绘制。此值用于按钮所在的通知是在使用实例。
+        }
+
+        [Flags]
+        public enum StpFlag : uint
+        {
+            STPF_NONE = 0x00000000,
+            STPF_USEAPPTHUMBNAILALWAYS = 0x00000001,
+            STPF_USEAPPTHUMBNAILWHENACTIVE = 0x00000002,
+            STPF_USEAPPPEEKALWAYS = 0x00000004,
+            STPF_USEAPPPEEKWHENACTIVE = 0x00000008
         }
 
         [StructLayout(LayoutKind.Sequential)]
