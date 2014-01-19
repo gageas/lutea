@@ -19,7 +19,7 @@ namespace Gageas.Lutea.DefaultUI
         private const int TRANSITION_STEPS = 32;
         private const int TRANSITION_INTERVAL = 20;
         private const int WAIT_BEFORE_TRANSITION = 300;
-        private const string ALTERNATIVE_FILE_NAME = "default.jpg";
+        internal const string ALTERNATIVE_FILE_NAME = "default.jpg";
         #endregion
 
         #region フィールド
@@ -135,7 +135,7 @@ namespace Gageas.Lutea.DefaultUI
         /// 現在のトラックのカバーアートか、無ければ代替画像を取得
         /// </summary>
         /// <returns></returns>
-        private Image GetCoverArtOrAlternativeImage()
+        internal static Image GetCoverArtOrAlternativeImage()
         {
             Image image = Controller.Current.CoverArtImage();
             if (image == null)

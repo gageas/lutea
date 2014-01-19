@@ -45,6 +45,11 @@ namespace Gageas.Lutea.DefaultUI
         LogViewerForm logview;
 
         /// <summary>
+        /// Windows7以降のタスクバー拡張のための疑似メインウィンドウ
+        /// </summary>
+        PseudoMainForm pseudoMainForm;
+
+        /// <summary>
         /// 通知Form
         /// </summary>
         NotifyPopupForm NotifyPopup;
@@ -63,16 +68,6 @@ namespace Gageas.Lutea.DefaultUI
         /// プレイリストのカバーアートをバックグラウンドで読み込むオブジェクト
         /// </summary>
         internal BackgroundCoverartsLoader backgroundCoverartLoader;
-
-        /// <summary>
-        /// Windows7の拡張タスクバーを制御
-        /// </summary>
-        TaskbarExtension TaskbarExt;
-
-        /// <summary>
-        /// win7タスクバーに表示するボタンの画像リスト
-        /// </summary>
-        ImageList taskbarImageList;
 
         /// <summary>
         /// filter viewに表示するcolumnを定義
@@ -306,10 +301,7 @@ namespace Gageas.Lutea.DefaultUI
                         toolStripStatusLabel1.Text = "";
                         visualizeView.Abort();
                         visualizeView.Clear();
-                        if (TaskbarExt != null)
-                        {
-                            TaskbarExt.Taskbar.SetProgressState(this.Handle, TaskbarExtension.TbpFlag.NoProgress);
-                        }
+
                         var hIcon = hIconForWindowIcon_Large;
                         User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
                         hIconForWindowIcon_Large = IntPtr.Zero;
@@ -462,11 +454,7 @@ namespace Gageas.Lutea.DefaultUI
                     xTrackBar1.Value = second;
                     xTrackBar1.ThumbText = Util.Util.getMinSec(second);
                     toolStripStatusLabel1.Text = (Util.Util.getMinSec(second) + "/" + Util.Util.getMinSec(len));
-                    if (TaskbarExt != null)
-                    {
-                        TaskbarExt.Taskbar.SetProgressState(this.Handle, TaskbarExtension.TbpFlag.Normal);
-                        TaskbarExt.Taskbar.SetProgressValue(this.Handle, (ulong)second, (ulong)len);
-                    }
+
                 }));
             }
             catch (Exception e)
@@ -577,12 +565,9 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private const int WM_COMMAND = 0x0111;
         private const int WM_GETICON = 0x007f;
         private const int WM_SETICON = 0x0080;
         private const int WM_DWMSENDICONICTHUMBNAIL = 0x0323;
-        private const int THBN_CLICKED = 0x1800;
-        TaskbarExtension.ThumbButton[] taskbarThumbButtons = new TaskbarExtension.ThumbButton[4];
         private static IntPtr hIconForWindowIcon_Large;
         protected override void WndProc(ref Message m)
         {
@@ -600,45 +585,6 @@ namespace Gageas.Lutea.DefaultUI
                         m.Result = hIconForWindowIcon_Large;
                     }
                     omitBaseProc = true;
-                }
-            }
-            if (TaskbarExt != null)
-            {
-                switch (m.Msg)
-                {
-                    case WM_COMMAND:
-                        if (((int)m.WParam & 0xffff0000) >> 16 == THBN_CLICKED)
-                        {
-                            switch ((int)m.WParam & 0xffff)
-                            {
-                                case 0:
-                                    Controller.Stop();
-                                    break;
-                                case 1:
-                                    Controller.PrevTrack();
-                                    break;
-                                case 2:
-                                    Controller.TogglePause();
-                                    break;
-                                case 3:
-                                    Controller.NextTrack();
-                                    break;
-                                default:
-                                    Logger.Log((int)m.WParam & 0xff);
-                                    break;
-                            }
-                            omitBaseProc = true;
-                        }
-                        break;
-                    default:
-                        if (m.Msg == TaskbarExt.WM_TBC)
-                        {
-                            TaskbarExt.ThumbBarAddButtons(taskbarThumbButtons);
-                            m.Result = IntPtr.Zero;
-                            omitBaseProc = true;
-                            break;
-                        }
-                        break;
                 }
             }
             if (!omitBaseProc) base.WndProc(ref m);
@@ -706,7 +652,6 @@ namespace Gageas.Lutea.DefaultUI
                         visualizeView.Abort();
                         this.ShowInTaskbar = true;
                         treeView1.ExpandAll();
-                        ResetTaskbarExtButtonImage();
                         ResetSpectrumRenderer(true);
                         ResetProgressBar();
                     }
@@ -1876,39 +1821,21 @@ namespace Gageas.Lutea.DefaultUI
             playlistView.ContextMenuStrip.Items.Add(column_select);
 
             coverArtView.Setup();
-            try
+            var ver = Environment.OSVersion.Version;
+            if ((ver.Major == 6 && ver.Minor >= 1) || ver.Major > 7) // win7 or above
             {
-                TaskbarExt = new TaskbarExtension(this);
-                ResetTaskbarExtButtonImage();
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex);
+                try
+                {
+                    pseudoMainForm = new PseudoMainForm(this);
+                    pseudoMainForm.Show();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
             }
             ResetHotKeys();
             ResetTrackInfoView();
-        }
-
-        private void ResetTaskbarExtButtonImage()
-        {
-            try
-            {
-                taskbarImageList = new ImageList();
-                taskbarImageList.ImageSize = new System.Drawing.Size(16, 16);
-                taskbarImageList.ColorDepth = ColorDepth.Depth32Bit;
-                var images = new Bitmap[] { Properties.Resources.stop, Properties.Resources.prev, Properties.Resources.pause, Properties.Resources.next };
-                foreach (var img in images)
-                {
-                    img.MakeTransparent(Color.Magenta);
-                }
-                taskbarImageList.Images.AddRange(images);
-                TaskbarExt.ThumbBarSetImageList(taskbarImageList);
-                taskbarThumbButtons[0] = new TaskbarExtension.ThumbButton() { iID = 0, szTip = "Stop", iBitmap = 0, dwMask = TaskbarExtension.ThumbButtonMask.Flags | TaskbarExtension.ThumbButtonMask.ToolTip | TaskbarExtension.ThumbButtonMask.Bitmap, dwFlags = TaskbarExtension.ThumbButtonFlags.Enabled };
-                taskbarThumbButtons[1] = new TaskbarExtension.ThumbButton() { iID = 1, szTip = "Prev", iBitmap = 1, dwMask = TaskbarExtension.ThumbButtonMask.Flags | TaskbarExtension.ThumbButtonMask.ToolTip | TaskbarExtension.ThumbButtonMask.Bitmap, dwFlags = TaskbarExtension.ThumbButtonFlags.Enabled };
-                taskbarThumbButtons[2] = new TaskbarExtension.ThumbButton() { iID = 2, szTip = "Play/Pause", iBitmap = 2, dwMask = TaskbarExtension.ThumbButtonMask.Flags | TaskbarExtension.ThumbButtonMask.ToolTip | TaskbarExtension.ThumbButtonMask.Bitmap, dwFlags = TaskbarExtension.ThumbButtonFlags.Enabled };
-                taskbarThumbButtons[3] = new TaskbarExtension.ThumbButton() { iID = 3, szTip = "Next", iBitmap = 3, dwMask = TaskbarExtension.ThumbButtonMask.Flags | TaskbarExtension.ThumbButtonMask.ToolTip | TaskbarExtension.ThumbButtonMask.Bitmap, dwFlags = TaskbarExtension.ThumbButtonFlags.Enabled };
-            }
-            catch { }
         }
 
         public object GetSetting()
