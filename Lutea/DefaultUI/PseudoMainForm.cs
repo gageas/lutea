@@ -48,25 +48,31 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (TaskbarExt != null)
             {
-                TaskbarExt.Taskbar.SetProgressState(this.mainForm.Handle, TaskbarExtension.TbpFlag.Normal);
-                TaskbarExt.Taskbar.SetProgressValue(this.mainForm.Handle, (ulong)second, (ulong)Controller.Current.Length);
+                this.mainForm.Invoke((MethodInvoker)(() =>
+                {
+                    TaskbarExt.Taskbar.SetProgressState(this.mainForm.Handle, TaskbarExtension.TbpFlag.Normal);
+                    TaskbarExt.Taskbar.SetProgressValue(this.mainForm.Handle, (ulong)second, (ulong)Controller.Current.Length);
+                }));
             }
         }
 
         void Controller_onTrackChange(int sec)
         {
-            var img = CoverArtView.GetCoverArtOrAlternativeImage();
-            cover = Gageas.Lutea.Util.ImageUtil.GetResizedImageWithoutPadding(img, SIZE, SIZE);
-            using (var g = Graphics.FromImage(cover))
-            {
-                g.DrawRectangle(Pens.Silver, 0, 0, cover.Width - 1, cover.Height - 1);
-                g.DrawRectangle(Pens.Gray, 1, 1, cover.Width - 2, cover.Height - 2);
-            }
-            this.Size = cover.Size;
-            this.Invalidate();
             if (TaskbarExt != null)
             {
-                TaskbarExt.Taskbar.SetProgressState(this.mainForm.Handle, TaskbarExtension.TbpFlag.NoProgress);
+                var img = CoverArtView.GetCoverArtOrAlternativeImage();
+                cover = Gageas.Lutea.Util.ImageUtil.GetResizedImageWithoutPadding(img, SIZE, SIZE);
+                using (var g = Graphics.FromImage(cover))
+                {
+                    g.DrawRectangle(Pens.Silver, 0, 0, cover.Width - 1, cover.Height - 1);
+                    g.DrawRectangle(Pens.Gray, 1, 1, cover.Width - 2, cover.Height - 2);
+                }
+                this.mainForm.Invoke((MethodInvoker)(() =>
+                {
+                    this.Size = cover.Size;
+                    this.Invalidate();
+                    TaskbarExt.Taskbar.SetProgressState(this.mainForm.Handle, TaskbarExtension.TbpFlag.NoProgress);
+                }));
             }
         }
 
