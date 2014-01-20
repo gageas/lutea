@@ -384,13 +384,30 @@ namespace Gageas.Lutea.Core
                 using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.Open, System.IO.FileAccess.Read))
                 {
                     AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-                    pluginSettings = (Dictionary<Guid, object>)(new BinaryFormatter()).Deserialize(fs);
+                    var pluginSettingsTmp = (Dictionary<Guid, byte[]>)(new BinaryFormatter()).Deserialize(fs);
+                    foreach (var e in pluginSettingsTmp)
+                    {
+                        try
+                        {
+                            pluginSettings.Add(e.Key, (new BinaryFormatter()).Deserialize(new MemoryStream(e.Value)));
+                        }
+                        catch { }
+                    }
                     AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve); 
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Logger.Error(e);
+                try
+                {
+                    using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                    {
+                        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+                        pluginSettings = (Dictionary<Guid, object>)(new BinaryFormatter()).Deserialize(fs);
+                        AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+                    }
+                }
+                catch (Exception ex2) { Logger.Log(ex2); }
             }
 
             // initialize plugins
@@ -481,12 +498,14 @@ namespace Gageas.Lutea.Core
             // Quit plugins and save setting
             using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite))
             {
-                Dictionary<Guid, object> pluginSettings = new Dictionary<Guid, object>();
+                Dictionary<Guid, byte[]> pluginSettings = new Dictionary<Guid, byte[]>();
                 foreach (var p in Plugins)
                 {
                     try
                     {
-                        pluginSettings.Add(p.GetType().GUID, p.GetSetting());
+                        var ms = new MemoryStream();
+                        (new BinaryFormatter()).Serialize(ms, p.GetSetting());
+                        pluginSettings.Add(p.GetType().GUID, ms.ToArray());
                     }
                     catch(Exception e) {
                         Logger.Error(e);
