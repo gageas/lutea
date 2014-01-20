@@ -382,13 +382,17 @@ namespace Gageas.Lutea.Library
         private void DoAnalyze(IEnumerable<string> filenameOfCUEs, IEnumerable<string> filenameOfOthers, List<LuteaAudioTrack> threadLocalResults, SQLite3DB.STMT selectModifySTMT)
         {
             // CUEファイルを処理
-            foreach (var cuefile in filenameOfCUEs)
+            if (TypesToImport.HasFlag(ImportableTypes.CUE))
             {
-                try
+
+                foreach (var cuefile in filenameOfCUEs)
                 {
-                    AnalyzeCUE(cuefile, threadLocalResults, selectModifySTMT);
+                    try
+                    {
+                        AnalyzeCUE(cuefile, threadLocalResults, selectModifySTMT);
+                    }
+                    catch (System.IO.IOException ex) { Logger.Error(ex.ToString()); }
                 }
-                catch (System.IO.IOException ex) { Logger.Error(ex.ToString()); }
             }
 
             // 全てのファイルを処理
@@ -491,11 +495,7 @@ namespace Gageas.Lutea.Library
                         .Select(_ => _.Trim())
                         .Distinct()
                         .Where(_ => System.IO.File.Exists(_));
-                    IEnumerable<string> filenameOfCUEs = new List<string>();
-                    if (TypesToImport.HasFlag(ImportableTypes.CUE))
-                    {
-                        filenameOfCUEs = filenames.Where(_ => System.IO.Path.GetExtension(_).ToUpper() == ".CUE");
-                    }
+                    IEnumerable<string> filenameOfCUEs = filenames.Where(_ => System.IO.Path.GetExtension(_).ToUpper() == ".CUE");
                     var filenameOthers = filenames.Except(filenameOfCUEs);
                     // シングルスレッドで回すのでスレッドローカルのキューは不要（スレッドローカルキューとしてToBeImportTracksを与える）
                     DoAnalyze(filenameOfCUEs, filenameOthers, ToBeImportTracks, selectModifySTMT);
