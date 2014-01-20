@@ -594,7 +594,10 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private void moveToNextTrack()
         {
-            SelectItemIndirect(getCurrentObjectID() + 1);
+            var oid = getCurrentObjectID() + 1;
+            if (oid == numObjects) oid--;
+            SelectItemIndirect(oid);
+            EnsureVisible(Math.Min(getViewIDByObjectID(oid) + ((this.coverArtSize + 5) / itemHeight), VirtualListSize - 1));
         }
 
         /// <summary>
@@ -618,6 +621,7 @@ namespace Gageas.Lutea.DefaultUI
         private void moveToFirstTrack()
         {
             this.SelectItemIndirect(0);
+            EnsureVisible(0);
         }
 
         /// <summary>
