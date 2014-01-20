@@ -11,38 +11,35 @@ using Gageas.Lutea.Util;
 namespace Gageas.Lutea.LastfmScrobble
 {
     [GuidAttribute("7A719D08-2C82-4A4F-9B33-2CC83B41BDB3")]
-    [LuteaComponentInfo("Last.fm Scrobble", "Gageas", 1.1, "Last.fm Scrobble")]
+    [LuteaComponentInfo("Last.fm Scrobble", "Gageas", 1.2, "Last.fm Scrobble")]
     public class LastfmScrobble : Lutea.Core.LuteaComponentInterface
     {
-        private const int RETRY_COUNT = 5;
-        private Preference pref = new Preference(null);
-        private Lastfm lastfm = null;
+        internal Preference pref = new Preference(null);
+        private AbstractLastfmClient sva;
 
         private bool scrobbed = false;
-        private bool nowPlayingUpdated = false;
         private double currentDuration;
 
         public void Init(object _setting)
         {
-            lastfm = new LuteaLastfm();
-
-            Controller.onTrackChange += (i)=>{ 
+            Controller.onTrackChange += (i) => {
                 scrobbed = false;
-                nowPlayingUpdated = false;
                 currentDuration = Controller.Current.Length;
-                UpdateNowPlaying();
+                if (sva != null) sva.OnTrackChange(i);
             };
-
-            Controller.onElapsedTimeChange += Scrobble;
+            Controller.onPause += () => { if (sva != null) sva.OnPause(); };
+            Controller.onResume += () => { if (sva != null) sva.OnResume(); };
+            Controller.onElapsedTimeChange += onElapsedTimeChange;
 
             if (_setting != null)
             {
                 var setting = (Dictionary<string, object>)_setting;
                 pref = new Preference(setting);
             }
+            ResetClient();
         }
 
-        private void Scrobble(int time)
+        private void onElapsedTimeChange(int time)
         {
             if (!pref.ScrobbleEnabled) return;
             if (currentDuration < pref.IgnoreShorterThan) return;
@@ -50,118 +47,10 @@ namespace Gageas.Lutea.LastfmScrobble
             if (time > (currentDuration * pref.ScrobbleThreshold / 100.0))
             {
                 scrobbed = true;
-                if (lastfm.session_key == null)
-                {
-                    try
-                    {
-                        lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.AuthToken);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Error(e);
-                    }
-                }
-
-                int tagTracknumber = -1;
-                Lutea.Util.Util.tryParseInt(Controller.Current.MetaData("tagTracknumber"), ref tagTracknumber);
-                var args = new List<KeyValuePair<string, string>>() { 
-                    new KeyValuePair<string, string>("method", "track.scrobble"),
-                    new KeyValuePair<string, string>("timestamp", Lastfm.CurrentTimestamp.ToString()),
-                    new KeyValuePair<string, string>("artist", Controller.Current.MetaData("tagArtist").Replace("\n", ", ")),
-                    new KeyValuePair<string, string>("track", Controller.Current.MetaData("tagTitle")),
-                    new KeyValuePair<string, string>("album", Controller.Current.MetaData("tagAlbum")),
-                    new KeyValuePair<string, string>("albumArtist", Controller.Current.MetaData("tagAlbumArtist")),
-                    new KeyValuePair<string, string>("trackNumber", tagTracknumber <= 0 ? null : tagTracknumber.ToString()),
-                    new KeyValuePair<string, string>("duration", ((int)Controller.Current.Length).ToString()),
-                };
-
-                var success = false;
-                for (int i = 0; i < RETRY_COUNT; i++)
-                {
-                    try
-                    {
-                        var result = lastfm.CallAPIWithSig(args);
-                        if (result != null)
-                        {
-                            var scrobbles = result.GetElementsByTagName("scrobbles");
-                            if (scrobbles.Count == 1)
-                            {
-                                var acceptecd = scrobbles.Item(0).Attributes["accepted"].Value;
-                                if (acceptecd == "1")
-                                {
-                                    success = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Error(e);
-                    }
-                }
-                Logger.Log("last.fm scrobble " + Controller.Current.MetaData("tagTitle") + (success ? " OK." : " Fail."));
+                if (sva != null) { sva.OnExceedThresh(); }
             }
         }
 
-        private void UpdateNowPlaying()
-        {
-            if (!pref.UpdateNowPlayingEnabled) return;
-            if (Controller.Current.Length < pref.IgnoreShorterThan) return;
-            if (nowPlayingUpdated) return;
-            nowPlayingUpdated = true;
-            if (lastfm.session_key == null)
-            {
-                try
-                {
-                    lastfm.Auth_getMobileSessionByAuthToken(pref.Username, pref.AuthToken);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e);
-                }
-            }
-
-            int tagTracknumber = -1;
-            Lutea.Util.Util.tryParseInt(Controller.Current.MetaData("tagTracknumber"), ref tagTracknumber);
-            var args = new List<KeyValuePair<string, string>>() { 
-                new KeyValuePair<string, string>("method", "track.updateNowPlaying"),
-                new KeyValuePair<string, string>("artist", Controller.Current.MetaData("tagArtist").Replace("\n", ", ")),
-                new KeyValuePair<string, string>("track", Controller.Current.MetaData("tagTitle")),
-                new KeyValuePair<string, string>("album", Controller.Current.MetaData("tagAlbum")),
-                new KeyValuePair<string, string>("albumArtist", Controller.Current.MetaData("tagAlbumArtist")),
-                new KeyValuePair<string, string>("trackNumber", tagTracknumber <= 0 ? null : tagTracknumber.ToString()),
-                new KeyValuePair<string, string>("duration", ((int)Controller.Current.Length).ToString()),
-            };
-
-            var success = false;
-            for (int i = 0; i < RETRY_COUNT; i++)
-            {
-                try
-                {
-                    var result = lastfm.CallAPIWithSig(args);
-                    if (result != null)
-                    {
-                        var scrobbles = result.GetElementsByTagName("lfm");
-                        if (scrobbles.Count == 1)
-                        {
-                            var status = scrobbles[0].Attributes["status"].Value;
-                            if (status == "ok")
-                            {
-                                success = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
-                }
-            }
-            Logger.Log("last.fm update " + Controller.Current.MetaData("tagTitle") + (success ? " OK." : " Fail."));
-        }
-      
         public object GetSetting()
         {
             var dict = pref.ToDictionary();
@@ -178,32 +67,18 @@ namespace Gageas.Lutea.LastfmScrobble
 
         public void SetPreferenceObject(object _pref)
         {
-            if (_pref != null)
-            {
-                var pref = (Preference)_pref;
-                if ((pref.Username != null && pref.password != null && pref.Username != "" && pref.password != "") || pref.Username != this.pref.Username)
-                {
-                    pref.AuthToken = "";
-                    try
-                    {
-                        var result = lastfm.Auth_getMobileSession(pref.Username, pref.password);
-                        if (result)
-                        {
-                            pref.AuthToken = Lastfm.GenAuthToken(pref.Username, pref.password);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Error(e);
-                    }
-                }
-                this.pref = pref;
-                UpdateNowPlaying();
-            }
+            if (_pref == null) return;
+            pref = (Preference)_pref;
+            ResetClient();
         }
 
         public void Quit()
         {
+            if (sva != null)
+            {
+                sva.Dispose();
+                sva = null;
+            }
         }
 
         public bool CanSetEnable()
@@ -214,6 +89,7 @@ namespace Gageas.Lutea.LastfmScrobble
         public void SetEnable(bool enable)
         {
             this.pref.ScrobbleEnabled = enable;
+            ResetClient();
         }
 
         public bool GetEnable()
@@ -221,10 +97,58 @@ namespace Gageas.Lutea.LastfmScrobble
             return this.pref.ScrobbleEnabled;
         }
 
+        private void ResetClient()
+        {
+            if (sva != null)
+            {
+                try
+                {
+                    sva.Dispose();
+                }
+                catch (Exception ex) { Logger.Error(ex); }
+                finally
+                {
+                    sva = null;
+                }
+            }
+            switch (pref.ScrobbleMethod)
+            {
+                case Preference.ScrobbleMethods.Standalone:
+                    if ((pref.Username != null && pref.password != null && pref.Username != "" && pref.password != "") || pref.Username != this.pref.Username)
+                    {
+                        pref.AuthToken = "";
+                        try
+                        {
+                            var lastfm = new LuteaLastfm();
+                            var result = lastfm.Auth_getMobileSession(pref.Username, pref.password);
+                            if (result)
+                            {
+                                pref.AuthToken = Lastfm.GenAuthToken(pref.Username, pref.password);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error(e);
+                        }
+                    }
+                    if (pref.ScrobbleEnabled) sva = new StandaloneLastfmClient(this);
+                    break;
+                case Preference.ScrobbleMethods.ViaLastfmApp:
+                    if (pref.ScrobbleEnabled) sva = new ViaAppLastfmClient();
+                    break;
+            }
+        }
+
         public class Preference : LuteaPreference
         {
+            public enum ScrobbleMethods
+            {
+                Standalone = 0,
+                ViaLastfmApp = 1,
+            }
             private readonly string[] Sortorder = 
             { 
+                "ScrobbleMethod",
                 "ScrobbleEnabled", 
                 "UpdateNowPlayingEnabled", 
                 "Username", 
@@ -257,10 +181,20 @@ namespace Gageas.Lutea.LastfmScrobble
             public string AuthToken
             {
                 get;
+             
                 internal set;
             }
 
-            [Category("Enable")]
+            [Category("\tMethod")]
+            [DefaultValue(ScrobbleMethods.Standalone)]
+            [Description("Scrobbleの方法を選択します。\nStandaloneではLuteaから直接last.fmサーバにScrobbleを送信します。\nViaLastfmAppではLast.fm Scrobblerアプリを介してScrobbleを送信します。\nViaLastfmAppの場合，以下の設定は不要です(Last.fm Scrobbleアプリにて設定が必要です)")]
+            public ScrobbleMethods ScrobbleMethod
+            {
+                get;
+                set;
+            }
+
+            [Category("\t\tEnable")]
             [DefaultValue(false)]
             [TypeConverter(typeof(BooleanYesNoTypeConverter))]
             [Description("Scrobbleを有効にする")]
@@ -270,7 +204,7 @@ namespace Gageas.Lutea.LastfmScrobble
                 set;
             }
 
-            [Category("Enable")]
+            [Category("Option")]
             [DefaultValue(false)]
             [TypeConverter(typeof(BooleanYesNoTypeConverter))]
             [Description("NowPlayingの更新を有効にする")]

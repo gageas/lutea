@@ -17,10 +17,16 @@ namespace Gageas.Lutea.Core
         private Thread thisThread;
         private bool sleeping = false;
         private bool isLIFO;
+        private bool requestTerminate = false;
         public ThreadPriority Priority
         {
             get { return thisThread.Priority; }
             set { thisThread.Priority = value; }
+        }
+        public bool Terminated
+        {
+            get;
+            private set;
         }
         public WorkerThread(bool isLIFO = false)
         {
@@ -68,10 +74,12 @@ namespace Gageas.Lutea.Core
                 {
                     sleeping = false;
                 }
+                if (taskI.Count == 0 && requestTerminate) return;
             }
         }
         public void AddTask(Controller.VOIDVOID delg)
         {
+            if (Terminated) throw new ObjectDisposedException("Thread is terminated");
             lock (thisThread)
             {
                 if(isLIFO){
@@ -81,6 +89,21 @@ namespace Gageas.Lutea.Core
                 }
                 if (sleeping) thisThread.Interrupt();
             }
+        }
+        public void WaitDoneAllTask(int millisecondsTimeout = 0)
+        {
+            requestTerminate = true;
+            if (sleeping) thisThread.Interrupt();
+            thisThread.Join(millisecondsTimeout);
+        }
+        public void WaitDoneCurrentTaskAndCancelPending(int millisecondsTimeout = 0)
+        {
+            lock (thisThread)
+            {
+                if (taskQueue != null) taskQueue.Clear();
+                if (taskStack != null) taskStack.Clear();
+            }
+            WaitDoneAllTask(millisecondsTimeout);
         }
     }
 }
