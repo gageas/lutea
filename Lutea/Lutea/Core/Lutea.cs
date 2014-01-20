@@ -70,6 +70,8 @@ namespace Gageas.Lutea.Core
         public delegate void VOIDVOID();
         public delegate void VOIDINT(int sec);
         public static event VOIDINT onTrackChange;
+        public static event VOIDVOID onPause;
+        public static event VOIDVOID onResume;
         public static event VOIDINT onElapsedTimeChange;
         public static event VOIDVOID onPlaybackErrorOccured; //TODO: 失敗理由を通知できるようにする
         public static event VOIDVOID onVolumeChange;
@@ -174,7 +176,12 @@ namespace Gageas.Lutea.Core
             }
             set
             {
-                AppCore.Pause = value;
+                if (AppCore.Pause != value)
+                {
+                    AppCore.Pause = value;
+                    var evt = (value ? onPause : onResume);
+                    if (evt != null) evt.Invoke();
+                }
             }
         }
 
