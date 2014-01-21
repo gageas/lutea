@@ -60,11 +60,6 @@ namespace Gageas.Lutea.DefaultUI
         CoverViewerForm coverViewForm;
 
         /// <summary>
-        /// 存在しないファイルを検索するFormを保持
-        /// </summary>
-        FindDeadLinkDialog findDeadLinkDialog;
-
-        /// <summary>
         /// プレイリストのカバーアートをバックグラウンドで読み込むオブジェクト
         /// </summary>
         internal BackgroundCoverartsLoader backgroundCoverartLoader;
@@ -1396,23 +1391,39 @@ namespace Gageas.Lutea.DefaultUI
             componentManage.ShowDialog();
         }
 
-        private object importThreadLock = new object();
-        private ImportForm iform;
         private void importToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            if (iform != null && !iform.IsDisposed) return;
-            lock (importThreadLock)
+            if (toolStripProgressBar1.Visible) return;
+            FolderBrowserDialog dlg = new FolderBrowserDialog();
+            dlg.SelectedPath = pref.LibraryLatestDir;
+            DialogResult result = dlg.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
             {
-                FolderBrowserDialog dlg = new FolderBrowserDialog();
-                dlg.SelectedPath = pref.LibraryLatestDir;
-                DialogResult result = dlg.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
+                pref.LibraryLatestDir = dlg.SelectedPath;
+                toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
+                if (toolStripProgressBar1.Tag != null)
                 {
-                    pref.LibraryLatestDir = dlg.SelectedPath;
-                    iform = new ImportForm(dlg.SelectedPath, sender == importToolStripMenuItem1 ? true : false);
-                    iform.Show();
-                    iform.Start();
+                    toolStripProgressBar1.Click -= (EventHandler)toolStripProgressBar1.Tag;
                 }
+                toolStripProgressBar1.Visible = true;
+                toolStripProgressBar1.Value = 0;
+                toolStripProgressBar1.Maximum = int.MaxValue;
+                var importer = new Importer(dlg.SelectedPath, sender == importToolStripMenuItem1 ? true : false);
+                EventHandler evt = (x, y) => { var ret = MessageBox.Show("中断しますか？", "インポート処理", MessageBoxButtons.OKCancel); if (ret == System.Windows.Forms.DialogResult.OK) { importer.Abort(); toolStripProgressBar1.Visible = false; } };
+                toolStripProgressBar1.Click += evt;
+                toolStripProgressBar1.Tag = evt;
+                importer.SetMaximum_read += (_) =>
+                {
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        toolStripProgressBar1.Style = ProgressBarStyle.Continuous;
+                        toolStripProgressBar1.Maximum = _ + 1;
+                    }));
+                };
+                importer.Step_read += () => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.PerformStep(); })); };
+                importer.Complete += () => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.Visible = false; })); };
+                importer.Message += (s) => { Logger.Debug(s); };
+                importer.Start();
             }
         }
 
@@ -1493,9 +1504,39 @@ namespace Gageas.Lutea.DefaultUI
 
         private void removeDeadLinkToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.findDeadLinkDialog != null && !this.findDeadLinkDialog.IsDisposed) return;
-            this.findDeadLinkDialog = new FindDeadLinkDialog(this);
-            this.findDeadLinkDialog.Show(this);
+            if (toolStripProgressBar1.Visible) return;
+            toolStripProgressBar1.Style = ProgressBarStyle.Continuous;
+            if (toolStripProgressBar1.Tag != null)
+            {
+                toolStripProgressBar1.Click -= (EventHandler)toolStripProgressBar1.Tag;
+            }
+            toolStripProgressBar1.Visible = true;
+            ThreadPool.QueueUserWorkItem((__) =>
+            {
+                try
+                {
+                    var result = Controller.GetDeadLink(
+                        (_) => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.Maximum = _; })); },
+                        (_) => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.Value = _; })); }
+                    );
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        var dlg = new DeleteFilesDialog(result.ToArray());
+                        dlg.Show();
+                    }));
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
+                finally
+                {
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        toolStripProgressBar1.Visible = false;
+                    }));
+                }
+            });
         }
 
         private void ReImportToolStripMenuItem_Click(object sender, EventArgs e)

@@ -86,6 +86,7 @@
             this.xTrackBar1 = new Gageas.Lutea.DefaultUI.XTrackBar();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripXTrackbar1 = new Gageas.Lutea.DefaultUI.ToolStripXTrackbar();
             this.toolStripComboBox2 = new Gageas.Lutea.DefaultUI.ToolStripComboBox();
@@ -613,6 +614,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel2,
+            this.toolStripProgressBar1,
             this.toolStripStatusLabel1,
             this.toolStripXTrackbar1,
             this.toolStripComboBox2});
@@ -625,14 +627,21 @@
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
             this.toolStripStatusLabel2.Spring = true;
             // 
+            // toolStripProgressBar1
+            // 
+            this.toolStripProgressBar1.MarqueeAnimationSpeed = 50;
+            this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+            resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
+            this.toolStripProgressBar1.Step = 1;
+            // 
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
             this.toolStripStatusLabel1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
             this.toolStripStatusLabel1.Margin = new System.Windows.Forms.Padding(5, 3, 0, 2);
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Padding = new System.Windows.Forms.Padding(3, 2, 0, 0);
-            resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
             // 
             // toolStripXTrackbar1
             // 
@@ -991,6 +1000,7 @@
         private System.Windows.Forms.Label trackInfoText2;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
     }
 }
 
