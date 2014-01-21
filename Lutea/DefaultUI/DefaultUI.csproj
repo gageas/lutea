@@ -89,12 +89,6 @@
     <Compile Include="FilterViewListView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="FindDeadLinkDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FindDeadLinkDialog.Designer.cs">
-      <DependentUpon>FindDeadLinkDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -103,12 +97,6 @@
     </Compile>
     <Compile Include="GDI.cs" />
     <Compile Include="GlobalHotKey.cs" />
-    <Compile Include="ImportForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ImportForm.Designer.cs">
-      <DependentUpon>ImportForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="LogViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -194,15 +182,9 @@
     <EmbeddedResource Include="DeleteFilesDialog.resx">
       <DependentUpon>DeleteFilesDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FindDeadLinkDialog.resx">
-      <DependentUpon>FindDeadLinkDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ImportForm.resx">
-      <DependentUpon>ImportForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LogViewerForm.resx">
       <DependentUpon>LogViewerForm.cs</DependentUpon>
