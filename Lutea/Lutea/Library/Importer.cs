@@ -38,7 +38,7 @@ namespace Gageas.Lutea.Library
             | ImportableTypes.OGG | ImportableTypes.WMA | ImportableTypes.ASF
             | ImportableTypes.FLAC | ImportableTypes.TTA | ImportableTypes.APE
             | ImportableTypes.WV | ImportableTypes.TAK | ImportableTypes.CUE;
-        private const int WORKER_THREADS_N = 8;
+        private const int WORKER_THREADS_N = 1;
         private const string SelectModifySTMT = "SELECT modify FROM list WHERE file_name = ? OR file_name = ?;";
         private static object LOCKOBJ = new object();
         private Dictionary<ImportableTypes, string> type2ext = new Dictionary<ImportableTypes, string>() { 
@@ -72,8 +72,6 @@ namespace Gageas.Lutea.Library
 
         public event Controller.VOIDINT SetMaximum_read = new Controller.VOIDINT((i) => { });
         public event Controller.VOIDVOID Step_read = new Controller.VOIDVOID(() => { });
-        public event Controller.VOIDINT SetMaximum_import = new Controller.VOIDINT((i) => { });
-        public event Controller.VOIDVOID Step_import = new Controller.VOIDVOID(() => { });
         public event Controller.VOIDVOID Complete = new Controller.VOIDVOID(() => { });
         public delegate void Message_event(string msg);
         public event Message_event Message = new Message_event((s) => { });
@@ -179,7 +177,6 @@ namespace Gageas.Lutea.Library
             using (var stmt_update = GetUpdatePreparedStatement(libraryDB))
             using (var stmt_test = libraryDB.Prepare("SELECT rowid FROM list WHERE file_name = ?;"))
             {
-                SetMaximum_import(ToBeImportTracks.Count);
                 try
                 {
                     libraryDB.Exec("BEGIN;");
@@ -199,7 +196,6 @@ namespace Gageas.Lutea.Library
                         .ToList()
                         .ForEach(track =>
                         {
-                            Step_import();
                             // Titleが無かったらfile_titleを付与
                             if (!track.tag.Exists(_ => _.Key == "TITLE")) track.tag.Add(new KeyValuePair<string, object>("TITLE", track.file_title));
                             try
@@ -474,7 +470,7 @@ namespace Gageas.Lutea.Library
                 }
                 catch (Exception e)
                 {
-                    Message(e.ToString());
+                    Logger.Log(e);
                 }
             }
         }
