@@ -524,6 +524,7 @@ namespace Gageas.Wrapper.BASS
                 BASS_STREAM_AUTOFREE =  0x40000,
                 BASS_STREAM_FLOAT = 256,
                 BASS_STREAM_ASYNCFILE = 0x40000000,
+                BASS_STREAM_PRESCAN = 0x20000,
             }
             override public void Dispose()
             {

@@ -114,6 +114,24 @@ namespace Gageas.Lutea.Core
             }
         }
 
+
+        bool usePrescan;
+        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
+        [Category("Input")]
+        [Description("MP2, MP3, 一部のOGGファイルのシークの精度を向上します。\nファイルの読み込みが多少遅くなります。\nギャップレス再生がうまく繋がらず気になる場合のみ有効にしてみてください。")]
+        [DefaultValue(false)]
+        public bool UsePrescan
+        {
+            get
+            {
+                return usePrescan;
+            }
+            set
+            {
+                usePrescan = value;
+            }
+        }
+
         string preferredDeviceName = "";
         string[] devlist = GetDeviceNameListForSetting();
         [TypeConverter(typeof(OutputDeviceConverter))]
