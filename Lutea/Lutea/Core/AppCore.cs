@@ -1111,6 +1111,7 @@ namespace Gageas.Lutea.Core
                 string filename = (string)row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)];
                 BASS.Stream.StreamFlag flag = BASS.Stream.StreamFlag.BASS_STREAM_DECODE | BASS.Stream.StreamFlag.BASS_STREAM_ASYNCFILE;
                 if (UseFloatingPointOutput) flag |= BASS.Stream.StreamFlag.BASS_STREAM_FLOAT;
+                if (MyCoreComponent.UsePrescan) flag |= BASS.Stream.StreamFlag.BASS_STREAM_PRESCAN;
                 StreamObject nextStream = null;
                 try
                 {
