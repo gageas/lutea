@@ -222,6 +222,31 @@ namespace Gageas.Lutea.Core
             NextTrack();
         }
 
+        public static bool QueueNext(int index)
+        {
+            if (IsPlaying)
+            {
+                return AppCore.QueuePlaylistItem(index);
+            }
+            else
+            {
+                return AppCore.PlayPlaylistItem(index);
+            }
+        }
+
+        public static void QueueStop()
+        {
+            if (IsPlaying)
+            {
+                AppCore.QueuePlaylistItem(AppCore.QUEUE_STOP);
+            }
+        }
+
+        public static void QueueClear()
+        {
+            AppCore.QueuePlaylistItem(AppCore.QUEUE_CLEAR);
+        }
+
         /// <summary>
         /// プレイリストの指定したindex番目のトラックを再生する
         /// </summary>

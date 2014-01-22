@@ -67,6 +67,10 @@
             this.explorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.コピーToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.キューToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.このトラックToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.再生停止ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.キューをクリアToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ratingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
@@ -117,6 +121,7 @@
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.notifyIconContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.notifyIconToolStripMenuItem_ShowBalloon = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -432,13 +437,15 @@
             this.ScrollToPlayingToolStripMenuItem,
             this.clearSortOrderToolStripMenuItem,
             this.toolStripSeparator6,
-            this.propertyToolStripMenuItem,
-            this.explorerToolStripMenuItem,
             this.コピーToolStripMenuItem,
-            this.toolStripSeparator4,
-            this.ratingToolStripMenuItem,
             this.再読み込みToolStripMenuItem,
-            this.deleteToolStripMenuItem});
+            this.deleteToolStripMenuItem,
+            this.ratingToolStripMenuItem,
+            this.explorerToolStripMenuItem,
+            this.propertyToolStripMenuItem,
+            this.toolStripSeparator4,
+            this.キューToolStripMenuItem,
+            this.toolStripSeparator5});
             this.playlistViewContextMenuStrip.Name = "playlistViewContextMenuStrip";
             resources.ApplyResources(this.playlistViewContextMenuStrip, "playlistViewContextMenuStrip");
             // 
@@ -481,6 +488,33 @@
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             resources.ApplyResources(this.toolStripSeparator4, "toolStripSeparator4");
+            // 
+            // キューToolStripMenuItem
+            // 
+            this.キューToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.このトラックToolStripMenuItem,
+            this.再生停止ToolStripMenuItem,
+            this.キューをクリアToolStripMenuItem});
+            this.キューToolStripMenuItem.Name = "キューToolStripMenuItem";
+            resources.ApplyResources(this.キューToolStripMenuItem, "キューToolStripMenuItem");
+            // 
+            // このトラックToolStripMenuItem
+            // 
+            this.このトラックToolStripMenuItem.Name = "このトラックToolStripMenuItem";
+            resources.ApplyResources(this.このトラックToolStripMenuItem, "このトラックToolStripMenuItem");
+            this.このトラックToolStripMenuItem.Click += new System.EventHandler(this.QueueSelectedTrackToolStripMenuItem_Click);
+            // 
+            // 再生停止ToolStripMenuItem
+            // 
+            this.再生停止ToolStripMenuItem.Name = "再生停止ToolStripMenuItem";
+            resources.ApplyResources(this.再生停止ToolStripMenuItem, "再生停止ToolStripMenuItem");
+            this.再生停止ToolStripMenuItem.Click += new System.EventHandler(this.QueueStopPlayingToolStripMenuItem_Click);
+            // 
+            // キューをクリアToolStripMenuItem
+            // 
+            this.キューをクリアToolStripMenuItem.Name = "キューをクリアToolStripMenuItem";
+            resources.ApplyResources(this.キューをクリアToolStripMenuItem, "キューをクリアToolStripMenuItem");
+            this.キューをクリアToolStripMenuItem.Click += new System.EventHandler(this.QueueClearCurrentQueueToolStripMenuItem_Click);
             // 
             // ratingToolStripMenuItem
             // 
@@ -855,6 +889,11 @@
             resources.ApplyResources(this.notifyIconToolStripMenuItem_ShowBalloon, "notifyIconToolStripMenuItem_ShowBalloon");
             this.notifyIconToolStripMenuItem_ShowBalloon.Click += new System.EventHandler(this.notifyIconToolStripMenuItem_ShowBalloon_Click);
             // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            resources.ApplyResources(this.toolStripSeparator5, "toolStripSeparator5");
+            // 
             // DefaultUIForm
             // 
             resources.ApplyResources(this, "$this");
@@ -1001,6 +1040,11 @@
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
+        private System.Windows.Forms.ToolStripMenuItem キューToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem このトラックToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 再生停止ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem キューをクリアToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
     }
 }
 

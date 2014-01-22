@@ -1577,6 +1577,24 @@ namespace Gageas.Lutea.DefaultUI
         {
             Controller.SetSortColumn(null);
         }
+
+        private void QueueSelectedTrackToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (playlistView.GetSelectedObjects().Length > 0)
+            {
+                Controller.QueueNext(playlistView.GetSelectedObjects()[0]);
+            }
+        }
+
+        private void QueueStopPlayingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Controller.QueueStop();
+        }
+
+        private void QueueClearCurrentQueueToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Controller.QueueClear();
+        }
         #endregion
 
         #region filterView ToolStripMenu event

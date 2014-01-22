@@ -56,6 +56,8 @@ namespace Gageas.Lutea.Core
     class AppCore
     {
         private const string settingFileName = "settings.dat";
+        internal const int QUEUE_STOP = -1;
+        internal const int QUEUE_CLEAR = -2;
 
         private static CoreComponent MyCoreComponent = new CoreComponent();
         /// <summary>
@@ -851,6 +853,27 @@ namespace Gageas.Lutea.Core
 
         #region メディアファイルの再生に関する処理郡
         private static object prepareMutex = new object();
+        internal static Boolean QueuePlaylistItem(int index)
+        {
+            lock (prepareMutex)
+            {
+                if (PreparedStream != null)
+                {
+                    PreparedStream.Dispose();
+                    PreparedStream = null;
+                }
+                if (index == QUEUE_CLEAR)
+                {
+                    return true;
+                }
+                else if (index == QUEUE_STOP)
+                {
+                    PreparedStream = new StreamObject(null, ":STOP:");
+                    return true;
+                }
+            }
+            return prepareNextStream(index);
+        }
         internal static Boolean PlayPlaylistItem(int index)
         {
             Logger.Debug("Enter PlayPlaylistItem");
@@ -889,6 +912,12 @@ namespace Gageas.Lutea.Core
                     stop();
                     Controller._OnPlaybackErrorOccured();
                     AppCore.CoreEnqueue(() => { System.Threading.Thread.Sleep(500); Controller.NextTrack(); });
+                    return;
+                }
+
+                if (PreparedStream.file_name == ":STOP:")
+                {
+                    stop();
                     return;
                 }
 
