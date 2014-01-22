@@ -790,26 +790,23 @@
   <data name="toolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
     <value>240, 6</value>
   </data>
-  <data name="propertyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>243, 28</value>
-  </data>
-  <data name="propertyToolStripMenuItem.Text" xml:space="preserve">
-    <value>プロパティ...</value>
-  </data>
-  <data name="explorerToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>243, 28</value>
-  </data>
-  <data name="explorerToolStripMenuItem.Text" xml:space="preserve">
-    <value>エクスプローラで表示...</value>
-  </data>
   <data name="コピーToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>243, 28</value>
   </data>
   <data name="コピーToolStripMenuItem.Text" xml:space="preserve">
     <value>この値をコピー</value>
   </data>
-  <data name="toolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>240, 6</value>
+  <data name="再読み込みToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>243, 28</value>
+  </data>
+  <data name="再読み込みToolStripMenuItem.Text" xml:space="preserve">
+    <value>再読み込み</value>
+  </data>
+  <data name="deleteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>243, 28</value>
+  </data>
+  <data name="deleteToolStripMenuItem.Text" xml:space="preserve">
+    <value>ライブラリから削除...</value>
   </data>
   <data name="toolStripMenuItem2.Size" type="System.Drawing.Size, System.Drawing">
     <value>170, 28</value>
@@ -853,20 +850,50 @@
   <data name="ratingToolStripMenuItem.Text" xml:space="preserve">
     <value>評価</value>
   </data>
-  <data name="再読み込みToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="explorerToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>243, 28</value>
   </data>
-  <data name="再読み込みToolStripMenuItem.Text" xml:space="preserve">
-    <value>再読み込み</value>
+  <data name="explorerToolStripMenuItem.Text" xml:space="preserve">
+    <value>エクスプローラで表示...</value>
   </data>
-  <data name="deleteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="propertyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>243, 28</value>
   </data>
-  <data name="deleteToolStripMenuItem.Text" xml:space="preserve">
-    <value>ライブラリから削除...</value>
+  <data name="propertyToolStripMenuItem.Text" xml:space="preserve">
+    <value>プロパティ...</value>
+  </data>
+  <data name="toolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>240, 6</value>
+  </data>
+  <data name="このトラックToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>210, 28</value>
+  </data>
+  <data name="このトラックToolStripMenuItem.Text" xml:space="preserve">
+    <value>このトラックをキュー</value>
+  </data>
+  <data name="再生停止ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>210, 28</value>
+  </data>
+  <data name="再生停止ToolStripMenuItem.Text" xml:space="preserve">
+    <value>再生停止をキュー</value>
+  </data>
+  <data name="キューをクリアToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>210, 28</value>
+  </data>
+  <data name="キューをクリアToolStripMenuItem.Text" xml:space="preserve">
+    <value>キューをクリア</value>
+  </data>
+  <data name="キューToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>243, 28</value>
+  </data>
+  <data name="キューToolStripMenuItem.Text" xml:space="preserve">
+    <value>キュー</value>
+  </data>
+  <data name="toolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>240, 6</value>
   </data>
   <data name="playlistViewContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>244, 240</value>
+    <value>244, 296</value>
   </data>
   <data name="&gt;&gt;playlistViewContextMenuStrip.Name" xml:space="preserve">
     <value>playlistViewContextMenuStrip</value>
@@ -11858,6 +11885,30 @@
   <data name="&gt;&gt;toolStripSeparator4.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;キューToolStripMenuItem.Name" xml:space="preserve">
+    <value>キューToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;キューToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;このトラックToolStripMenuItem.Name" xml:space="preserve">
+    <value>このトラックToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;このトラックToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;再生停止ToolStripMenuItem.Name" xml:space="preserve">
+    <value>再生停止ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;再生停止ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;キューをクリアToolStripMenuItem.Name" xml:space="preserve">
+    <value>キューをクリアToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;キューをクリアToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;ratingToolStripMenuItem.Name" xml:space="preserve">
     <value>ratingToolStripMenuItem</value>
   </data>
@@ -12061,6 +12112,12 @@
   </data>
   <data name="&gt;&gt;notifyIconToolStripMenuItem_ShowBalloon.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator5.Name" xml:space="preserve">
+    <value>toolStripSeparator5</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>DefaultUIForm</value>
