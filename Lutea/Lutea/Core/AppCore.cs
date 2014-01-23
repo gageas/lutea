@@ -593,9 +593,9 @@ namespace Gageas.Lutea.Core
                     not = "NOT ";
                     word = word.Substring(1);
                 }
-                migemo_phrase[i] = not + "migemo( '" + word.EscapeSingleQuotSQL() + "' , " + String.Join("||'\n'||",GetSearchTargetColumns()) + ")";
+                migemo_phrase[i] = not + "migemo( '" + word.EscapeSingleQuotSQL() + "' , text)";
             }
-            return "SELECT * FROM list WHERE " + String.Join(" AND ", migemo_phrase) + ";";
+            return "SELECT file_name FROM allTags WHERE " + String.Join(" AND ", migemo_phrase) + ";";
         }
         private static string GetRegexpSTMT(string sql)
         {
@@ -603,7 +603,7 @@ namespace Gageas.Lutea.Core
             Match match = new Regex(@"^\/(.+)\/[a-z]*$").Match(sql);
             if (match.Success)
             {
-                return "SELECT * FROM list WHERE " + String.Join("||'\n'||", GetSearchTargetColumns()) + " regexp  '" + sql.EscapeSingleQuotSQL() + "' ;";
+                return "SELECT file_name FROM allTags WHERE text regexp  '" + sql.EscapeSingleQuotSQL() + "' ;";
             }
             else
             {
@@ -719,10 +719,10 @@ namespace Gageas.Lutea.Core
 
                 SQLite3DB.STMT tmt = null;
                 foreach (var dlg in new CreatePlaylistParser[]{
-                        ()=>sql==""?"SELECT * FROM list":sql,
+                        ()=>sql==""?"SELECT file_name FROM list":sql,
                         ()=>GetRegexpSTMT(sql),
                         ()=>GetMigemoSTMT(sql),
-                        ()=>"SELECT * FROM list WHERE " + String.Join("||'\n'||", GetSearchTargetColumns()) + " like '%" + sql.EscapeSingleQuotSQL() + "%';"})
+                        ()=>"SELECT file_name FROM allTags WHERE text like '%" + sql.EscapeSingleQuotSQL() + "%';"})
                 {
                     try
                     {
@@ -777,7 +777,11 @@ namespace Gageas.Lutea.Core
         {
             while (true)
             {
-                h2k6db = h2k6db ?? Library.Connect();
+                if (h2k6db == null)
+                {
+                    h2k6db = Library.Connect();
+                    h2k6db.Exec("CREATE TEMP VIEW allTags AS SELECT file_name, " + String.Join("||'\n'||", GetSearchTargetColumns()) + " AS text FROM list;");
+                }
                 try
                 {
                     String sql;
