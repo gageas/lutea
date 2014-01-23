@@ -82,6 +82,9 @@ namespace Gageas.Lutea.Core
 
         private static Object DBlock = new Object();
 
+        private static Object FetchRowStmtLock = new Object();
+        private static SQLite3DB.STMT FetchRowStmt;
+
         /// <summary>
         /// Byte単位の長さの値．この値が0になるまでOutputStreamへの出力を待機する．
         /// サウンドデバイスの初期化完了(関数戻り)から実際の出音開始までの遅延分ぐらいをこれで待つ．
@@ -621,10 +624,22 @@ namespace Gageas.Lutea.Core
             using (var tmpstmt = db.Prepare(subquery + " ;"))
             {
                 if (!tmpstmt.IsReadOnly()) throw new SQLite3DB.SQLite3Exception("Query is not readonly");
-                var stmt = db.Prepare("CREATE TEMP TABLE unordered_playlist AS " + subquery + " ;");
+                var stmt = db.Prepare("CREATE TEMP TABLE unordered_playlist AS SELECT file_name, tagAlbum FROM list WHERE file_name IN (SELECT file_name FROM ( " + subquery.TrimEnd(new char[] { ' ', '\t', '\n', ';' }) + " ));");
                 // prepareが成功した場合のみ以下が実行される
                 LatestPlaylistQueryExpanded = subquery;
                 return stmt;
+            }
+        }
+
+        private static void DisposeFetchStmt()
+        {
+            lock (FetchRowStmtLock)
+            {
+                if (FetchRowStmt != null)
+                {
+                    FetchRowStmt.Dispose();
+                    FetchRowStmt = null;
+                }
             }
         }
 
@@ -651,6 +666,7 @@ namespace Gageas.Lutea.Core
                 LuteaHelper.ClearRepeatCount(currentPlaylistRows);
                 h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM unordered_playlist ;");
                 TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
+                DisposeFetchStmt();
                 return;
             }
 
@@ -677,7 +693,7 @@ namespace Gageas.Lutea.Core
             {
                 try
                 {
-                    h2k6db.Exec("CREATE TEMP TABLE playlist AS SELECT list.* FROM list, unordered_playlist WHERE list.file_name == unordered_playlist.file_name " + orderPhrase + " ;");
+                    h2k6db.Exec("CREATE TEMP TABLE playlist AS SELECT list.file_name, list.tagAlbum FROM list, unordered_playlist WHERE list.file_name == unordered_playlist.file_name " + orderPhrase + " ;");
                     break;
                 }
                 catch (SQLite3DB.SQLite3Exception) { }
@@ -687,6 +703,7 @@ namespace Gageas.Lutea.Core
             LuteaHelper.ClearRepeatCount(currentPlaylistRows);
             h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM " + GetPlaylistTableName() + " ;");
             TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
+            DisposeFetchStmt();
         }
 
         delegate string CreatePlaylistParser();
@@ -760,6 +777,7 @@ namespace Gageas.Lutea.Core
                             LuteaHelper.ClearRepeatCount(currentPlaylistRows);
                             h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM " + GetPlaylistTableName() + " ;");
                             TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
+                            DisposeFetchStmt();
                         }
 
                         // プレイリストキャッシュ用の配列を作成
@@ -838,8 +856,23 @@ namespace Gageas.Lutea.Core
             object[] value = null;
             for (int i = 0; i < 5; i++)
             {
-                if (_cache[index] == null) _cache[index] = h2k6db.FetchRow(GetPlaylistTableName(), index + 1);
-                if ((_cache[index].Length == 0) || (_cache[index][0] == null))
+                if (_cache[index] == null)
+                {
+                    try
+                    {
+                        lock (FetchRowStmtLock)
+                        {
+                            if (FetchRowStmt == null)
+                            {
+                                FetchRowStmt = h2k6db.Prepare("SELECT * FROM list WHERE file_name = (SELECT file_name FROM " + GetPlaylistTableName() + " WHERE ROWID=?);");
+                            }
+                            FetchRowStmt.Bind(1, (index + 1).ToString());
+                            _cache[index] = FetchRowStmt.EvaluateFirstROW();
+                        }
+                    }
+                    catch (SQLite3DB.SQLite3Exception) { }
+                }
+                if ((_cache[index] == null) || (_cache[index].Length == 0) || (_cache[index][0] == null))
                 {
                     _cache[index] = null;
                     Thread.Sleep(1);
