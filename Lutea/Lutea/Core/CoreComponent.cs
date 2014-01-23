@@ -243,7 +243,7 @@ namespace Gageas.Lutea.Core
             }
         }
 
-        string latestPlaylistQuery = "SELECT * FROM list;";
+        string latestPlaylistQuery = "SELECT file_name FROM list;";
         [Browsable(false)]
         public string LatestPlaylistQuery
         {
