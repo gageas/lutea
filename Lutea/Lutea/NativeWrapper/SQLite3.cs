@@ -182,6 +182,7 @@ namespace Gageas.Wrapper.SQLite3
         {
             SQLite3DB db;
             IntPtr stmt;
+            int columnCount = -1;
             string source;
             public _STMT(SQLite3DB db, String sql)
             {
@@ -234,11 +235,11 @@ namespace Gageas.Wrapper.SQLite3
             public override void Evaluate(dCallback cb)
             {
                 int r;
+                if (columnCount == -1) columnCount = sqlite3_column_count(stmt);
                 while (SQLite3.SQLITE3_ROW == (r = sqlite3_step(this.stmt)))
                 {
-                    int N = sqlite3_column_count(stmt);
-                    object[] o = new string[N];
-                    for (int i = 0; i < N; i++)
+                    object[] o = new string[columnCount];
+                    for (int i = 0; i < columnCount; i++)
                     {
                         o[i] = ReadStringFromLPWSTR(sqlite3_column_text16(stmt, i));
                     }
@@ -254,11 +255,11 @@ namespace Gageas.Wrapper.SQLite3
             {
                 List<object[]> data = new List<object[]>();
                 int r;
-                int N = sqlite3_column_count(stmt);
+                if (columnCount == -1) columnCount = sqlite3_column_count(stmt);
                 while (SQLite3.SQLITE3_ROW == (r = sqlite3_step(this.stmt)))
                 {
-                    object[] o = new string[N];
-                    for (int i = 0; i < N; i++)
+                    object[] o = new string[columnCount];
+                    for (int i = 0; i < columnCount; i++)
                     {
                         o[i] = ReadStringFromLPWSTR(sqlite3_column_text16(stmt, i));
                     }
@@ -274,12 +275,12 @@ namespace Gageas.Wrapper.SQLite3
             public override object[] EvaluateFirstROW()
             {
                 int r;
-                int N = sqlite3_column_count(stmt);
+                if (columnCount == -1) columnCount = sqlite3_column_count(stmt);
                 r = sqlite3_step(this.stmt);
-                object[] o = new string[N];
+                object[] o = new string[columnCount];
                 if (r == SQLite3.SQLITE3_ROW)
                 {
-                    for (int i = 0; i < N; i++)
+                    for (int i = 0; i < columnCount; i++)
                     {
                         o[i] = ReadStringFromLPWSTR(sqlite3_column_text16(stmt, i));
                     }
