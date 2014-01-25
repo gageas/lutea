@@ -296,6 +296,12 @@ namespace Gageas.Lutea.DefaultUI
             get;
             private set;
         }
+
+        public int lastSelectedColumnId
+        {
+            get;
+            private set;
+        }
         #endregion
 
         #region Publicメソッド
@@ -857,6 +863,7 @@ namespace Gageas.Lutea.DefaultUI
         private void playlistView_MouseClick(object sender, MouseEventArgs e)
         {
             lastSelectedString = null;
+            lastSelectedColumnId = -1;
             var item = this.GetItemAt(e.X, e.Y);
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
@@ -865,7 +872,8 @@ namespace Gageas.Lutea.DefaultUI
             {
                 case System.Windows.Forms.MouseButtons.Right:
                     var oid = getObjectIDByViewID(item.Index);
-                    lastSelectedString = Controller.GetPlaylistRowColumn(oid, (int)(this.Columns[item.SubItems.IndexOf(sub)].Tag));
+                    lastSelectedColumnId = (int)(this.Columns[item.SubItems.IndexOf(sub)].Tag);
+                    lastSelectedString = Controller.GetPlaylistRowColumn(oid, lastSelectedColumnId);
                     break;
                 case System.Windows.Forms.MouseButtons.Left:
                     if (isDummyRow(item.Index)) return;
