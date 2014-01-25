@@ -796,6 +796,12 @@
   <data name="コピーToolStripMenuItem.Text" xml:space="preserve">
     <value>この値をコピー</value>
   </data>
+  <data name="この値で検索ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>243, 28</value>
+  </data>
+  <data name="この値で検索ToolStripMenuItem.Text" xml:space="preserve">
+    <value>この値で検索</value>
+  </data>
   <data name="再読み込みToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>243, 28</value>
   </data>
@@ -893,7 +899,7 @@
     <value>240, 6</value>
   </data>
   <data name="playlistViewContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>244, 296</value>
+    <value>244, 324</value>
   </data>
   <data name="&gt;&gt;playlistViewContextMenuStrip.Name" xml:space="preserve">
     <value>playlistViewContextMenuStrip</value>
@@ -11861,52 +11867,22 @@
   <data name="&gt;&gt;toolStripSeparator6.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;propertyToolStripMenuItem.Name" xml:space="preserve">
-    <value>propertyToolStripMenuItem</value>
-  </data>
-  <data name="&gt;&gt;propertyToolStripMenuItem.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;explorerToolStripMenuItem.Name" xml:space="preserve">
-    <value>explorerToolStripMenuItem</value>
-  </data>
-  <data name="&gt;&gt;explorerToolStripMenuItem.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;コピーToolStripMenuItem.Name" xml:space="preserve">
     <value>コピーToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;コピーToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripSeparator4.Name" xml:space="preserve">
-    <value>toolStripSeparator4</value>
+  <data name="&gt;&gt;再読み込みToolStripMenuItem.Name" xml:space="preserve">
+    <value>再読み込みToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;toolStripSeparator4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;キューToolStripMenuItem.Name" xml:space="preserve">
-    <value>キューToolStripMenuItem</value>
-  </data>
-  <data name="&gt;&gt;キューToolStripMenuItem.Type" xml:space="preserve">
+  <data name="&gt;&gt;再読み込みToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;このトラックToolStripMenuItem.Name" xml:space="preserve">
-    <value>このトラックToolStripMenuItem</value>
+  <data name="&gt;&gt;deleteToolStripMenuItem.Name" xml:space="preserve">
+    <value>deleteToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;このトラックToolStripMenuItem.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;再生停止ToolStripMenuItem.Name" xml:space="preserve">
-    <value>再生停止ToolStripMenuItem</value>
-  </data>
-  <data name="&gt;&gt;再生停止ToolStripMenuItem.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;キューをクリアToolStripMenuItem.Name" xml:space="preserve">
-    <value>キューをクリアToolStripMenuItem</value>
-  </data>
-  <data name="&gt;&gt;キューをクリアToolStripMenuItem.Type" xml:space="preserve">
+  <data name="&gt;&gt;deleteToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;ratingToolStripMenuItem.Name" xml:space="preserve">
@@ -11951,17 +11927,53 @@
   <data name="&gt;&gt;toolStripMenuItem7.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;再読み込みToolStripMenuItem.Name" xml:space="preserve">
-    <value>再読み込みToolStripMenuItem</value>
+  <data name="&gt;&gt;explorerToolStripMenuItem.Name" xml:space="preserve">
+    <value>explorerToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;再読み込みToolStripMenuItem.Type" xml:space="preserve">
+  <data name="&gt;&gt;explorerToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;deleteToolStripMenuItem.Name" xml:space="preserve">
-    <value>deleteToolStripMenuItem</value>
+  <data name="&gt;&gt;propertyToolStripMenuItem.Name" xml:space="preserve">
+    <value>propertyToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;deleteToolStripMenuItem.Type" xml:space="preserve">
+  <data name="&gt;&gt;propertyToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator4.Name" xml:space="preserve">
+    <value>toolStripSeparator4</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;キューToolStripMenuItem.Name" xml:space="preserve">
+    <value>キューToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;キューToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;このトラックToolStripMenuItem.Name" xml:space="preserve">
+    <value>このトラックToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;このトラックToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;再生停止ToolStripMenuItem.Name" xml:space="preserve">
+    <value>再生停止ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;再生停止ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;キューをクリアToolStripMenuItem.Name" xml:space="preserve">
+    <value>キューをクリアToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;キューをクリアToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator5.Name" xml:space="preserve">
+    <value>toolStripSeparator5</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;columnHeader3.Name" xml:space="preserve">
     <value>columnHeader3</value>
@@ -12113,11 +12125,11 @@
   <data name="&gt;&gt;notifyIconToolStripMenuItem_ShowBalloon.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripSeparator5.Name" xml:space="preserve">
-    <value>toolStripSeparator5</value>
+  <data name="&gt;&gt;この値で検索ToolStripMenuItem.Name" xml:space="preserve">
+    <value>この値で検索ToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;toolStripSeparator5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;この値で検索ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>DefaultUIForm</value>
