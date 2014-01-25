@@ -146,6 +146,7 @@
     <Compile Include="Util\Lastfm.cs" />
     <Compile Include="Util\LuteaLastfm.cs" />
     <Compile Include="Util\StreamUtil.cs" />
+    <Compile Include="Util\UpdateChecker.cs" />
     <Compile Include="Util\Util.cs" />
     <EmbeddedResource Include="Core\EnumFlagsUITypeEdotorEditControl.resx">
       <DependentUpon>EnumFlagsUITypeEdotorEditControl.cs</DependentUpon>
