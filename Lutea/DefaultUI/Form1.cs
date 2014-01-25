@@ -1397,6 +1397,7 @@ namespace Gageas.Lutea.DefaultUI
             FolderBrowserDialog dlg = new FolderBrowserDialog();
             dlg.SelectedPath = pref.LibraryLatestDir;
             DialogResult result = dlg.ShowDialog();
+            ((ToolStripMenuItem)sender).GetCurrentParent().Visible = false;
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 pref.LibraryLatestDir = dlg.SelectedPath;
