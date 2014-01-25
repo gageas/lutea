@@ -64,6 +64,7 @@
             this.clearSortOrderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.コピーToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.この値で検索ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.再読み込みToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ratingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -122,7 +123,6 @@
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.notifyIconContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.notifyIconToolStripMenuItem_ShowBalloon = new System.Windows.Forms.ToolStripMenuItem();
-            this.この値で検索ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -473,6 +473,12 @@
             this.コピーToolStripMenuItem.Name = "コピーToolStripMenuItem";
             resources.ApplyResources(this.コピーToolStripMenuItem, "コピーToolStripMenuItem");
             this.コピーToolStripMenuItem.Click += new System.EventHandler(this.CopyToolStripMenuItem_Click);
+            // 
+            // この値で検索ToolStripMenuItem
+            // 
+            this.この値で検索ToolStripMenuItem.Name = "この値で検索ToolStripMenuItem";
+            resources.ApplyResources(this.この値で検索ToolStripMenuItem, "この値で検索ToolStripMenuItem");
+            this.この値で検索ToolStripMenuItem.Click += new System.EventHandler(this.SearchByThisValueToolStripMenuItem_Click);
             // 
             // 再読み込みToolStripMenuItem
             // 
@@ -895,12 +901,6 @@
             this.notifyIconToolStripMenuItem_ShowBalloon.Name = "notifyIconToolStripMenuItem_ShowBalloon";
             resources.ApplyResources(this.notifyIconToolStripMenuItem_ShowBalloon, "notifyIconToolStripMenuItem_ShowBalloon");
             this.notifyIconToolStripMenuItem_ShowBalloon.Click += new System.EventHandler(this.notifyIconToolStripMenuItem_ShowBalloon_Click);
-            // 
-            // この値で検索ToolStripMenuItem
-            // 
-            this.この値で検索ToolStripMenuItem.Name = "この値で検索ToolStripMenuItem";
-            resources.ApplyResources(this.この値で検索ToolStripMenuItem, "この値で検索ToolStripMenuItem");
-            this.この値で検索ToolStripMenuItem.Click += new System.EventHandler(this.SearchByThisValueToolStripMenuItem_Click);
             // 
             // DefaultUIForm
             // 
