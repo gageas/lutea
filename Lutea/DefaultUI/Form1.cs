@@ -1567,6 +1567,15 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private void SearchByThisValueToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (playlistView.lastSelectedColumnId >= 0)
+            {
+                var colName = Controller.Columns[playlistView.lastSelectedColumnId].Name;
+                Controller.CreatePlaylist("SELECT file_name FROM list WHERE " + colName + " = '" + playlistView.lastSelectedString.EscapeSingleQuotSQL() + "'");
+            }
+        }
+
         /// <summary>
         /// プレイリストのソート条件をクリアする
         /// PlaylistView→ContextMenuStrip→ソート解除を選択したときのハンドラ
