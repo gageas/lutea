@@ -899,7 +899,7 @@
     <value>240, 6</value>
   </data>
   <data name="playlistViewContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>244, 324</value>
+    <value>244, 302</value>
   </data>
   <data name="&gt;&gt;playlistViewContextMenuStrip.Name" xml:space="preserve">
     <value>playlistViewContextMenuStrip</value>
@@ -11873,6 +11873,12 @@
   <data name="&gt;&gt;コピーToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;この値で検索ToolStripMenuItem.Name" xml:space="preserve">
+    <value>この値で検索ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;この値で検索ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;再読み込みToolStripMenuItem.Name" xml:space="preserve">
     <value>再読み込みToolStripMenuItem</value>
   </data>
@@ -12123,12 +12129,6 @@
     <value>notifyIconToolStripMenuItem_ShowBalloon</value>
   </data>
   <data name="&gt;&gt;notifyIconToolStripMenuItem_ShowBalloon.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;この値で検索ToolStripMenuItem.Name" xml:space="preserve">
-    <value>この値で検索ToolStripMenuItem</value>
-  </data>
-  <data name="&gt;&gt;この値で検索ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
