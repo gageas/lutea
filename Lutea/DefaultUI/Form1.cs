@@ -1895,6 +1895,20 @@ namespace Gageas.Lutea.DefaultUI
             }
             ResetHotKeys();
             ResetTrackInfoView();
+            var timer = new System.Windows.Forms.Timer();
+            timer.Interval = 3000;
+            timer.Tick += (z, zz) =>
+            {
+                timer.Stop();
+                var updateInfo = Util.UpdateChecker.CheckNewVersion();
+                if (updateInfo != null)
+                {
+                    notifyIcon1.BalloonTipClicked += (_, __) => { Shell32.OpenPath("http://lutea.gageas.com/"); };
+                    notifyIcon1.ShowBalloonTip(1000, "Lutea Updated", "Lutea version " + String.Format("{0:0.00}",updateInfo.LuteaVersion) + " is available now.", ToolTipIcon.Info);
+                }
+                timer.Dispose();
+            };
+            timer.Start();
         }
 
         public object GetSetting()
