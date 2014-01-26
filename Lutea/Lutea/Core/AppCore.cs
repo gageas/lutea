@@ -624,7 +624,7 @@ namespace Gageas.Lutea.Core
             using (var tmpstmt = db.Prepare(subquery + " ;"))
             {
                 if (!tmpstmt.IsReadOnly()) throw new SQLite3DB.SQLite3Exception("Query is not readonly");
-                var stmt = db.Prepare("CREATE TEMP TABLE unordered_playlist AS SELECT file_name, tagAlbum FROM list WHERE file_name IN (SELECT file_name FROM ( " + subquery.TrimEnd(new char[] { ' ', '\t', '\n', ';' }) + " ));");
+                var stmt = db.Prepare("CREATE TEMP TABLE unordered_playlist AS SELECT file_name, tagAlbum FROM list WHERE file_name IN (SELECT file_name FROM ( " + subquery.TrimEnd(new char[] { ' ', '\t', '\n', ';' }) + " )) ORDER BY list.rowid;");
                 // prepareが成功した場合のみ以下が実行される
                 LatestPlaylistQueryExpanded = subquery;
                 return stmt;
