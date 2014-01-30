@@ -29,7 +29,7 @@ namespace Gageas.Lutea.Core
         static void Main()
         {
             _mutex = new System.Threading.Mutex(false, APP_NAME);
-            if (_mutex.WaitOne(0, false) == false)
+            if (_mutex.WaitOne(1000, false) == false)
             {
                 // クライアントチャンネルの生成
                 IpcClientChannel cchannel = new IpcClientChannel();
