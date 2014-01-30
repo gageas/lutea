@@ -115,6 +115,7 @@
     <Compile Include="Core\CoreComponent.cs" />
     <Compile Include="Core\LuteaPluginInterface.cs" />
     <Compile Include="Core\OutputManager.cs" />
+    <Compile Include="Core\PlaylistManager.cs" />
     <Compile Include="Core\WorkerThread.cs" />
     <Compile Include="Library\Column.cs" />
     <Compile Include="Library\CUEReader.cs" />
