@@ -1,23 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
 using System.IO;
 using Gageas.Wrapper.BASS;
-using Gageas.Wrapper.SQLite3;
-using Gageas.Lutea;
-using Gageas.Lutea.Core;
 using Gageas.Lutea.Util;
 using Gageas.Lutea.Library;
-using Gageas.Lutea.Tags;
 using KaoriYa.Migemo;
-
-using System.Runtime.InteropServices; // dllimport
+using System.Runtime.InteropServices;
 
 namespace Gageas.Lutea.Core
 {
@@ -68,22 +60,46 @@ namespace Gageas.Lutea.Core
         private static OutputManager OutputManager = new OutputManager(StreamProc);
         internal static List<Lutea.Core.LuteaComponentInterface> Plugins = new List<Core.LuteaComponentInterface>();
         internal static List<Assembly> Assemblys = new List<Assembly>();
-        internal static Migemo Migemo = null;
-
         internal static UserDirectory userDirectory;
-        internal static SQLite3DB h2k6db;
-        internal static int currentPlaylistRows;
+        internal static PlaylistManager playlistBuilder;
 
+        internal static Migemo Migemo = null;
         internal static StreamObject CurrentStream; // 再生中のストリーム
         internal static StreamObject PreparedStream;
 
-        internal static object[][] PlaylistCache;
-        internal static int[] TagAlbumContinuousCount;
+        internal static int[] TagAlbumContinuousCount
+        {
+            get
+            {
+                return playlistBuilder.TagAlbumContinuousCount;
+            }
+        }
 
-        private static Object DBlock = new Object();
+        internal static void InvalidatePlaylistCache(string file_name)
+        {
+            var index = IndexInPlaylist(file_name);
+            if (index == -1) return;
+            playlistBuilder.InvalidatePlaylistRowCache(index);
+        }
 
-        private static Object FetchRowStmtLock = new Object();
-        private static SQLite3DB.STMT FetchRowStmt;
+        internal static int currentPlaylistRows
+        {
+            get
+            {
+                return playlistBuilder.CurrentPlaylistRows;
+            }
+        }
+
+        public static object[] GetPlaylistRow(int index)
+        {
+            return playlistBuilder.GetPlaylistRow(index);
+        }
+
+        public static void createPlaylist(string sql, bool playOnCreate = false)
+        {
+            playlistBuilder.CreatePlaylist(sql, playOnCreate);
+            AppCore.LatestPlaylistQuery = sql;
+        }
 
         /// <summary>
         /// Byte単位の長さの値．この値が0になるまでOutputStreamへの出力を待機する．
@@ -102,6 +118,13 @@ namespace Gageas.Lutea.Core
         internal static int lastPreparedIndex;
 
         #region Properies
+        public static bool UseMigemo
+        {
+            get
+            {
+                return MyCoreComponent.UseMigemo;
+            }
+        }
         public static bool EnableWASAPIExclusive
         {
             get
@@ -151,15 +174,18 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        public static void SetPlaylistSort(string column, Controller.SortOrders order)
+        {
+            MyCoreComponent.PlaylistSortColumn = column;
+            MyCoreComponent.PlaylistSortOrder = order;
+            playlistBuilder.CreateOrderedPlaylist(column, order);
+        }
+
         public static Controller.SortOrders PlaylistSortOrder
         {
             get
             {
                 return MyCoreComponent.PlaylistSortOrder;
-            }
-            set
-            {
-                MyCoreComponent.PlaylistSortOrder = value;
             }
         }
 
@@ -181,10 +207,6 @@ namespace Gageas.Lutea.Core
             {
                 return MyCoreComponent.PlaylistSortColumn;
             }
-            set
-            {
-                MyCoreComponent.PlaylistSortColumn = value;
-            }
         }
 
         public static string LatestPlaylistQuery
@@ -192,6 +214,18 @@ namespace Gageas.Lutea.Core
             get
             {
                 return MyCoreComponent.LatestPlaylistQuery;
+            }
+            private set
+            {
+                MyCoreComponent.LatestPlaylistQuery = value;
+            }
+        }
+
+        public static string LatestPlaylistQueryExpanded
+        {
+            get
+            {
+                return playlistBuilder.LatestPlaylistQueryExpanded;
             }
         }
 
@@ -308,19 +342,7 @@ namespace Gageas.Lutea.Core
 
         internal static int IndexInPlaylist(string file_name)
         {
-            try
-            {
-                var stmt = h2k6db.Prepare("SELECT ROWID FROM " + GetPlaylistTableName() + " WHERE file_name = ?;");
-                stmt.Bind(1, file_name);
-                int ret = 0;
-                stmt.Evaluate((o) => ret = int.Parse(o[0].ToString()));
-                if (ret > 0) return ret - 1;
-            }
-            catch (SQLite3DB.SQLite3Exception ex)
-            {
-                Logger.Debug(ex.ToString());
-            }
-            return -1;
+            return playlistBuilder.GetIndexInPlaylist(file_name);
         }
 
         /// <summary>
@@ -337,7 +359,8 @@ namespace Gageas.Lutea.Core
             {
                 Migemo = new Migemo(@"dict\migemo-dict");
             }
-            catch(Exception e){
+            catch (Exception e)
+            {
                 Logger.Error(e);
             }
 
@@ -346,6 +369,9 @@ namespace Gageas.Lutea.Core
 
             // ライブラリ準備
             Library = userDirectory.OpenLibrary();
+
+            // プレイリスト管理の開始
+            playlistBuilder = new PlaylistManager(Library.Connect());
 
             // コンポーネントの読み込み
             // Core Componentをロード
@@ -428,7 +454,7 @@ namespace Gageas.Lutea.Core
                 }
             }
             
-            createPlaylist(MyCoreComponent.LatestPlaylistQuery);
+            playlistBuilder.CreatePlaylist(MyCoreComponent.LatestPlaylistQuery);
 
             if (BASS.IsAvailable)
             {
@@ -538,355 +564,6 @@ namespace Gageas.Lutea.Core
                 }
             }
         }
-
-        /*
-         * DBに問い合わせてプレイリストを生成するための処理郡
-         * 
-         * 構造:
-         * 1.createPlaylistProcをバックグラウンドスレッドとして起動しsleepさせておく
-         * 2.createPlaylistが呼ばれたらplaylistQueryQueueに問い合わせ文字列をセットしてcreatePlaylistProcにinterrupt
-         * 3.createPlaylistProcがplaylistQueryQueueを読んでプレイリストを生成
-         * 
-         * 3.でのプレイリスト生成中にも割り込みをかけてリセットできるようになっている
-         */
-        #region Create Playlist
-        private static Thread playlistCreateThread;
-        private static String playlistQueryQueue = null;
-        private static Boolean PlayOnCreate = false;
-        internal static String LatestPlaylistQueryExpanded = "";
-        private static readonly object playlistQueryQueueLock = new object();
-        internal static void createPlaylist(String sql, bool playOnCreate = false)
-        {
-            Logger.Log("createPlaylist " + sql);
-            lock (playlistQueryQueueLock)
-            {
-                playlistQueryQueue = sql;
-                PlayOnCreate = playOnCreate;
-                if (playlistCreateThread == null || playlistCreateThread.IsAlive == false)
-                {
-                    playlistCreateThread = new Thread(createPlaylistProc);
-                    playlistCreateThread.Start();
-                    playlistCreateThread.IsBackground = true;
-                    playlistCreateThread.Priority = ThreadPriority.BelowNormal;
-                }
-                else
-                {
-                    if (h2k6db != null)
-                    {
-                        h2k6db.interrupt();
-                    }
-                    playlistCreateThread.Interrupt();
-                }
-            }
-        }
-
-        private static string GetMigemoSTMT(string sql)
-        {
-            if (!MyCoreComponent.UseMigemo) throw new System.NotSupportedException("migemo is not enabled.");
-            if (Migemo == null) throw new System.NotSupportedException("migemo is not enabled.");
-
-            string[] words = sql.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            string[] migemo_phrase = new string[words.Length];
-            for (int i = 0; i < words.Length; i++)
-            {
-                string word = words[i];
-                string not = "";
-                if (word[0] == '-')
-                {
-                    not = "NOT ";
-                    word = word.Substring(1);
-                }
-                migemo_phrase[i] = not + "migemo( '" + word.EscapeSingleQuotSQL() + "' , text)";
-            }
-            return "SELECT file_name FROM allTags WHERE " + String.Join(" AND ", migemo_phrase) + ";";
-        }
-        private static string GetRegexpSTMT(string sql)
-        {
-            // prepareできねぇ・・・
-            Match match = new Regex(@"^\/(.+)\/[a-z]*$").Match(sql);
-            if (match.Success)
-            {
-                return "SELECT file_name FROM allTags WHERE text regexp  '" + sql.EscapeSingleQuotSQL() + "' ;";
-            }
-            else
-            {
-                throw new System.ArgumentException();
-            }
-        }
-
-        private static string[] GetSearchTargetColumns()
-        {
-            return Library.Columns.Where(_ => _.IsTextSearchTarget).Select(_ => _.Name).ToArray();
-        }
-
-        private static SQLite3DB.STMT prepareForCreatePlaylistView(SQLite3DB db, string subquery)
-        {
-            using (var tmpstmt = db.Prepare(subquery + " ;"))
-            {
-                if (!tmpstmt.IsReadOnly()) throw new SQLite3DB.SQLite3Exception("Query is not readonly");
-                var stmt = db.Prepare("CREATE TEMP TABLE unordered_playlist AS SELECT file_name, tagAlbum FROM list WHERE file_name IN (SELECT file_name FROM ( " + subquery.TrimEnd(new char[] { ' ', '\t', '\n', ';' }) + " )) ORDER BY list.rowid;");
-                // prepareが成功した場合のみ以下が実行される
-                LatestPlaylistQueryExpanded = subquery;
-                return stmt;
-            }
-        }
-
-        private static void DisposeFetchStmt()
-        {
-            lock (FetchRowStmtLock)
-            {
-                if (FetchRowStmt != null)
-                {
-                    FetchRowStmt.Dispose();
-                    FetchRowStmt = null;
-                }
-            }
-        }
-
-        internal static void CreateOrderedPlaylist(string column, Controller.SortOrders sortOrder)
-        {
-            PlaylistCache = new object[PlaylistCache.Length][];
-            CreateOrderedPlaylistTableInDB();
-            Controller._PlaylistUpdated(null);
-        }
-
-        private static void CreateOrderedPlaylistTableInDB()
-        {
-            try
-            {
-                h2k6db.Exec("DROP TABLE IF EXISTS playlist;");
-            }
-            catch (SQLite3DB.SQLite3Exception ee)
-            {
-                Logger.Log(ee);
-            }
-
-            if (MyCoreComponent.PlaylistSortColumn == null)
-            {
-                LuteaHelper.ClearRepeatCount(currentPlaylistRows);
-                h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM unordered_playlist ;");
-                TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
-                DisposeFetchStmt();
-                return;
-            }
-
-            var orderPhrase = "";
-            orderPhrase = " ORDER BY ";
-            switch (Library.Columns[Controller.GetColumnIndexByName(MyCoreComponent.PlaylistSortColumn)].Type)
-            {
-                case LibraryColumnType.Bitrate:
-                case LibraryColumnType.FileSize:
-                case LibraryColumnType.Integer:
-                case LibraryColumnType.Rating:
-                case LibraryColumnType.Timestamp64:
-                case LibraryColumnType.TrackNumber:
-                case LibraryColumnType.Time:
-                    orderPhrase += "list." + MyCoreComponent.PlaylistSortColumn + "-0";
-                    break;
-                default:
-                    orderPhrase += "list." + MyCoreComponent.PlaylistSortColumn + "||'' COLLATE NOCASE ";
-                    break;
-            }
-
-            orderPhrase += MyCoreComponent.PlaylistSortOrder == Controller.SortOrders.Asc ? " ASC " : " DESC ";
-            for (int i = 0; i < 10; i++)
-            {
-                try
-                {
-                    h2k6db.Exec("CREATE TEMP TABLE playlist AS SELECT list.file_name, list.tagAlbum FROM list, unordered_playlist WHERE list.file_name == unordered_playlist.file_name " + orderPhrase + " ;");
-                    break;
-                }
-                catch (SQLite3DB.SQLite3Exception) { }
-                Thread.Sleep(50);
-            }
-
-            LuteaHelper.ClearRepeatCount(currentPlaylistRows);
-            h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM " + GetPlaylistTableName() + " ;");
-            TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
-            DisposeFetchStmt();
-        }
-
-        delegate string CreatePlaylistParser();
-        private static void createPlaylistTableInDB(string sql)
-        {
-            try
-            {
-                // Luteaで生成するplaylistをdrop
-                try
-                {
-                    h2k6db.Exec("DROP TABLE IF EXISTS playlist;");
-                    h2k6db.Exec("DROP TABLE IF EXISTS unordered_playlist;");
-                    Logger.Debug("playlist TABLE(Lutea type) DROPed");
-                }
-                catch (SQLite3DB.SQLite3Exception e)
-                {
-                    // H2k6で生成するplaylistをdrop
-                    try
-                    {
-                        h2k6db.Exec("DROP VIEW IF EXISTS playlist;");
-                        h2k6db.Exec("DROP TABLE IF EXISTS unordered_playlist;");
-                        Logger.Debug("playlist TABLE(H2k6 type) DROPed");
-                    }
-                    catch (SQLite3DB.SQLite3Exception ee)
-                    {
-                        Logger.Error(e);
-                        Logger.Log(ee);
-                    }
-                }
-
-                SQLite3DB.STMT tmt = null;
-                foreach (var dlg in new CreatePlaylistParser[]{
-                        ()=>sql==""?"SELECT file_name FROM list":sql,
-                        ()=>GetRegexpSTMT(sql),
-                        ()=>GetMigemoSTMT(sql),
-                        ()=>"SELECT file_name FROM allTags WHERE text like '%" + sql.EscapeSingleQuotSQL() + "%';"})
-                {
-                    try
-                    {
-                        tmt = prepareForCreatePlaylistView(h2k6db, dlg());
-                        break;
-                    }
-                    catch (Exception ex) { Logger.Error(ex); }
-                };
-                if (tmt == null) return;
-                using (tmt)
-                {
-                    for (int i = 0; i < 10; i++)
-                    {
-                        try
-                        {
-                            tmt.Evaluate(null);
-                            break;
-                        }
-                        catch (SQLite3DB.SQLite3Exception) { }
-                        Thread.Sleep(50);
-                    }
-
-                    //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
-                    Thread.Sleep(10);
-
-                    using (SQLite3DB.STMT tmt2 = h2k6db.Prepare("SELECT COUNT(*) FROM unordered_playlist ;"))
-                    {
-                        tmt2.Evaluate((o) => currentPlaylistRows = int.Parse(o[0].ToString()));
-                        if (MyCoreComponent.PlaylistSortColumn != null)
-                        {
-                            CreateOrderedPlaylistTableInDB();
-                        }
-                        else
-                        {
-                            LuteaHelper.ClearRepeatCount(currentPlaylistRows);
-                            h2k6db.Exec("SELECT __x_lutea_count_continuous(tagAlbum) FROM " + GetPlaylistTableName() + " ;");
-                            TagAlbumContinuousCount = (int[])LuteaHelper.counter.Clone();
-                            DisposeFetchStmt();
-                        }
-
-                        // プレイリストキャッシュ用の配列を作成
-                        PlaylistCache = new object[currentPlaylistRows][];
-                        MyCoreComponent.LatestPlaylistQuery = sql;
-                    }
-                }
-            }
-            catch (SQLite3DB.SQLite3Exception e)
-            {
-                Logger.Log(e.ToString());
-            }
-        }
-        private static void createPlaylistProc()
-        {
-            while (true)
-            {
-                if (h2k6db == null)
-                {
-                    h2k6db = Library.Connect();
-                    h2k6db.Exec("CREATE TEMP VIEW allTags AS SELECT file_name, " + String.Join("||'\n'||", GetSearchTargetColumns()) + " AS text FROM list;");
-                }
-                try
-                {
-                    String sql;
-                    bool playOnCreate = false;
-                    lock (playlistQueryQueueLock)
-                    {
-                        sql = playlistQueryQueue;
-                        playOnCreate = PlayOnCreate;
-                    }
-                    if (sql == null)
-                    {
-                        Logger.Debug("Entering sleep");
-                        Thread.Sleep(System.Threading.Timeout.Infinite);
-                    } // 待機
-
-                    //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
-                    Thread.Sleep(10);
-
-                    lock (playlistQueryQueueLock)
-                    {
-                        sql = playlistQueryQueue;
-                        playlistQueryQueue = null;
-                        PlayOnCreate = false;
-                    }
-                    Logger.Debug("start to create playlist " + sql);
-                    lock (DBlock)
-                    {
-                        createPlaylistTableInDB(sql);
-
-                        // プレイリスト生成完了コールバックを呼ぶ
-                        Logger.Debug("コールバックをすりゅ");
-                        Controller._PlaylistUpdated(sql);
-
-                        if (playOnCreate) PlayPlaylistItem(0);
-                    }
-                }
-                catch (ThreadInterruptedException) { }
-            }
-        }
-
-        private static string GetPlaylistTableName()
-        {
-            return MyCoreComponent.PlaylistSortColumn == null ? "unordered_playlist" : "playlist";
-        }
-
-        public static object[] GetPlaylistRow(int index)
-        {
-            if (index < 0) return null;
-            // このメソッドの呼び出し中にcacheの参照が変わる可能性があるので、最初に参照をコピーする
-            // 一時的に古いcacheの内容を吐いても問題ないので、mutexで固めるほどではない
-            var _cache = PlaylistCache;
-            if (_cache == null) return null;
-            if (_cache.Length <= index) return null;
-            object[] value = null;
-            for (int i = 0; i < 5; i++)
-            {
-                if (_cache[index] == null)
-                {
-                    try
-                    {
-                        lock (FetchRowStmtLock)
-                        {
-                            if (FetchRowStmt == null)
-                            {
-                                FetchRowStmt = h2k6db.Prepare("SELECT * FROM list WHERE file_name = (SELECT file_name FROM " + GetPlaylistTableName() + " WHERE ROWID=?);");
-                            }
-                            FetchRowStmt.Bind(1, (index + 1).ToString());
-                            _cache[index] = FetchRowStmt.EvaluateFirstROW();
-                        }
-                    }
-                    catch (SQLite3DB.SQLite3Exception) { }
-                }
-                if ((_cache[index] == null) || (_cache[index].Length == 0) || (_cache[index][0] == null))
-                {
-                    _cache[index] = null;
-                    Thread.Sleep(1);
-                }
-                else
-                {
-                    break;
-                }
-            }
-            value = _cache[index];
-            if (value == null || value.Length == 0) return null;
-            return value;
-        }
-        #endregion
 
         #region メディアファイルの再生に関する処理郡
         private static object prepareMutex = new object();
@@ -1312,12 +989,7 @@ namespace Gageas.Lutea.Core
             string latest = MyCoreComponent.LatestPlaylistQuery;
             if (!silent)
             {
-                if (h2k6db != null)
-                {
-                    h2k6db.Dispose();
-                    h2k6db = null;
-                }
-                createPlaylist(MyCoreComponent.LatestPlaylistQuery);
+                playlistBuilder.RefreshPlaylist();
                 Controller._OnDatabaseUpdated();
             }
         }

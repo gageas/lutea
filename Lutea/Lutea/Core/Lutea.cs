@@ -666,11 +666,7 @@ namespace Gageas.Lutea.Core
                             stmt.Bind(2, file_name);
                             stmt.Evaluate(null);
                             stmt.Reset();
-                            var row = AppCore.PlaylistCache.First(((o) => o != null && ((string)o[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)]) == file_name));
-                            if (row != null)
-                            {
-                                row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.rating)] = rate.ToString();
-                            }
+                            AppCore.InvalidatePlaylistCache(file_name);
                         }
                     }
                     db.Exec("COMMIT;");
@@ -855,43 +851,29 @@ namespace Gageas.Lutea.Core
         public static void SetSortColumn(String columnName, SortOrders sortOrder = SortOrders.KeepOrFlip)
         {
             // ソートなし設定
-            if (columnName == null)
+            if (GetColumnIndexByName(columnName) >= 0)
             {
-                AppCore.PlaylistSortColumn = null;
-            }
-            else if (GetColumnIndexByName(columnName) >= 0)
-            {
-                // ソート順を設定
-                if (sortOrder == SortOrders.KeepOrFlip)
+                // ソート順を交換
+                if (sortOrder == SortOrders.KeepOrFlip && AppCore.PlaylistSortColumn == columnName)
                 {
-                    // ソート順を交換
-                    if (AppCore.PlaylistSortColumn == columnName)
-                    {
-                        if (AppCore.PlaylistSortOrder == SortOrders.Asc)
-                        {
-                            AppCore.PlaylistSortOrder = SortOrders.Desc;
-                        }else{
-                            AppCore.PlaylistSortOrder = SortOrders.Asc;
-                        }
-                    }
-                }else{
-                    AppCore.PlaylistSortOrder = sortOrder;
+                    sortOrder = AppCore.PlaylistSortOrder == SortOrders.Asc ? SortOrders.Desc : SortOrders.Asc;
                 }
-
-                // ソート対象カラムを設定
-                AppCore.PlaylistSortColumn = columnName;
+            }
+            else
+            {
+                columnName = null;
             }
 
             // ソート順変更イベントを通知
             if (PlaylistSortOrderChanged != null)
             {
-                var lambda = (Action)(() => {
-                    AppCore.CreateOrderedPlaylist(columnName, sortOrder);
+                var lambda = (Action)(() =>
+                {
+                    AppCore.SetPlaylistSort(columnName, sortOrder);
                     PlaylistSortOrderChanged.Invoke(AppCore.PlaylistSortColumn, AppCore.PlaylistSortOrder);
                 });
                 lambda.BeginInvoke(_ => lambda.EndInvoke(_), null);
             }
-
         }
 
         /// <summary>
