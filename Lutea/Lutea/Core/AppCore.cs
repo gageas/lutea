@@ -284,11 +284,12 @@ namespace Gageas.Lutea.Core
             uint read = strm.stream.GetData(buffer, length);
             if (read == 0xFFFFFFFF) return 0;
             read &= 0x7FFFFFFF;
+            double gaindB = 0;
             if (MyCoreComponent.EnableReplayGain)
             {
-                var gaindB = strm.gain == null ? MyCoreComponent.NoReplaygainGainBoost : (MyCoreComponent.ReplaygainGainBoost + strm.gain ?? 0);
-                LuteaHelper.ApplyGain(buffer, read, gaindB, OutputMode == Controller.OutputModeEnum.WASAPI || OutputMode == Controller.OutputModeEnum.WASAPIEx ? Volume : 1.0);
+                gaindB = strm.gain == null ? MyCoreComponent.NoReplaygainGainBoost : (MyCoreComponent.ReplaygainGainBoost + strm.gain ?? 0);
             }
+            LuteaHelper.ApplyGain(buffer, read, gaindB, OutputMode == Controller.OutputModeEnum.WASAPI || OutputMode == Controller.OutputModeEnum.WASAPIEx ? Volume : 1.0);
             return read;
         }
 
