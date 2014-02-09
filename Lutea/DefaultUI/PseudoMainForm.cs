@@ -12,9 +12,13 @@ namespace Gageas.Lutea.DefaultUI
 {
     public partial class PseudoMainForm : Form
     {
-        private const int SIZE = 200;
+        private const int OVERSAMPLE = 4;
         private const int WM_COMMAND = 0x0111;
         private const int THBN_CLICKED = 0x1800;
+
+        private int SIZE = 66;
+        private int PADDING { get { return (int)(SIZE * 0.05); } }
+        private int BORDER { get { return (int)(SIZE * 0.025); } }
 
         /// <summary>
         /// win7タスクバーに表示するボタンの画像リスト
@@ -31,17 +35,34 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private TaskbarExtension TaskbarExt;
 
+        /// <summary>
+        /// メインウィンドウの参照
+        /// </summary>
         private DefaultUIForm mainForm;
-        private Image cover = new Bitmap(SIZE, SIZE);
+
+        /// <summary>
+        /// カバーアート画像のキャッシュ
+        /// </summary>
+        private Image cover;
+
         public PseudoMainForm(DefaultUIForm mainForm)
         {
+            using (var bmp = new Bitmap(1,1))
+            using (var g = Graphics.FromImage(bmp))
+            {
+                SIZE = (int)(SIZE * g.DpiX / 96);
+            }
             this.mainForm = mainForm;
+            this.BackColor = Color.Tan;
+            this.DoubleBuffered = true;
             this.Text = mainForm.Text;
             this.mainForm.TextChanged += (_, __) => this.Text = mainForm.Text;
             this.Icon = mainForm.Icon;
             Controller.onTrackChange += new Controller.VOIDINT(Controller_onTrackChange);
             Controller.onElapsedTimeChange += new Controller.VOIDINT(Controller_onElapsedTimeChange);
             InitializeComponent();
+            this.ClientSize = new Size(SIZE * 3, SIZE);
+            this.Opacity = 0;
         }
 
         void Controller_onElapsedTimeChange(int second)
@@ -54,22 +75,24 @@ namespace Gageas.Lutea.DefaultUI
                     TaskbarExt.Taskbar.SetProgressValue(this.mainForm.Handle, (ulong)second, (ulong)Controller.Current.Length);
                 }));
             }
+            this.Invalidate();
         }
 
         void Controller_onTrackChange(int sec)
         {
             if (TaskbarExt != null)
             {
-                var img = CoverArtView.GetCoverArtOrAlternativeImage();
-                cover = Gageas.Lutea.Util.ImageUtil.GetResizedImageWithoutPadding(img, SIZE, SIZE);
-                using (var g = Graphics.FromImage(cover))
+                var img = Controller.Current.CoverArtImage();
+                if (img == null)
                 {
-                    g.DrawRectangle(Pens.Silver, 0, 0, cover.Width - 1, cover.Height - 1);
-                    g.DrawRectangle(Pens.Gray, 1, 1, cover.Width - 2, cover.Height - 2);
+                    cover = null;
+                }
+                else
+                {
+                    cover = Util.ImageUtil.GetResizedImageWithoutPadding(img, SIZE - PADDING - PADDING, SIZE - PADDING - PADDING);
                 }
                 this.mainForm.Invoke((MethodInvoker)(() =>
                 {
-                    this.Size = cover.Size;
                     this.Invalidate();
                     TaskbarExt.Taskbar.SetProgressState(this.mainForm.Handle, TaskbarExtension.TbpFlag.NoProgress);
                 }));
@@ -94,9 +117,55 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private void RenderContents(Graphics g, int width, int height, int size, int padding)
+        {
+            var fmt = new StringFormat(StringFormatFlags.FitBlackBox | StringFormatFlags.NoClip);
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixel;
+            var rsideRect = new Rectangle(0, (int)(size * 0.13) + padding, width - padding, height - padding - padding);
+
+            var appRect = new Rectangle(rsideRect.X, padding, rsideRect.Width, (int)(rsideRect.Height * 0.09));
+            var appName = "Lutea audio player";
+            var appFont = new Font(this.Font.Name, appRect.Height, FontStyle.Regular, GraphicsUnit.Pixel, 0x00, false);
+            g.DrawString(appName, appFont, Brushes.Black, appRect, fmt);
+
+            var albumRect = new Rectangle(rsideRect.X, rsideRect.Y + padding, rsideRect.Width, (int)(rsideRect.Height * 0.14));
+            g.DrawString(Controller.Current.MetaData("tagAlbum"), new Font(this.Font.Name, albumRect.Height, FontStyle.Regular, GraphicsUnit.Pixel, 0x00, false), Brushes.Black, albumRect, fmt);
+
+            var titleRect = new Rectangle(rsideRect.X, albumRect.Bottom + padding, rsideRect.Width, (int)(rsideRect.Height * 0.17));
+            g.DrawString(Controller.Current.MetaData("tagTitle"), new Font(this.Font.Name, titleRect.Height, FontStyle.Bold, GraphicsUnit.Pixel, 0x00, false), Brushes.Black, titleRect, fmt);
+
+            var artistRect = new Rectangle(rsideRect.X, titleRect.Bottom + padding, rsideRect.Width, (int)(rsideRect.Height * 0.14));
+            g.DrawString(Controller.Current.MetaData("tagArtist"), new Font(this.Font.Name, artistRect.Height, FontStyle.Regular, GraphicsUnit.Pixel, 0x00, false), Brushes.Black, artistRect, fmt);
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
-            e.Graphics.DrawImage(cover, 0, 0);
+            e.Graphics.FillRectangle(Brushes.White, BORDER, BORDER, Width - BORDER - BORDER, Height - BORDER - BORDER);
+            if (!Controller.IsPlaying)
+            {
+                e.Graphics.DrawIcon(this.Icon, (this.Width - this.Icon.Width) / 2, (this.Height - this.Icon.Height) / 2);
+                return;
+            }
+            else
+            {
+                // OS側でサムネイルを縮小させると汚いので自前でオーバーサンプリング描画する
+                var left = PADDING + (cover == null ? 0 : cover.Width + BORDER);
+                using (var bg = new Bitmap((Width - left) * OVERSAMPLE, Height * OVERSAMPLE))
+                using (var g = Graphics.FromImage(bg))
+                {
+                    RenderContents(g, bg.Width, bg.Height, SIZE * OVERSAMPLE, PADDING * OVERSAMPLE);
+                    e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    e.Graphics.DrawImage(bg, left, 0, Width - left, Height);
+                }
+                var barHeihgt = (int)(SIZE * 0.08);
+                var progressRect = new Rectangle(left, Height - barHeihgt - PADDING, Width - left - PADDING - 1, barHeihgt - 1);
+                e.Graphics.DrawRectangle(Pens.Silver, progressRect);
+                e.Graphics.FillRectangle(Brushes.Silver, new Rectangle(progressRect.X, progressRect.Y, (int)((progressRect.Width) * (Controller.Current.Position / Controller.Current.Length)), progressRect.Height));
+                if (cover != null)
+                {
+                    e.Graphics.DrawImage(cover, PADDING, PADDING + (Height - PADDING - PADDING - cover.Height) / 2);
+                }
+            }
         }
 
         protected override void OnActivated(EventArgs e)
