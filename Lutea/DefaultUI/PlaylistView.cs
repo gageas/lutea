@@ -302,6 +302,8 @@ namespace Gageas.Lutea.DefaultUI
             get;
             private set;
         }
+
+        public ContextMenuStrip HeaderContextMenu { get; set; }
         #endregion
 
         #region Publicメソッド
@@ -560,6 +562,22 @@ namespace Gageas.Lutea.DefaultUI
         #endregion
 
         #region Privateメソッド
+        protected override void WndProc(ref System.Windows.Forms.Message m)
+        {
+            // WM_CONTEXTMENU
+            if (m.Msg == 0x7b)
+            {
+                if (m.WParam != this.Handle)
+                {
+                    // 自身のHWINDOW宛てじゃないWM_CONTEXTMENUが来たらColumnHeader宛てのWM_CONTEXTMENUと判断する
+                    // ref. http://stackoverflow.com/questions/17838494/listview-contextmenustrip-for-column-headers
+                    if (HeaderContextMenu != null) HeaderContextMenu.Show(Control.MousePosition);
+                    return;
+                }
+            }
+            base.WndProc(ref m);
+        }
+
         #region 選択トラック移動
         /// <summary>
         /// 次のアルバムの先頭トラックを選択
