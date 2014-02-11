@@ -245,13 +245,11 @@ namespace Gageas.Lutea.DefaultUI
             }
             else
             {
-                {
-                    User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
-                }
-                if (oldhIcon_Large != IntPtr.Zero)
-                {
-                    User32.DestroyIcon(oldhIcon_Large);
-                }
+                User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
+            }
+            if (oldhIcon_Large != IntPtr.Zero)
+            {
+                User32.DestroyIcon(oldhIcon_Large);
             }
         }
 
@@ -562,7 +560,6 @@ namespace Gageas.Lutea.DefaultUI
 
         private const int WM_GETICON = 0x007f;
         private const int WM_SETICON = 0x0080;
-        private const int WM_DWMSENDICONICTHUMBNAIL = 0x0323;
         private static IntPtr hIconForWindowIcon_Large;
         protected override void WndProc(ref Message m)
         {
