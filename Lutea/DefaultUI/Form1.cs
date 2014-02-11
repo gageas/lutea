@@ -1645,6 +1645,7 @@ namespace Gageas.Lutea.DefaultUI
             var yp = y + 3;
             var w = e.Bounds.Width - 4 - 3;
             var h = e.Bounds.Width - 4 - 3;
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
             // background
             if (backgroundCoverartLoader.IsCached(album))
@@ -1663,12 +1664,12 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 else
                 {
-                    g.DrawRectangle(Pens.Silver, x + 2, y + 2, e.Bounds.Width - 4, e.Bounds.Height - 4);
+                    g.DrawRectangle(Pens.DarkGray, x + 2, y + 2, e.Bounds.Width - 4, e.Bounds.Height - 4);
                 }
             }
             else
             {
-                g.DrawRectangle(Pens.Silver, x + 2, y + 2, e.Bounds.Width - 4, e.Bounds.Height - 4);
+                g.DrawRectangle(Pens.MidnightBlue, x + 2, y + 2, e.Bounds.Width - 4, e.Bounds.Height - 4);
                 if (!string.IsNullOrEmpty(album))
                 {
                     backgroundCoverartLoader.Enqueue(album, file_name, index);
@@ -1689,14 +1690,15 @@ namespace Gageas.Lutea.DefaultUI
             }
             double rate = 0;
             double.TryParse(albums[index][3].ToString(), out rate);
-            g.FillEllipse(new SolidBrush(Color.FromArgb(128, 255, 0, 0)), xp + w - 20, yp + 2, 18, 15);
-            g.DrawEllipse(new Pen(Color.FromArgb(128, 255, 255, 255)), xp + w - 20, yp + 2, 18, 15);
+            var size = 15;
+            g.FillEllipse(new SolidBrush(Color.FromArgb(128, Color.Red)), xp + w - (int)(size * 1.3), yp + 2, (int)(size*1.2), size);
+            g.DrawEllipse(new Pen(Color.FromArgb(128, Color.White)), xp + w - (int)(size * 1.3), yp + 2, (int)(size * 1.2), size);
             var sf = new StringFormat();
             sf.Trimming = StringTrimming.None;
             sf.Alignment = StringAlignment.Center;
             sf.LineAlignment = StringAlignment.Center;
             sf.FormatFlags = StringFormatFlags.NoWrap;
-            g.DrawString(albums[index][2].ToString(), albumArtListView.Font, System.Drawing.Brushes.White, new RectangleF(xp + w - 18, yp + 2, 15, 15), sf);
+            g.DrawString(albums[index][2].ToString(), new Font("Arial Black", (int)(size * 0.8), GraphicsUnit.Pixel), System.Drawing.Brushes.White, new RectangleF(xp + w - (int)(size * 1.2), yp + 2, size + 1, size + 1), sf);
         }
 
         private void albumArtListView_DoubleClick(object sender, EventArgs e)
