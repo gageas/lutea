@@ -1886,7 +1886,7 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 column_select.DropDownItems.Add(item);
             }
-            playlistView.ContextMenuStrip.Items.Add(column_select);
+            playlistViewHeaderContextMenuStrip.Items.Add(column_select);
 
             coverArtView.Setup();
             var ver = Environment.OSVersion.Version;
