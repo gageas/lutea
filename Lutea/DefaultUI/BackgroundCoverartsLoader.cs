@@ -70,6 +70,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             lock (tasks)
             {
+                if (IsCached(album)) return;
                 var queued = tasks.FirstOrDefault((_) => _.Key == album);
                 if (queued != null)
                 {
@@ -172,7 +173,6 @@ namespace Gageas.Lutea.DefaultUI
                 if (coverArts.ContainsKey(album)) return null;
 
                 var orig = Controller.CoverArtImageForFile(task.file_name.Trim());
-                GDI.GDIBitmap resizedBitmap;
                 if (orig != null)
                 {
                     var resize = ImageUtil.GetResizedImageWithoutPadding(orig, size, size);
