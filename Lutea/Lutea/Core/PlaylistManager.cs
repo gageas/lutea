@@ -254,7 +254,7 @@ namespace Gageas.Lutea.Core
             using (var tmpstmt = LibraryDB.Prepare(subquery + " ;"))
             {
                 if (!tmpstmt.IsReadOnly()) throw new SQLite3DB.SQLite3Exception("Query is not readonly");
-                var stmt = LibraryDB.Prepare("CREATE TEMP TABLE unordered_playlist AS SELECT file_name, tagAlbum FROM list WHERE file_name IN (SELECT file_name FROM ( " + subquery.TrimEnd(new char[] { ' ', '\t', '\n', ';' }) + " )) ORDER BY list.rowid;");
+                var stmt = LibraryDB.Prepare("CREATE TEMP TABLE __temp AS SELECT file_name FROM ( " + subquery.TrimEnd(new char[] { ' ', '\t', '\n', ';' }) + " );");
                 // prepareが成功した場合のみ以下が実行される
                 LatestPlaylistQueryExpanded = subquery;
                 return stmt;
@@ -328,6 +328,7 @@ namespace Gageas.Lutea.Core
             {
                 LibraryDB.Exec("DROP TABLE IF EXISTS playlist;");
                 LibraryDB.Exec("DROP TABLE IF EXISTS unordered_playlist;");
+                LibraryDB.Exec("DROP TABLE IF EXISTS __temp");
                 Logger.Debug("playlist TABLE(Lutea type) DROPed");
             }
             catch (SQLite3DB.SQLite3Exception e)
@@ -337,6 +338,7 @@ namespace Gageas.Lutea.Core
                 {
                     LibraryDB.Exec("DROP VIEW IF EXISTS playlist;");
                     LibraryDB.Exec("DROP TABLE IF EXISTS unordered_playlist;");
+                    LibraryDB.Exec("DROP TABLE IF EXISTS __temp");
                     Logger.Debug("playlist TABLE(H2k6 type) DROPed");
                 }
                 catch (SQLite3DB.SQLite3Exception ee)
@@ -391,6 +393,8 @@ namespace Gageas.Lutea.Core
 
                     //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
                     Thread.Sleep(10);
+
+                    LibraryDB.Exec("CREATE TEMP TABLE unordered_playlist AS SELECT list.file_name, list.tagAlbum FROM __temp JOIN list ON list.file_name = __temp.file_name;");
 
                     using (var tmt2 = LibraryDB.Prepare("SELECT COUNT(*) FROM unordered_playlist ;"))
                     {
