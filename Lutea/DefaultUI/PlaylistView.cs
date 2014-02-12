@@ -1021,7 +1021,7 @@ namespace Gageas.Lutea.DefaultUI
                 // カバアート読み込みをキューイング
                 if (ShowCoverArt && !string.IsNullOrEmpty(album))
                 {
-                    if (((indexInGroup - 2) * bounds.Height) < CoverArtSize && !form.backgroundCoverartLoader.IsCached(album))
+                    if (((indexInGroup - 2) * bounds.Height) < CoverArtSize)
                     {
                         form.backgroundCoverartLoader.Enqueue(album, file_name, index);
                     }
