@@ -475,6 +475,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             Logger.Log("Form1 started");
             setFormTitle(null);
+            setStatusText("Ready ");
             NotifyPopup = new NotifyPopupForm();
             NotifyPopup.Show();
             Controller.PlaylistUpdated += new Controller.PlaylistUpdatedEvent(playlistUpdated);
