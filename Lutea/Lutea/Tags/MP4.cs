@@ -113,6 +113,13 @@ namespace Gageas.Lutea.Tags
 
                 switch (atom_name)
                 {
+                    case 0x6D646174: // mdat
+                        // メタ情報が取得済みと思われる場合、mdatが見つかった時点で処理終了
+                        if (tags.Count != 0)
+                        {
+                            throw new EndOfStreamException();
+                        }
+                        break;
                     case 0x64617461: // data
                         if (tagValue == null)
                         {
