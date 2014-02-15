@@ -16,9 +16,10 @@ namespace Gageas.Lutea.DefaultUI
         private const int WM_COMMAND = 0x0111;
         private const int THBN_CLICKED = 0x1800;
 
-        private int SIZE = 66;
-        private int PADDING { get { return (int)(SIZE * 0.05); } }
-        private int BORDER { get { return (int)(SIZE * 0.025); } }
+        private int WIDTH = 200;
+        private int HEIGHT { get { return WIDTH / 3; } }
+        private int PADDING { get { return (int)(HEIGHT * 0.05); } }
+        private int BORDER { get { return (int)(HEIGHT * 0.025); } }
 
         /// <summary>
         /// win7タスクバーに表示するボタンの画像リスト
@@ -50,7 +51,7 @@ namespace Gageas.Lutea.DefaultUI
             using (var bmp = new Bitmap(1,1))
             using (var g = Graphics.FromImage(bmp))
             {
-                SIZE = (int)(SIZE * g.DpiX / 96);
+                WIDTH = (int)(WIDTH * g.DpiX / 96);
             }
             this.mainForm = mainForm;
             this.BackColor = Color.Tan;
@@ -61,7 +62,7 @@ namespace Gageas.Lutea.DefaultUI
             Controller.onTrackChange += new Controller.VOIDINT(Controller_onTrackChange);
             Controller.onElapsedTimeChange += new Controller.VOIDINT(Controller_onElapsedTimeChange);
             InitializeComponent();
-            this.ClientSize = new Size(SIZE * 3, SIZE);
+            this.ClientSize = new Size(WIDTH, HEIGHT);
             this.Opacity = 0;
         }
 
@@ -89,7 +90,7 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 else
                 {
-                    cover = Util.ImageUtil.GetResizedImageWithoutPadding(img, SIZE - PADDING - PADDING, SIZE - PADDING - PADDING);
+                    cover = Util.ImageUtil.GetResizedImageWithoutPadding(img, HEIGHT - PADDING - PADDING, HEIGHT - PADDING - PADDING);
                 }
                 this.mainForm.Invoke((MethodInvoker)(() =>
                 {
@@ -153,11 +154,11 @@ namespace Gageas.Lutea.DefaultUI
                 using (var bg = new Bitmap((Width - left) * OVERSAMPLE, Height * OVERSAMPLE))
                 using (var g = Graphics.FromImage(bg))
                 {
-                    RenderContents(g, bg.Width, bg.Height, SIZE * OVERSAMPLE, PADDING * OVERSAMPLE);
+                    RenderContents(g, bg.Width, bg.Height, HEIGHT * OVERSAMPLE, PADDING * OVERSAMPLE);
                     e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                     e.Graphics.DrawImage(bg, left, 0, Width - left, Height);
                 }
-                var barHeihgt = (int)(SIZE * 0.08);
+                var barHeihgt = (int)(HEIGHT * 0.08);
                 var progressRect = new Rectangle(left, Height - barHeihgt - PADDING, Width - left - PADDING - 1, barHeihgt - 1);
                 e.Graphics.DrawRectangle(Pens.Silver, progressRect);
                 e.Graphics.FillRectangle(Brushes.Silver, new Rectangle(progressRect.X, progressRect.Y, (int)((progressRect.Width) * (Controller.Current.Position / Controller.Current.Length)), progressRect.Height));
