@@ -1215,11 +1215,6 @@ namespace Gageas.Lutea.DefaultUI
             list.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
             list.ContextMenuStrip.Items.Add("読み修正", null, correctToolStripMenuItem_Click);
 
-            this.Invoke((MethodInvoker)(() =>
-            {
-                setStatusText("読み仮名を取得しています");
-            }));
-
             ListViewItem selected = null;
             var colid = (int)list.Parent.Tag;
             var col = Columns[colid];
@@ -1277,7 +1272,6 @@ namespace Gageas.Lutea.DefaultUI
                 var grpList = groups.Select((_) => _.Value).OrderBy((_) => _.Header).ToArray();
                 this.Invoke((MethodInvoker)(() =>
                 {
-                    setStatusText("　 ");
                     dummyFilterTab.Enabled = false;
                     list.BeginUpdate();
                     list.Items.Clear();
