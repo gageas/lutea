@@ -364,7 +364,7 @@ namespace Gageas.Lutea.Core
                     tmt = PrepareForCreatePlaylistView(dlg(queryText));
                     break;
                 }
-                catch (Exception ex) { Logger.Error(ex); }
+                catch (Exception) { /* nothing to do */ }
             };
             return tmt;
         }
