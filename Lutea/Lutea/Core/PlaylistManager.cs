@@ -133,13 +133,13 @@ namespace Gageas.Lutea.Core
         internal PlaylistManager(SQLite3DB libraryDB)
         {
             LibraryDB = libraryDB;
-            LibraryDB.Exec("CREATE TEMP VIEW allTags AS SELECT file_name, " + String.Join("||'\n'||", Controller.Columns.Where(_ => _.IsTextSearchTarget).Select(_ => _.Name)) + " AS text FROM list;");
+            LibraryDB.Exec("CREATE TEMP VIEW allTags AS SELECT *, " + String.Join("||'\n'||", Controller.Columns.Where(_ => _.IsTextSearchTarget).Select(_ => _.Name)) + " AS text FROM list;");
 
             QueryTextExpanders = new List<Func<string, string>>() {
-                (q) => q == "" ? "SELECT file_name FROM list" : q,
+                (q) => q == "" ? "SELECT * FROM list" : q,
                 GetRegexpSQL,
                 GetMigemoSQL,
-                (q) => "SELECT file_name FROM allTags WHERE text like '%" + q.EscapeSingleQuotSQL() + "%';"
+                (q) => "SELECT * FROM allTags WHERE text like '%" + q.EscapeSingleQuotSQL() + "%';"
             };
 
             PlaylistCreateThread = new Thread(CreatePlaylistProc);
@@ -215,7 +215,7 @@ namespace Gageas.Lutea.Core
             var migemo = AppCore.Migemo;
             if (!AppCore.UseMigemo) throw new System.NotSupportedException("migemo is not enabled.");
             if (migemo == null) throw new System.NotSupportedException("migemo is not enabled.");
-            return "SELECT file_name FROM allTags WHERE " + String.Join(" AND ", queryText
+            return "SELECT * FROM allTags WHERE " + String.Join(" AND ", queryText
                 .EscapeSingleQuotSQL()
                 .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(_ =>
@@ -235,7 +235,7 @@ namespace Gageas.Lutea.Core
             Match match = new Regex(@"^\/(.+)\/[a-z]*$").Match(queryText);
             if (match.Success)
             {
-                return "SELECT file_name FROM allTags WHERE text regexp  '" + queryText.EscapeSingleQuotSQL() + "' ;";
+                return "SELECT * FROM allTags WHERE text regexp  '" + queryText.EscapeSingleQuotSQL() + "' ;";
             }
             else
             {
