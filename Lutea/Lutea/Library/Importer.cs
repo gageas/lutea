@@ -38,7 +38,7 @@ namespace Gageas.Lutea.Library
             | ImportableTypes.OGG | ImportableTypes.WMA | ImportableTypes.ASF
             | ImportableTypes.FLAC | ImportableTypes.TTA | ImportableTypes.APE
             | ImportableTypes.WV | ImportableTypes.TAK | ImportableTypes.CUE;
-        private const int WORKER_THREADS_N = 1;
+        private const int WORKER_THREADS_N = 4;
         private const string SelectModifySTMT = "SELECT modify FROM list WHERE file_name = ? OR file_name = ?;";
         private static object LOCKOBJ = new object();
         private Dictionary<ImportableTypes, string> type2ext = new Dictionary<ImportableTypes, string>() { 
