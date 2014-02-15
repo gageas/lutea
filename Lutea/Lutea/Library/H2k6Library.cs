@@ -373,7 +373,17 @@ namespace Gageas.Lutea
             byte[] buffer = new byte[length+1];
             System.Runtime.InteropServices.Marshal.Copy((IntPtr)srcu8, buffer, 0,(int)length);
             var src = Encoding.UTF8.GetString(buffer);
-            var query = AppCore.Migemo.Query(src);
+            var query = AppCore.Migemo.Query(src)
+                .Replace("a", "[aáäÁÄ]")
+                .Replace("A", "[AáäÁÄ]")
+                .Replace("i", "[iíÍ]")
+                .Replace("I", "[IíÍ]")
+                .Replace("u", "[uúüÚÜ]")
+                .Replace("U", "[UúüÚÜ]")
+                .Replace("e", "[eéÉ]")
+                .Replace("E", "[EéÉ]")
+                .Replace("o", "[oóöÓÖ]")
+                .Replace("O", "[OóöÓÖ]");
             var destbytes = Encoding.UTF8.GetBytes(query);
             var destbuf = System.Runtime.InteropServices.Marshal.AllocHGlobal(destbytes.Count() + 1); // ここで確保したメモリはLuteaHelper側で解放される
             System.Runtime.InteropServices.Marshal.WriteByte(destbuf, destbytes.Count(), 0);
