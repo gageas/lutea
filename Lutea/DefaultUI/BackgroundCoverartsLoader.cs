@@ -136,7 +136,6 @@ namespace Gageas.Lutea.DefaultUI
             while (true)
             {
                 TaskEntry task;
-                var tasksCopyRef = tasks;
                 lock (tasks)
                 {
                     // キューが空になったら無限ループを抜ける
@@ -146,7 +145,7 @@ namespace Gageas.Lutea.DefaultUI
                 var resizedBitmap = consumeTask(task);
                 if (resizedBitmap != null)
                 {
-                    if (tasks == tasksCopyRef)
+                    if (tasks.Contains(task))
                     {
                         coverArts[task.Key] = resizedBitmap;
                         if (Complete != null)
