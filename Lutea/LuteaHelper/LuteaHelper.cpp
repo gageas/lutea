@@ -77,14 +77,7 @@ namespace Gageas{
 				}
 				string pattern((const char*)sqlite3_value_text(argv[0]));
 				if(regex_cache.size() > POOL_NUM){
-
-					map<string, re2::RE2*>::iterator p;
-
-					for(p=regex_cache.begin(); p!=regex_cache.end(); p++)
-					{
-						delete(p->second);
-					}
-					regex_cache.clear();
+					LuteaHelper::ClearRegexCache();
 				}
 				if(regex_cache.find(pattern) == regex_cache.end()){
 					if(pattern[0] != '/'){
@@ -128,12 +121,7 @@ namespace Gageas{
 				string pattern(p_pattern);
 
 				if(migemo_cache.size() > POOL_NUM){
-					map<string, re2::RE2*>::iterator p;
-					for(p=migemo_cache.begin(); p!=migemo_cache.end(); p++)
-					{
-						delete(p->second);
-					}
-					migemo_cache.clear();
+					LuteaHelper::ClearMigemoCache();
 				}
 				if(migemo_cache.find(pattern) == migemo_cache.end()){
 					const char* pptn = (const char*)sqlite3_value_text(argv[0]);
@@ -183,6 +171,26 @@ namespace Gageas{
 				counterIndex = 0;
 				if(LuteaHelper::counter != nullptr) delete LuteaHelper::counter;
 				LuteaHelper::counter = gcnew array<int>(num);
+				ClearMigemoCache();
+				ClearRegexCache();
+			};
+
+			void LuteaHelper::ClearMigemoCache(void){
+				map<string, re2::RE2*>::iterator p;
+				for(p=migemo_cache.begin(); p!=migemo_cache.end(); p++)
+				{
+					delete(p->second);
+				}
+				migemo_cache.clear();
+			};
+
+			void LuteaHelper::ClearRegexCache(void){
+				map<string, re2::RE2*>::iterator p;
+				for(p=regex_cache.begin(); p!=regex_cache.end(); p++)
+				{
+					delete(p->second);
+				}
+				regex_cache.clear();
 			};
 		};
 	};
