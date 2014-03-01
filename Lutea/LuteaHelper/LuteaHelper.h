@@ -15,6 +15,8 @@ namespace Gageas {
 				static void ClearRepeatCount(int);
 				static LuteaHelper::MigemoGenerator^ migemo_generator;
 				static array<int>^counter = nullptr;
+				static void ClearMigemoCache(void);
+				static void ClearRegexCache(void);
 			};
 		};
 	};
