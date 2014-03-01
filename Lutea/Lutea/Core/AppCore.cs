@@ -263,13 +263,13 @@ namespace Gageas.Lutea.Core
         {
             var _current = CurrentStream;
             if (_current == null) return;
-            OutputManager.Pause = true;
+            StreamProcHold = 8192;
             if (_current.invalidateCueLengthOnSeek)
             {
                 _current.cueLength = 0;
             }
             _current.stream.position = _current.stream.Seconds2Bytes(value) + _current.cueOffset;
-            OutputManager.Start();
+            OutputManager.Start(); // これ非WASAPI時に必要
 
         }
 
