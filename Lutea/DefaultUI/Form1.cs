@@ -634,6 +634,12 @@ namespace Gageas.Lutea.DefaultUI
             }
             if (pref.HideIntoTrayOnMinimize && this.WindowState == FormWindowState.Minimized)
             {
+                if (pseudoMainForm != null)
+                {
+                    pseudoMainForm.QuitOnClose = false;
+                    pseudoMainForm.Close();
+                    pseudoMainForm.Dispose();
+                }
                 this.ShowInTaskbar = false;
             }
             else
@@ -647,6 +653,14 @@ namespace Gageas.Lutea.DefaultUI
                         treeView1.ExpandAll();
                         ResetSpectrumRenderer(true);
                         ResetProgressBar();
+                        if (pseudoMainForm != null)
+                        {
+                            this.Invoke((Action)(() => { 
+                                pseudoMainForm.Dispose(); 
+                                pseudoMainForm = new PseudoMainForm(this); 
+                                pseudoMainForm.Show(); 
+                            }));
+                        }
                     }
                 }
                 catch (Exception ex)
