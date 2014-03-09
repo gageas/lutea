@@ -457,7 +457,7 @@ namespace Gageas.Lutea.Tags
                     if (fr.ID.Type == FRAME_TYPE.FR_TXT_EX_LNG) offset += 3;
                     enc = ID32Encodings[tmp[0]];
                 }
-                fr.Value = enc.GetString(tmp, offset, tmp.Length - offset).Trim().TrimEnd(new char[] { '\0' });
+                fr.Value = enc.GetString(tmp, offset, tmp.Length - offset).Trim((char)0xfeff).Trim().TrimEnd(new char[] { '\0' });
                 //genreのとき
                 if (fr.ID.Name4 == "TCON")
                 {
@@ -484,6 +484,15 @@ namespace Gageas.Lutea.Tags
                     }
                 }
             }
+        }
+
+        static int IndexOfWide(byte[] buffer, byte b1, byte b2)
+        {
+            for (int i = 0; i < buffer.Length - 1; i++)
+            {
+                if (buffer[i] == b1 && buffer[i + 1] == b2) return i;
+            }
+            return -1;
         }
 
         /// <summary>
