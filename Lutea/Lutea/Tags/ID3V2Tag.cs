@@ -486,15 +486,6 @@ namespace Gageas.Lutea.Tags
             }
         }
 
-        static int IndexOfWide(byte[] buffer, byte b1, byte b2)
-        {
-            for (int i = 0; i < buffer.Length - 1; i++)
-            {
-                if (buffer[i] == b1 && buffer[i + 1] == b2) return i;
-            }
-            return -1;
-        }
-
         /// <summary>
         /// 非同期化を解除する
         /// </summary>
