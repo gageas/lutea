@@ -169,19 +169,9 @@ namespace Gageas.Lutea.Core
         /// </summary>
         /// <param name="reference">参考ストリーム</param>
         /// <returns>再構成が必要かどうか</returns>
-        internal bool RebuildRequired(BASS.Stream reference)
+        internal bool RebuildRequired(uint freq, uint chans, bool useFloat)
         {
-            if (reference == null) return true;
-            var info = reference.Info;
-            uint freq = info.Freq;
-            uint chans = info.Chans;
-
-            return RebuildRequired(freq, chans, (info.Flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != 0);
-        }
-
-        private bool RebuildRequired(uint freq, uint chans, bool useFloat)
-        {
-            if (outputChannel == null || outputChannel.GetFreq() != freq || outputChannel.GetChans() != chans)// || (outputChannel.Info.flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) != flag)
+            if (outputChannel == null || outputChannel.GetFreq() != freq || outputChannel.GetChans() != chans || outputChannel.IsFloatData() != useFloat)
             {
                 return true;
             }
@@ -241,6 +231,8 @@ namespace Gageas.Lutea.Core
                         }
                     }
                 }
+                BASS.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
+                BASSWASAPIOutput.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
             }
         }
 

@@ -13,38 +13,6 @@ using System.Runtime.InteropServices;
 
 namespace Gageas.Lutea.Core
 {
-
-    /// <summary>
-    /// Streamを保持。内部的に使用する
-    /// </summary>
-    class StreamObject : IDisposable
-    {
-        public StreamObject(BASS.Stream stream, string file_name, ulong cueOffset = 0, ulong cueLength = 0){
-            this.stream = stream;
-            this.file_name = file_name;  // DBのfile_nameをそのまま入れる。.cueの場合あり
-            this.cueOffset = cueOffset;
-            this.cueLength = cueLength;
-        }
-        public BASS.Stream stream;
-        public string file_name;
-        public string cueStreamFileName = null;
-        public ulong cueOffset = 0;
-        public ulong cueLength = 0;
-        public bool invalidateCueLengthOnSeek = false;
-        public object[] meta;
-        public double? gain;
-        public bool ready = false;
-        public bool playbackCounterUpdated = false;
-
-        public void Dispose()
-        {
-            if (stream != null)
-            {
-                stream.Dispose();
-            }
-        }
-    }
-
     class AppCore
     {
         private const string settingFileName = "settings.dat";
@@ -52,20 +20,37 @@ namespace Gageas.Lutea.Core
         internal const int QUEUE_CLEAR = -2;
 
         private static CoreComponent MyCoreComponent = new CoreComponent();
+
         /// <summary>
         /// アプリケーションのコアスレッド。
         /// WASAPIの初期化・解放などを担当する
         /// </summary>
         private static WorkerThread CoreWorker = new WorkerThread();
         private static OutputManager OutputManager = new OutputManager(StreamProc);
-        internal static List<Lutea.Core.LuteaComponentInterface> Plugins = new List<Core.LuteaComponentInterface>();
+        internal static List<LuteaComponentInterface> Plugins = new List<LuteaComponentInterface>();
         internal static List<Assembly> Assemblys = new List<Assembly>();
         internal static UserDirectory userDirectory;
         internal static PlaylistManager playlistBuilder;
 
         internal static Migemo Migemo = null;
-        internal static StreamObject CurrentStream; // 再生中のストリーム
-        internal static StreamObject PreparedStream;
+
+        /// <summary>
+        /// 再生中のストリーム
+        /// </summary>
+        internal static DecodeStream CurrentStream
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// 次に再生するストリーム
+        /// </summary>
+        internal static DecodeStream PreparedStream
+        {
+            get;
+            private set;
+        }
 
         internal static int[] TagAlbumContinuousCount
         {
@@ -106,15 +91,9 @@ namespace Gageas.Lutea.Core
         /// サウンドデバイスの初期化完了(関数戻り)から実際の出音開始までの遅延分ぐらいをこれで待つ．
         /// </summary>
         private static int StreamProcHold;
-        private static bool UseFloatingPointOutput = false; 
         internal static bool IsPlaying;
 
         internal static MusicLibrary Library { get; private set; }
-
-        private static BASS.Channel.SyncProc d_onFinish = new BASS.Channel.SyncProc(onFinish);
-        private static BASS.Channel.SyncProc d_onPreFinish = new BASS.Channel.SyncProc(onPreFinish);
-        private static BASS.Channel.SyncProc d_on80Percent = new BASS.Channel.SyncProc(on80Percent);
-
         internal static int lastPreparedIndex;
 
         #region Properies
@@ -238,7 +217,7 @@ namespace Gageas.Lutea.Core
         }
         #endregion
 
-        public static void CoreEnqueue(Controller.VOIDVOID d)
+        public static void CoreEnqueue(Action d)
         {
             CoreWorker.AddTask(d);
         }
@@ -264,24 +243,15 @@ namespace Gageas.Lutea.Core
             var _current = CurrentStream;
             if (_current == null) return;
             StreamProcHold = 8192;
-            if (_current.invalidateCueLengthOnSeek)
-            {
-                _current.cueLength = 0;
-            }
-            _current.stream.position = _current.stream.Seconds2Bytes(value) + _current.cueOffset;
+            _current.PositionSec = value;
             OutputManager.Start(); // これ非WASAPI時に必要
-
         }
 
         #region ストリームプロシージャ
-        private static uint ReadAsPossibleWithGain(StreamObject strm, IntPtr buffer, uint length)
+        private static uint ReadAsPossibleWithGain(DecodeStream strm, IntPtr buffer, uint length)
         {
-            if (strm == null || strm.stream == null || !strm.ready) return 0;
-            if ((strm.cueLength > 0) && length + strm.stream.position > strm.cueLength + strm.cueOffset)
-            {
-                length = (uint)(strm.cueLength + strm.cueOffset - strm.stream.position);
-            }
-            uint read = strm.stream.GetData(buffer, length);
+            if (strm == null) return 0;
+            uint read = strm.GetData(buffer, length);
             if (read == 0xFFFFFFFF) return 0;
             read &= 0x7FFFFFFF;
             double gaindB = 0;
@@ -330,7 +300,7 @@ namespace Gageas.Lutea.Core
 
             // バッファの最後まで読み込めなかった時、prepareStreamからの読み込みを試す
             var read2 = ReadAsPossibleWithGain(_prepare, IntPtr.Add(buffer, (int)read1), length - read1);
-            onFinish(BASS.SYNC_TYPE.END, _current);
+            onFinish(_current);
 
             var readTotal = read1 + read2;
             if (readTotal != length)
@@ -428,7 +398,7 @@ namespace Gageas.Lutea.Core
                     AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve); 
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 try
                 {
@@ -459,7 +429,7 @@ namespace Gageas.Lutea.Core
 
             if (BASS.IsAvailable)
             {
-                BASS.BASS_Init(0);
+                BASS.BASS_Init(0, buffer_len: 500);
                 if (System.IO.Directory.Exists(userDirectory.PluginDir))
                 {
                     foreach (String dllFilename in System.IO.Directory.GetFiles(userDirectory.PluginDir, "*.dll"))
@@ -468,10 +438,6 @@ namespace Gageas.Lutea.Core
                         Logger.Log("Loading " + dllFilename + (success ? " OK" : " Failed"));
                     }
                 }
-                UseFloatingPointOutput = BASS.Floatable;
-                Logger.Log("Floating point output is " + (UseFloatingPointOutput ? "" : "NOT") + "supported");
-
-                BASS.BASS_SetConfig(BASS.BASS_CONFIG.BASS_CONFIG_BUFFER, 500);
             }
 
             Controller.Startup();
@@ -522,11 +488,6 @@ namespace Gageas.Lutea.Core
             IsPlaying = false;
             OutputManager.KillOutputChannel();
 
-            if (CurrentStream != null)
-            {
-                CurrentStream.Dispose();
-            }
-
             // Quit plugins and save setting
             using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite))
             {
@@ -568,52 +529,58 @@ namespace Gageas.Lutea.Core
 
         #region メディアファイルの再生に関する処理郡
         private static object prepareMutex = new object();
+        private static void DisposeCurrentStream()
+        {
+            if (CurrentStream == null) return;
+            CurrentStream.Dispose();
+            CurrentStream = null;
+        }
+
+        private static void DisposePreparedStream()
+        {
+            if (PreparedStream == null) return;
+            PreparedStream.Dispose();
+            PreparedStream = null;
+        }
+
         internal static Boolean QueuePlaylistItem(int index)
         {
             lock (prepareMutex)
             {
-                if (PreparedStream != null)
+                DisposePreparedStream();
+                switch (index)
                 {
-                    PreparedStream.Dispose();
-                    PreparedStream = null;
-                }
-                if (index == QUEUE_CLEAR)
-                {
-                    return true;
-                }
-                else if (index == QUEUE_STOP)
-                {
-                    PreparedStream = new StreamObject(null, ":STOP:");
-                    return true;
+                    case QUEUE_CLEAR:
+                        return true;
+                    case QUEUE_STOP:
+                        PreparedStream = DecodeStream.CreateStopRequestStream();
+                        return true;
+                    default:
+                        return prepareNextStream(index);
                 }
             }
-            return prepareNextStream(index);
+            
         }
+
         internal static Boolean PlayPlaylistItem(int index)
         {
-            Logger.Debug("Enter PlayPlaylistItem");
-            CoreEnqueue((Controller.VOIDVOID)(() =>
+            CoreEnqueue(() =>
             {
                 lock (prepareMutex)
                 {
-                    if (PreparedStream != null)
-                    {
-                        PreparedStream.Dispose();
-                        PreparedStream = null;
-                    }
+                    DisposePreparedStream();
                     if (OutputManager.CanAbort)
                     {
                         OutputManager.Stop();
                     }
                     if (CurrentStream != null)
                     {
-                        CurrentStream.ready = false;
+                        CurrentStream.Ready = false;
                     }
                     prepareNextStream(index);
                     PlayQueuedStream();
                 }
-            }));
-            Logger.Debug("Leave PlayPlaylistItem");
+            });
             return true;
         }
 
@@ -630,15 +597,15 @@ namespace Gageas.Lutea.Core
                     return;
                 }
 
-                if (PreparedStream.file_name == ":STOP:")
+                if (PreparedStream.FileName == ":STOP:")
                 {
                     stop();
                     return;
                 }
 
-                if (IndexInPlaylist(PreparedStream.file_name) == -1)
+                if (IndexInPlaylist(PreparedStream.FileName) == -1)
                 {
-                    PreparedStream = null;
+                    DisposePreparedStream();
                     prepareNextStream(getSuccTrackIndex());
                     PlayQueuedStream();
                     return;
@@ -647,250 +614,82 @@ namespace Gageas.Lutea.Core
                 IsPlaying = false;
 
                 // Output Streamを再構築
-                if (OutputManager.RebuildRequired(PreparedStream.stream) || Pause)
+                var freq = PreparedStream.Freq;
+                var chans = PreparedStream.Chans;
+                var isFloat = PreparedStream.IsFloat;
+                if (OutputManager.RebuildRequired(freq, chans, isFloat) || Pause)
                 {
-                    var fname = PreparedStream.file_name;
-                    var freq = PreparedStream.stream.GetFreq();
-                    var chans = PreparedStream.stream.GetChans();
-                    var isFloat = (PreparedStream.stream.Info.Flags & BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) > 0;
                     try
                     {
                         OutputManager.KillOutputChannel();
                     }
                     catch (Exception e) { Logger.Error(e); }
-                    PreparedStream.Dispose();
-                    PreparedStream = null;
-                    if (CurrentStream != null)
-                    {
-                        CurrentStream.Dispose();
-                        CurrentStream = null;
-                    }
+                    DisposeCurrentStream();
                     Pause = false;
                     OutputManager.ResetOutputChannel(freq, chans, isFloat, (uint)MyCoreComponent.BufferLength, MyCoreComponent.PreferredDeviceName);
                     OutputManager.SetVolume(Volume, 0);
-                    prepareNextStream(IndexInPlaylist(fname));
                     StreamProcHold = 32768;
                     PlayQueuedStream();
                     return;
                 }
 
-                // currentのsyncを解除
-                if (CurrentStream != null && CurrentStream.stream != null)
-                {
-                    CurrentStream.stream.clearAllSync();
-                }
-
                 // prepareにsyncを設定
-                if (PreparedStream.cueLength > 0 || PreparedStream.cueOffset > 0)
-                {
-                    PreparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_on80Percent, PreparedStream.cueOffset + (ulong)(PreparedStream.cueLength * 0.80));
-                    PreparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, PreparedStream.cueOffset + (ulong)(Math.Max(PreparedStream.cueLength * 0.90, PreparedStream.cueLength - PreparedStream.stream.Seconds2Bytes(5))));
-                }
-                else
-                {
-                    PreparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_on80Percent, (ulong)(PreparedStream.stream.filesize * 0.80));
-                    PreparedStream.stream.setSync(BASS.SYNC_TYPE.POS, d_onPreFinish, (ulong)(Math.Max(PreparedStream.stream.filesize * 0.90, PreparedStream.stream.filesize - PreparedStream.stream.Seconds2Bytes(5))));
-                }
+                PreparedStream.SetSyncSec(on80Percent, PreparedStream.LengthSec * 0.80);
+                PreparedStream.SetSyncSec(onPreFinish, Math.Max(PreparedStream.LengthSec * 0.90, PreparedStream.LengthSec - 5));
 
-                if (CurrentStream != null)
-                {
-                    CurrentStream.Dispose();
-                }
-                CurrentStream = null;
-                PreparedStream.ready = true;
-                PreparedStream.playbackCounterUpdated = false;
+                DisposeCurrentStream();
+                PreparedStream.Ready = true;
                 CurrentStream = PreparedStream;
                 OutputManager.Resume();
                 PreparedStream = null;
                 Pause = false;
                 IsPlaying = true;
                 Controller._OnTrackChange(Controller.Current.IndexInPlaylist);
-                BASS.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
-                BASSWASAPIOutput.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
             }
         }
 
-        private static StreamObject getStreamObjectCUE(CD cd, int index, BASS.Stream.StreamFlag flag, BASS.Stream newstream = null)
-        {
-            CD.Track track = cd.tracks[index];
-            String streamFullPath = System.IO.Path.IsPathRooted(track.file_name_CUESheet)
-                ? track.file_name_CUESheet
-                : Path.GetDirectoryName(track.file_name) + Path.DirectorySeparatorChar + track.file_name_CUESheet;
-            if (newstream == null)
-            {
-                Logger.Log("new Stream opened " + streamFullPath);
-                newstream = new BASS.FileStream(streamFullPath, flag);
-            }
-            if (newstream == null)
-            {
-                return null;
-            }
-            ulong offset = (ulong)track.Start * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float);
-            ulong length = track.End > track.Start
-                ? (ulong)(track.End - track.Start) * (newstream.GetFreq() / 75) * newstream.GetChans() * sizeof(float)
-                : newstream.filesize - offset;
-            StreamObject nextStream = new StreamObject(newstream, track.file_name, offset, length);
-            if (!OutputManager.RebuildRequired(newstream)) nextStream.ready = true;
-            nextStream.cueStreamFileName = streamFullPath;
-            var gain = track.getTagValue("ALBUM GAIN");
-            if (gain != null)
-            {
-                nextStream.gain = Util.Util.parseDouble(gain.ToString());
-            }
-            return nextStream;
-        }
-        private static StreamObject getStreamObject(string filename, int tagTracknumber, BASS.Stream.StreamFlag flag, List<KeyValuePair<string,object>> tag = null)
-        {
-            StreamObject nextStream;
-            Logger.Log(String.Format("Trying to play file {0}", filename));
-
-            filename = filename.Trim();
-
-            // case for CUE sheet
-            if (Path.GetExtension(filename).ToUpper() == ".CUE")
-            {
-                CD cd = CUEReader.ReadFromFile(filename, false);
-                nextStream = getStreamObjectCUE(cd, tagTracknumber - 1, flag);
-            }
-            else
-            {
-                BASS.Stream newstream = new BASS.FileStream(filename, flag);
-                if (newstream == null)
-                {
-                    return null;
-                }
-                if (tag == null)
-                {
-                    tag = Tags.MetaTag.readTagByFilename(filename, false);
-                }
-                KeyValuePair<string, object> cue = tag.Find((match) => match.Key == "CUESHEET");
-
-                // case for Internal CUESheet
-                if (cue.Key != null)
-                {
-                    CD cd = CUEReader.ReadFromString(cue.Value.ToString(), filename, false);
-                    nextStream = getStreamObjectCUE(cd, tagTracknumber - 1, flag, newstream);
-                    nextStream.cueStreamFileName = filename;
-                }
-                else
-                {
-                    nextStream = new StreamObject(newstream, filename);
-                    KeyValuePair<string, object> gain = tag.Find((match) => match.Key == "REPLAYGAIN_ALBUM_GAIN");
-                    if (gain.Value != null)
-                    {
-                        nextStream.gain = Util.Util.parseDouble(gain.Value.ToString());
-                    }
-                    KeyValuePair<string, object> iTunSMPB = tag.Find((match) => match.Key.ToUpper() == "ITUNSMPB");
-                    if (iTunSMPB.Value != null)
-                    {
-                        var smpbs = iTunSMPB.Value.ToString().Trim().Split(new char[] { ' ' }).Select(_ => System.Convert.ToUInt64(_, 16)).ToArray();
-                        // ライブラリで既に補正されている場合は何もしない
-                        if (newstream.filesize > (smpbs[3]) * newstream.GetChans() * sizeof(float))
-                        {
-                            // ref. http://nyaochi.sakura.ne.jp/archives/2006/09/15/itunes-v70070%E3%81%AE%E3%82%AE%E3%83%A3%E3%83%83%E3%83%97%E3%83%AC%E3%82%B9%E5%87%A6%E7%90%86/
-                            nextStream.cueOffset = (smpbs[1] + smpbs[2]) * newstream.GetChans() * sizeof(float);
-                            nextStream.cueLength = (smpbs[3]) * newstream.GetChans() * sizeof(float);
-                            if (!MyCoreComponent.UsePrescan)
-                            {
-                                nextStream.invalidateCueLengthOnSeek = true;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        var lametag = Lametag.Read(filename);
-                        if (lametag != null)
-                        {
-                            // ライブラリで既に補正されている場合は何もしない
-                            if (nextStream.stream.filesize > newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float))
-                            {
-                                nextStream.cueOffset = (ulong)(lametag.delay) * newstream.GetChans() * sizeof(float);
-                                nextStream.cueLength = newstream.filesize - (ulong)(lametag.delay + lametag.padding) * newstream.GetChans() * sizeof(float);
-                                if (!MyCoreComponent.UsePrescan)
-                                {
-                                    nextStream.invalidateCueLengthOnSeek = true;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (!OutputManager.RebuildRequired(newstream)) nextStream.ready = true;
-            }
-            return nextStream;
-        }
-        private static Boolean prepareNextStream(int index, List<KeyValuePair<string,object>> tags = null)
+        private static bool prepareNextStream(int index, List<KeyValuePair<string,object>> tags = null)
         {
             lock (prepareMutex)
             {
                 lastPreparedIndex = index;
                 if (PreparedStream != null) return false;
-                if (index >= currentPlaylistRows || index < 0)
-                {
-                    PreparedStream = null;
-                    return false;
-                }
+                if (index >= currentPlaylistRows || index < 0) return false;
+
                 object[] row = Controller.GetPlaylistRow(index);
                 string filename = (string)row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)];
-                BASS.Stream.StreamFlag flag = BASS.Stream.StreamFlag.BASS_STREAM_DECODE | BASS.Stream.StreamFlag.BASS_STREAM_ASYNCFILE;
-                if (UseFloatingPointOutput) flag |= BASS.Stream.StreamFlag.BASS_STREAM_FLOAT;
-                if (MyCoreComponent.UsePrescan) flag |= BASS.Stream.StreamFlag.BASS_STREAM_PRESCAN;
-                StreamObject nextStream = null;
                 try
                 {
                     int tr = 1;
                     Util.Util.tryParseInt(row[Controller.GetColumnIndexByName("tagTracknumber")].ToString(), ref tr);
-                    nextStream = getStreamObject(filename, tr, flag, tags);
-                    if (nextStream == null)
-                    {
-                        PreparedStream = null;
-                        return false;
-                    }
-                    if (nextStream.cueOffset < 30000)
-                    {
-                        ulong left = nextStream.cueOffset;
-                        var mem = Marshal.AllocHGlobal(1000);
-                        while (left > 0)
-                        {
-                            int toread = (int)Math.Min(1000, left);
-                            nextStream.stream.GetData(mem, (uint)toread);
-                            Thread.Sleep(0);
-                            left -= (uint)toread;
-                        }
-                        Marshal.FreeHGlobal(mem);
-                    }
-                    else
-                    {
-                        nextStream.stream.position = nextStream.cueOffset;
-                    }
+                    var nextStream = DecodeStream.CreateStream(filename, tr, true, MyCoreComponent.UsePrescan, tags);
+                    if (nextStream == null) return false;
                     nextStream.meta = row;
                     PreparedStream = nextStream;
-                    return true;
                 }
                 catch (Exception e)
                 {
-                    PreparedStream = null;
                     Logger.Log(e.ToString());
                     return false;
                 }
             }
+            return true;
         }
 
         internal static void stop()
         {
             IsPlaying = false;
             OutputManager.KillOutputChannel();
-            if (CurrentStream == null) return;
-            CurrentStream.Dispose();
-            CurrentStream = null;
+            DisposeCurrentStream();
             Controller._OnTrackChange(-1);
         }
         #endregion
 
         #region トラック終端でのイベント
-        private static void UpdatePlaybackCount(StreamObject strm)
+        private static void UpdatePlaybackCount(DecodeStream strm)
         {
-            if (strm.playbackCounterUpdated) return;
-            strm.playbackCounterUpdated = true;
+            if (strm.PlaybackCounterUpdated) return;
+            strm.PlaybackCounterUpdated = true;
             var currentIndexInPlaylist = Controller.Current.IndexInPlaylist;
             int count = int.Parse(Controller.Current.MetaData(Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.playcount))) + 1;
             string file_name = Controller.Current.MetaData(Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name));
@@ -915,40 +714,30 @@ namespace Gageas.Lutea.Core
             });
         }
 
-        private static void on80Percent(BASS.SYNC_TYPE type, object cookie)
+        private static void on80Percent(object cookie)
         {
             UpdatePlaybackCount(CurrentStream);
         }
 
-        private static void onFinish(BASS.SYNC_TYPE type, object cookie)
+        private static void onFinish(DecodeStream _current)
         {
-            if (cookie != CurrentStream) return;
-            if (!CurrentStream.ready) return;
-            CurrentStream.ready = false;
+            if (_current != CurrentStream) return;
+            if (!CurrentStream.Ready) return;
+            CurrentStream.Ready = false;
 
             UpdatePlaybackCount(CurrentStream);
             if (PreparedStream == null)
             {
-                Controller.NextTrack();
+                var succIndex = getSuccTrackIndex();
+                CoreEnqueue(() => prepareNextStream(succIndex, null));
             }
-            else
-            {
-                CoreEnqueue(() => { PlayQueuedStream(); });
-            }
+            CoreEnqueue(() => PlayQueuedStream());
         }
 
-        private static void onPreFinish(BASS.SYNC_TYPE type, object cookie)
+        private static void onPreFinish(object cookie)
         {
-            Logger.Log("preSync");
-            var th = new Thread(() => {
-                var succIndex = getSuccTrackIndex();
-                var row = Controller.GetPlaylistRow(succIndex);
-                if (row == null) return;
-                string filename = (string)row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)];
-                CoreEnqueue(() => prepareNextStream(succIndex, null));
-            });
-            th.Priority = ThreadPriority.Lowest;
-            th.Start();
+            var succIndex = getSuccTrackIndex();
+            CoreEnqueue(() => prepareNextStream(succIndex, null));
         }
 
         internal static int getSuccTrackIndex() // ストリーム終端に達した場合の次のトラックを取得

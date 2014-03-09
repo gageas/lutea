@@ -11,8 +11,8 @@ namespace Gageas.Lutea.Core
     /// </summary>
     public class WorkerThread
     {
-        private Queue<Controller.VOIDVOID> taskQueue;
-        private Stack<Controller.VOIDVOID> taskStack;
+        private Queue<Action> taskQueue;
+        private Stack<Action> taskStack;
         private System.Collections.ICollection taskI;
         private Thread thisThread;
         private bool sleeping = false;
@@ -33,11 +33,11 @@ namespace Gageas.Lutea.Core
             this.isLIFO = isLIFO;
             if (isLIFO)
             {
-                taskI = taskStack = new Stack<Controller.VOIDVOID>();
+                taskI = taskStack = new Stack<Action>();
             }
             else
             {
-                taskI = taskQueue = new Queue<Controller.VOIDVOID>();
+                taskI = taskQueue = new Queue<Action>();
             }
             thisThread = new Thread(workerProc);
             thisThread.Start();
@@ -48,7 +48,7 @@ namespace Gageas.Lutea.Core
             {
                 try
                 {
-                    Controller.VOIDVOID task = null;
+                    Action task = null;
                     while (taskI.Count > 0)
                     {
                         lock (thisThread)
@@ -77,7 +77,7 @@ namespace Gageas.Lutea.Core
                 if (taskI.Count == 0 && requestTerminate) return;
             }
         }
-        public void AddTask(Controller.VOIDVOID delg)
+        public void AddTask(Action delg)
         {
             if (Terminated) throw new ObjectDisposedException("Thread is terminated");
             lock (thisThread)
