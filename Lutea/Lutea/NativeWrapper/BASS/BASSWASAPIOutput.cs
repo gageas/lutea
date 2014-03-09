@@ -242,6 +242,12 @@ namespace Gageas.Wrapper.BASS
             });
         }
 
+        public override bool IsFloatData()
+        {
+            // BASS WASAPI always uses Float.
+            return true;
+        }
+
         public override bool CanAbort()
         {
             return false;

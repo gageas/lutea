@@ -151,19 +151,6 @@ namespace Gageas.Wrapper.BASS
             return success ? info : (BASS_DEVICEINFO?)null;
         }
 
-        public static Boolean Floatable {
-            get
-            {
-                if (!BASS.IsAvailable) return false;
-                bool floatable = false;
-                using (var strm = new UserSampleStream(44100, 1, null, Stream.StreamFlag.BASS_STREAM_FLOAT))
-                {
-                    if (strm != null) floatable = true;
-                }
-                return floatable;
-            }
-        }
-
         /// <summary>
         /// 全てのデバイスのデバイス情報の配列を返す
         /// </summary>
@@ -277,6 +264,7 @@ namespace Gageas.Wrapper.BASS
             public abstract bool SetVolume(float vol,uint timespan);
             public abstract uint GetFreq();
             public abstract uint GetChans();
+            public abstract bool IsFloatData();
             public abstract float GetVolume();
             public abstract uint GetData(IntPtr buffer, uint length);
             public abstract uint GetDataFFT(float[] buffer, FFT fftparam);
@@ -301,14 +289,13 @@ namespace Gageas.Wrapper.BASS
              * removeSyncはnullに書き換えることで行う
              */
             private List<SyncObject> syncProcs = new List<SyncObject>();
-            public delegate void SyncProc(SYNC_TYPE type, object cookie);
             private class SyncObject
             {
                 public IntPtr sync;
                 public SYNC_TYPE type;
-                public SyncProc proc;
+                public Action<object> proc;
                 public object cookie;
-                public SyncObject(SYNC_TYPE type, SyncProc proc, object cookie)
+                public SyncObject(SYNC_TYPE type, Action<object> proc, object cookie)
                 {
                     this.type = type;
                     this.proc = proc;
@@ -325,6 +312,10 @@ namespace Gageas.Wrapper.BASS
             }
             ~Channel(){
                 this.Dispose();
+            }
+            public override bool IsFloatData()
+            {
+                return ((Info.Flags & Stream.StreamFlag.BASS_STREAM_FLOAT) == 0) ? false : true;
             }
             public override bool CanAbort()
             {
@@ -425,7 +416,8 @@ namespace Gageas.Wrapper.BASS
                 return _BASS_ChannelBytes2Seconds(handle, pos);
             }
 
-            public void setSync(SYNC_TYPE type, SyncProc callback, UInt64 data=0, object cookie = null){
+            public void setSync(SYNC_TYPE type, Action<object> callback, UInt64 data = 0, object cookie = null)
+            {
                 SyncObject sync = new SyncObject(type, callback, cookie);
                 lock (syncProcs)
                 {
@@ -453,7 +445,7 @@ namespace Gageas.Wrapper.BASS
                 int user = (int)_user;
                 if(syncProcs.Count>user){
                     SyncObject sync = syncProcs[(int)user];
-                    sync.proc.Invoke(sync.type, sync.cookie);
+                    sync.proc.Invoke(sync.cookie);
                 }
             }
 
@@ -550,6 +542,11 @@ namespace Gageas.Wrapper.BASS
                 this.streamProc = (handle, buffer, length, user) => this.disposed ? 0x80000000 : this.proc(buffer, length);
                 this.proc = proc;
                 this.handle = _BASS_StreamCreate(freq, channels, (uint)flag, this.streamProc, (IntPtr)this.GetHashCode());
+                if (this.handle == IntPtr.Zero)
+                {
+                    int code = BASS_ErrorGetCode();
+                    throw new Exception("UserSampleStream: BASS_StreamCreate Failed." + code);
+                }
             }
         }
 

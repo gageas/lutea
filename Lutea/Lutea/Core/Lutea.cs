@@ -253,37 +253,30 @@ namespace Gageas.Lutea.Core
         /// <param name="index"></param>
         public static void PlayPlaylistItem(int index)
         {
-            AppCore.CoreEnqueue((VOIDVOID)(() =>
+            AppCore.CoreEnqueue(() =>
             {
                 icache = index;
                 AppCore.PlayPlaylistItem(index);
-            }));
+            });
         }
 
         public static void Stop()
         {
-            AppCore.CoreEnqueue((VOIDVOID)(() =>
+            AppCore.CoreEnqueue(() =>
             {
                 AppCore.stop();
-            }));
+            });
         }
 
         public static void NextTrack()
         {
             Logger.Log("next Track");
-            AppCore.CoreEnqueue((VOIDVOID)(() => {
+            AppCore.CoreEnqueue(() => {
                 int i = (icache > 0 ? icache : icache = Current.IndexInPlaylist);
                 int id;
                 if (playbackOrder == Controller.PlaybackOrder.Random)
                 {
-                    if (PlaylistRowCount == 1) id = 0;
-                    else
-                    {
-                        do
-                        {
-                            id = (new Random()).Next(PlaylistRowCount);
-                        } while (id == i);
-                    }
+                    id = AppCore.getSuccTrackIndex();
                 }
                 else
                 {
@@ -300,13 +293,13 @@ namespace Gageas.Lutea.Core
                 }
                 icache = id;
                 AppCore.PlayPlaylistItem(id);
-            }));
+            });
         }
 
         public static void PrevTrack()
         {
             Logger.Log("prev Track");
-            AppCore.CoreEnqueue((VOIDVOID)(() =>
+            AppCore.CoreEnqueue(() =>
             {
                 int i = (icache > 0?icache:Current.IndexInPlaylist);
                 int id;
@@ -331,7 +324,7 @@ namespace Gageas.Lutea.Core
                 }
                 icache = id;
                 AppCore.PlayPlaylistItem(id);
-            }));
+            });
         }
         #endregion
 
@@ -342,14 +335,14 @@ namespace Gageas.Lutea.Core
             {
                 get
                 {
-                    return (AppCore.CurrentStream != null) ? (AppCore.CurrentStream.cueLength > 0 ? AppCore.CurrentStream.stream.Bytes2Seconds(AppCore.CurrentStream.cueLength) : AppCore.CurrentStream.stream.length) : 0;
+                    return AppCore.CurrentStream != null ? AppCore.CurrentStream.LengthSec : 0;
                 }
             }
             public static double Position
             {
                 get
                 {
-                    return (AppCore.CurrentStream != null) ? AppCore.CurrentStream.stream.positionSec - AppCore.CurrentStream.stream.Bytes2Seconds(AppCore.CurrentStream.cueOffset) : 0;
+                    return AppCore.CurrentStream != null ? AppCore.CurrentStream.PositionSec : 0;
                 }
                 set
                 {
@@ -410,7 +403,7 @@ namespace Gageas.Lutea.Core
                 get
                 {
                     if (AppCore.CurrentStream == null) return null;
-                    return AppCore.CurrentStream.cueStreamFileName != null ? AppCore.CurrentStream.cueStreamFileName : Filename;
+                    return AppCore.CurrentStream.CueStreamFileName != null ? AppCore.CurrentStream.CueStreamFileName : Filename;
                 }
             }
             public static int IndexInPlaylist
@@ -418,7 +411,7 @@ namespace Gageas.Lutea.Core
                 get
                 {
                     if (AppCore.CurrentStream == null) return -1;
-                    return IndexInPlaylist(AppCore.CurrentStream.file_name);
+                    return IndexInPlaylist(AppCore.CurrentStream.FileName);
                 }
             }
             
