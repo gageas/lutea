@@ -21,6 +21,8 @@ namespace Gageas.Lutea.DefaultUI
         private int PADDING { get { return (int)(HEIGHT * 0.05); } }
         private int BORDER { get { return (int)(HEIGHT * 0.025); } }
 
+        public bool QuitOnClose = true;
+
         /// <summary>
         /// win7タスクバーに表示するボタンの画像リスト
         /// </summary>
@@ -176,7 +178,10 @@ namespace Gageas.Lutea.DefaultUI
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            mainForm.Close();
+            if (QuitOnClose)
+            {
+                mainForm.Close();
+            }
             base.OnClosing(e);
         }
 
