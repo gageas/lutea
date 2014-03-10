@@ -457,7 +457,7 @@ namespace Gageas.Lutea.Tags
                     if (fr.ID.Type == FRAME_TYPE.FR_TXT_EX_LNG) offset += 3;
                     enc = ID32Encodings[tmp[0]];
                 }
-                fr.Value = enc.GetString(tmp, offset, tmp.Length - offset).Trim((char)0xfeff).Trim().TrimEnd(new char[] { '\0' });
+                fr.Value = enc.GetString(tmp, offset, tmp.Length - offset).Replace("\ufeff", "").Trim().TrimEnd(new char[] { '\0' });
                 //genreのとき
                 if (fr.ID.Name4 == "TCON")
                 {
