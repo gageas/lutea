@@ -368,12 +368,12 @@ namespace Gageas.Lutea
 
         private ValueType migemoGenerator(ValueType srcu8, Int32 length)
         {
-            if (AppCore.Migemo == null) return IntPtr.Zero;
+            if (AppCore.MyMigemo == null) return IntPtr.Zero;
 
             byte[] buffer = new byte[length+1];
             System.Runtime.InteropServices.Marshal.Copy((IntPtr)srcu8, buffer, 0,(int)length);
             var src = Encoding.UTF8.GetString(buffer);
-            var query = AppCore.Migemo.Query(src)
+            var query = AppCore.MyMigemo.Query(src)
                 .Replace("a", "[aáäÁÄ]")
                 .Replace("A", "[AáäÁÄ]")
                 .Replace("i", "[iíÍ]")

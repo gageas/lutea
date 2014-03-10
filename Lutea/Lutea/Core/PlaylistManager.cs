@@ -212,7 +212,7 @@ namespace Gageas.Lutea.Core
         /// <returns>SQL文字列</returns>
         private string GetMigemoSQL(string queryText)
         {
-            var migemo = AppCore.Migemo;
+            var migemo = AppCore.MyMigemo;
             if (!AppCore.UseMigemo) throw new System.NotSupportedException("migemo is not enabled.");
             if (migemo == null) throw new System.NotSupportedException("migemo is not enabled.");
             return "SELECT * FROM allTags WHERE " + String.Join(" AND ", queryText
