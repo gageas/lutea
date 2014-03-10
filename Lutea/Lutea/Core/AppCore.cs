@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Reflection;
-using System.IO;
 using Gageas.Wrapper.BASS;
 using Gageas.Lutea.Util;
 using Gageas.Lutea.Library;
@@ -15,88 +10,156 @@ namespace Gageas.Lutea.Core
 {
     class AppCore
     {
-        private const string settingFileName = "settings.dat";
+        private const string SETTING_FILE_NAME = "settings.dat";
         internal const int QUEUE_STOP = -1;
         internal const int QUEUE_CLEAR = -2;
 
-        private static CoreComponent MyCoreComponent = new CoreComponent();
+        /// <summary>
+        /// 既に終了処理に入っているかどうか
+        /// </summary>
+        private static bool FinalizeProcess = false;
+
+        /// <summary>
+        /// 次のトラックを準備している間lockするオブジェクト
+        /// </summary>
+        private static readonly object PrepareMutex = new object();
+
+        /// <summary>
+        /// コアコンポーネント
+        /// </summary>
+        private static readonly CoreComponent MyCoreComponent = new CoreComponent();
 
         /// <summary>
         /// アプリケーションのコアスレッド。
         /// WASAPIの初期化・解放などを担当する
         /// </summary>
-        private static WorkerThread CoreWorker = new WorkerThread();
-        private static OutputManager OutputManager = new OutputManager(StreamProc);
-        internal static List<LuteaComponentInterface> Plugins = new List<LuteaComponentInterface>();
-        internal static List<Assembly> Assemblys = new List<Assembly>();
-        internal static UserDirectory userDirectory;
-        internal static PlaylistManager playlistBuilder;
+        private static readonly WorkerThread CoreWorker = new WorkerThread();
 
-        internal static Migemo Migemo = null;
+        /// <summary>
+        /// コンポーネントを管理
+        /// </summary>
+        private static readonly ComponentManager MyComponentManager = new ComponentManager(SETTING_FILE_NAME);
+
+        /// <summary>
+        /// ユーザディレクトリ関連を管理
+        /// </summary>
+        internal static readonly UserDirectory MyUserDirectory = new UserDirectory();
+
+        /// <summary>
+        /// プレイリストを管理
+        /// </summary>
+        internal static PlaylistManager MyPlaylistManager;
+
+        /// <summary>
+        /// Migemoオブジェクト
+        /// </summary>
+        internal static Migemo MyMigemo = null;
+
+        /// <summary>
+        /// OutputStreamへの出力を待機するByte単位の長さの値．
+        /// サウンドデバイスの初期化完了(関数戻り)から実際の出音開始までの遅延分ぐらいをこれで待つ．
+        /// </summary>
+        private static int StreamProcHold;
+
+        /// <summary>
+        /// 再生中かどうか
+        /// </summary>
+        internal static bool IsPlaying { get { return OutputManager.Available; } }
+
+        /// <summary>
+        /// ライブラリ
+        /// </summary>
+        internal static MusicLibrary Library { get; private set; }
+
+        /// <summary>
+        /// 直前に再生準備をしたトラックの番号
+        /// </summary>
+        internal static int LastPreparedIndex;
 
         /// <summary>
         /// 再生中のストリーム
         /// </summary>
-        internal static DecodeStream CurrentStream
-        {
-            get;
-            private set;
-        }
+        internal static DecodeStream CurrentStream { get; private set; }
 
         /// <summary>
         /// 次に再生するストリーム
         /// </summary>
-        internal static DecodeStream PreparedStream
+        internal static DecodeStream PreparedStream { get; private set; }
+
+        /// <summary>
+        /// 出力デバイスを管理
+        /// </summary>
+        private static readonly OutputManager OutputManager = new OutputManager(StreamProc);
+
+        /// <summary>
+        /// 読み込まれたコンポーネントのリストを取得
+        /// </summary>
+        internal static LuteaComponentInterface[] Components
         {
-            get;
-            private set;
+            get
+            {
+                return MyComponentManager.GetComponents();
+            }
         }
 
+        /// <summary>
+        /// プレイリスト中のアルバムタグの連続数情報を取得
+        /// </summary>
         internal static int[] TagAlbumContinuousCount
         {
             get
             {
-                return playlistBuilder.TagAlbumContinuousCount;
+                return MyPlaylistManager.TagAlbumContinuousCount;
             }
         }
 
+        /// <summary>
+        /// プレイリストのキャッシュを無効化する
+        /// </summary>
+        /// <param name="file_name"></param>
         internal static void InvalidatePlaylistCache(string file_name)
         {
             var index = IndexInPlaylist(file_name);
             if (index == -1) return;
-            playlistBuilder.InvalidatePlaylistRowCache(index);
-        }
-
-        internal static int currentPlaylistRows
-        {
-            get
-            {
-                return playlistBuilder.CurrentPlaylistRows;
-            }
-        }
-
-        public static object[] GetPlaylistRow(int index)
-        {
-            return playlistBuilder.GetPlaylistRow(index);
-        }
-
-        public static void createPlaylist(string sql, bool playOnCreate = false)
-        {
-            playlistBuilder.CreatePlaylist(sql, playOnCreate);
-            AppCore.LatestPlaylistQuery = sql;
+            MyPlaylistManager.InvalidatePlaylistRowCache(index);
         }
 
         /// <summary>
-        /// Byte単位の長さの値．この値が0になるまでOutputStreamへの出力を待機する．
-        /// サウンドデバイスの初期化完了(関数戻り)から実際の出音開始までの遅延分ぐらいをこれで待つ．
+        /// 現在のプレイリストの行数を取得
         /// </summary>
-        private static int StreamProcHold;
-        internal static bool IsPlaying;
+        internal static int CurrentPlaylistRows
+        {
+            get
+            {
+                return MyPlaylistManager.CurrentPlaylistRows;
+            }
+        }
 
-        internal static MusicLibrary Library { get; private set; }
-        internal static int lastPreparedIndex;
+        /// <summary>
+        /// プレイリストの行を取得
+        /// </summary>
+        /// <param name="index">行番号</param>
+        /// <returns>プレイリストの行</returns>
+        public static object[] GetPlaylistRow(int index)
+        {
+            return MyPlaylistManager.GetPlaylistRow(index);
+        }
+
+        /// <summary>
+        /// プレイリストを生成
+        /// </summary>
+        /// <param name="query">クエリ文字列</param>
+        /// <param name="playOnCreate">生成後に再生を開始するかどうか</param>
+        public static void CreatePlaylist(string query, bool playOnCreate = false)
+        {
+            MyPlaylistManager.CreatePlaylist(query, playOnCreate);
+            AppCore.LatestPlaylistQuery = query;
+        }
 
         #region Properies
+        /// <summary>
+        /// Migemoが使用可能かどうか
+        /// </summary>
         public static bool UseMigemo
         {
             get
@@ -104,6 +167,10 @@ namespace Gageas.Lutea.Core
                 return MyCoreComponent.UseMigemo;
             }
         }
+
+        /// <summary>
+        /// WASAPI排他を使用するかどうか
+        /// </summary>
         public static bool EnableWASAPIExclusive
         {
             get
@@ -112,6 +179,9 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        /// <summary>
+        /// ボリュームの取得・設定
+        /// </summary>
         public static float Volume
         {
             get
@@ -125,6 +195,9 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        /// <summary>
+        /// ポーズ状態
+        /// </summary>
         internal static bool Pause
         {
             get
@@ -137,6 +210,9 @@ namespace Gageas.Lutea.Core
             }
         }
                 
+        /// <summary>
+        /// 出力モード
+        /// </summary>
         internal static Controller.OutputModeEnum OutputMode
         {
             get
@@ -145,6 +221,9 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        /// <summary>
+        /// 出力深度
+        /// </summary>
         internal static Controller.Resolutions OutputResolution
         {
             get
@@ -153,13 +232,32 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        /// <summary>
+        /// プレイリストのソートを設定
+        /// </summary>
+        /// <param name="column">ソート基準カラム</param>
+        /// <param name="order">ソート順</param>
         public static void SetPlaylistSort(string column, Controller.SortOrders order)
         {
             MyCoreComponent.PlaylistSortColumn = column;
             MyCoreComponent.PlaylistSortOrder = order;
-            playlistBuilder.CreateOrderedPlaylist(column, order);
+            MyPlaylistManager.CreateOrderedPlaylist(column, order);
         }
 
+        /// <summary>
+        /// プレイリストのソート基準カラム
+        /// </summary>
+        public static string PlaylistSortColumn
+        {
+            get
+            {
+                return MyCoreComponent.PlaylistSortColumn;
+            }
+        }
+
+        /// <summary>
+        /// プレイリストのソート順
+        /// </summary>
         public static Controller.SortOrders PlaylistSortOrder
         {
             get
@@ -168,6 +266,9 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        /// <summary>
+        /// 再生順
+        /// </summary>
         public static Controller.PlaybackOrder PlaybackOrder
         {
             get
@@ -180,14 +281,9 @@ namespace Gageas.Lutea.Core
             }
         }
 
-        public static string PlaylistSortColumn
-        {
-            get
-            {
-                return MyCoreComponent.PlaylistSortColumn;
-            }
-        }
-
+        /// <summary>
+        /// 最後に実行したプレイリスト生成クエリの内容
+        /// </summary>
         public static string LatestPlaylistQuery
         {
             get
@@ -200,14 +296,20 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        /// <summary>
+        /// 最後に実行したプレイリスト生成クエリ(展開後)
+        /// </summary>
         public static string LatestPlaylistQueryExpanded
         {
             get
             {
-                return playlistBuilder.LatestPlaylistQueryExpanded;
+                return MyPlaylistManager.LatestPlaylistQueryExpanded;
             }
         }
 
+        /// <summary>
+        /// ライブラリにインポートするタイプ一覧
+        /// </summary>
         public static Importer.ImportableTypes TypesToImport
         {
             get
@@ -217,11 +319,21 @@ namespace Gageas.Lutea.Core
         }
         #endregion
 
+        /// <summary>
+        /// コアスレッドに処理をキューイングする
+        /// </summary>
+        /// <param name="d">処理のデリゲート</param>
         public static void CoreEnqueue(Action d)
         {
             CoreWorker.AddTask(d);
         }
 
+        /// <summary>
+        /// FFT値を取得
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="fftopt"></param>
+        /// <returns></returns>
         internal static uint FFTData(float[] buffer, Wrapper.BASS.BASS.IPlayable.FFT fftopt)
         {
             if (OutputManager.Available)
@@ -230,14 +342,15 @@ namespace Gageas.Lutea.Core
             }
             else
             {
-                for (int i = 0; i < buffer.Length; i++)
-                {
-                    buffer[i] = 0.0F;
-                }
+                Array.Clear(buffer, 0, buffer.Length);
             }
             return 0;
         }
 
+        /// <summary>
+        /// 位置を設定(シーク)
+        /// </summary>
+        /// <param name="value">位置(秒)</param>
         internal static void SetPosition(double value)
         {
             var _current = CurrentStream;
@@ -248,6 +361,13 @@ namespace Gageas.Lutea.Core
         }
 
         #region ストリームプロシージャ
+        /// <summary>
+        /// ストリームから要求データ長以内のサイズで読めるだけ読み，ゲインを適用する
+        /// </summary>
+        /// <param name="strm">ストリーム</param>
+        /// <param name="buffer">出力バッファ</param>
+        /// <param name="length">要求データ長</param>
+        /// <returns>読めたデータ長</returns>
         private static uint ReadAsPossibleWithGain(DecodeStream strm, IntPtr buffer, uint length)
         {
             if (strm == null) return 0;
@@ -313,13 +433,14 @@ namespace Gageas.Lutea.Core
 
         internal static int IndexInPlaylist(string file_name)
         {
-            return playlistBuilder.GetIndexInPlaylist(file_name);
+            return MyPlaylistManager.GetIndexInPlaylist(file_name);
         }
 
+        #region 起動と終了
         /// <summary>
         /// アプリケーション全体の初期化
         /// </summary>
-        /// <returns></returns>
+        /// <returns>メインウィンドウ</returns>
         internal static System.Windows.Forms.Form Init()
         {
             System.Windows.Forms.Form componentAsMainForm = null;
@@ -328,111 +449,32 @@ namespace Gageas.Lutea.Core
             // migemoのロード
             try
             {
-                Migemo = new Migemo(@"dict\migemo-dict");
+                MyMigemo = new Migemo(@"dict\migemo-dict");
             }
             catch (Exception e)
             {
                 Logger.Error(e);
             }
 
-            // userDirectoryオブジェクト取得
-            userDirectory = new UserDirectory();
-
             // ライブラリ準備
-            Library = userDirectory.OpenLibrary();
+            Library = MyUserDirectory.OpenLibrary();
 
             // プレイリスト管理の開始
-            playlistBuilder = new PlaylistManager(Library.Connect());
+            MyPlaylistManager = new PlaylistManager(Library.Connect());
 
             // コンポーネントの読み込み
-            // Core Componentをロード
-            Plugins.Add(MyCoreComponent);
-            try
-            {
-                foreach (var component_file in System.IO.Directory.GetFiles(userDirectory.ComponentDir, "*.dll"))
-                {
-                    try
-                    {
-                        //アセンブリとして読み込む
-                        var asm = System.Reflection.Assembly.LoadFrom(component_file);
-                        var types = asm.GetTypes().Where(_ => _.IsClass && _.IsPublic && !_.IsAbstract && _.GetInterface(typeof(Lutea.Core.LuteaComponentInterface).FullName) != null);
-                        foreach (Type t in types)
-                        {
-                            var p = (Lutea.Core.LuteaComponentInterface)asm.CreateInstance(t.FullName);
-                            if (p == null) continue;
-                            Plugins.Add(p);
-                            Assemblys.Add(asm);
-                            if (componentAsMainForm == null && p is System.Windows.Forms.Form)
-                            {
-                                componentAsMainForm = (System.Windows.Forms.Form)p;
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Error(e);
-                    }
-                }
-            }
-            catch (Exception ee)
-            {
-                Logger.Error(ee);
-            }
-
-            // load Plugins Settings
-            Dictionary<Guid, object> pluginSettings = new Dictionary<Guid, object>();
-            try
-            {
-                using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.Open, System.IO.FileAccess.Read))
-                {
-                    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-                    var pluginSettingsTmp = (Dictionary<Guid, byte[]>)(new BinaryFormatter()).Deserialize(fs);
-                    foreach (var e in pluginSettingsTmp)
-                    {
-                        try
-                        {
-                            pluginSettings.Add(e.Key, (new BinaryFormatter()).Deserialize(new MemoryStream(e.Value)));
-                        }
-                        catch { }
-                    }
-                    AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve); 
-                }
-            }
-            catch (Exception)
-            {
-                try
-                {
-                    using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.Open, System.IO.FileAccess.Read))
-                    {
-                        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-                        pluginSettings = (Dictionary<Guid, object>)(new BinaryFormatter()).Deserialize(fs);
-                        AppDomain.CurrentDomain.AssemblyResolve -= new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-                    }
-                }
-                catch (Exception ex2) { Logger.Log(ex2); }
-            }
-
-            // initialize plugins
-            foreach (var pin in Plugins)
-            {
-                try
-                {
-                    pin.Init(pluginSettings.FirstOrDefault(_ => _.Key == pin.GetType().GUID).Value);
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
-                }
-            }
+            MyComponentManager.Add(MyCoreComponent);
+            componentAsMainForm = MyComponentManager.BuildAllInstance(System.IO.Directory.GetFiles(MyUserDirectory.ComponentDir, "*.dll"));
+            MyComponentManager.LoadSettings();
             
-            playlistBuilder.CreatePlaylist(MyCoreComponent.LatestPlaylistQuery);
+            MyPlaylistManager.CreatePlaylist(MyCoreComponent.LatestPlaylistQuery);
 
             if (BASS.IsAvailable)
             {
                 BASS.BASS_Init(0, buffer_len: 500);
-                if (System.IO.Directory.Exists(userDirectory.PluginDir))
+                if (System.IO.Directory.Exists(MyUserDirectory.PluginDir))
                 {
-                    foreach (String dllFilename in System.IO.Directory.GetFiles(userDirectory.PluginDir, "*.dll"))
+                    foreach (String dllFilename in System.IO.Directory.GetFiles(MyUserDirectory.PluginDir, "*.dll"))
                     {
                         bool success = BASSPlugin.Load(dllFilename, 0);
                         Logger.Log("Loading " + dllFilename + (success ? " OK" : " Failed"));
@@ -445,11 +487,10 @@ namespace Gageas.Lutea.Core
             return componentAsMainForm;
         }
 
-        static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            return Assemblys.First(_ => _.FullName == args.Name);
-        }
-
+        /// <summary>
+        /// ライブラリデータベースを更新して再起動
+        /// </summary>
+        /// <param name="extraColumns">ライブラリデータベースに設定する拡張カラム</param>
         internal static void Reload(Column[] extraColumns)
         {
             CoreWorker.AddTask(() =>
@@ -464,7 +505,6 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// アプリケーション全体の終了
         /// </summary>
-        private static bool FinalizeProcess = false;
         internal static void Quit()
         {
             try
@@ -481,54 +521,24 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        /// <summary>
+        /// アプリケーション全体の終了準備
+        /// </summary>
         private static void FinalizeApp()
         {
             if (FinalizeProcess) return;
             FinalizeProcess = true;
-            IsPlaying = false;
             OutputManager.KillOutputChannel();
-
-            // Quit plugins and save setting
-            using (var fs = new System.IO.FileStream(settingFileName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite))
-            {
-                Dictionary<Guid, byte[]> pluginSettings = new Dictionary<Guid, byte[]>();
-                foreach (var p in Plugins)
-                {
-                    try
-                    {
-                        var ms = new MemoryStream();
-                        (new BinaryFormatter()).Serialize(ms, p.GetSetting());
-                        pluginSettings.Add(p.GetType().GUID, ms.ToArray());
-                    }
-                    catch(Exception e) {
-                        Logger.Error(e);
-                    }
-                    finally
-                    {
-                        try { p.Quit(); }
-                        catch (Exception ex)
-                        {
-                            Logger.Error(ex);
-                        }
-                    }
-                }
-                (new BinaryFormatter()).Serialize(fs, pluginSettings);
-            }
+            MyComponentManager.FinalizeComponents();
         }
+        #endregion
 
         internal static void ActivateUI()
         {
-            foreach (var plg in Plugins)
-            {
-                if (plg is LuteaUIComponentInterface)
-                {
-                    ((LuteaUIComponentInterface)plg).ActivateUI();
-                }
-            }
+            MyComponentManager.ActivateUIComponents();
         }
 
         #region メディアファイルの再生に関する処理郡
-        private static object prepareMutex = new object();
         private static void DisposeCurrentStream()
         {
             if (CurrentStream == null) return;
@@ -545,7 +555,7 @@ namespace Gageas.Lutea.Core
 
         internal static Boolean QueuePlaylistItem(int index)
         {
-            lock (prepareMutex)
+            lock (PrepareMutex)
             {
                 DisposePreparedStream();
                 switch (index)
@@ -556,7 +566,7 @@ namespace Gageas.Lutea.Core
                         PreparedStream = DecodeStream.CreateStopRequestStream();
                         return true;
                     default:
-                        return prepareNextStream(index);
+                        return PrepareNextStream(index);
                 }
             }
             
@@ -566,7 +576,7 @@ namespace Gageas.Lutea.Core
         {
             CoreEnqueue(() =>
             {
-                lock (prepareMutex)
+                lock (PrepareMutex)
                 {
                     DisposePreparedStream();
                     if (OutputManager.CanAbort)
@@ -577,21 +587,55 @@ namespace Gageas.Lutea.Core
                     {
                         CurrentStream.Ready = false;
                     }
-                    prepareNextStream(index);
+                    PrepareNextStream(index);
                     PlayQueuedStream();
                 }
             });
             return true;
         }
 
+        /// <summary>
+        /// デコードストリームに対して出力デバイスをチェックし，必要があれば初期化する
+        /// </summary>
+        /// <param name="stream"></param>
+        private static void EnsureOutputDevice(DecodeStream stream)
+        {
+            var freq = stream.Freq;
+            var chans = stream.Chans;
+            var isFloat = stream.IsFloat;
+            if (OutputManager.RebuildRequired(freq, chans, isFloat) || Pause)
+            {
+                try
+                {
+                    OutputManager.KillOutputChannel();
+                }
+                catch (Exception e) { Logger.Error(e); }
+                DisposeCurrentStream();
+                Pause = false;
+                OutputManager.ResetOutputChannel(freq, chans, isFloat, (uint)MyCoreComponent.BufferLength, MyCoreComponent.PreferredDeviceName);
+                if (OutputManager.RebuildRequired(freq, chans, isFloat))
+                {
+                    Logger.Error("freq: " + freq);
+                    Logger.Error("chans: " + chans);
+                    Logger.Error("isFloat: " + isFloat);
+                    throw new Exception("Can not initialize output device");
+                }
+                OutputManager.SetVolume(Volume, 0);
+                StreamProcHold = 32768;
+            }
+        }
+
+        /// <summary>
+        /// キューのストリームを再生開始する
+        /// </summary>
         private static void PlayQueuedStream(){
-            lock (prepareMutex)
+            lock (PrepareMutex)
             {
                 // 再生するstreamが用意されているかどうかチェック
                 if (PreparedStream == null)
                 {
                     Logger.Log("Playback Error");
-                    stop();
+                    Stop();
                     Controller._OnPlaybackErrorOccured();
                     AppCore.CoreEnqueue(() => { System.Threading.Thread.Sleep(500); Controller.NextTrack(); });
                     return;
@@ -599,43 +643,31 @@ namespace Gageas.Lutea.Core
 
                 if (PreparedStream.FileName == ":STOP:")
                 {
-                    stop();
+                    Stop();
                     return;
                 }
 
                 if (IndexInPlaylist(PreparedStream.FileName) == -1)
                 {
                     DisposePreparedStream();
-                    prepareNextStream(getSuccTrackIndex());
+                    PrepareNextStream(GetSuccTrackIndex());
                     PlayQueuedStream();
                     return;
                 }
 
-                IsPlaying = false;
-
-                // Output Streamを再構築
-                var freq = PreparedStream.Freq;
-                var chans = PreparedStream.Chans;
-                var isFloat = PreparedStream.IsFloat;
-                if (OutputManager.RebuildRequired(freq, chans, isFloat) || Pause)
+                // Output Streamを確認・再構築
+                try
                 {
-                    try
-                    {
-                        OutputManager.KillOutputChannel();
-                    }
-                    catch (Exception e) { Logger.Error(e); }
-                    DisposeCurrentStream();
-                    Pause = false;
-                    OutputManager.ResetOutputChannel(freq, chans, isFloat, (uint)MyCoreComponent.BufferLength, MyCoreComponent.PreferredDeviceName);
-                    OutputManager.SetVolume(Volume, 0);
-                    StreamProcHold = 32768;
-                    PlayQueuedStream();
+                    EnsureOutputDevice(PreparedStream);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                    Stop();
+                    Controller._OnPlaybackErrorOccured();
+                    AppCore.CoreEnqueue(() => { System.Threading.Thread.Sleep(500); Controller.NextTrack(); });
                     return;
                 }
-
-                // prepareにsyncを設定
-                PreparedStream.SetSyncSec(on80Percent, PreparedStream.LengthSec * 0.80);
-                PreparedStream.SetSyncSec(onPreFinish, Math.Max(PreparedStream.LengthSec * 0.90, PreparedStream.LengthSec - 5));
 
                 DisposeCurrentStream();
                 PreparedStream.Ready = true;
@@ -643,18 +675,20 @@ namespace Gageas.Lutea.Core
                 OutputManager.Resume();
                 PreparedStream = null;
                 Pause = false;
-                IsPlaying = true;
                 Controller._OnTrackChange(Controller.Current.IndexInPlaylist);
             }
         }
 
-        private static bool prepareNextStream(int index, List<KeyValuePair<string,object>> tags = null)
+        /// <summary>
+        /// 次のストリームを準備する
+        /// </summary>
+        private static bool PrepareNextStream(int index, List<KeyValuePair<string,object>> tags = null)
         {
-            lock (prepareMutex)
+            lock (PrepareMutex)
             {
-                lastPreparedIndex = index;
+                LastPreparedIndex = index;
                 if (PreparedStream != null) return false;
-                if (index >= currentPlaylistRows || index < 0) return false;
+                if (index >= CurrentPlaylistRows || index < 0) return false;
 
                 object[] row = Controller.GetPlaylistRow(index);
                 string filename = (string)row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)];
@@ -665,6 +699,13 @@ namespace Gageas.Lutea.Core
                     var nextStream = DecodeStream.CreateStream(filename, tr, true, MyCoreComponent.UsePrescan, tags);
                     if (nextStream == null) return false;
                     nextStream.meta = row;
+
+                    // prepareにsyncを設定
+                    nextStream.SetSyncSec(on80Percent, nextStream.LengthSec * 0.80);
+                    nextStream.SetSyncSec(onPreFinish, Math.Max(nextStream.LengthSec * 0.90, nextStream.LengthSec - 5));
+
+                    nextStream.Ready = !OutputManager.RebuildRequired(nextStream.Freq, nextStream.Chans, nextStream.IsFloat);
+
                     PreparedStream = nextStream;
                 }
                 catch (Exception e)
@@ -676,11 +717,14 @@ namespace Gageas.Lutea.Core
             return true;
         }
 
-        internal static void stop()
+        /// <summary>
+        /// 再生停止
+        /// </summary>
+        internal static void Stop()
         {
-            IsPlaying = false;
             OutputManager.KillOutputChannel();
             DisposeCurrentStream();
+            DisposePreparedStream();
             Controller._OnTrackChange(-1);
         }
         #endregion
@@ -728,19 +772,19 @@ namespace Gageas.Lutea.Core
             UpdatePlaybackCount(CurrentStream);
             if (PreparedStream == null)
             {
-                var succIndex = getSuccTrackIndex();
-                CoreEnqueue(() => prepareNextStream(succIndex, null));
+                var succIndex = GetSuccTrackIndex();
+                CoreEnqueue(() => PrepareNextStream(succIndex, null));
             }
             CoreEnqueue(() => PlayQueuedStream());
         }
 
         private static void onPreFinish(object cookie)
         {
-            var succIndex = getSuccTrackIndex();
-            CoreEnqueue(() => prepareNextStream(succIndex, null));
+            var succIndex = GetSuccTrackIndex();
+            CoreEnqueue(() => PrepareNextStream(succIndex, null));
         }
 
-        internal static int getSuccTrackIndex() // ストリーム終端に達した場合の次のトラックを取得
+        internal static int GetSuccTrackIndex() // ストリーム終端に達した場合の次のトラックを取得
         {
             int id;
             switch (MyCoreComponent.PlaybackOrder)
@@ -749,16 +793,16 @@ namespace Gageas.Lutea.Core
                     return Controller.Current.IndexInPlaylist;
 
                 case Controller.PlaybackOrder.Random:
-                    if (currentPlaylistRows == 1) return 0;
+                    if (CurrentPlaylistRows == 1) return 0;
                     do
                     {
-                        id = (new Random()).Next(currentPlaylistRows);
+                        id = (new Random()).Next(CurrentPlaylistRows);
                     } while (id == Controller.Current.IndexInPlaylist);
                     return id;
 
                 case Controller.PlaybackOrder.Default:
                     id = (Controller.Current.IndexInPlaylist) + 1;
-                    if (id >= currentPlaylistRows)
+                    if (id >= CurrentPlaylistRows)
                     {
                         return -1;
                     }
@@ -766,7 +810,7 @@ namespace Gageas.Lutea.Core
 
                 case Controller.PlaybackOrder.Endless:
                     id = (Controller.Current.IndexInPlaylist) + 1;
-                    if (id >= currentPlaylistRows)
+                    if (id >= CurrentPlaylistRows)
                     {
                         id = 0;
                     }
@@ -776,17 +820,17 @@ namespace Gageas.Lutea.Core
         }
         #endregion
 
+        #region DatabaseUpdated
         /// <summary>
         /// 外部からデータベースに書き込んだ後に呼ぶ
         /// </summary>
         /// <param name="silent"></param>
-        #region DatabaseUpdated
         internal static void DatabaseUpdated(bool silent = false)
         {
             string latest = MyCoreComponent.LatestPlaylistQuery;
             if (!silent)
             {
-                playlistBuilder.RefreshPlaylist();
+                MyPlaylistManager.RefreshPlaylist();
                 Controller._OnDatabaseUpdated();
             }
         }

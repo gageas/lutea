@@ -264,7 +264,7 @@ namespace Gageas.Lutea.Core
         {
             AppCore.CoreEnqueue(() =>
             {
-                AppCore.stop();
+                AppCore.Stop();
             });
         }
 
@@ -276,7 +276,7 @@ namespace Gageas.Lutea.Core
                 int id;
                 if (playbackOrder == Controller.PlaybackOrder.Random)
                 {
-                    id = AppCore.getSuccTrackIndex();
+                    id = AppCore.GetSuccTrackIndex();
                 }
                 else
                 {
@@ -607,7 +607,7 @@ namespace Gageas.Lutea.Core
         /// <returns></returns>
         public static Lutea.Core.LuteaComponentInterface[] GetComponents()
         {
-            return AppCore.Plugins.ToArray();
+            return AppCore.Components;
         }
 
         public static void Reload(Column[] extraColumns)
@@ -633,7 +633,7 @@ namespace Gageas.Lutea.Core
         {
             get
             {
-                return AppCore.userDirectory.UserDir;
+                return AppCore.MyUserDirectory.UserDir;
             }
         }
         #endregion
@@ -762,7 +762,7 @@ namespace Gageas.Lutea.Core
 
         public static KaoriYa.Migemo.Migemo GetMigemo()
         {
-            return AppCore.Migemo;
+            return AppCore.MyMigemo;
         }
         #endregion
 
@@ -774,7 +774,7 @@ namespace Gageas.Lutea.Core
         {
             get
             {
-                return AppCore.currentPlaylistRows;
+                return AppCore.CurrentPlaylistRows;
             }
         }
 
@@ -785,7 +785,7 @@ namespace Gageas.Lutea.Core
         /// <param name="playOnCreate">プレイリスト生成後再生を開始</param>
         public static void CreatePlaylist(String query, bool playOnCreate = false)
         {
-            AppCore.createPlaylist(query, playOnCreate);
+            AppCore.CreatePlaylist(query, playOnCreate);
         }
 
         /// <summary>
