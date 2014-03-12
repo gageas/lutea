@@ -1,0 +1,109 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html lang="ja">
+<head>
+<title>Lutea</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf8" /><meta http-equiv="X-UA-Compatible" content="IE=11" />
+<!script type="text/javascript" src="https://github.com/gageas/JSTitleFormatting/raw/master/tf.js"><!/script>
+<script type="text/javascript">
+%%SCRIPT%%
+</script>
+<script type="text/javascript">
+function TFIf(env, args) {
+    var cond = args[0];
+    var a = args[1];
+    var b = args[2];
+    return TitleFormatting.Eval(env, TitleFormatting.Eval(env, cond).success ? a : b);
+}
+
+function TFSubStr(env, args) {
+    var src = TitleFormatting.Eval(env, args[0]);
+    var from = TitleFormatting.Eval(env, args[1]).str;
+    var to = TitleFormatting.Eval(env, args[2]).str;
+    return new TitleFormatting.Result(src.str.substr(from, to), src.success);
+}
+
+function TFLength(env, args) {
+    var src = TitleFormatting.Eval(env, args[0]);
+    return new TitleFormatting.Result(src.str.length, src.success);
+}
+
+function TFLength2(env, args) {
+    var src = TitleFormatting.Eval(env, args[0]).toString();
+    var len = 0;
+    for (var i = 0; i < src.length; i++) {
+        len += ((src.charCodeAt(i) < 256) ? 1 : 2);
+    }
+    return new TitleFormatting.Result(len, src.success);
+}
+
+function TFGreater(env, args) {
+    var x = TitleFormatting.Eval(env, args[0]);
+    var y = TitleFormatting.Eval(env, args[1]);
+    return new TitleFormatting.Result("", (x.str-0) > (y.str-0));
+}
+
+function TFHtmlSpecialChars(env, args) {
+    var src = TitleFormatting.Eval(env, args[0]);
+    var div = document.createElement("div");
+    var text = document.createTextNode(src.toString());
+    div.appendChild(text);
+    return new TitleFormatting.Result(div.innerHTML, src.success);
+}
+
+var env = {
+    func: {
+        "if": TFIf,
+        "substr": TFSubStr,
+        "length": TFLength,
+        "length2": TFLength2,
+        "greater": TFGreater,
+        "htmlSpecialChars": TFHtmlSpecialChars,
+        "h": TFHtmlSpecialChars
+    }
+,
+    fields: {
+    }
+}
+var infoViewTF = TitleFormatting.Prepare("[<small>$h(%album%)[ <sup>#$h(%tracknumber%)</sup>]</small><br />]$h(%title%)[ - $h(%artist%)]");
+var playlistItemTF = TitleFormatting.Prepare("$h([$if($greater($length(%album%),20),$substr(%album%,0,20)...,%album%) - ]%title%[/%artist%])");
+</script>
+<style type="text/css">
+%%STYLE%%
+</style>
+</head>
+<body onload="init()"><! style="overflow:hidden;">
+<table id="layoutTable">
+    <tr>
+        <td width="0" rowspan="2" style="vertical-align:top;">
+            <a href="./?mode=coverorigsize" target="_blank" style="border:0px;" onclick="showLargeCover();return false;">
+            <div id="img_over_out"></div>
+            <div id="img_over"></div>
+            <img src="./?mode=cover" width="%%IMAGE_SIZE%%" height="%%IMAGE_SIZE%%" id="coverArt" alt="coverArt" /></a>
+        </td>
+        <td width="100%">
+            <div id="infoView"></div>
+        </td>
+    </tr>
+    <tr>
+        <td valign=bottom>
+            <input type="text" onkeyup="commitQuery($('queryInput').value)" id="queryInput" /><! size="40" />
+            <input type="button" onclick="Controller.Prev()" value="Prev" />
+            <input type="button" onclick="Controller.PlayPause()" value="Pause" />
+            <input type="button" onclick="Controller.Stop()" value="Stop" />
+            <input type="button" onclick="Controller.Next()" value="Next" />
+            <input type="button" onclick="Controller.VolDown()" value="Vol-" />
+            <input type="button" onclick="Controller.VolUp()" value="Vol+" />
+            <input type="button" onclick="Controller.Quit()" id="QuitButton" title="Quit" value="×" />
+        </td>
+    </tr>
+    <tr>
+        <td id="playlistViewWrap" colspan="2">
+            <iframe id="playlistViewIframe" src="./?mode=blank"></iframe>
+        </td>
+    </tr>
+</table>
+
+<div id="coverOverlay" onclick="$('coverOverlay').style.display='none';">
+    <img id="coverOverlay_img" /><div id="blind"></div>
+</div>
+</body></html>

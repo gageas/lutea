@@ -1,0 +1,158 @@
+﻿body,html
+{
+    font-family : 'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+    height : 100%;
+    margin : 0px;
+    padding : 0px;
+}
+
+table#layoutTable
+{
+    border : solid Transparent 5px;
+    border-bottom-width : 25px; /* Chromeで画面内にポップアップが出るので広めにとる */
+    border-right-width : 0px;
+    border-collapse :separate;
+    width : 100%;
+    height : 100%;
+}
+
+img
+{
+    border:0px;
+    margin:0px 5px 5px 0px;
+}
+
+div#img_over
+{
+    position:absolute;
+    z-index:3;
+    width:166px;
+    height:166px;
+    border : outset 2px #aaa; /*aaa*/
+    border-radius: 14px;         /* CSS3 */
+    opacity : 0.8;
+}
+
+div#img_over_out
+{
+    position:absolute;
+    margin:-6px;
+    z-index:1;
+    width:170px;
+    height:170px;
+    border : solid 6px white;
+    border-radius: 20px;         /* CSS3 */
+}
+
+td#playlistViewWrap
+{
+    height : 100%;
+    width : 100%;
+    margin : 0px;
+    padding : 0px;
+}
+
+div#infoView
+{
+    padding : 5px;
+    vertical-align : top;
+    height : 100%;
+    font-family : 'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+    font-size : 150%;
+    color : navy;
+    text-shadow: 2px 2px 2px silver;
+}
+
+iframe
+{
+    width : 100%;
+    height : 100%;
+    border : solid 1px gray;
+    border-width : 1px 0px 0px 2px;
+}
+
+ul.playlistItemWrap {
+    margin : 0 0 0 0;
+    padding : 0;
+    border : 0px;
+}
+
+li.playlistItem
+{
+    list-style-type : none;
+    border : solid 1px gray;
+    border-width : 0px 0px 1px 0px;
+    padding : 1px 0px 1px 5px;
+    cursor : pointer;
+    overflow : hidden;
+    display : block;
+    height : 1em;
+    line-height : 1.1em;
+}
+
+li.playlistItem:hover
+{
+    background-color : Silver;
+}
+
+div#coverOverlay
+{
+    vertical-align : middle;
+    text-align : center;
+    z-index:10000;
+    display : none;
+    position : absolute;
+    top : 0;
+    left : 0;
+    width : 100%;
+    height : 100%;
+}
+div#blind
+{
+    position : absolute;
+    z-index:10001;
+    top : 0;
+    left : 0;
+    width : 100%;
+    height : 100%;
+    background-color : Black;
+    opacity : 0.8;
+}
+
+div#coverOverlay img
+{
+    position : relative;
+    z-index:10002;
+    margin-top : 60px;
+}
+
+input[type="button"]
+{
+/*    width : 80px;*/
+    height : 2em;
+/*    margin-left : 0.1em;*/
+}
+
+input#QuitButton
+{
+    width : 30px !important;
+    height : 30px !important;
+    position : absolute;
+    top : 0px;
+    right : 0px;
+}
+
+input#queryInput
+{
+    width : 250px;
+}
+
+input#queryInput:active, input#queryInput:focus
+{
+    font-weight : bold;
+}
+
+/* iOSでbuttonの角丸を解除 */
+input[type="button"],input[type="submit"] {
+    -webkit-appearance: none;
+}
