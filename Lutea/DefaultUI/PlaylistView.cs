@@ -288,6 +288,7 @@ namespace Gageas.Lutea.DefaultUI
                 if (value != itemHeight)
                 {
                     itemHeight = value;
+                    backgroundCoverartLoader.Reset(CoverArtSize);
                     RefreshPlaylist(false, emphasizedRowId);
                 }
             }
@@ -344,7 +345,6 @@ namespace Gageas.Lutea.DefaultUI
             this.DrawColumnHeader += playlistView_DrawColumnHeader;
             this.ColumnReordered += PlaylistView_ColumnReordered;
             this.RetrieveVirtualItem += playlistView_RetrieveVirtualItem;
-            this.ColumnReordered += PlaylistView_ColumnReordered;
             backgroundCoverartLoader.Complete += (indexes =>
             {
                 Invoke((Action)(() =>
@@ -937,6 +937,7 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
+            if (sub.Tag == null) return;
             switch (e.Button)
             {
                 case System.Windows.Forms.MouseButtons.Right:
