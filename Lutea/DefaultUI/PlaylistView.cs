@@ -49,6 +49,11 @@ namespace Gageas.Lutea.DefaultUI
         private DefaultUIForm form;
 
         /// <summary>
+        /// カバーアートローダ
+        /// </summary>
+        private BackgroundCoverartsLoader backgroundCoverartLoader;
+
+        /// <summary>
         /// 背景色の有効にするかどうか
         /// </summary>
         private bool useColor;
@@ -72,11 +77,6 @@ namespace Gageas.Lutea.DefaultUI
         /// カラム区切りを表示するかどうか
         /// </summary>
         private bool showVerticalGrid;
-
-        /// <summary>
-        /// カバーアートのサイズ
-        /// </summary>
-        private int coverArtSize;
 
         /// <summary>
         /// 強調表示(再生中)の行
@@ -252,13 +252,15 @@ namespace Gageas.Lutea.DefaultUI
         {
             get
             {
-                return this.coverArtSize;
+                return CoverArtSizeWithPad - CoverArtMargin * 2;
             }
-            set
+        }
+
+        public int CoverArtSizeWithPad
+        {
+            get
             {
-                if (this.coverArtSize == value) return;
-                this.coverArtSize = value;
-                this.Invalidate();
+                return CoverArtLineNum * itemHeight;
             }
         }
 
@@ -291,6 +293,20 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        int coverArtLineNum = 4;
+        public int CoverArtLineNum
+        {
+            get
+            {
+                return coverArtLineNum;
+            }
+            set
+            {
+                if (value < 2) return;
+                coverArtLineNum = value;
+            }
+        }
+
         public string lastSelectedString
         {
             get;
@@ -315,6 +331,8 @@ namespace Gageas.Lutea.DefaultUI
             // レーティングの☆描画準備
             this.ratingRenderer = new RatingRenderer(@"components\rating_on.gif", @"components\rating_off.gif");
 
+            backgroundCoverartLoader = new BackgroundCoverartsLoader(CoverArtSize);
+
             // イベントハンドラの登録
             this.DrawItem += playlistView_DrawItem;
             this.ItemDrag += playlistView_ItemDrag;
@@ -324,10 +342,24 @@ namespace Gageas.Lutea.DefaultUI
             this.DoubleClick += playlistView_DoubleClick;
             this.KeyDown += playlistView_KeyDown;
             this.DrawColumnHeader += playlistView_DrawColumnHeader;
+            this.ColumnReordered += PlaylistView_ColumnReordered;
             this.RetrieveVirtualItem += playlistView_RetrieveVirtualItem;
             this.ColumnReordered += PlaylistView_ColumnReordered;
+            backgroundCoverartLoader.Complete += (indexes =>
+            {
+                Invoke((Action)(() =>
+                {
+                    foreach (var index in indexes)
+                    {
+                        if (index < VirtualListSize)
+                        {
+                            RedrawItems(index, index, true);
+                        }
+                    }
+                }));
+            });
         }
-
+        
         /// <summary>
         /// 初期化
         /// </summary>
@@ -354,6 +386,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 foreach (ColumnHeader col in Columns)
                 {
+                    if (col.Tag == null) continue;
                     var colName = dbColumnsCache[(int)col.Tag].Name;
                     columnOrder[colName] = col.DisplayIndex;
                     columnWidth[colName] = Math.Max(10, col.Width);
@@ -361,6 +394,14 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             Clear();
+
+            if (ShowCoverArt)
+            {
+                var cover = new ColumnHeader();
+                cover.Width = CoverArtSizeWithPad;
+                cover.Text = "";
+                Columns.Add(cover);
+            }
 
             foreach (string coltext in displayColumns)
             {
@@ -389,6 +430,7 @@ namespace Gageas.Lutea.DefaultUI
 
             foreach (ColumnHeader colheader in Columns)
             {
+                if (colheader.Tag == null) continue;
                 var colName = dbColumnsCache[(int)colheader.Tag].Name;
                 if (columnOrder.ContainsKey(colName))
                 {
@@ -428,7 +470,7 @@ namespace Gageas.Lutea.DefaultUI
         public void RefreshPlaylist(bool moveToIndex, int index)
         {
             // プレイリストが更新されてアイテムの位置が変わったらカバーアート読み込みキューを消去
-            form.backgroundCoverartLoader.ClearQueue();
+            backgroundCoverartLoader.ClearQueue();
 
             if (moveToIndex)
             {
@@ -490,6 +532,7 @@ namespace Gageas.Lutea.DefaultUI
             var vid = getViewIDByObjectID(oid);
             if (vid < 0) return;
             if (vid >= VirtualListSize) return;
+            EnsureVisibleIndirect(oid);
             SelectItem(vid);
         }
 
@@ -503,6 +546,13 @@ namespace Gageas.Lutea.DefaultUI
             if (vid < 0) return;
             if (vid >= VirtualListSize) return;
             EnsureVisible(vid);
+            if (getIndexInGroup(vid) == 1)
+            {
+                if (vid > 0)
+                {
+                    EnsureVisible(vid - 1);
+                }
+            }
         }
 
         /// <summary>
@@ -595,7 +645,7 @@ namespace Gageas.Lutea.DefaultUI
                 oid = numObjects - 1;
             }
             SelectItemIndirect(oid);
-            EnsureVisible(Math.Min(getViewIDByObjectID(oid) + ((this.coverArtSize + 5) / itemHeight), VirtualListSize - 1));
+            EnsureVisible(Math.Min(getViewIDByObjectID(oid) + CoverArtLineNum, VirtualListSize - 1));
         }
 
         /// <summary>
@@ -621,7 +671,7 @@ namespace Gageas.Lutea.DefaultUI
             var oid = getCurrentObjectID() + 1;
             if (oid == numObjects) oid--;
             SelectItemIndirect(oid);
-            EnsureVisible(Math.Min(getViewIDByObjectID(oid) + ((this.coverArtSize + 5) / itemHeight), VirtualListSize - 1));
+            EnsureVisible(Math.Min(getViewIDByObjectID(oid) + CoverArtLineNum, VirtualListSize - 1));
         }
 
         /// <summary>
@@ -859,6 +909,7 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
+            if (this.Columns[item.SubItems.IndexOf(sub)].Tag == null) return;
             if ((!isDummyRow(item.Index)) 
                 && (dbColumnsCache[(int)(this.Columns[item.SubItems.IndexOf(sub)].Tag)].Type == Library.LibraryColumnType.Rating))
             {
@@ -956,6 +1007,7 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="e"></param>
         private void playlistView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
+            if (this.Columns[e.Column].Tag == null) return;
             Controller.SetSortColumn(dbColumnsCache[(int)this.Columns[e.Column].Tag].Name);
         }
 
@@ -989,6 +1041,7 @@ namespace Gageas.Lutea.DefaultUI
             e.Item = dummyPlaylistViewItem;
         }
 
+        int requestEnsureVisibleOID;
         /// <summary>
         /// アイテムの描画
         /// </summary>
@@ -1008,6 +1061,29 @@ namespace Gageas.Lutea.DefaultUI
             bool isFirstOfAlbum = indexInGroup == (showGroup ? 0 : 1);
             var row = Controller.GetPlaylistRow(oid);
             if (row == null) return;
+            if (requestEnsureVisibleOID != -1)
+            {
+                EnsureVisible(VirtualListSize - 1);
+                SelectItemIndirect(requestEnsureVisibleOID);
+                requestEnsureVisibleOID = -1;
+            }
+            if (Columns[0].Width != CoverArtSizeWithPad)
+            {
+                int tmp = (int)((Columns[0].Width - CoverArtMargin * 2) / itemHeight);
+                if (CoverArtLineNum != tmp)
+                {
+                    var si = SelectedIndices;
+                    if (si.Count != 0)
+                    {
+                        requestEnsureVisibleOID = getObjectIDByViewID(si[0]);
+                    }
+                    CoverArtLineNum = tmp;
+                    genMapTable(tagAlbumContinuousCount);
+                    VirtualListSize = v2oMap != null ? v2oMap.Length : numObjects;
+                    backgroundCoverartLoader.Reset(CoverArtSize);
+                }
+                Columns[0].Width = CoverArtSizeWithPad;
+            }
             var bounds = e.Bounds;
             var isSelected = (e.State & ListViewItemStates.Selected) != 0;
 
@@ -1023,7 +1099,7 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     if (((indexInGroup - 2) * bounds.Height) < CoverArtSize)
                     {
-                        form.backgroundCoverartLoader.Enqueue(album, file_name, index);
+                        backgroundCoverartLoader.Enqueue(album, file_name, index);
                     }
                 }
 
@@ -1079,12 +1155,21 @@ namespace Gageas.Lutea.DefaultUI
 
                     foreach (ColumnHeader head in cols)
                     {
-                        int colidx = (int)head.Tag;
-                        if (colidx >= row.Length) continue;
                         if (showVerticalGrid)
                         {
                             drawGridLine(hDC, offsetX, bounds.Y, bounds.Height);
+                        } 
+                        if (head.Tag == null)
+                        {
+                            if (ShowCoverArt)
+                            {
+                                drawItemCoverArt(hDC, offsetX, bounds.Y, bounds.Height, CoverArtMargin, album, indexInGroup, ShowGroup ? 0 : getGroupItemCount(index));
+                            }
+                            offsetX += head.Width;
+                            continue;
                         }
+                        int colidx = (int)head.Tag;
+                        if (colidx >= row.Length) continue;
                         var col = dbColumnsCache[colidx];
                         if (col.Type == Library.LibraryColumnType.Rating)
                         {
@@ -1099,10 +1184,6 @@ namespace Gageas.Lutea.DefaultUI
                         }
                         else
                         {
-                            if (ShowCoverArt && col.Type == Library.LibraryColumnType.TrackNumber)
-                            {
-                                drawItemCoverArt(hDC, offsetX, bounds.Y, bounds.Height, CoverArtMargin, album, indexInGroup, ShowGroup ? 0 : getGroupItemCount(index));
-                            }
                             if (!isDummyRow(index))
                             {
                                 drawStringTruncate(hDC, offsetX, bounds.Y + (bounds.Height - sizeOfTruncateStringCache.Height) / 2, head.Width, TextMargin, prettyColumnString(col, row[colidx].ToString()), sizeOfTruncateStringCache.Width, isColumnPadRight(col));
@@ -1238,12 +1319,12 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="numOfGroup">最終トラックかどうか</param>
         private void drawItemCoverArt(IntPtr hDC, int offsetX, int offsetY, int height, int margin, string album, int index, int numOfGroup)
         {
-            if (form.backgroundCoverartLoader.IsCached(album))
+            if (backgroundCoverartLoader.IsCached(album))
             {
-                var img = form.backgroundCoverartLoader.GetCache(album);
+                var img = backgroundCoverartLoader.GetCache(album);
                 var isFirstTrack = index == 1;
-                if (img == null) return;
                 if (img.Width <= 1) return;
+                if (img == null) return;
 
                 var virtheight = img.Height + margin + margin;
                 int imageOffset;
@@ -1344,10 +1425,6 @@ namespace Gageas.Lutea.DefaultUI
                     int sz = int.Parse(str);
                     return sz > 1024 * 1024 ? String.Format("{0:0.00}MB", sz / 1024.0 / 1024) : String.Format("{0}KB", sz / 1024);
                 case LibraryColumnType.TrackNumber:
-                    if (trackNumberFormat == DefaultUIPreference.TrackNumberFormats.Nothing)
-                    {
-                        return "";
-                    }
                     if (TrackNumberFormat == DefaultUIPreference.TrackNumberFormats.N)
                     {
                         int tr = -1;
@@ -1389,7 +1466,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (ShowGroup)
             {
-                int minNum = ((this.coverArtSize + CoverArtMargin + CoverArtMargin) / itemHeight);
+                int minNum = CoverArtLineNum - 1;
                 if ((albumCounts == null) || (albumCounts.Length == 0))
                 {
                     v2oMap = new int[0];
@@ -1442,6 +1519,7 @@ namespace Gageas.Lutea.DefaultUI
         private int getObjectIDByViewID(int vid)
         {
             if (v2oMap == null) return vid;
+            if (vid >= v2oMap.Length) return 0;
             if (v2oMap[vid] == int.MinValue) return v2oMap[vid + 1];
             if (v2oMap[vid] < 0) return v2oMap[vid + v2oMap[vid]];
             return v2oMap[vid];
@@ -1468,6 +1546,7 @@ namespace Gageas.Lutea.DefaultUI
         private bool isDummyRow(int vid)
         {
             if (v2oMap == null) return false;
+            if (vid >= v2oMap.Length) return false;
             return v2oMap[vid] < 0;
         }
 
@@ -1478,7 +1557,8 @@ namespace Gageas.Lutea.DefaultUI
         /// <returns></returns>
         private bool isGroupHeaderRow(int vid)
         {
-            if(v2oMap == null)return false;
+            if (v2oMap == null) return false;
+            if (vid >= v2oMap.Length) return false;
             return v2oMap[vid] == int.MinValue;
         }
 
@@ -1532,11 +1612,6 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
         #endregion
-
-        private void InitializeComponent()
-        {
-
-        }
         #endregion
     }
 }

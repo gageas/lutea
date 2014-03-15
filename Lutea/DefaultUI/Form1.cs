@@ -62,7 +62,7 @@ namespace Gageas.Lutea.DefaultUI
         /// <summary>
         /// プレイリストのカバーアートをバックグラウンドで読み込むオブジェクト
         /// </summary>
-        internal BackgroundCoverartsLoader backgroundCoverartLoader;
+        private BackgroundCoverartsLoader backgroundCoverartLoader;
 
         /// <summary>
         /// filter viewに表示するcolumnを定義
@@ -80,7 +80,7 @@ namespace Gageas.Lutea.DefaultUI
         private Size config_FormSize;
         private Point config_FormLocation;
 
-        private DefaultUIPreference pref = new DefaultUIPreference();
+        internal DefaultUIPreference pref = new DefaultUIPreference();
         
         private bool ShowNotifyBalloon
         {
@@ -134,7 +134,7 @@ namespace Gageas.Lutea.DefaultUI
             playlistView.ShowCoverArt = pref.ShowCoverArtInPlaylistView;
             playlistView.ShowGroup = pref.ShowGroup;
             playlistView.ShowVerticalGrid = pref.ShowVerticalGrid;
-            playlistView.CoverArtSize = pref.CoverArtSizeInPlaylistView;
+//            playlistView.CoverArtSize = pref.CoverArtSizeInPlaylistView;
             playlistView.ResetColumns(pref.DisplayColumns);
 
             playlistUpdated(null);
@@ -510,7 +510,7 @@ namespace Gageas.Lutea.DefaultUI
 
             listView2.Columns[1].Width = listView2.Width;
             ResetProgressBar();
-            backgroundCoverartLoader = new BackgroundCoverartsLoader(pref.CoverArtSizeInPlaylistView);
+            backgroundCoverartLoader = new BackgroundCoverartsLoader(pref.CoverArtSizeInCoverArtList);
             backgroundCoverartLoader.Complete += new BackgroundCoverartsLoader.LoadComplete(backgroundCoverartLoader_Complete);
 
             albumArtListViewSearchTextBox.Left = albumArtListViewSearchTextBox.Parent.ClientSize.Width - albumArtListViewSearchTextBox.Width - SystemInformation.VerticalScrollBarWidth;
@@ -526,10 +526,6 @@ namespace Gageas.Lutea.DefaultUI
             {
                 foreach (var index in indexes)
                 {
-                    if (playlistView.Visible && (index < playlistView.VirtualListSize))
-                    {
-                        playlistView.RedrawItems(index, index, true);
-                    }
                     if (albumArtListView.Visible && (index < albumArtListView.VirtualListSize))
                     {
                         albumArtListView.RedrawItems(index, index, true);
@@ -1629,6 +1625,15 @@ namespace Gageas.Lutea.DefaultUI
         }
         #endregion
 
+        #region album art list view ToolStripMenu event
+        private void toolStripComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            pref.CoverArtSizeInCoverArtList = int.Parse(toolStripComboBox1.SelectedItem.ToString());
+            backgroundCoverartLoader.Reset(pref.CoverArtSizeInCoverArtList);
+            InitAlbumArtList();
+        }
+        #endregion
+
         #region album art list view event
 
         private ListViewItem dummyPlaylistViewItem = new ListViewItem(new string[99]);
@@ -1661,11 +1666,11 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     hasCoverArtPic = true;
                     var hdc = g.GetHdc();
-                    xp = x + 3 + (pref.CoverArtSizeInPlaylistView - coverArt.Width) / 2;
-                    yp = y + 3 + (pref.CoverArtSizeInPlaylistView - coverArt.Height) / 2;
+                    xp = x + 3 + (pref.CoverArtSizeInCoverArtList - coverArt.Width) / 2;
+                    yp = y + 3 + (pref.CoverArtSizeInCoverArtList - coverArt.Height) / 2;
                     w = coverArt.Width - 4;
                     h = coverArt.Height - 4;
-                    GDI.BitBlt(hdc, xp, yp, pref.CoverArtSizeInPlaylistView + 2, pref.CoverArtSizeInPlaylistView + 2, coverArt.HDC, 0, 0, 0x00CC0020);
+                    GDI.BitBlt(hdc, xp, yp, pref.CoverArtSizeInCoverArtList + 2, pref.CoverArtSizeInCoverArtList + 2, coverArt.HDC, 0, 0, 0x00CC0020);
                     g.ReleaseHdc(hdc);
                 }
                 else
@@ -1795,6 +1800,7 @@ namespace Gageas.Lutea.DefaultUI
         private void parseSetting(Dictionary<string, object> _pref)
         {
             this.pref = new DefaultUIPreference(_pref);
+            playlistView.CoverArtLineNum = pref.CoverArtSizeInLinesPlaylistView;
             playlistView.ColumnOrder = (Dictionary<string, int>)pref.PlaylistViewColumnOrder;
             playlistView.ColumnWidth = (Dictionary<string, int>)pref.PlaylistViewColumnWidth;
             config_FormLocation = pref.WindowLocation;
@@ -1871,6 +1877,14 @@ namespace Gageas.Lutea.DefaultUI
 
             // プレイリストビューの右クリックにColumn選択を生成
             var column_select = new ToolStripMenuItem("表示する項目");
+            var temp = new ToolStripMenuItem("Coverart", null);
+            temp.Checked = pref.ShowCoverArtInPlaylistView;
+            temp.Click += (e, o) => { 
+                temp.Checked = !temp.Checked;
+                pref.ShowCoverArtInPlaylistView = temp.Checked;
+                ResetPlaylistView();
+            };
+            column_select.DropDownItems.Add(temp);
             for (int i = 0; i < Columns.Length; i++)
             {
                 var col = Columns[i];
@@ -1881,6 +1895,7 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         if (_.Checked)
                         {
+                            if (_.Tag == null) continue;
                             displayColumns_list.Add(Columns[(int)_.Tag].Name);
                         }
                     }
@@ -1934,9 +1949,10 @@ namespace Gageas.Lutea.DefaultUI
             this.pref.splitContainer1_SplitterDistance = splitContainer1.SplitterDistance;
             this.pref.splitContainer2_SplitterDistance = splitContainer2.SplitterDistance;
             this.pref.SplitContainer3_SplitterDistance = splitContainer3.SplitterDistance;
+            this.pref.CoverArtSizeInLinesPlaylistView = playlistView.CoverArtLineNum;
             this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
             this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
-            for (int i = 0; i < playlistView.Columns.Count; i++)
+            for (int i = 1; i < playlistView.Columns.Count; i++)
             {
                 this.pref.PlaylistViewColumnOrder[Columns[(int)playlistView.Columns[i].Tag].Name] = playlistView.Columns[i].DisplayIndex;
                 this.pref.PlaylistViewColumnWidth[Columns[(int)playlistView.Columns[i].Tag].Name] = Math.Max(10, playlistView.Columns[i].Width);
@@ -1973,14 +1989,6 @@ namespace Gageas.Lutea.DefaultUI
             pref.Font_playlistView = pref.Font_playlistView  ?? this.playlistView.Font;
             pref.Font_trackInfoView = pref.Font_trackInfoView ?? this.trackInfoText.Font;
             this.pref = pref;
-            if (prevpref.CoverArtSizeInPlaylistView != pref.CoverArtSizeInPlaylistView)
-            {
-                backgroundCoverartLoader.Reset(pref.CoverArtSizeInPlaylistView);
-                if (tabControl1.SelectedIndex == 1)
-                {
-                    InitAlbumArtList();
-                }
-            }
             ResetHotKeys();
             ResetPlaylistView();
             ResetTrackInfoView();
@@ -2033,7 +2041,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void OnPlaylistSortOrderChange(string columnText, Controller.SortOrders sortOrder)
         {
-            for (int i = 0; i < playlistView.Columns.Count; i++)
+            for (int i = 1; i < playlistView.Columns.Count; i++)
             {
                 if ((int)playlistView.Columns[i].Tag == Controller.GetColumnIndexByName(columnText))
                 {
@@ -2053,8 +2061,8 @@ namespace Gageas.Lutea.DefaultUI
             albumArtListView.BeginUpdate();
             albumArtListView.Enabled = false;
             albumArtListView.SmallImageList = new ImageList();
-            albumArtListView.SmallImageList.ImageSize = new System.Drawing.Size(pref.CoverArtSizeInPlaylistView + 7, pref.CoverArtSizeInPlaylistView + 7);
-            albumArtListView.Columns[0].Width = pref.CoverArtSizeInPlaylistView + 7;
+            albumArtListView.SmallImageList.ImageSize = new System.Drawing.Size(pref.CoverArtSizeInCoverArtList + 7, pref.CoverArtSizeInCoverArtList + 7);
+            albumArtListView.Columns[0].Width = pref.CoverArtSizeInCoverArtList + 7;
             Albums = null;
             AlbumsFiltered = null;
             using (var db = Controller.GetDBConnection())
@@ -2073,7 +2081,7 @@ namespace Gageas.Lutea.DefaultUI
 
             albumArtListViewSearchTextBox_Leave(null, null);
 
-            var th = new Thread(() =>
+            ThreadPool.QueueUserWorkItem((_) =>
             {
                 int index = 0;
                 var albums = Albums;
@@ -2099,8 +2107,6 @@ namespace Gageas.Lutea.DefaultUI
                     }
                 }
             });
-            th.Priority = ThreadPriority.BelowNormal;
-            th.Start();
         }
 
         public bool CanSetEnable()

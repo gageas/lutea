@@ -87,6 +87,9 @@
             this.albumArtListViewSearchTextBox = new System.Windows.Forms.TextBox();
             this.albumArtListView = new Gageas.Lutea.DefaultUI.DoubleBufferedListView();
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.coverArtViewContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.カバアートのサイズToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.mainTabPanelImageList = new System.Windows.Forms.ImageList(this.components);
@@ -152,6 +155,7 @@
             this.playlistViewContextMenuStrip.SuspendLayout();
             this.playlistViewHeaderContextMenuStrip.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.coverArtViewContextMenuStrip.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.notifyIconContextMenuStrip.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -418,7 +422,7 @@
             this.playlistView.BackColor = System.Drawing.SystemColors.Window;
             this.playlistView.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.playlistView.ContextMenuStrip = this.playlistViewContextMenuStrip;
-            this.playlistView.CoverArtSize = 0;
+            this.playlistView.CoverArtLineNum = 4;
             this.playlistView.Cursor = System.Windows.Forms.Cursors.Arrow;
             resources.ApplyResources(this.playlistView, "playlistView");
             this.playlistView.FullRowSelect = true;
@@ -621,6 +625,7 @@
             this.albumArtListView.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.albumArtListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader3});
+            this.albumArtListView.ContextMenuStrip = this.coverArtViewContextMenuStrip;
             resources.ApplyResources(this.albumArtListView, "albumArtListView");
             this.albumArtListView.MultiSelect = false;
             this.albumArtListView.Name = "albumArtListView";
@@ -632,6 +637,33 @@
             this.albumArtListView.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.albumArtListView_DrawItem);
             this.albumArtListView.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.albumArtListView_RetrieveVirtualItem);
             this.albumArtListView.DoubleClick += new System.EventHandler(this.albumArtListView_DoubleClick);
+            // 
+            // coverArtViewContextMenuStrip
+            // 
+            this.coverArtViewContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.カバアートのサイズToolStripMenuItem,
+            this.toolStripComboBox1});
+            this.coverArtViewContextMenuStrip.Name = "coverArtViewContextMenuStrip";
+            this.coverArtViewContextMenuStrip.ShowImageMargin = false;
+            resources.ApplyResources(this.coverArtViewContextMenuStrip, "coverArtViewContextMenuStrip");
+            // 
+            // カバアートのサイズToolStripMenuItem
+            // 
+            resources.ApplyResources(this.カバアートのサイズToolStripMenuItem, "カバアートのサイズToolStripMenuItem");
+            this.カバアートのサイズToolStripMenuItem.Name = "カバアートのサイズToolStripMenuItem";
+            // 
+            // toolStripComboBox1
+            // 
+            this.toolStripComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.toolStripComboBox1.Items.AddRange(new object[] {
+            resources.GetString("toolStripComboBox1.Items"),
+            resources.GetString("toolStripComboBox1.Items1"),
+            resources.GetString("toolStripComboBox1.Items2"),
+            resources.GetString("toolStripComboBox1.Items3"),
+            resources.GetString("toolStripComboBox1.Items4")});
+            this.toolStripComboBox1.Name = "toolStripComboBox1";
+            resources.ApplyResources(this.toolStripComboBox1, "toolStripComboBox1");
+            this.toolStripComboBox1.SelectedIndexChanged += new System.EventHandler(this.toolStripComboBox1_SelectedIndexChanged);
             // 
             // tabPage4
             // 
@@ -958,6 +990,7 @@
             this.playlistViewHeaderContextMenuStrip.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            this.coverArtViewContextMenuStrip.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
             this.notifyIconContextMenuStrip.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
@@ -1066,6 +1099,9 @@
         private System.Windows.Forms.ToolStripMenuItem ファイル操作ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem explorerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem propertyToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip coverArtViewContextMenuStrip;
+        private System.Windows.Forms.ToolStripComboBox toolStripComboBox1;
+        private System.Windows.Forms.ToolStripMenuItem カバアートのサイズToolStripMenuItem;
     }
 }
 

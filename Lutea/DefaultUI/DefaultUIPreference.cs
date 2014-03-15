@@ -38,7 +38,6 @@ namespace Gageas.Lutea.DefaultUI
         /// トラックナンバーの書式
         /// </summary>
         public enum TrackNumberFormats { 
-            Nothing = -1,
             N = 0,
             NofM = 1 
         }
@@ -69,7 +68,6 @@ namespace Gageas.Lutea.DefaultUI
         public class TrackNumberFormatConverter : EnumConverter
         {
             private Dictionary<TrackNumberFormats, string> dict = new Dictionary<TrackNumberFormats, string>() { 
-                {TrackNumberFormats.Nothing, ""},
                 {TrackNumberFormats.N, "1, 2, 3, ..."}, 
                 {TrackNumberFormats.NofM, "1/3, 2/3, 3/3, ..."} ,
             };
@@ -228,10 +226,7 @@ namespace Gageas.Lutea.DefaultUI
         }
 
         private Boolean showCoverArtInPlaylistView = true;
-        [Description("プレイリストにカバーアートを表示する")]
-        [DefaultValue(true)]
-        [TypeConverter(typeof(BooleanYesNoTypeConverter))]
-        [Category("Playlist View")]
+        [Browsable(false)]
         public Boolean ShowCoverArtInPlaylistView
         {
             get
@@ -278,24 +273,22 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private int coverArtSizeInPlaylistView = 100;
-        [Description("プレイリストに表示するカバーアートのサイズ")]
-        [DefaultValue(100)]
-        [Category("Playlist View")]
-        public int CoverArtSizeInPlaylistView
+        private int coverArtSizeInCoverArtList = 110;
+        [Browsable(false)]
+        public int CoverArtSizeInCoverArtList
         {
             get
             {
-                return coverArtSizeInPlaylistView;
+                return coverArtSizeInCoverArtList;
             }
             set
             {
-                if (value < 0) value = 0;
-                if (value > 200) value = 200;
-                coverArtSizeInPlaylistView = value;
+                coverArtSizeInCoverArtList = value;
             }
         }
 
+        [Browsable(false)]
+        public int CoverArtSizeInLinesPlaylistView { get; set; }
 
         private bool coloredAlbum = true;
         [Description("アルバムごとに色分けする\n適当")]
