@@ -17,6 +17,7 @@ namespace Gageas.Lutea.DefaultUI
         private LuteaComponentInterface selectedComponent;
         private LuteaComponentInterface[] lcomponents;
         private Dictionary<LuteaComponentInterface, object> prefs = new Dictionary<LuteaComponentInterface, object>();
+        private Dictionary<LuteaComponentInterface, bool> changed = new Dictionary<LuteaComponentInterface, bool>();
         public ComponentManager()
         {
             InitializeComponent();
@@ -41,6 +42,7 @@ namespace Gageas.Lutea.DefaultUI
             foreach (var component in lcomponents)
             {
                 prefs[component] = component.GetPreferenceObject();
+                changed[component] = false;
             }
         }
         
@@ -52,7 +54,10 @@ namespace Gageas.Lutea.DefaultUI
             // 設定を格納
             foreach (var component in lcomponents)
             {
-                component.SetPreferenceObject(prefs[component]);
+                if (changed[component])
+                {
+                    component.SetPreferenceObject(prefs[component]);
+                }
             } 
             
             // Preferenceページを初期化
@@ -73,6 +78,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void propertyGrid1_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
+            changed[selectedComponent] = true;
             button1.Enabled = true;
         }
 
@@ -98,6 +104,7 @@ namespace Gageas.Lutea.DefaultUI
             catch (Exception) { }
             finally {
                 this.propertyGrid1.Refresh();
+                changed[selectedComponent] = true;
                 button1.Enabled = true;
             }
         }
