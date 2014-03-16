@@ -260,7 +260,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             get
             {
-                return CoverArtLineNum * itemHeight;
+                return CoverArtLineNum * ItemHeight;
             }
         }
 
@@ -291,6 +291,10 @@ namespace Gageas.Lutea.DefaultUI
                     backgroundCoverartLoader.Reset(CoverArtSize);
                     RefreshPlaylist(false, emphasizedRowId);
                 }
+            }
+            get
+            {
+                return itemHeight;
             }
         }
 
@@ -1050,9 +1054,10 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="e"></param>
         private void playlistView_DrawItem(object sender, DrawListViewItemEventArgs e)
         {
-            if (this.itemHeight != e.Bounds.Height)
+            if (this.ItemHeight != e.Bounds.Height)
             {
                 this.ItemHeight = e.Bounds.Height;
+                Columns[0].Width = CoverArtSizeWithPad;
                 return;
             }
             var index = e.ItemIndex;
@@ -1070,7 +1075,7 @@ namespace Gageas.Lutea.DefaultUI
             }
             if (Columns[0].Width != CoverArtSizeWithPad)
             {
-                int tmp = (int)((Columns[0].Width - CoverArtMargin * 2) / itemHeight);
+                int tmp = (int)((Columns[0].Width - CoverArtMargin * 2) / ItemHeight);
                 if (CoverArtLineNum != tmp)
                 {
                     var si = SelectedIndices;
