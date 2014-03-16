@@ -127,11 +127,12 @@ namespace Gageas.Lutea.DefaultUI
         /// 各Columnのでデフォルトの幅を定義
         /// </summary>
         private Dictionary<string, int> defaultColumnDisplayWidth = new Dictionary<string, int>(){
-            {"tagTracknumber",130},
+            {"tagTracknumber",50},
             {"tagTitle",120},
             {"tagArtist",120},
             {"tagAlbum",80},
-            {"tagComment",120},
+            {"tagComment",180},
+            {"tagAlbumArtist",80},
             {"rating",84},
         };
 
