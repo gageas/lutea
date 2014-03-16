@@ -1858,7 +1858,10 @@ namespace Gageas.Lutea.DefaultUI
             // 表示するカラムが空の時、タグのカラムを表示することにする
             if (pref.DisplayColumns == null || pref.DisplayColumns.Length == 0)
             {
-                pref.DisplayColumns = Columns.Where(_ => !string.IsNullOrEmpty(_.MappedTagField)).OrderBy(_ => _.Type).Select(_ => _.Name).ToArray();
+                pref.DisplayColumns = Columns.Where(_ =>
+                    !string.IsNullOrEmpty(_.MappedTagField)
+                    || _.Name == LibraryDBColumnTextMinimum.rating
+                ).OrderBy(_ => _.Type).Select(_ => _.Name).ToArray();
             }
 
             // プレイリストビュー初期化
