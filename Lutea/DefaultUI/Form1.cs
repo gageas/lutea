@@ -1549,7 +1549,19 @@ namespace Gageas.Lutea.DefaultUI
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
                 var importer = new Importer(playlistView
                         .GetSelectedObjects()
-                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray());
+                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), true);
+                importer.Start();
+            }
+        }
+
+        private void ReImportFullToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (playlistView.SelectedIndices.Count > 0)
+            {
+                int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
+                var importer = new Importer(playlistView
+                        .GetSelectedObjects()
+                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), false);
                 importer.Start();
             }
         }

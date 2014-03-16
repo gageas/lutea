@@ -547,60 +547,6 @@
   <data name="splitContainer3.Panel1MinSize" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
-  <metadata name="playlistViewContextMenuStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>364, 30</value>
-  </metadata>
-  <data name="playlistViewContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>224, 240</value>
-  </data>
-  <data name="&gt;&gt;playlistViewContextMenuStrip.Name" xml:space="preserve">
-    <value>playlistViewContextMenuStrip</value>
-  </data>
-  <data name="&gt;&gt;playlistViewContextMenuStrip.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="playlistView.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="playlistView.Font" type="System.Drawing.Font, System.Drawing">
-    <value>MS UI Gothic, 10.2pt</value>
-  </data>
-  <metadata name="playlistViewHeaderContextMenuStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>441, 71</value>
-  </metadata>
-  <data name="clearSortOrderToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>158, 28</value>
-  </data>
-  <data name="clearSortOrderToolStripMenuItem.Text" xml:space="preserve">
-    <value>ソート解除</value>
-  </data>
-  <data name="カバアートを表示ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>200, 28</value>
-  </data>
-  <data name="カバアートを表示ToolStripMenuItem.Text" xml:space="preserve">
-    <value>カバアートを表示</value>
-  </data>
-  <data name="playlistViewHeaderContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>201, 82</value>
-  </data>
-  <data name="&gt;&gt;playlistViewHeaderContextMenuStrip.Name" xml:space="preserve">
-    <value>playlistViewHeaderContextMenuStrip</value>
-  </data>
-  <data name="&gt;&gt;playlistViewHeaderContextMenuStrip.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="playlistView.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="playlistView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 2, 4, 2</value>
-  </data>
-  <data name="playlistView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1098, 456</value>
-  </data>
-  <data name="playlistView.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
   <data name="&gt;&gt;playlistView.Name" xml:space="preserve">
     <value>playlistView</value>
   </data>
@@ -850,11 +796,45 @@
   <data name="&gt;&gt;splitContainer1.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
+  <data name="クエリ作成ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAHXSURBVDhPlZDdS1NxHMb7A3oxg65CErqxm16gwnAa5FsF
+        vWIlFJgizV6gEPQi88IQjClFBZnUhUNqpTIhWGmtlsmoIbm2jq+og9HOPBtisZrHc+YnzymvBM/pgQd+
+        /OD5PF+eNcsKuS8w1luK32nB15HJv2/zGneXk5KHUBOdeB07zAOm+s4w2W9lyFNAat6DEm/A1Z7F3YbN
+        tNSkG4MEVykpJYAq+1B+d6P+vEkidBZJKKSuaosxwO/MRp3rQI7ZkOcaUWLl/Bg9yPC7nZQUpRkDvG2b
+        cLVm0H0vg6RYyew3CxdPbiB31zqO5aw3v0VbUybxkWKCr7eyfdta88FlNV1L4+q5dM4f3sjp/L/jtXTF
+        sL2QdN92SNQ+jnL5gUhZc4QDtWHyasKrF2kA+0d48n6R1jcqtp4FbnXK1D2dx/rwF7nXg8aAZq39uUS9
+        fYaKOxFKGr9TdCNMdnWYvVVfVgc8cw2iLqornFxQmI4myTl+yRzA45vQrb17B0aXPIYwKZJ36sr/X6C1
+        zyYUBoWlEY0A7T1ePaS1uz+N62Hn2yBdfQEG/NPGgEcOtw6YicUJRSQCE1E+CyIfvoq87B/BcsJgg/v2
+        V+wuLGPfkUr2HKpY4f1HrfwBbDt/50SMBmoAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="クエリ作成ToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="クエリ作成ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>217, 28</value>
   </data>
   <data name="クエリ作成ToolStripMenuItem.Text" xml:space="preserve">
     <value>クエリ作成...</value>
+  </data>
+  <data name="editToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAHDSURBVDhPxZFdS5NhHIf3CTrwwA8S7MQPEHhgICh6lCMx
+        hEQ0tTpQK6iVODE0YRNNXbQ2Wzi1uQ2T6fJlTJtl5tsGi0f3bC5QSMqxrV313PMlmLOO6ge/g/uG6/rf
+        L6p/nr2tVV7VXBH9Kkscbf9douGgAEOddby/mZGoOqxfaB+OibaZY9wz7nKrL8r1JxE0OplSbZiKDpk7
+        Bh+TthasTh8fHjQI+LFanREY30K/O41+MkXXRJJ2W4L7L+M0m+LcNR3w1LaCy9rA3mcdm7M1aLUtAt70
+        uDMCnTLdEqP11/R6Q5TKTpnyh2GqumR6LO9wmKoEvO6+ylhvIfl5F5BC65n7v5hYIpVOZfUgnsTr/4R9
+        sCwLDgX8p493LJj2BU6qrF+7ZhjvKzofVpLrBPr+Zyw4HiH5G0/gazeas7/t9xNMebdwzW5wmEgKQTr9
+        A0t3sYDNo06KNLdzC46rwPvfktTWN1FcUqYA2D0rDI0tUnC5OlswZJsXoDLZPr3GyJuPyPsJno8vMzCy
+        JOoNfEc/vHC2wGCeEoIdOUJQirAalFlcCzOzvIPTt83o3DZWj5Rb0G10cPGSBnVh5R97puA/R6X6Cdm+
+        0VfOEAv1AAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="editToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
   </data>
   <data name="editToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>217, 28</value>
@@ -865,11 +845,50 @@
   <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
     <value>214, 6</value>
   </data>
+  <data name="newDirectoryToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAALdSURBVDhPlZNbSJNhGMe/i6CICKmLIJAOd14EJkRFlqOT
+        RpmaYFhSWiqV0TnLTlqElVHTKEpBK7Gy40ysNKxP7WDKV+JwE1FSbJstl7NvTbe59evNpRLURS/8Lr7D
+        //c+z8v7SP+zUO0g6/j9OLZ+/PAx5PHgcrkYGBhgcHAQj8eNz+fj1zfv0BCuwmx6H5fwfX0wjbnZWIq0
+        9JpMftkXkxGl8hLyrV28fbiT9zXFmEzd2Pu+4nCo9NlsuGKC6E8PxJEzhcHY8dRn7KBOJ6pxO+28urEG
+        1Xwf6BR85O2dFG5eSOFZUTIvbmymd2MItngJFEFHMI7CcbQumoa8JwnJIGtx9r4RwfxRvAO1uO0vwCfe
+        +2pEcD/o4qBOCPRTMZ2dQHroXM5uSkDSV2WC60/BCLbuY+irIlF00aCZiPtcNN6MmRAfzL3Q6Zw/fARJ
+        KReCvmqwZY9iUVJpq45D/2SbEH0X2EBtg6ZSSF2MvbuKLeFzyNx3UFRQrUXVnxC9pdNQHIaxOguLUYfT
+        ViuCv85EtDCC+lyg52XxBkKXxnIlNw/J3Cajih47H6xEtTaIHysEt/+Oehe3WkFK1Exi41OR5Tq/4FvD
+        ThoLQsSBGcFz+d98K0ARGy1YEkFm1ikMxla/wPJyNx8eJYt2H0F/zj/xfj7JgYTZrIpOpLziKZaeHr9A
+        KVyItU0HPWfAkvVX1JYklOIgwjTLOJB+hKbmZlRVRVJtneiyAsDRAu0Hh/G27sL+bh3G+/OQ82aQlzaJ
+        7dGBRIYvJC5hO2Vl5ZjNZtxuj/8qy/karPV7aboexNPTkzmzNYDE1bOIWD4fzYq1hEdtIiFxG0ePHedu
+        aSnt7e3iijuGZ2VY8CB3PYeSw4iJDEcTEc/q2CSSUtJE4AT5BQU8q6yivqERg8EgZuQTDlG61+sdm8qO
+        jg6uXbuKVnuRkpLbyLWvaVTe0yICXV1dWK1W7P39OJ3O31M6Epakn9zm3JrSleQYAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="newDirectoryToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="newDirectoryToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>217, 28</value>
   </data>
   <data name="newDirectoryToolStripMenuItem.Text" xml:space="preserve">
     <value>新しいフォルダ...</value>
+  </data>
+  <data name="reloadToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAHySURBVDhPpZLLaxNRFMbnPxIXLtyIK0EXLsWNLlq6ERHM
+        ooJSRKh1UWjFR8SKFlNq0aAWqy21WB9ZGIT6qJoGmyZt3o/aFpNMZiYz8/PeOwl5qCD6wceZYeb7nTn3
+        jDb8oEi3h+4VOX+3QP+tPCev5egZyXL0UobDF9IcOJdmX39Kea8viQIE3qA8/spl7IWDf97m8rM6w9MW
+        g0GTgSmDMwGd07ernLhZpe96WXl335IHaPfgZIGz4wVO3fA6HxnKcGggxf5Gx3bv6gmjTTwJ87dyXbAd
+        F7PuUjMd9hzsRbvzKNR4/Hsdv6Kp6oq05aDCugjPvv7kAcbuL6oX2pWrfiZSeszb1IgCSNfrYJigGw5l
+        3W4BukeQ4Wao6V6/VysCUNYdtsttgO4R5Iuyu1Su3IJVarBdERbhzR3rzyPMxX2qypBleVWGgys+Nn8g
+        wnXyW2YL4J98rgLtanaNb35V4Ujhi7rPb0H+u0W6ZBKc/+gBrgbmGjFPzXC3F2PTJIuQLpps5A0mnn7o
+        BIgVY9tiVbYHOXZRY3Z1lJnoKEvZiArHS7CeM4hla50AuWNb7ljMrBvypD1IcUccpPjslAgmCvAtB2sZ
+        g2hS7wTIvysa22B5ZZ13ywlC7xMshNeYCcV4+HKVqYVf3QGQF/9q7f+kaT8B04P0PXxRgmQAAAAASUVO
+        RK5CYII=
+</value>
+  </data>
+  <data name="reloadToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
   </data>
   <data name="reloadToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>217, 28</value>
@@ -880,11 +899,38 @@
   <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
     <value>214, 6</value>
   </data>
+  <data name="削除ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAGFSURBVDhPY3goYPb/oY7vfwZywANZx//3GTT/H9Z0I92A
+        F/uO/T8jbgk2YJtbFE4D3tdPAat5duo8qprjO3fDDdieXIRhwHOH+P/3+Uz/b8mr/t/Z2fn/9u3bqGou
+        Hz3x/6yEFdiAHQ1dcMlH8s7/72p4/Z9TVPW/pqbm/+bNm7G7DmbADXa9/2diCv4/4Df7f8028n9HVe3/
+        1tbW/4cPH8auEQZABtzk0Ae74Ii2+/+SkpL/EydO/H/16lX8GkHgVXwlWON1Np3/11i1//ckZf2/desW
+        YY2vE6rAGg+bB/6PCwj+f1zIGGzIsTlL8GuGa7QI+p+SkvJ/0qRJ/w9t2Q4PA5wGvC1oB2u8JGP7Pz4+
+        /v+UKVP+P3z4EKwYORAxDPi6fg9Y420ug/9ZfsH/6+vr/9+9exdFEcgAUAoEqTubXYuQe1MzESy4TMP+
+        f2pq6v+TJ09idR4otDcFJIFdsHz5coSaDRs2/M/Ly/s/e/ZsrBph4MmTJ2CNEyZMwKuOCMDAAACKFAb9
+        VScbkAAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="削除ToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="削除ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>217, 28</value>
   </data>
   <data name="削除ToolStripMenuItem.Text" xml:space="preserve">
     <value>削除...</value>
+  </data>
+  <data name="名前の変更ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAABSSURBVDhPY6AY1M/d+Z9cDDeAHEAfA4DSUBYCwMRoYwBI
+        EqYABGB8dDEQwDAAmyJ8YnhdAMIwPgygi9HPBch8EICxsRpACqCuAeRisAEDDBgYAHrtalYTKLH+AAAA
+        AElFTkSuQmCC
+</value>
+  </data>
+  <data name="名前の変更ToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
   </data>
   <data name="名前の変更ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>217, 28</value>
@@ -1159,6 +1205,78 @@
   <data name="columnHeader2.Width" type="System.Int32, mscorlib">
     <value>142</value>
   </data>
+  <metadata name="playlistViewContextMenuStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>364, 30</value>
+  </metadata>
+  <data name="playlistViewContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
+    <value>224, 240</value>
+  </data>
+  <data name="&gt;&gt;playlistViewContextMenuStrip.Name" xml:space="preserve">
+    <value>playlistViewContextMenuStrip</value>
+  </data>
+  <data name="&gt;&gt;playlistViewContextMenuStrip.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="playlistView.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="playlistView.Font" type="System.Drawing.Font, System.Drawing">
+    <value>MS UI Gothic, 10.2pt</value>
+  </data>
+  <metadata name="playlistViewHeaderContextMenuStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>441, 71</value>
+  </metadata>
+  <data name="playlistViewHeaderContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
+    <value>159, 32</value>
+  </data>
+  <data name="&gt;&gt;playlistViewHeaderContextMenuStrip.Name" xml:space="preserve">
+    <value>playlistViewHeaderContextMenuStrip</value>
+  </data>
+  <data name="&gt;&gt;playlistViewHeaderContextMenuStrip.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="playlistView.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="playlistView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 2, 4, 2</value>
+  </data>
+  <data name="playlistView.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1098, 456</value>
+  </data>
+  <data name="playlistView.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;playlistView.Name" xml:space="preserve">
+    <value>playlistView</value>
+  </data>
+  <data name="&gt;&gt;playlistView.Type" xml:space="preserve">
+    <value>Gageas.Lutea.DefaultUI.PlaylistView, DefaultUI, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;playlistView.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;playlistView.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="ScrollToPlayingToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        Qk02AwAAAAAAADYAAAAoAAAAEAAAABAAAAABABgAAAAAAAAAAADDDgAAww4AAAAAAAAAAAAAtaCRmIZ4
+        gm5dgGxadV9MdV9MdV9MdV9MclxJclxJclxJclxJclxJdF5LeGJPh3Jgu6eZ////////////////////
+        +fj37ern///9///9///8//30//vy//rx/Pz2ppKBuqWX///////9+fn49vXz//v4/vbw/vTv/vPu+fDo
+        +vbu//bt/Ozi/eri//XrpZCAwK2f////8vHySklIVFJQ/v79///+/vbx//351c/MXFlV9vbz//jx/ezl
+        //jvpZCAvKeZ////0M/PBQQEAAAAXVxa+vr6//z6///9493cAAAAVlRS9vX0/vPt//rzpZCAuaWW////
+        ////trW1DAwMAAAAXV1c///+////5+LgDQwMAAAA0c7M//75//33pZGBuaWW////////////ubm4Dg4O
+        AAAAXVxb+/v67eroDQwMCQkI1NLQ///7///7ppKDuaWW////////////////tbW1CgoKAAAAZmRk8/Hx
+        FRQUCQgI1dPS///+///+ppKCv6ud////////////////////tra2DQ0NAAAATUtLFBQUCgkJ1dTT////
+        ////qJSGv6ud////+/v7+fn5/Pz8/f39////0NDQHh4eAAAAAAAADAwM1dTU////////qpiKwKye////
+        29zcQkJCRkZGSUlJSkpKXFxcGxsbAAAAAAAADAsL1tXV////////rJqNwrCh////+vr6oKCgAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAACAgI0dHQ////////rp2PxbKk////////////xMTEoKCgqampqKioqKioqKio
+        p6enpaWl7u7u////////sZ6Rzruu////////////////////////////////////////////////////
+        ////sZ+S0sG1///////////////+//////7////+///+/v/+///+//7///7+///+////rZmM1sO12si5
+        2cW218W118W12MW12se42se53Mq928q92sq82Me90cO4zL6zwK+is6CS
+</value>
+  </data>
   <data name="ScrollToPlayingToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>223, 28</value>
   </data>
@@ -1168,11 +1286,48 @@
   <data name="toolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
     <value>220, 6</value>
   </data>
+  <data name="コピーToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAIzSURBVDhPxdJbSNNRHMDxv1pBdH0LSgoMeogio6J6MQyV
+        KEswEjUyjDKtxGJZal7IctBybpIVKTg1XWp5IcseyoLMEaQVlIImM4eXudv/P03Np2/HacFw9Bb94Lwc
+        zud7/n840j+b9hY1bQ35NBsysQx8Y37b9/T1dPKkWvdnGbTHka01/LCWYeku5EpSBLoCFXc1WRQXpDNo
+        7vMOzqJp5TEz7nqmZSNV91VMOirRXk+lpyOD7AuRZCTuxNp+EkdrEGkJRxYGZvGMu5Z76hN8MhWiDN1h
+        tDsLs+kUT0ujOBsfQk1OIF06iZS4Q96B+krtXEB5hCYngTxVLFmpMVxNiUaVFMXFxEiS48PQp230BGIP
+        hngHjOUafip1TNkrmBzSMdF/DfeXMygfjiK/3Yfr5WacLWuwNSzFWutP2N5g70DVAzVTNgOTw3qBsxn/
+        mozSeQy5PVTgLTha1mJvWMZYbQAjNRJ7tm3yDpSX5DNhKWbCnCfwOdydMcjv9uN6tRXns3Xi5uWM1QUw
+        apQYeugjUFqUi9J7g/Hu87i7YpE7wnG1BeN8Hoi9cYXAixiZx4OVfgsDJbcycX6+jPtjHLIpQuDtOFvX
+        Y29a6cGjRr85XOXHgCFgYUB/Mx3be/HfpgO4Xu8QeAOOplXY6hd7Pnu4WsIisFng/nIfgdt5lzwPxPVm
+        F64XQdibVwu8BKu4+TceqPD34N4yH4Hv/b0U5Z4WLyyKxOhwDofu9hz625qn/30k6RcI56ssgBCQhwAA
+        AABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="コピーToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="コピーToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>223, 28</value>
   </data>
   <data name="コピーToolStripMenuItem.Text" xml:space="preserve">
     <value>この値をコピー</value>
+  </data>
+  <data name="この値で検索ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAIdSURBVDhPlZLfT5JhGIb509rqL8gDHVPXcaYnZlMYtlJA
+        RrS1Rsn6cYBgmKxh1oYlozHUMUSwEeAHTluZjFVmSBFCV8/3YTo2tHVv99H3Xfd7P8/76s5SNKrwMJDk
+        tm+Nx8FtHgU2mHuZoFQqUavVOPqtvYKvsmzu7FM8hEQVFr/Cchk8yQoTd4Lkcjmq1Wr7kHR6l4iyh6rS
+        Twh/Bv8WBD5A6Bv43pYZHZ3UQo6QVs0vFkj8gOx3WBAovA+RCqz8gqgELsu3m84gHo+nfcB0eIeYAAuf
+        pLoUSUiTrDgvzonX63DXv4rJZGofMBVqBjzdbJ6cEWhHLJOwK94Qu56v0t/f3z5gZv4dEak991HqSm31
+        ZBWWfSIToIhtD16cHhAKpZiO7fFGdqDOrNYuiuUyNClfyuj1V9uP0MhMEVsKM2GfZSa5z5KMsN5otiiI
+        t/cqGK+76O3txev1tgbU43Z+BztI3urCZjYzNGTHPLnIvcAaz1a2cc+vc/nKGD09PTidThRFOQmox2wa
+        nBm7wJOREW6Y7jMwMIDVasVoNGrz9vX1YTAYtOtT4eOHpNZmoYMN83kNtltm6e6+hMvlIp1OUygUyGaz
+        ZDIZ8vl861NuvH8NwYstcGenHovFQiqVOv25/tWy38zWxDl81waP4fHxceLxOJVK5WxYldvtxjY0iMPq
+        o6vrBD44OPg3rKpYLGpLGR4exuFw/B+s0+n+AFHaHsjzCKjkAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="この値で検索ToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
   </data>
   <data name="この値で検索ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>223, 28</value>
@@ -1180,11 +1335,57 @@
   <data name="この値で検索ToolStripMenuItem.Text" xml:space="preserve">
     <value>この値で検索</value>
   </data>
-  <data name="再読み込みToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="reImportToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAHFSURBVDhPpZLdS9tQGIfz7+1/cLvxylsvdrXLMRTnCpNV
+        LGLxA53bSstKK05mVSxVC26jmrYodVW62q+1Jk2a75/vOWmUagTFF345JOF53nPeRPBqdS2LlcQ+luIZ
+        zMfSmItsI7SaQnB5A1ML6wiEk5iY/Y6xmRj6yGB9Tu7jbtkOYNJFN22ouo2RN0FEf/zB20/f7kuW4nt9
+        zC0OW4Bu2FA0G7JiccHhSZdLXgy9HpQs0La9sog2LAcadWXwFcH/ZQuNjsFBL33UrbnIDhzqymHTQY/g
+        bo/groVXHwXU2wb+tQxsZYs89wShLylY1NWg8zK4quQgNqLIXHzgApbzmo7iheovmKZpa4YDlbbMYA/y
+        Mhx01wcFU4vr/LyS6m6Zdb+kLVflW1mhrCJ3pvgLAuEEJBpWWzKxVhpFtaVz6Kyq8TVP8Nf8KH7RV/AV
+        vKefpEVwvWPewCyl5jHEsgKxdsTvD/Kyv2A8FEWNJl1p3sJ3s3kaQ/pI8he8m46g0tBRrmk4rfQ48HJS
+        QPIkgHghgLTYwG5Ows7vK38B+z3/Xrpw4ZyGVVK4JFuUsSdKBBNI8M/DzsMC9uKx8RWwh09JH31OCcI1
+        8QhV2WqcimcAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="reImportToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
+  <data name="reImportToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>223, 28</value>
   </data>
-  <data name="再読み込みToolStripMenuItem.Text" xml:space="preserve">
+  <data name="reImportToolStripMenuItem.Text" xml:space="preserve">
     <value>再読み込み</value>
+  </data>
+  <data name="通常ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>116, 28</value>
+  </data>
+  <data name="通常ToolStripMenuItem.Text" xml:space="preserve">
+    <value>高速</value>
+  </data>
+  <data name="完全ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>116, 28</value>
+  </data>
+  <data name="完全ToolStripMenuItem.Text" xml:space="preserve">
+    <value>完全</value>
+  </data>
+  <data name="ratingToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAqBJREFUOE9j
+        wAV+TmJk+9bDtONTG1PM+zomRqgw8eDHREa7H8u1vn/uE1z1rpaJHypMPPjWx9j360jM/y/T5d+9rWbS
+        gQoTB751M4p/nSJ89t+HFf+/b/X9/6acOQMqhQneVDCZvKtjUvvQyKT0qZlJBehnwc+TJSt/HIr78f/X
+        tv+/LmT+f9smceRZDrPi4xRm9nsxLNy3g1m5r3uzMV12YWNjeFXEvPhdj9yjD30yVz9NlL36vl3g+LfN
+        7h/+fVr2//+XRf//PS74//OIz98XlUJnHyWz77kfx7H/dhjn8WuebIcuObJFMwBNtnrdKHHo65ag/39f
+        zPz/9/3y//++rPr/7/+x//8/TP7//2Hs/383/f7/2Gf2/9tWnf9fN6n+f1Im+P+aH+eMi7ZsqmBvPEln
+        kXxRyt/6aaXnn7+PW/7/f9MKxED6cfL//7c8/v+/Yfv//xWT/5+Wyf1/kMFz96orW+BFBzYesGYYeJTI
+        wvW0iD/1/SydN38u+v3/f9sHqNHh//+r5v//X9b7/2mp7P+Hufxbr7qz4o6RB6mcis9bJc792A/UdNUK
+        aKvh//8XtcD4YS7f/6tubI5QpdjB/Uw+r9dTFd78Pqn//+8Zrf+flsj9/31YDWzA01rR/5fdOHLOW7Oz
+        QpVjgruZgu3vlyj9+7ZN9f+DHP6vNwI41t5J4H31abnC/49L5P9fcuPafsaEXQCqHBVcD+OTfFgmfujd
+        fIX/NyN4T192Zne8aMfGc8GGzeCiI+fOpw0S/y958Hw+pc+uCNWCCm7ECkc+aZJ5cy1EoPeCDYfoWQt2
+        eAY6Y8TOddqYo+ZWgvC/k/qcKcfUOFigUghwLVzI6XKAgNM5ay5MSSA4rsnOfEydI+CoCkf0YSUOdqgw
+        pYCBAQC6VEbtQ5h58wAAAABJRU5ErkJggg==
+</value>
   </data>
   <data name="ratingToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>223, 28</value>
@@ -1192,29 +1393,11 @@
   <data name="ratingToolStripMenuItem.Text" xml:space="preserve">
     <value>評価</value>
   </data>
-  <data name="toolStripMenuItem2.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="toolStripMenuItem7.Size" type="System.Drawing.Size, System.Drawing">
     <value>170, 28</value>
   </data>
-  <data name="toolStripMenuItem2.Text" xml:space="preserve">
-    <value>☆☆☆☆☆</value>
-  </data>
-  <data name="toolStripMenuItem3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 28</value>
-  </data>
-  <data name="toolStripMenuItem3.Text" xml:space="preserve">
-    <value>★☆☆☆☆</value>
-  </data>
-  <data name="toolStripMenuItem4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 28</value>
-  </data>
-  <data name="toolStripMenuItem4.Text" xml:space="preserve">
-    <value>★★☆☆☆</value>
-  </data>
-  <data name="toolStripMenuItem5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 28</value>
-  </data>
-  <data name="toolStripMenuItem5.Text" xml:space="preserve">
-    <value>★★★☆☆</value>
+  <data name="toolStripMenuItem7.Text" xml:space="preserve">
+    <value>★★★★★</value>
   </data>
   <data name="toolStripMenuItem6.Size" type="System.Drawing.Size, System.Drawing">
     <value>170, 28</value>
@@ -1222,11 +1405,45 @@
   <data name="toolStripMenuItem6.Text" xml:space="preserve">
     <value>★★★★☆</value>
   </data>
-  <data name="toolStripMenuItem7.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="toolStripMenuItem5.Size" type="System.Drawing.Size, System.Drawing">
     <value>170, 28</value>
   </data>
-  <data name="toolStripMenuItem7.Text" xml:space="preserve">
-    <value>★★★★★</value>
+  <data name="toolStripMenuItem5.Text" xml:space="preserve">
+    <value>★★★☆☆</value>
+  </data>
+  <data name="toolStripMenuItem4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>170, 28</value>
+  </data>
+  <data name="toolStripMenuItem4.Text" xml:space="preserve">
+    <value>★★☆☆☆</value>
+  </data>
+  <data name="toolStripMenuItem3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>170, 28</value>
+  </data>
+  <data name="toolStripMenuItem3.Text" xml:space="preserve">
+    <value>★☆☆☆☆</value>
+  </data>
+  <data name="toolStripMenuItem2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>170, 28</value>
+  </data>
+  <data name="toolStripMenuItem2.Text" xml:space="preserve">
+    <value>☆☆☆☆☆</value>
+  </data>
+  <data name="deleteToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAGFSURBVDhPY3goYPb/oY7vfwZywANZx//3GTT/H9Z0I92A
+        F/uO/T8jbgk2YJtbFE4D3tdPAat5duo8qprjO3fDDdieXIRhwHOH+P/3+Uz/b8mr/t/Z2fn/9u3bqGou
+        Hz3x/6yEFdiAHQ1dcMlH8s7/72p4/Z9TVPW/pqbm/+bNm7G7DmbADXa9/2diCv4/4Df7f8028n9HVe3/
+        1tbW/4cPH8auEQZABtzk0Ae74Ii2+/+SkpL/EydO/H/16lX8GkHgVXwlWON1Np3/11i1//ckZf2/desW
+        YY2vE6rAGg+bB/6PCwj+f1zIGGzIsTlL8GuGa7QI+p+SkvJ/0qRJ/w9t2Q4PA5wGvC1oB2u8JGP7Pz4+
+        /v+UKVP+P3z4EKwYORAxDPi6fg9Y420ug/9ZfsH/6+vr/9+9exdFEcgAUAoEqTubXYuQe1MzESy4TMP+
+        f2pq6v+TJ09idR4otDcFJIFdsHz5coSaDRs2/M/Ly/s/e/ZsrBph4MmTJ2CNEyZMwKuOCMDAAACKFAb9
+        VScbkAAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="deleteToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
   </data>
   <data name="deleteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>223, 28</value>
@@ -1234,17 +1451,98 @@
   <data name="deleteToolStripMenuItem.Text" xml:space="preserve">
     <value>ライブラリから削除...</value>
   </data>
+  <data name="ファイル操作ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAGrSURBVDhPpZFNLwNRGIX7e1iwYcuWjV8gIcSSsLJnzUJI
+        NGLhI03TpJJKSBG04ltRWi2lTYsaQ0s7086M+TjuHdNOop1W4iRvZnHvee4579hK8vijqDbu7RCc3gss
+        rR4jcJOCcb1S9LKVNDJzrl20dPTBseqvDlnZCf/c/iWNuGVFw/SSFxv7oR+Ix1cJcW0GDYsplZplDaKk
+        YmphHa2d/eUxbKYca2e6acTOomeCRdcYi/bRNFoH4+CKCj54WYeUQIbN1KLnSAdQKSogySqK5OV8QUE2
+        L4P9kJF+l3QArWHYTM2790hfDcM0wSRJMM6ijSYYSqB54AoN3T4kGNEaYHdu68uifXlBxSevIJOTwWS/
+        8MSKSLwIuEsVrQEzyxt65JFZFr00gb6DF5IgjiaSoJEkuE4UrAH0gC6r3PdNQpKREHsWEEkWcR3nEbjj
+        agMyxFzeQSkB+QtNA0F9B4fhOgAmK+GR9I2nRdw+CgiTyJexAk6jHA7CefiDudqA1KuEB2KOpgQSuYDz
+        GI+TCIf9UB6+yxy2Ap+1AfekL/3WG0sAPfjrGLb/ymb7BoaMLTp76odgAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="ファイル操作ToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="ファイル操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>223, 28</value>
   </data>
   <data name="ファイル操作ToolStripMenuItem.Text" xml:space="preserve">
     <value>ファイル操作...</value>
   </data>
+  <data name="explorerToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        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
+</value>
+  </data>
+  <data name="explorerToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="explorerToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>243, 28</value>
   </data>
   <data name="explorerToolStripMenuItem.Text" xml:space="preserve">
     <value>エクスプローラで表示...</value>
+  </data>
+  <data name="propertyToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAIpSURBVDhPxZBPSNNhHIdHl6AuBglBRdQlvEitWxC5S4em
+        m1MxRSsN0iyKmgghhYtcIElGoiZohI5ZsUyCyIz+zAynZdpWhqWOba2aujKT5Ta3p5+vzklTOvaBh/d9
+        D5/n+76v7O+0m5rpaq9hZOgdD4wXaK7TcbNWR31VKdX6YnRncumzPKOhvR6juZWFWjQDlk4C422UncyB
+        8VOLBJxapj8UMvwkg8taDRUNRehf62MF3vGv6E4cAO8xWq9nibLfoeX3yHGm+jPxdisJdGzD2HSYdJMC
+        2flGOxHudHzEZKjC7yqjpjxdSNS7d+D7VMQvaxbeF0mMPd7JxK11VF5NRXFDPi8wvIRHPW5R9jkucjpf
+        ibOvlMK8NCFJ3aPAfl+OpX4zXdXxXDmyHk1BEnvrEuYFD3t/irLbdkmUK661SOt+Rs35ZKdIzxnYwq7t
+        8axZHUfi1lUczVSTczYbeeUGZGbLW+bi8TgpLzmE+7NdnN/0dgrJ4O1ENsatJS/3ILWNhsVPa3lqIKFg
+        U1RAKDjPQmbDYUx329DmKrANuXB5YZ8qI/bXn3fHCkJSeSYYZsoX4tvkrGDYs4Kgs8cmSk33ugThJful
+        DLpXEJgtViGI3GBWMswEQvyYDvLle5BRTwCrc4YB5z8EkUl+ybN0coRXo6HlBZb+ISGI3MAnbSNM+MEx
+        Ce/HwCqxrKC45BxKpYoUdUYUTSbJqeko1WkkS8ytSpVmecF/jkz2B8EWIXqXzjE4AAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="propertyToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
   </data>
   <data name="propertyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>243, 28</value>
@@ -1255,11 +1553,35 @@
   <data name="toolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
     <value>220, 6</value>
   </data>
+  <data name="キューToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAA/SURBVDhPYxjm4MCBA/9hGCpEPIBqgmOSDRmiBqBrwoXx
+        GkbIEIpcQpRmGEA3hCTNMAAzhCzNMECRZjoABgYAY/VsRqp4Q7oAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="キューToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="キューToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>223, 28</value>
   </data>
   <data name="キューToolStripMenuItem.Text" xml:space="preserve">
     <value>キュー</value>
+  </data>
+  <data name="このトラックToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAfJJREFUOE9j
+        IASkm8+zKzQcqZNLmSwKFSINyDedZDaYcfulYvbsBNnkiYxQYdKAwfQbt0xmXvtrMv2CBlSINKA/6eIl
+        2y0f/5stuv7aYMIRFagw8UBr7r1bGhNOPjTb8/yN9vwLt6XSJglCpYgDIos+PROMaooWSJ/hJrD1/S+J
+        /HkVUCnigOiaH0/F45uLQGy+2r2b+FpPPgRLEAtE1n1/IhZXV81XeZCFt/aEPU/Vnl9QKeKA4Jqvj0Qi
+        q6t4ao6xcNeft+Uu2vodKoUdSHaek1eadsPOYNkjZ80JpzX4l35+LhhcVgmS46o738OZseI5WCE6EKo/
+        riDdeTZObdq1ndoL7r3VWfbki+rM68e55338wxdSm8mZtZ6Ho/bCbx7/2nqoFlQg23l2m+7s678NVz35
+        r7Ty5X+xpa//C8x//p9z0pP/3KGtSZyJCyXYY6fP5DMP4YZqQQWG827915p377/I/Kf/uWY/+c855e5/
+        jpbT/znabvzn9i4r5A7v54AqxQ40l738L7L4zX/Ouc/+c0x//J+j58Z/9uYL/9lqL/xnt0n0ZHPIYIIq
+        xQ6E8pbO4+m//Jpr1dv/7LNf/WdrvvqfNX/bL66Qrh42fT/szkYGHM7Z/NwRbc5cOYsa2FMXTOSIn1vP
+        ETE5CCqNBTAwAAA+h8RxpAdHUwAAAABJRU5ErkJggg==
+</value>
   </data>
   <data name="このトラックToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>210, 28</value>
@@ -1267,17 +1589,49 @@
   <data name="このトラックToolStripMenuItem.Text" xml:space="preserve">
     <value>このトラックをキュー</value>
   </data>
+  <data name="再生停止ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAFZSURBVDhP5ZE9SEJRGIZdChqirTFaWiIhKIqWCIJwcgkh
+        oUkIghQaijIqsLr9IpQYhmJml/BSioJllP1Qg5WQCBWGuJhkUIjQTfN6i7d7pDFOe73zeZ73fN8n+2Mx
+        +j+x6Cti1pOHgeMxwWYxuv6MIdsTBi0pDFtT+H76cwh8l/zA7YOI0H0RB9cC/GEB7pAAezAHuWqbLiDN
+        8UcR4bhYArnzAtYCeaz4ecyxCdQpN+kC8u2bpIjDiICt0wLMEshwrxhzvEBrjKKmy0oXkJkvYyI8F1Lz
+        /jvmdwicgc6chmrkBNXtJrqALCwYFeA8LmDZ9wa9I4t+UxrqmQQUA7uoalmiC8i2vVcCzHs5TLIZaFcl
+        mIlDqY+gs8+NikaGLiCn2jjiMe2MQWeMQD1+JjV70aFxobXHhrIGA11A7tymCaCp14f6bhdqFfbS3JXN
+        CyiXT/0u+JeRyb4Auv7poYTA0W8AAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="再生停止ToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="再生停止ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>210, 28</value>
   </data>
   <data name="再生停止ToolStripMenuItem.Text" xml:space="preserve">
     <value>再生停止をキュー</value>
   </data>
+  <data name="キューをクリアToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAABXSURBVDhPzY1RCsAgDEN7/0tPshERzWKFfvggoI19xjU8
+        CPiuFvn2HTJzOWD7LkDEo7/5gpKM5xRdwpwKQM0ycyJRS2mJWiZbiVsmrksJgO1tWUnVRxENMzKIeApf
+        i5oAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="キューをクリアToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="キューをクリアToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>210, 28</value>
   </data>
   <data name="キューをクリアToolStripMenuItem.Text" xml:space="preserve">
     <value>キューをクリア</value>
+  </data>
+  <data name="clearSortOrderToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>158, 28</value>
+  </data>
+  <data name="clearSortOrderToolStripMenuItem.Text" xml:space="preserve">
+    <value>ソート解除</value>
   </data>
   <data name="albumArtListViewSearchTextBox.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -1570,6 +1924,26 @@
   <data name="importToolStripMenuItem.Text" xml:space="preserve">
     <value>ライブラリ(&amp;D)</value>
   </data>
+  <data name="importToolStripMenuItem1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAKBSURBVDhPldDJL9xhAMZxf4BDLz301pteHKSqi7YJDqpU
+        g6p0kbYRSxch1dJI21H7VlMjGFv9MFpbRYZWJ1EUQSTSLc2gQWobzGCUzDC/kW9n/BpN41Ce5Lm9z+fN
+        +zqYVqdpUsl3Va+bwGEvsR82zKjZWH63XZOhnrWfChqqnqP98vH/SGN1Hju1jeqFXOoqc3hdkc2rsixU
+        pRnUlKRTVZyGUJSKUJiyXe23YQmvE3LYNHb+041fbYhLjYgLAtbZQqyT2YgjMja+PmB9KIrV7lASY8Mk
+        oLY8Uxr9eYLZ2IjFUI15uoBuTT7FZfnkF2TSUhXHeNtlVjQ+fCo59BeoKU3fASzLLVj0KtanilCrBTp6
+        +tDpDUzN61E1q8lMiWGi9iQDckfuhoVIQKXtPXbAfrNoqEXUKenUFKLp6sEe0Qpr5i3mlq0UvGyg9Jkv
+        XdmOXA/ykYDy/CQ2ltpt43rE+TKs03KKShXMLuh3xvNGkdFZC629I9wJD6Yt+QC+Xu4SoMx7gmmxxfZh
+        lVhnFIgTycgVWcwsLEnjFattvMngqJmSN4OE3/Cn/vFB3F2dJaAwOxHTfMP2b4uTqVi08TQJj1BrutCt
+        2G6eszAwZubt8DrRCTJyY8+ifHoeZ6fDEqDISMA4Wc3icCxT73340Xyc/ko30pNuU1HXRkuvFmXzINHx
+        MkKuBFP3IhS1Moargd4SIE99SFriPRKibxIRGsAlP088Trlwxu0Ivr6eBAQF4u/vx7WQAArivNAJ3mz1
+        30LIu8/42HcJ2UuG+zqIuuDKZ9kxZpQeLLWGEB95ce+APXYk0u8oHxJOEHHOmaH+rv0B9tiR0y5O9Ha2
+        73+8Ow4OvwHJABhccSZ0gwAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="importToolStripMenuItem1.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="importToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>279, 28</value>
   </data>
@@ -1582,11 +1956,46 @@
   <data name="importFullToolStripMenuItem1.Text" xml:space="preserve">
     <value>ディレクトリの追加(完全)...</value>
   </data>
+  <data name="removeDeadLinkToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAGqSURBVDhPrZFNKINxHMdXnCS72EV5qRUXbzMzUg6U8nKQ
+        5qDEYl4KBwc3B5SLgwNx8LKDl7RW1NS0ybyHEOp5WE3ek+a9Z7OZx772zH8xzzMnn/reft/P4fsT/RuG
+        VSt+Z8ZCQWfax+TcNvaOLkFOheEKoRjVLyOrWPO3ZHaJJud8BidNMG9QXxL6QliiXzgk53wGxuf95UBI
+        JZhp4y455/POfkCrt/gTUjBh2CLnwXi9XjhdHtgfnVjePoKiqE5YoJ1ZI5Vg3jwsHl9cuH1w+AWqhg5h
+        wbDOQirfsCwL5vgAzloZ7OpMnFVlYLMwDo4Tmi8ZmjKT2jcu6yGc9Uowun7YO6tx1V6GgxIpjLkxcNio
+        YAm39E+44TzqNDBjXbjrrsF1XQ7OVUmgFeFYUogxkh0fWhAY7rVJCbfbLZg++R8Cbrhnxo17jU/gYIQF
+        slhhwYpv6UCsBRLcNObhvDIFNmUYKEUYLPIIjKVK0JacwBdwPw4kv6IVmvIqLCrF2ClNxHpWJIwZURhO
+        i0azVAIb/WvEUDxRe+iVxfsSh570BLQkxeLUekzKItEn98AjLYWUBucAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="removeDeadLinkToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
+  </data>
   <data name="removeDeadLinkToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>279, 28</value>
   </data>
   <data name="removeDeadLinkToolStripMenuItem.Text" xml:space="preserve">
     <value>存在しないファイルの削除</value>
+  </data>
+  <data name="libraryDBのカスタマイズToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAIuSURBVDhPnZD/SxNhHMcv+kP6E8If+iGICPohijSisKJv
+        YFmRYtYPK6JR0dBgZK50kvNL3tChw7WaOpxp1hBGlLlRWWmtnLbdpq7mdrt7bnfvnrttao1G9IYPfLjn
+        eb/e73sYVQPsBXjsOristXjUXg2HpQrqN3W0C8U04bqB2BcLZHGiYKLBh2BNZ4pDxnurQN6Wgyy2gcTt
+        EJZ6IISbwH+8CG50G1qu7SwOeMqeRHpyF5IhI/hYFxLva7Ds3oSIbQM+tW3EvdqS4gBPxwmIU6UUcEcD
+        GPuiv01dTxTXuzjoLBFUN4VR0fAdh+sXsF0XwtZLc2DclmMUsA+pdQD2BdA5rqB1VIZ5OIPGQQlGJ4HB
+        LkJvE3CZ5VHZvIKSytdgBh8cgeSngPmGggaGbg5XOznUtGSTy+sWsEcfwo5c+uYKHxhn8yGQQBmS89kG
+        tqFX+FMKnUxGgUgUpNIyfiYlhKIituw+BcZhOkgBe8HnANYnPs1Ub36M81dMUBRldU8J8uo+9NyfBfTd
+        PQBMl4JEGzVAh8OrAfKSZYBICtKijEQqg+WEBC5O1gD9587C79yPyDuDBmjtHdOM+SRCq+f3+IpU2EDV
+        2NGbYPWnYb51HOZujwagzSFRs5qc5DOI0/+O/ZAQXiSY4wTYh6fWAOt1n3Vr5nxSkj5afo8sEdzO7daB
+        N38H8PSxPsx+Q2D6K14GgvBOBjHi+wyXdxb9z2ZgG5kpDlAP/nVytv8Vw/wCHYFfal6l6cEAAAAASUVO
+        RK5CYII=
+</value>
+  </data>
+  <data name="libraryDBのカスタマイズToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
   </data>
   <data name="libraryDBのカスタマイズToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>279, 28</value>
@@ -1599,6 +2008,26 @@
   </data>
   <data name="componentToolStripMenuItem.Text" xml:space="preserve">
     <value>コンポーネント(&amp;C)</value>
+  </data>
+  <data name="pluginsToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAKESURBVDhPbZHdT5JxFMf5a+rC7HUrm9l05dK5aPi0qYAK
+        bQpYWcqLGNIyAnWBovRGtMbEWiUrUxQQZxK6XlQ2brSNIraUeWN64YVJ9O08z0O6yu/Nbzs7n/P9nvMT
+        7Kauzih67Yu42T6PNsM8suXdlUym4XavwN6T4BotpjlMhAD/2E+IK9xcra93DkrVc8hqB5BKbfAD19cz
+        6O1bwtjoFsaDv9Da+hFaTQQBAodf/4Dh2hQuyPuhUQfgcCxDr4/gPPMwC69lIBSGMDK8ybmNBzMI+Hlw
+        8MUGPJ7vcDpXcIdAqzWJ5qZJHDl8kYdBWl1NU5wQxUwTmEFP9yJKS26j5EwnOiwxclziQK02gn05tTzI
+        qsOSpOY47t1NYsy3BUdfHCplP3y+BEZHv6KlxUuRp3DLHKfIUUgkHoirXCgvd0BgsSQQnsrQzmmKuonS
+        UjtCoRQbiNPQqzgqK5wwXl+AVhdDg2oG5aLHKCq8QbD5y/Zx2B0LCowIBr9lUWBwcIFgF0WO4XLjHOoV
+        7yCXT+Mk9QkkYj/F8KJa6oOnfw2t+jAYpgtDQ3F4vZ9gs05DoQhkwffIz7fheN5VHDvauLP7pYYRPLi/
+        zH2HVvMWctkADXRDqQxuOzLME7p03Q7ETm9vn6FYExzIXtVs/gyjkd/xj6NcHoFEOkmuGvq6CD/gkSuK
+        mpqn29/R1jYLjZYdFkMjgQoCGcaDikofpNVhVInHKfIVHn4zmYDwrBUtujAMhg/IyZHh0MEGKOpDnGNx
+        sR1795wjRzVEomf06lBX59qJzqqoUI28vGauePpULcrKuiGjq+bmyriayTSLA/tVtM7Lv8F/1dRko0Fq
+        nMjXEcDD/0sg+A19OvDsVPPRoAAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="pluginsToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Fuchsia</value>
   </data>
   <data name="pluginsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>281, 28</value>
@@ -12053,10 +12482,22 @@
   <data name="&gt;&gt;この値で検索ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;再読み込みToolStripMenuItem.Name" xml:space="preserve">
-    <value>再読み込みToolStripMenuItem</value>
+  <data name="&gt;&gt;reImportToolStripMenuItem.Name" xml:space="preserve">
+    <value>reImportToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;再読み込みToolStripMenuItem.Type" xml:space="preserve">
+  <data name="&gt;&gt;reImportToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;通常ToolStripMenuItem.Name" xml:space="preserve">
+    <value>通常ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;通常ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;完全ToolStripMenuItem.Name" xml:space="preserve">
+    <value>完全ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;完全ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;ratingToolStripMenuItem.Name" xml:space="preserve">
@@ -12065,28 +12506,10 @@
   <data name="&gt;&gt;ratingToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem2.Name" xml:space="preserve">
-    <value>toolStripMenuItem2</value>
+  <data name="&gt;&gt;toolStripMenuItem7.Name" xml:space="preserve">
+    <value>toolStripMenuItem7</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripMenuItem3.Name" xml:space="preserve">
-    <value>toolStripMenuItem3</value>
-  </data>
-  <data name="&gt;&gt;toolStripMenuItem3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripMenuItem4.Name" xml:space="preserve">
-    <value>toolStripMenuItem4</value>
-  </data>
-  <data name="&gt;&gt;toolStripMenuItem4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripMenuItem5.Name" xml:space="preserve">
-    <value>toolStripMenuItem5</value>
-  </data>
-  <data name="&gt;&gt;toolStripMenuItem5.Type" xml:space="preserve">
+  <data name="&gt;&gt;toolStripMenuItem7.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;toolStripMenuItem6.Name" xml:space="preserve">
@@ -12095,10 +12518,28 @@
   <data name="&gt;&gt;toolStripMenuItem6.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem7.Name" xml:space="preserve">
-    <value>toolStripMenuItem7</value>
+  <data name="&gt;&gt;toolStripMenuItem5.Name" xml:space="preserve">
+    <value>toolStripMenuItem5</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem7.Type" xml:space="preserve">
+  <data name="&gt;&gt;toolStripMenuItem5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItem4.Name" xml:space="preserve">
+    <value>toolStripMenuItem4</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItem4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItem3.Name" xml:space="preserve">
+    <value>toolStripMenuItem3</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItem3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItem2.Name" xml:space="preserve">
+    <value>toolStripMenuItem2</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItem2.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;deleteToolStripMenuItem.Name" xml:space="preserve">
@@ -12322,12 +12763,6 @@
   </data>
   <data name="&gt;&gt;notifyIcon1.Type" xml:space="preserve">
     <value>System.Windows.Forms.NotifyIcon, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;カバアートを表示ToolStripMenuItem.Name" xml:space="preserve">
-    <value>カバアートを表示ToolStripMenuItem</value>
-  </data>
-  <data name="&gt;&gt;カバアートを表示ToolStripMenuItem.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>DefaultUIForm</value>
