@@ -21,7 +21,7 @@ using Gageas.Lutea.Library;
 namespace Gageas.Lutea.DefaultUI
 {
     [GuidAttribute("406AB8D9-F6CF-4234-8B32-4D0064DA0200")]
-    [LuteaComponentInfo("DefaultUI", "Gageas", 0.190, "標準GUI Component")]
+    [LuteaComponentInfo("DefaultUI", "Gageas", 0.200, "標準GUI Component")]
     public partial class DefaultUIForm : Form, Lutea.Core.LuteaUIComponentInterface
     {
         /// <summary>
