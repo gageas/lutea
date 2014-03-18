@@ -538,7 +538,22 @@ namespace Gageas.Lutea.DefaultUI
             if (vid < 0) return;
             if (vid >= VirtualListSize) return;
             EnsureVisibleIndirect(oid);
-            SelectItem(vid);
+            SelectItem(new int[] { vid });
+        }
+
+        /// <summary>
+        /// グループ全体を選択する
+        /// </summary>
+        /// <param name="vid">グループヘッダvid</param>
+        public void SelectGroupItems(int vid)
+        {
+            var count = getGroupItemCount(vid);
+            var indicis = new int[count];
+            for (var i = 0; i < count; i++)
+            {
+                indicis[i] = vid + i + 1;
+            }
+            SelectItem(indicis);
         }
 
         /// <summary>
@@ -942,7 +957,6 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (sub.Tag == null) return;
             switch (e.Button)
             {
                 case System.Windows.Forms.MouseButtons.Right:
@@ -951,30 +965,32 @@ namespace Gageas.Lutea.DefaultUI
                     lastSelectedString = Controller.GetPlaylistRowColumn(oid, lastSelectedColumnId);
                     break;
                 case System.Windows.Forms.MouseButtons.Left:
+                    if (isGroupHeaderRow(item.Index))
+                    {
+                        SelectGroupItems(item.Index);
+                        return;
+                    }
                     if (isDummyRow(item.Index)) return;
+                    var tag = this.Columns[item.SubItems.IndexOf(sub)].Tag;
+                    if (tag == null) return;
+                    if (dbColumnsCache[(int)tag].Type != Library.LibraryColumnType.Rating) return;
                     int starwidth = ratingRenderer.EachWidth;
-                    if (dbColumnsCache[(int)(this.Columns[item.SubItems.IndexOf(sub)].Tag)].Type != Library.LibraryColumnType.Rating) return;
                     var x = e.X - TextMargin;
                     int rate = 0;
-                    if (item.GetSubItemAt(x - starwidth * 4, e.Y) == sub)
+                    var xposToRate = new List<Tuple<int, int>>() { 
+                        new Tuple<int, int>(starwidth * 4, 50),
+                        new Tuple<int, int>(starwidth * 3, 40),
+                        new Tuple<int, int>(starwidth * 2, 30),
+                        new Tuple<int, int>(starwidth * 1, 20),
+                        new Tuple<int, int>(starwidth / 2, 10),
+                    };
+                    foreach (var map in xposToRate)
                     {
-                        rate = 50;
-                    }
-                    else if (item.GetSubItemAt(x - starwidth * 3, e.Y) == sub)
-                    {
-                        rate = 40;
-                    }
-                    else if (item.GetSubItemAt(x - starwidth * 2, e.Y) == sub)
-                    {
-                        rate = 30;
-                    }
-                    else if (item.GetSubItemAt(x - starwidth * 1, e.Y) == sub)
-                    {
-                        rate = 20;
-                    }
-                    else if (item.GetSubItemAt(x - starwidth / 2, e.Y) == sub)
-                    {
-                        rate = 10;
+                        if (item.GetSubItemAt(x - map.Item1, e.Y) == sub)
+                        {
+                            rate = map.Item2;
+                            break;
+                        }
                     }
                     Controller.SetRating(Controller.GetPlaylistRowColumn(getObjectIDByViewID(item.Index), colIdOfFilename), rate);
                     break;
