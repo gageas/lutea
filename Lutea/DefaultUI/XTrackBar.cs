@@ -135,6 +135,7 @@ namespace Gageas.Lutea.DefaultUI
                 TrackBarRenderer.DrawHorizontalTrack(g, track);
                 if (Enabled)
                 {
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(32, 0, 0, 128)), track.X, track.Y, thumb.X, track.Height);
                     TrackBarRenderer.DrawHorizontalThumb(g, thumb, thumbState);
                 }
             }
@@ -147,6 +148,7 @@ namespace Gageas.Lutea.DefaultUI
 
                 if (Enabled)
                 {
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(32, 0, 0, 128)), track.X, track.Y, thumb.X, track.Height);
                     g.FillRectangle(thumbState == TrackBarThumbState.Normal ? SystemBrushes.ButtonFace : SystemBrushes.ButtonHighlight, thumb);
                     g.DrawLine(SystemPens.ButtonHighlight, thumb.Left, thumb.Top, thumb.Right, thumb.Top);
                     g.DrawLine(SystemPens.ButtonHighlight, thumb.Left, thumb.Top, thumb.Left, thumb.Bottom);
