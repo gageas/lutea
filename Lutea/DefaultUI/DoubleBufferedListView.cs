@@ -142,20 +142,23 @@ namespace Gageas.Lutea.DefaultUI
             SendMessage(this.Handle, LVM_SETITEMSTATE, (IntPtr)(-1), ref lvitem);
         }
 
-        public void SelectItem(int index)
+        public void SelectItem(int[] indexes)
         {
-            if (index < this.Items.Count && index >= 0)
+            foreach (int i in this.SelectedIndices)
             {
-                foreach (int i in this.SelectedIndices)
+                this.Items[i].Selected = false;
+            }
+            foreach (int index in indexes)
+            {
+                if (index < this.Items.Count && index >= 0)
                 {
-                    this.Items[i].Selected = false;
+                    try
+                    {
+                        this.Items[index].Selected = true;
+                        this.EnsureVisible(index);
+                    }
+                    catch { }
                 }
-                try
-                {
-                    this.Items[index].Selected = true;
-                    this.EnsureVisible(index);
-                }
-                catch { }
             }
         }
 
