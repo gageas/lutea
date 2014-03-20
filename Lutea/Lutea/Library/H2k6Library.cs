@@ -98,13 +98,13 @@ namespace Gageas.Lutea
                         return H2k6Codec.AAC;
                     case "M4A":
                     case "MP4":
-                        if (this.bitrate > 350)
-                        { // たぶん320だけど、若干余裕もたす
+                        if (this.tag.Exists(_ => _.Key == "__X-LUTEA-CODEC__" && _.Value.ToString() == "ALAC"))
+                        {
                             return H2k6Codec.ALAC;
                         }
                         else
                         {
-                            return H2k6Codec.AAC; // このへんは微妙なのでAACにしてしまう
+                            return H2k6Codec.AAC;
                         }
                     case "OGG":
                         return H2k6Codec.OGG;

@@ -145,6 +145,9 @@ namespace Gageas.Lutea.Tags
                     case 0x6D703461: // mp4a
                         ReadMp4a((int)atom_size);
                         break;
+                    case 0x616C6163: // alac
+                        ReadAlac((int)atom_size);
+                        break;
                     case 0x6D766864: // mvhd
                         ReadMvhd((int)atom_size);
                         break;
@@ -241,6 +244,25 @@ namespace Gageas.Lutea.Tags
                 UInt32 timescale = BEUInt32(buf2, 16);
                 UInt64 duration = BEUInt64(buf2, 20);
                 tags.Add(new KeyValuePair<string, object>("__X-LUTEA-DURATION__", ((int)(duration / timescale)).ToString()));
+            }
+        }
+
+        private void ReadAlac(int length)
+        {
+            int size = 8 + 8 + 2 + 2 + 2 + 2 + 4;
+            if (length < size) return;
+            byte[] buf_audio_sample_entry = new byte[size];
+            strm.Read(buf_audio_sample_entry, 0, size);
+            UInt16 channelcount = BEUInt16(buf_audio_sample_entry, 8 + 8);
+            UInt16 samplesize = BEUInt16(buf_audio_sample_entry, 8 + 8 + 2);
+            UInt32 samplerate = BEUInt32(buf_audio_sample_entry, 8 + 8 + 2 + 2 + 2 + 2);
+            tags.Add(new KeyValuePair<string, object>("__X-LUTEA-CHANS__", channelcount.ToString()));
+            tags.Add(new KeyValuePair<string, object>("__X-LUTEA-BITS__", samplesize.ToString()));
+            tags.Add(new KeyValuePair<string, object>("__X-LUTEA-FREQ__", (samplerate >> 16).ToString()));
+            tags.Add(new KeyValuePair<string, object>("__X-LUTEA-CODEC__", "ALAC"));
+            if (length - size > 0)
+            {
+                ReadRecurse(length - size);
             }
         }
 
