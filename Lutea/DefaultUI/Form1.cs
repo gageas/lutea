@@ -431,7 +431,6 @@ namespace Gageas.Lutea.DefaultUI
         {
             this.Invoke((MethodInvoker)(() =>
             {
-                dummyFilterTab.TabPages.Clear();
                 InitFilterView();
                 InitAlbumArtList();
             }));
@@ -1403,31 +1402,36 @@ namespace Gageas.Lutea.DefaultUI
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 pref.LibraryLatestDir = dlg.SelectedPath;
-                toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
-                if (toolStripProgressBar1.Tag != null)
-                {
-                    toolStripProgressBar1.Click -= (EventHandler)toolStripProgressBar1.Tag;
-                }
-                toolStripProgressBar1.Visible = true;
-                toolStripProgressBar1.Value = 0;
-                toolStripProgressBar1.Maximum = int.MaxValue;
-                var importer = new Importer(dlg.SelectedPath, sender == importToolStripMenuItem1 ? true : false);
-                EventHandler evt = (x, y) => { var ret = MessageBox.Show("中断しますか？", "インポート処理", MessageBoxButtons.OKCancel); if (ret == System.Windows.Forms.DialogResult.OK) { importer.Abort(); toolStripProgressBar1.Visible = false; } };
-                toolStripProgressBar1.Click += evt;
-                toolStripProgressBar1.Tag = evt;
-                importer.SetMaximum_read += (_) =>
-                {
-                    this.Invoke((MethodInvoker)(() =>
-                    {
-                        toolStripProgressBar1.Style = ProgressBarStyle.Continuous;
-                        toolStripProgressBar1.Maximum = _ + 1;
-                    }));
-                };
-                importer.Step_read += () => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.PerformStep(); })); };
-                importer.Complete += () => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.Visible = false; })); };
-                importer.Message += (s) => { Logger.Debug(s); };
-                importer.Start();
+                DoImport(new string[] { dlg.SelectedPath }, sender == importToolStripMenuItem1 ? true : false);
             }
+        }
+
+        private void DoImport(IEnumerable<string> paths, bool fastMode)
+        {
+            toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
+            if (toolStripProgressBar1.Tag != null)
+            {
+                toolStripProgressBar1.Click -= (EventHandler)toolStripProgressBar1.Tag;
+            }
+            toolStripProgressBar1.Visible = true;
+            toolStripProgressBar1.Value = 0;
+            toolStripProgressBar1.Maximum = int.MaxValue;
+            var importer = Importer.CreateFolderImporter(paths, fastMode);
+            EventHandler evt = (x, y) => { var ret = MessageBox.Show("中断しますか？", "インポート処理", MessageBoxButtons.OKCancel); if (ret == System.Windows.Forms.DialogResult.OK) { importer.Abort(); toolStripProgressBar1.Visible = false; } };
+            toolStripProgressBar1.Click += evt;
+            toolStripProgressBar1.Tag = evt;
+            importer.SetMaximum_read += (_) =>
+            {
+                this.Invoke((MethodInvoker)(() =>
+                {
+                    toolStripProgressBar1.Style = ProgressBarStyle.Continuous;
+                    toolStripProgressBar1.Maximum = _ + 1;
+                }));
+            };
+            importer.Step_read += () => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.PerformStep(); })); };
+            importer.Complete += () => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.Visible = false; })); };
+            importer.Message += (s) => { Logger.Debug(s); };
+            importer.Start();
         }
 
         private void libraryDBのカスタマイズToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1547,7 +1551,7 @@ namespace Gageas.Lutea.DefaultUI
             if (playlistView.SelectedIndices.Count > 0)
             {
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                var importer = new Importer(playlistView
+                var importer = Importer.CreateFileImporter(playlistView
                         .GetSelectedObjects()
                         .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), true);
                 importer.Start();
@@ -1559,7 +1563,7 @@ namespace Gageas.Lutea.DefaultUI
             if (playlistView.SelectedIndices.Count > 0)
             {
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                var importer = new Importer(playlistView
+                var importer = Importer.CreateFileImporter(playlistView
                         .GetSelectedObjects()
                         .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), false);
                 importer.Start();
@@ -1943,6 +1947,10 @@ namespace Gageas.Lutea.DefaultUI
             }
             ResetHotKeys();
             ResetTrackInfoView();
+            if (pref.AutoImportPath != null && pref.AutoImportPath.Length > 0)
+            {
+                DoImport(pref.AutoImportPath.Select(_ => _), true);
+            }
             var timer = new System.Windows.Forms.Timer();
             timer.Interval = 3000;
             timer.Tick += (z, zz) =>

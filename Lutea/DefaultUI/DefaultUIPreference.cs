@@ -6,7 +6,9 @@ using System.ComponentModel;
 using System.Threading;
 using System.Text;
 using System.Drawing;
+using System.Drawing.Design;
 using System.Windows.Forms;
+using System.Windows.Forms.Design;
 using Gageas.Lutea.Core;
 
 namespace Gageas.Lutea.DefaultUI
@@ -426,6 +428,25 @@ namespace Gageas.Lutea.DefaultUI
             get { return showNotifyBalloon; }
             set { showNotifyBalloon = value; }
         }
+        /*
+        public struct PathStruct
+        {
+            [Editor(typeof(PathSelectUITypeEditor), typeof(UITypeEditor))]
+            public string Path { get; set; }
+
+            public override string ToString()
+            {
+                return "" + Path + " ";
+            }
+        }*/
+
+        [Editor(typeof(PathSelectUITypeEditor), typeof(UITypeEditor))]
+        [Description("起動時にインポート処理を行うパス")]
+        public string[] AutoImportPath
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// playlistviewに表示するcolumnを定義
@@ -485,6 +506,24 @@ namespace Gageas.Lutea.DefaultUI
 
         public DefaultUIPreference()
         {
+        }
+
+
+        public class PathSelectUITypeEditor : UITypeEditor
+        {
+            public override System.Drawing.Design.UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+            {
+                return System.Drawing.Design.UITypeEditorEditStyle.Modal;
+            }
+            public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+            {
+                IWindowsFormsEditorService edSvc = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
+                if (edSvc == null) return value;
+                var ple = new FolderListEditor();
+                ple.PathList = (string[])value;
+                edSvc.ShowDialog(ple);
+                return ple.Result ? ple.PathList.ToArray() : value;
+            }
         }
     }
 }
