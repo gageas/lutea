@@ -21,7 +21,7 @@ namespace Gageas.Lutea.Library
             MP3 = (1 << 1),
             MP4 = (1 << 2),
             M4A = (1 << 3),
-            M4AiTunes = (1 << 4),
+            M4A_iTunes = (1 << 4),
             OGG = (1 << 5),
             WMA = (1 << 6),
             ASF = (1 << 7),
@@ -31,13 +31,14 @@ namespace Gageas.Lutea.Library
             WV = (1 << 11),
             TAK = (1 << 12),
             CUE = (1 << 13),
+            M4A_ALAC = (1<<14),
         };
         public const ImportableTypes AllImportableTypes
             = ImportableTypes.MP2 | ImportableTypes.MP3 | ImportableTypes.MP4
-            | ImportableTypes.M4A | ImportableTypes.M4AiTunes
+            | ImportableTypes.M4A | ImportableTypes.M4A_iTunes
             | ImportableTypes.OGG | ImportableTypes.WMA | ImportableTypes.ASF
             | ImportableTypes.FLAC | ImportableTypes.TTA | ImportableTypes.APE
-            | ImportableTypes.WV | ImportableTypes.TAK | ImportableTypes.CUE;
+            | ImportableTypes.WV | ImportableTypes.TAK | ImportableTypes.CUE | ImportableTypes.M4A_ALAC;
         private const int WORKER_THREADS_N = 4;
         private const string SelectModifySTMT = "SELECT modify FROM list WHERE file_name = ? OR file_name = ?;";
         private static object LOCKOBJ = new object();
@@ -46,7 +47,8 @@ namespace Gageas.Lutea.Library
             { ImportableTypes.MP3, ".MP3" } ,
             { ImportableTypes.MP4, ".MP4" } ,
             { ImportableTypes.M4A, ".M4A" } ,
-            { ImportableTypes.M4AiTunes, ".M4A" } ,
+            { ImportableTypes.M4A_iTunes, ".M4A" } ,
+            { ImportableTypes.M4A_ALAC, ".M4A" },
             { ImportableTypes.OGG, ".OGG" } ,
             { ImportableTypes.WMA, ".WMA" } ,
             { ImportableTypes.ASF, ".ASF" } ,
@@ -363,7 +365,11 @@ namespace Gageas.Lutea.Library
                 {
                     if (tag.Exists(_ => (_.Key == "PURCHASE DATE") || (_.Key == "PURCHASED")))
                     {
-                        if ((TypesToImport & ImportableTypes.M4AiTunes) == 0) return;
+                        if ((TypesToImport & ImportableTypes.M4A_iTunes) == 0) return;
+                    }
+                    else if (tr.codec == H2k6Codec.ALAC)
+                    {
+                        if ((TypesToImport & ImportableTypes.M4A_ALAC) == 0) return;
                     }
                     else
                     {

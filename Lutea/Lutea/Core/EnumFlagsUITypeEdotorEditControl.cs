@@ -35,10 +35,16 @@ namespace Gageas.Lutea.Core
         private void FileTypesUIEditorControl_Load(object sender, EventArgs e)
         {
             var values = Enum.GetValues(type);
+            var list = new List<Tuple<string, bool>>();
             foreach (var val in values)
             {
-                checkedListBox1.Items.Add(Enum.GetName(type, val), (initialValue & (int)val) != 0);
+                list.Add(new Tuple<string,bool>(Enum.GetName(type, val), (initialValue & (int)val) != 0));
             }
+            foreach (var t in list.OrderBy(_ => _.Item1))
+            {
+                checkedListBox1.Items.Add(t.Item1, t.Item2);
+            }
+            this.Height = checkedListBox1.GetItemRectangle(0).Height * checkedListBox1.Items.Count;
         }
     }
 }

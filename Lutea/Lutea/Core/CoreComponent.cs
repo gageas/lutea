@@ -400,7 +400,6 @@ namespace Gageas.Lutea.Core
                 IWindowsFormsEditorService edSvc = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
                 if (edSvc == null) return value;
                 EnumFlagsUITypeEdotorEditControl mpc = new EnumFlagsUITypeEdotorEditControl(typeof(Library.Importer.ImportableTypes), (int)value);
-                mpc.Size = new System.Drawing.Size(50, 300);
                 edSvc.DropDownControl(mpc);
                 return mpc.Value;
             }
