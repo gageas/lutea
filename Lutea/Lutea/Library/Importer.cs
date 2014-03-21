@@ -60,11 +60,11 @@ namespace Gageas.Lutea.Library
         private static readonly Regex regex_year = new Regex(@"(?<1>\d{4})");
         private static readonly Regex regex_date = new Regex(@"(?<1>\d{4})[\-\/\.](?<2>\d+)[\-\/\.](?<3>\d+)");
 
-        private string ToBeImportPath;
+        private IEnumerable<string> ToBeImportPath;
         private IEnumerable<string> ToBeImportFilenames;
         private Thread ImporterThread; // Importerのメインスレッド
         private List<Thread> Workers = new List<Thread>(); // Importerのワーカスレッド
-        private Queue<string> ToBeAnalyzeDirectories;
+        private List<string> ToBeAnalyzeDirectories;
         private List<LuteaAudioTrack> ToBeImportTracks = new List<LuteaAudioTrack>();
         private List<string> AlreadyAnalyzedFiles = new List<string>();
         private bool IsFastMode; // ファイルのタイムスタンプを見て省略するモード
@@ -79,24 +79,30 @@ namespace Gageas.Lutea.Library
         /// <summary>
         /// ディレクトリに対するインポートを行うImporterを作成する
         /// </summary>
-        /// <param name="path">インポート処理の検索対象</param>
-        public Importer(string directoryPath, bool fastMode = true)
+        /// <param name="folderPaths">インポート処理の検索対象</param>
+        /// <param name="fastMode"></param>
+        /// <returns></returns>
+        public static Importer CreateFolderImporter(IEnumerable<string> folderPaths, bool fastMode = true)
         {
-            this.ToBeImportPath = directoryPath.Trim();
-            this.IsFastMode = fastMode;
-            this.ImporterThread = new Thread(ImportDirectoryThreadProc);
+            var self = new Importer();
+            self.ToBeImportPath = folderPaths.Select(_ => _.Trim());
+            self.IsFastMode = fastMode;
+            self.ImporterThread = new Thread(self.ImportDirectoryThreadProc);
+            return self;
         }
 
         /// <summary>
         /// 複数のファイルのインポート処理を行うImporterを作成する
         /// </summary>
-        /// <param name="filenames"></param>
+        /// <param name="filenames">インポート処理の検索対象</param>
         /// <param name="fastMode"></param>
-        public Importer(IEnumerable<string> filenames, bool fastMode = true)
+        public static Importer CreateFileImporter(IEnumerable<string> filenames, bool fastMode = true)
         {
-            this.ToBeImportFilenames = filenames;
-            this.IsFastMode = fastMode;
-            this.ImporterThread = new Thread(ImportMultipleFilesThreadProc);
+            var self = new Importer();
+            self.ToBeImportFilenames = filenames;
+            self.IsFastMode = fastMode;
+            self.ImporterThread = new Thread(self.ImportMultipleFilesThreadProc);
+            return self;
         }
 
         /// <summary>
@@ -418,7 +424,8 @@ namespace Gageas.Lutea.Library
                     lock (ToBeAnalyzeDirectories)
                     {
                         if (ToBeAnalyzeDirectories.Count == 0) continue;
-                        directory_name = ToBeAnalyzeDirectories.Dequeue();
+                        directory_name = ToBeAnalyzeDirectories[0];
+                        ToBeAnalyzeDirectories.RemoveAt(0);
                     }
                     Message(directory_name);
                     Step_read();
@@ -459,12 +466,23 @@ namespace Gageas.Lutea.Library
                 AlreadyAnalyzedFiles.Clear();
 
                 Message("ディレクトリを検索しています");
+                ToBeAnalyzeDirectories = new List<string>();
+                foreach (var path in ToBeImportPath)
+                {
+                    try
+                    {
+                        var directories = System.IO.Directory.GetDirectories(path, "*", System.IO.SearchOption.AllDirectories);
+                        ToBeAnalyzeDirectories.AddRange(directories);
+                        ToBeAnalyzeDirectories.Add(path);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(e);
+                    }
+                }
+                SetMaximum_read(ToBeAnalyzeDirectories.Count);
                 try
                 {
-                    var directories = System.IO.Directory.GetDirectories(ToBeImportPath, "*", System.IO.SearchOption.AllDirectories);
-                    SetMaximum_read(directories.Length);
-                    ToBeAnalyzeDirectories = new Queue<string>(directories);
-                    ToBeAnalyzeDirectories.Enqueue(ToBeImportPath);
                     DoAnalysisByWorkerThreads();
                     WriteToDB(true);
                 }
