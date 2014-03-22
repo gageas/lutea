@@ -688,6 +688,7 @@ namespace Gageas.Lutea.DefaultUI
         private void InitFilterView()
         {
             // clearするとtabControl全体が真っ白になって死ぬ
+            dummyFilterTab.Enabled = false;
             int selected = dummyFilterTab.SelectedIndex;
             if (selected < 0) selected = 0;
             while (dummyFilterTab.TabPages.Count > 0)
@@ -720,6 +721,7 @@ namespace Gageas.Lutea.DefaultUI
                 page.Tag = colid;
             }
             dummyFilterTab.SelectedIndex = -1;
+            dummyFilterTab.Enabled = true;
             dummyFilterTab.SelectedIndex = selected;
         }
         #endregion
@@ -1314,6 +1316,7 @@ namespace Gageas.Lutea.DefaultUI
         #region filterViewTab event
         private void filterViewTabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (!dummyFilterTab.Enabled) return;
             int pageIndex = dummyFilterTab.SelectedIndex;
             if (pageIndex < 0) return;
             int colid = (int)dummyFilterTab.TabPages[pageIndex].Tag;
