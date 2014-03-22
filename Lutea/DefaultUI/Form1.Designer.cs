@@ -662,6 +662,7 @@
             this.coverArtViewContextMenuStrip.Name = "coverArtViewContextMenuStrip";
             this.coverArtViewContextMenuStrip.ShowImageMargin = false;
             resources.ApplyResources(this.coverArtViewContextMenuStrip, "coverArtViewContextMenuStrip");
+            this.coverArtViewContextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.coverArtViewContextMenuStrip_Opening);
             // 
             // カバアートのサイズToolStripMenuItem
             // 

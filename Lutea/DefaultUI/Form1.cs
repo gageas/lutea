@@ -1648,6 +1648,12 @@ namespace Gageas.Lutea.DefaultUI
             backgroundCoverartLoader.Reset(pref.CoverArtSizeInCoverArtList);
             InitAlbumArtList();
         }
+
+        private void coverArtViewContextMenuStrip_Opening(object sender, CancelEventArgs e)
+        {
+            var item = (System.Windows.Forms.ToolStripComboBox)coverArtViewContextMenuStrip.Items[1];
+            item.SelectedItem = pref.CoverArtSizeInCoverArtList.ToString();
+        }
         #endregion
 
         #region album art list view event
