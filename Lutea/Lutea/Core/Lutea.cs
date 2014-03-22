@@ -698,17 +698,17 @@ namespace Gageas.Lutea.Core
         {
             using (var db = GetDBConnection())
             {
+                // ループでDELETEするとBEGIN,COMMIT内でも異常に遅いので、適当なカラムを無効な値に設定してフラグにして一気に削除する。
                 db.Exec("BEGIN;");
-                using (var stmt = db.Prepare("DELETE FROM list WHERE " + LibraryDBColumnTextMinimum.file_name + " = ?;"))
+                using (var stmt = db.Prepare("UPDATE list SET file_size = -1 WHERE " + LibraryDBColumnTextMinimum.file_name + " = ?;"))
                 {
                     foreach (var file_name in file_names)
                     {
                         stmt.Bind(1, file_name);
                         stmt.Evaluate(null);
-                        stmt.Reset();
-
                     }
                 }
+                db.Exec("DELETE FROM list WHERE file_size = -1;");
                 db.Exec("COMMIT;");
             }
             AppCore.DatabaseUpdated();
