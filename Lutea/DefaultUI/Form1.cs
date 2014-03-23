@@ -1119,53 +1119,26 @@ namespace Gageas.Lutea.DefaultUI
         }
         private void createFilterIndex(ListView list, ICollection<ListViewGroup> grps)
         {
-            ToolStripMenuItem toolstrip_index_other = new ToolStripMenuItem("その他");
-            ToolStripMenuItem toolstrip_index_num = new ToolStripMenuItem("数字");
-            ToolStripMenuItem toolstrip_index_alpha = new ToolStripMenuItem("A-Z");
-            ToolStripMenuItem toolstrip_index_kana_a = new ToolStripMenuItem("あ");
-            ToolStripMenuItem toolstrip_index_kana_k = new ToolStripMenuItem("か");
-            ToolStripMenuItem toolstrip_index_kana_s = new ToolStripMenuItem("さ");
-            ToolStripMenuItem toolstrip_index_kana_t = new ToolStripMenuItem("た");
-            ToolStripMenuItem toolstrip_index_kana_n = new ToolStripMenuItem("な");
-            ToolStripMenuItem toolstrip_index_kana_h = new ToolStripMenuItem("は");
-            ToolStripMenuItem toolstrip_index_kana_m = new ToolStripMenuItem("ま");
-            ToolStripMenuItem toolstrip_index_kana_y = new ToolStripMenuItem("や");
-            ToolStripMenuItem toolstrip_index_kana_r = new ToolStripMenuItem("ら");
-            ToolStripMenuItem toolstrip_index_kana_w = new ToolStripMenuItem("わ");
-
-            var kanas = new ToolStripMenuItem[]{
-                    toolstrip_index_kana_a,
-                    toolstrip_index_kana_k,
-                    toolstrip_index_kana_s,
-                    toolstrip_index_kana_t,
-                    toolstrip_index_kana_n,
-                    toolstrip_index_kana_h,
-                    toolstrip_index_kana_m,
-                    toolstrip_index_kana_y,
-                    toolstrip_index_kana_r,
-                    toolstrip_index_kana_w,
-                };
-
+            var map = new Tuple<ToolStripMenuItem, char, char>[]
+            {
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("数字"), '0', '9'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("A-Z"), 'A', 'Z'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("あ"), 'あ', 'お'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("か"), 'か', 'こ'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("さ"), 'さ', 'そ'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("た"), 'た', 'と'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("な"), 'な', 'の'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("は"), 'は', 'ほ'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("ま"), 'ま', 'も'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("や"), 'や', 'よ'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("ら"), 'ら', 'ろ'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("わ"), 'わ', 'ん'),
+                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("その他"), char.MinValue, char.MaxValue),
+            };
             list.ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            var charTypes = new ToolStripMenuItem[]{
-                    toolstrip_index_num,
-                    toolstrip_index_alpha,
-                    toolstrip_index_kana_a,
-                    toolstrip_index_kana_k,
-                    toolstrip_index_kana_s,
-                    toolstrip_index_kana_t,
-                    toolstrip_index_kana_n,
-                    toolstrip_index_kana_h,
-                    toolstrip_index_kana_m,
-                    toolstrip_index_kana_y,
-                    toolstrip_index_kana_r,
-                    toolstrip_index_kana_w,
+            list.ContextMenuStrip.Items.AddRange(map.Select(_ => _.Item1).ToArray());
 
-                    toolstrip_index_other,
-                };
-            list.ContextMenuStrip.Items.AddRange(charTypes);
-
-            foreach (var e in kanas.Concat(charTypes))
+            foreach (var e in map.Select(_ => _.Item1))
             {
                 var self = e; // ブロック内に参照コピー
                 e.Enabled = false;
@@ -1176,37 +1149,16 @@ namespace Gageas.Lutea.DefaultUI
             {
                 char c = grp.Header[0];
                 if (c == ' ') continue;
-                ToolStripMenuItem target = toolstrip_index_other;
-                if ('A' <= c && 'Z' >= c)
-                {
-                    target = toolstrip_index_alpha;
-                }
-                else if ('0' <= c && '9' >= c)
-                {
-                    target = toolstrip_index_num;
-                }
-                else if ('あ' <= c && 'お' >= c) target = toolstrip_index_kana_a;
-                else if ('か' <= c && 'こ' >= c) target = toolstrip_index_kana_k;
-                else if ('さ' <= c && 'そ' >= c) target = toolstrip_index_kana_s;
-                else if ('た' <= c && 'と' >= c) target = toolstrip_index_kana_t;
-                else if ('な' <= c && 'の' >= c) target = toolstrip_index_kana_n;
-                else if ('は' <= c && 'ほ' >= c) target = toolstrip_index_kana_h;
-                else if ('ま' <= c && 'も' >= c) target = toolstrip_index_kana_m;
-                else if ('や' <= c && 'よ' >= c) target = toolstrip_index_kana_y;
-                else if ('ら' <= c && 'ろ' >= c) target = toolstrip_index_kana_r;
-                else if ('わ' <= c && 'ん' >= c) target = toolstrip_index_kana_w;
+                ToolStripMenuItem target = map.First(_ => _.Item2 <= c && _.Item3 >= c).Item1;
                 int index = grp.Items[0].Index;
                 var item = grp.Items[0];
                 var last = grps.Last().Items[grps.Last().Items.Count - 1].Index; // 最後のグループの最後の項目
                 target.Enabled = true;
-                if (target.OwnerItem != null)
-                    target.OwnerItem.Enabled = true;
                 target.DropDownItems.Add(grp.Header, null, (e, obj) =>
                 {
                     list.ContextMenuStrip.Hide();
                     list.EnsureVisible(last);
                     list.EnsureVisible(index);
-
                 });
             }
         }
