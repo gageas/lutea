@@ -957,6 +957,11 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
+            if (isGroupHeaderRow(item.Index))
+            {
+                SelectGroupItems(item.Index);
+                return;
+            }
             switch (e.Button)
             {
                 case System.Windows.Forms.MouseButtons.Right:
@@ -965,11 +970,6 @@ namespace Gageas.Lutea.DefaultUI
                     lastSelectedString = Controller.GetPlaylistRowColumn(oid, lastSelectedColumnId);
                     break;
                 case System.Windows.Forms.MouseButtons.Left:
-                    if (isGroupHeaderRow(item.Index))
-                    {
-                        SelectGroupItems(item.Index);
-                        return;
-                    }
                     if (isDummyRow(item.Index)) return;
                     var tag = this.Columns[item.SubItems.IndexOf(sub)].Tag;
                     if (tag == null) return;
