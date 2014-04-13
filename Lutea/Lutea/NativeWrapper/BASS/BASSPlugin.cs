@@ -13,6 +13,15 @@ namespace Gageas.Wrapper.BASS
     {
         private static List<BASSPlugin> plugins = new List<BASSPlugin>();
 
+        private IntPtr HPlugin;
+
+        public readonly string Filename;
+
+        public UInt32 Version
+        {
+            get { return GetInfo().Version; }
+        }
+
         public static BASSPlugin[] GetPlugins()
         {
             return plugins.ToArray();
@@ -20,20 +29,13 @@ namespace Gageas.Wrapper.BASS
 
         public static Boolean Load(string filename, uint flags)
         {
-            IntPtr pinPtr = (IntPtr)0;
             try
             {
-                pinPtr = _BASS_PluginLoad(filename, BASS.BASS_UNICODE | flags);
-                if (pinPtr != (IntPtr)0)
-                {
-                    var pin = new BASSPlugin(filename, pinPtr);
-                    plugins.Add(pin);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                var pinPtr = _BASS_PluginLoad(filename, BASS.BASS_UNICODE | flags);
+                if (pinPtr == IntPtr.Zero) return false;
+                var pin = new BASSPlugin(filename, pinPtr);
+                plugins.Add(pin);
+                return true;
             }
             catch (Exception)
             {
@@ -41,19 +43,19 @@ namespace Gageas.Wrapper.BASS
             }
         }
 
-        private IntPtr ptr;
-        private string filename;
-
         private BASSPlugin(string filename, IntPtr ptr)
         {
-            this.filename = filename;
-            this.ptr = ptr;
+            this.Filename = filename;
+            this.HPlugin = ptr;
         }
 
         public void Dispose()
         {
-            _BASS_PluginFree(ptr);
-            ptr = IntPtr.Zero;
+            if (HPlugin != IntPtr.Zero)
+            {
+                _BASS_PluginFree(HPlugin);
+            }
+            HPlugin = IntPtr.Zero;
             GC.SuppressFinalize(this);
         }
 
@@ -62,27 +64,17 @@ namespace Gageas.Wrapper.BASS
             this.Dispose();
         }
 
-        public string Filename
-        {
-            get { return filename; }
-        }
-
         BASS_PLUGININFO GetInfo()
         {
-            var p_pinfo = _BASS_PluginGetInfo(ptr);
+            var p_pinfo = _BASS_PluginGetInfo(HPlugin);
             return (BASS_PLUGININFO)Marshal.PtrToStructure(p_pinfo, typeof(BASS_PLUGININFO));
-        }
-
-        public UInt32 Version
-        {
-            get { return GetInfo().Version; }
         }
 
         public BASSPluginFormat[] GetFormats()
         {
-            var p_pinfo = _BASS_PluginGetInfo(ptr);
+            var p_pinfo = _BASS_PluginGetInfo(HPlugin);
             var info = GetInfo();
-            if (info.FormatCount <= 0) return null;
+            if (info.FormatCount <= 0) return new BASSPluginFormat[0];
             BASSPluginFormat[] forms = new BASSPluginFormat[info.FormatCount];
             for (int i = 0; i < info.FormatCount; i++)
             {
@@ -95,7 +87,7 @@ namespace Gageas.Wrapper.BASS
         {
             BASSPluginFormat pform;
             var ptr = Marshal.ReadIntPtr(thisptr, sizeof(UInt32) * 2);
-            pform = (BASSPluginFormat)Marshal.PtrToStructure(new IntPtr((int)ptr + (sizeof(UInt32) + IntPtr.Size + IntPtr.Size) * index), typeof(BASSPluginFormat));
+            pform = (BASSPluginFormat)Marshal.PtrToStructure(IntPtr.Add(ptr, BASSPluginFormat.Size * index), typeof(BASSPluginFormat));
             return pform;
         }
 
@@ -116,6 +108,7 @@ namespace Gageas.Wrapper.BASS
         UInt32 ctype;
         IntPtr name;
         IntPtr exts;
+        public const int Size = sizeof(UInt32) + IntPtr.Size + IntPtr.Size;
         public UInt32 CType
         {
             get
