@@ -108,7 +108,7 @@ namespace Gageas.Wrapper.BASS
         UInt32 ctype;
         IntPtr name;
         IntPtr exts;
-        public const int Size = sizeof(UInt32) + IntPtr.Size + IntPtr.Size;
+        public static readonly int Size = sizeof(UInt32) + IntPtr.Size + IntPtr.Size;
         public UInt32 CType
         {
             get
