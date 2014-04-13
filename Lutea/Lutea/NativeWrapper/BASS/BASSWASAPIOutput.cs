@@ -15,6 +15,7 @@ namespace Gageas.Wrapper.BASS
         /// <summary>
         /// 現在のデバイスについての情報を保持する構造体
         /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
         public struct BASS_WASAPI_INFO
         {
             public enum Formats : uint
@@ -122,7 +123,7 @@ namespace Gageas.Wrapper.BASS
         }
 
         private WASAPIStreamProc streamProc;
-        private BASS.StreamProc originalStreamProc;
+        private BASS.StreamProc userStreamProc;
         private bool running = false;
         private bool disposed = true;
         private static List<int> bassThreadIDs = new List<int>();
@@ -155,26 +156,8 @@ namespace Gageas.Wrapper.BASS
         {
 
             bool success = false;
-            this.originalStreamProc = proc;
-            this.streamProc = (buffer, length, user) =>
-            {
-                // Pause時のバックアップからコピーする
-                if (pauseBackup != IntPtr.Zero)
-                {
-                    uint tocopy = Math.Min(length, pauseBackupLen - pauseBackupPos);
-                    MoveMemory(buffer, (IntPtr)(pauseBackup.ToInt32() + pauseBackupPos), (int)tocopy);
-                    pauseBackupPos += tocopy;
-                    if (pauseBackupPos == pauseBackupLen)
-                    {
-                        Marshal.FreeHGlobal(pauseBackup);
-                        pauseBackup = IntPtr.Zero;
-                    }
-                    if (tocopy == length) return length;
-                    return originalStreamProc((IntPtr)(buffer.ToInt32() + tocopy), length - tocopy) + tocopy;
-                }
-
-                return originalStreamProc(buffer, length);
-            };
+            this.userStreamProc = proc;
+            this.streamProc = WrapperStreamProc;
 
             // Init前から走っていたスレッドのIdを保持
             var ths_before = System.Diagnostics.Process.GetCurrentProcess().Threads;
@@ -201,6 +184,26 @@ namespace Gageas.Wrapper.BASS
                 throw new BASSWASAPIException();
             }
             disposed = false;
+        }
+
+        private UInt32 WrapperStreamProc(IntPtr buffer, UInt32 length, IntPtr user)
+        {
+            if (pauseBackup == IntPtr.Zero)
+            {
+                return userStreamProc(buffer, length);
+            }
+
+            // Pause時のバックアップからコピーする
+            uint tocopy = Math.Min(length, pauseBackupLen - pauseBackupPos);
+            MoveMemory(buffer, IntPtr.Add(pauseBackup, (int)pauseBackupPos), (int)tocopy);
+            pauseBackupPos += tocopy;
+            if (pauseBackupPos == pauseBackupLen)
+            {
+                Marshal.FreeHGlobal(pauseBackup);
+                pauseBackup = IntPtr.Zero;
+            }
+            if (tocopy == length) return length;
+            return userStreamProc(IntPtr.Add(buffer, (int)tocopy), length - tocopy) + tocopy;
         }
 
         public override void Dispose()
@@ -328,7 +331,7 @@ namespace Gageas.Wrapper.BASS
         {
             get
             {
-                BASS_WASAPI_INFO info = new BASS_WASAPI_INFO();
+                BASS_WASAPI_INFO info;
                 BASS_WASAPI_GetInfo(out info);
                 return info;
             }
@@ -341,7 +344,7 @@ namespace Gageas.Wrapper.BASS
         /// <returns>BASS_WASAPI_DEVICEINFO構造体。失敗時はnull</returns>
         public static BASS_WASAPI_DEVICEINFO? GetDeviceInfo(UInt32 id)
         {
-            BASS_WASAPI_DEVICEINFO info = new BASS_WASAPI_DEVICEINFO();
+            BASS_WASAPI_DEVICEINFO info;
             if (BASS_WASAPI_GetDeviceInfo(id, out info))
             {
                 return info;
