@@ -116,30 +116,35 @@ namespace Gageas.Lutea.LastfmScrobble
             SendToAS("RESUME");
         }
 
-        private void SendToASIntl(byte[] fullCommand)
+        private string SendToASIntl(byte[] fullCommand)
         {
-            if (pipe == null) return;
             lock (this)
             {
-                try
-                {
-                    if (!pipe.IsConnected) pipe.Connect(PIPE_TIMEOUT);
-                    if (!pipe.IsConnected) return;
-                    var inbuffer = new byte[RESPONSE_BUFFER_SIZE];
-                    pipe.Write(fullCommand, 0, fullCommand.Length);
-                    pipe.Read(inbuffer, 0, inbuffer.Length);
-                    Logger.Log(Encoding.UTF8.GetString(inbuffer));
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex);
-                }
+                if (!pipe.IsConnected) pipe.Connect(PIPE_TIMEOUT);
+                if (!pipe.IsConnected) throw new Exception("");
+                var inbuffer = new byte[RESPONSE_BUFFER_SIZE];
+                pipe.Write(fullCommand, 0, fullCommand.Length);
+                pipe.Read(inbuffer, 0, inbuffer.Length);
+                return Encoding.UTF8.GetString(inbuffer);
             }
         }
 
         private void SendToAS(byte[] fullCommand)
         {
-            wthread.AddTask(() => SendToASIntl(fullCommand));
+            wthread.AddTask(() => {
+                try
+                {
+                    var ret = SendToASIntl(fullCommand);
+                    if (ret != "OK")
+                    {
+                        Logger.Warn("Last.fm app returned other than OK: " + ret);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
+            });
         }
 
         private void SendToAS(string command, IDictionary<string, string> param = null)
