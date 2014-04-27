@@ -410,11 +410,45 @@ namespace Gageas.Lutea.Core
                 }
             }
 
+            private static string[] GetLyricsByTagExt(string _filename, string ext)
+            {
+                var invalidChars = System.IO.Path.GetInvalidPathChars();
+                try
+                {
+                    var asTitleTxtCandidates = System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(_filename), new string(Current.MetaData(Controller.GetColumnIndexByName("tagTitle")).Select(_ => invalidChars.Contains(_) ? '?' : _).ToArray()) + "." + ext, System.IO.SearchOption.TopDirectoryOnly);
+                    if (asTitleTxtCandidates.Length > 0)
+                    {
+                        return ReadAllLinesAutoEncoding(asTitleTxtCandidates[0]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+                return null;
+            }
+
+            private static string[] GetLyricsByFilenameExt(string _filename, string ext)
+            {
+                try
+                {
+                    var asTxt = System.IO.Path.ChangeExtension(_filename, ext);
+                    if (System.IO.File.Exists(asTxt))
+                    {
+                        return ReadAllLinesAutoEncoding(asTxt);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e);
+                }
+                return null;
+            }
+
             public static string[] GetLyrics()
             {
-                var _filename = Filename;
-                if (_filename == null) return null;
-                _filename = _filename.Trim();
+                if (Filename == null) return null;
+                var _filename = Filename.Trim();
                 // Internal cueから検索
                 try
                 {
@@ -449,62 +483,23 @@ namespace Gageas.Lutea.Core
                     Logger.Error(e);
                 }
 
-                // lrcファイルから検索
-                try
-                {
-                    var asLrc = System.IO.Path.ChangeExtension(_filename, "lrc");
-                    if (System.IO.File.Exists(asLrc))
-                    {
-                        return ReadAllLinesAutoEncoding(asLrc);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
-                }
+                string[] ret;
 
-                var invalidChars = System.IO.Path.GetInvalidPathChars();
+                // lrcファイルから検索
+                ret = GetLyricsByFilenameExt(_filename, "lrc");
+                if (ret != null) return ret;
+
                 // txtファイルから検索
-                try
-                {
-                    var asTxt = System.IO.Path.ChangeExtension(_filename, "txt");
-                    if (System.IO.File.Exists(asTxt))
-                    {
-                        return ReadAllLinesAutoEncoding(asTxt);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
-                }
+                ret = GetLyricsByFilenameExt(_filename, "txt");
+                if (ret != null) return ret;
 
                 // タイトル.lrcファイルから検索
-                try
-                {
-                    var asTitleTxtCandidates = System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(_filename), new string(Current.MetaData(Controller.GetColumnIndexByName("tagTitle")).Select(_ => invalidChars.Contains(_) ? '?' : _).ToArray()) + ".lrc", System.IO.SearchOption.TopDirectoryOnly);
-                    if (asTitleTxtCandidates.Length > 0)
-                    {
-                        return ReadAllLinesAutoEncoding(asTitleTxtCandidates[0]);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
-                }
+                ret = GetLyricsByTagExt(_filename, "lrc");
+                if (ret != null) return ret;
 
                 // タイトル.txtファイルから検索
-                try
-                {
-                    var asTitleTxtCandidates = System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(_filename), new string(Current.MetaData(Controller.GetColumnIndexByName("tagTitle")).Select(_ => invalidChars.Contains(_) ? '?' : _).ToArray()) + ".txt", System.IO.SearchOption.TopDirectoryOnly);
-                    if (asTitleTxtCandidates.Length > 0)
-                    {
-                        return ReadAllLinesAutoEncoding(asTitleTxtCandidates[0]);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
-                }
+                ret = GetLyricsByTagExt(_filename, "txt");
+                if (ret != null) return ret;
 
                 return null;
             }
