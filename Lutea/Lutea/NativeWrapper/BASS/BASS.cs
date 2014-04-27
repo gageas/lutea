@@ -14,25 +14,6 @@ namespace Gageas.Wrapper.BASS
         public delegate UInt32 StreamProc(IntPtr bffer, UInt32 length);
 
         /// <summary>
-        /// Sync（再生時イベントタイプ列挙体）
-        /// </summary>
-        public enum SYNC_TYPE
-        {
-            POS = 0,
-            END = 2,
-            META = 4,
-            SLIDE = 5,
-            STALL = 6,
-            DOWNLOAD = 7,
-            FREE = 8,
-            SETPOS = 11,
-            MUSICPOS = 10,
-            MUSICINST = 1,
-            MUSICFX = 3,
-            OGG_CHANGE = 12
-        }
-
-        /// <summary>
         /// BASS_ChannelSlideAttributeで使うAttributes
         /// </summary>
         private enum BASS_ATTRIB
@@ -274,40 +255,18 @@ namespace Gageas.Wrapper.BASS
 
         public abstract class Channel : IPlayable
         {
-            private _SyncProc dSyncProcProxyInvoker;
             private UInt64 positionCache = 0;
             protected bool disposed = false;
 
             // コンストラクタ
             protected Channel()
             {
-                dSyncProcProxyInvoker = new _SyncProc(syncProcProxyInvoker);
-            }
-            /*
-             * SyncProcのdelegateがGCに回収されないようにここで保持している。
-             * BASS.dllにList内のindexを渡しているので、removeしてはいけない。
-             * removeSyncはnullに書き換えることで行う
-             */
-            private List<SyncObject> syncProcs = new List<SyncObject>();
-            private class SyncObject
-            {
-                public IntPtr sync;
-                public SYNC_TYPE type;
-                public Action<object> proc;
-                public object cookie;
-                public SyncObject(SYNC_TYPE type, Action<object> proc, object cookie)
-                {
-                    this.type = type;
-                    this.proc = proc;
-                    this.cookie = cookie;
-                }
             }
             protected IntPtr handle;
             public override void Dispose()
             {
                 if (disposed) return;
                 disposed = true;
-                clearAllSync();
                 GC.SuppressFinalize(this);
             }
             ~Channel(){
@@ -350,10 +309,17 @@ namespace Gageas.Wrapper.BASS
             {
                 return true;
             }
+
+            UInt64 _filesize = UInt64.MaxValue;
             public UInt64 filesize{
                 get
                 {
-                    return _BASS_ChannelGetLength(handle, 0);
+                    // 結果をキャッシュ
+                    if (_filesize == UInt64.MaxValue)
+                    {
+                        _filesize = _BASS_ChannelGetLength(handle, 0);
+                    }
+                    return _filesize;
                 }
             }
 
@@ -416,46 +382,19 @@ namespace Gageas.Wrapper.BASS
                 return _BASS_ChannelBytes2Seconds(handle, pos);
             }
 
-            public void setSync(SYNC_TYPE type, Action<object> callback, UInt64 data = 0, object cookie = null)
-            {
-                SyncObject sync = new SyncObject(type, callback, cookie);
-                lock (syncProcs)
-                {
-                    syncProcs.Add(sync);
-                    int user = syncProcs.IndexOf(sync);
-                    sync.sync = _BASS_ChannelSetSync(handle, (UInt32)type, data, dSyncProcProxyInvoker, (IntPtr)user);
-                }
-            }
-
-            // TODO: 個別のSyncのFreeに対応・・・syncまわりの設計変えなきゃならないし多分使わないと思うからいいかなぁ・・・
-            public void clearAllSync()
-            {
-                lock (syncProcs)
-                {
-                    foreach (SyncObject sync in syncProcs)
-                    {
-                        _BASS_ChannelRemoveSync(handle, sync.sync);
-                    }
-                    syncProcs.Clear();
-                }
-            }
-
-            public void syncProcProxyInvoker(IntPtr hsync, IntPtr handle, UInt32 data, IntPtr _user)
-            {
-                int user = (int)_user;
-                if(syncProcs.Count>user){
-                    SyncObject sync = syncProcs[(int)user];
-                    sync.proc.Invoke(sync.cookie);
-                }
-            }
-
+            private BASS_CHANNELINFO? _info;
             public BASS_CHANNELINFO Info
             {
                 get
                 {
-                    BASS_CHANNELINFO info;
-                    _BASS_ChannelGetInfo(handle, out info);
-                    return info;
+                    // 一回実行したら結果をキャッシュする
+                    if (_info == null)
+                    {
+                        BASS_CHANNELINFO info;
+                        _BASS_ChannelGetInfo(handle, out info);
+                        _info = info;
+                    }
+                    return _info.Value;
                 }
             }
 
@@ -616,13 +555,6 @@ namespace Gageas.Wrapper.BASS
 
         [DllImport("bass.dll", EntryPoint = "BASS_ChannelSeconds2Bytes")]
         private static extern UInt64 _BASS_ChannelSeconds2Bytes(IntPtr handle, double pos);
-
-        private delegate void _SyncProc(IntPtr hsync, IntPtr handle, UInt32 data, IntPtr user);
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelSetSync")]
-        private static extern IntPtr _BASS_ChannelSetSync(IntPtr handle, UInt32 type, UInt64 param, _SyncProc proc, IntPtr user);
-
-        [DllImport("bass.dll", EntryPoint = "BASS_ChannelRemoveSync")]
-        private static extern bool _BASS_ChannelRemoveSync(IntPtr handle, IntPtr sync);
 
         [DllImport("bass.dll", EntryPoint = "BASS_ChannelSetAttribute")]
         private static extern bool _BASS_ChannelSetAttribute(IntPtr handle, UInt32 attrib, float value);

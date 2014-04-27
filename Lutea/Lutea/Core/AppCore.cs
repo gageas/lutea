@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Gageas.Wrapper.BASS;
 using Gageas.Lutea.Util;
 using Gageas.Lutea.Library;
+using Gageas.Lutea.SoundStream;
 using KaoriYa.Migemo;
 using System.Runtime.InteropServices;
 
@@ -62,6 +63,11 @@ namespace Gageas.Lutea.Core
         private static int StreamProcHold;
 
         /// <summary>
+        /// 再生中トラックの経過時間(秒)
+        /// </summary>
+        private static int ElapsedTime = 0;
+
+        /// <summary>
         /// 再生中かどうか
         /// </summary>
         internal static bool IsPlaying { get { return OutputManager.Available; } }
@@ -79,12 +85,12 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// 再生中のストリーム
         /// </summary>
-        internal static DecodeStream CurrentStream { get; private set; }
+        internal static InputStream CurrentStream { get; private set; }
 
         /// <summary>
         /// 次に再生するストリーム
         /// </summary>
-        internal static DecodeStream PreparedStream { get; private set; }
+        private static InputStream PreparedStream { get; set; }
 
         /// <summary>
         /// 出力デバイスを管理
@@ -360,7 +366,32 @@ namespace Gageas.Lutea.Core
             OutputManager.Start(); // これ非WASAPI時に必要
         }
 
+        internal static double GetPosition()
+        {
+            var _current = CurrentStream;
+            if (_current == null) return 0.0;
+            return _current.PositionSec;
+        }
+
+        internal static double GetLength()
+        {
+            var _current = CurrentStream;
+            if (_current == null) return 0.0;
+            return _current.LengthSec;
+        }
+
+
         #region ストリームプロシージャ
+        private static unsafe void ApplyGain(IntPtr destBuffer, uint length, double gaindB, double volume)
+        {
+            double gain_l = Math.Pow(10.0, gaindB / 20.0) * volume;
+            float* dest = (float*)(destBuffer.ToPointer());
+            var l = (int)(length / sizeof(float));
+            for (int i = 0; i < l; i++)
+            {
+                *dest++ *= (float)gain_l;
+            }
+        }
         /// <summary>
         /// ストリームから要求データ長以内のサイズで読めるだけ読み，ゲインを適用する
         /// </summary>
@@ -368,18 +399,16 @@ namespace Gageas.Lutea.Core
         /// <param name="buffer">出力バッファ</param>
         /// <param name="length">要求データ長</param>
         /// <returns>読めたデータ長</returns>
-        private static uint ReadAsPossibleWithGain(DecodeStream strm, IntPtr buffer, uint length)
+        private static uint ReadAsPossibleWithGain(InputStream strm, IntPtr buffer, uint length)
         {
             if (strm == null) return 0;
-            uint read = strm.GetData(buffer, length);
-            if (read == 0xFFFFFFFF) return 0;
-            read &= 0x7FFFFFFF;
+            uint read = strm.GetData(buffer, length / strm.SampleBytes) * strm.SampleBytes;
             double gaindB = 0;
             if (MyCoreComponent.EnableReplayGain)
             {
-                gaindB = strm.gain == null ? MyCoreComponent.NoReplaygainGainBoost : (MyCoreComponent.ReplaygainGainBoost + strm.gain ?? 0);
+                gaindB = strm.ReplayGain == null ? MyCoreComponent.NoReplaygainGainBoost : (MyCoreComponent.ReplaygainGainBoost + strm.ReplayGain ?? 0);
             }
-            LuteaHelper.ApplyGain(buffer, read, gaindB, OutputMode == Controller.OutputModeEnum.WASAPI || OutputMode == Controller.OutputModeEnum.WASAPIEx ? Volume : 1.0);
+            ApplyGain(buffer, read, gaindB, OutputMode == Controller.OutputModeEnum.WASAPI || OutputMode == Controller.OutputModeEnum.WASAPIEx ? Volume : 1.0);
             return read;
         }
 
@@ -402,13 +431,16 @@ namespace Gageas.Lutea.Core
             var _current = CurrentStream;
             var _prepare = PreparedStream;
 
+            // StreamProcHoldがある間は出力を抑制する
             if (StreamProcHold > 0)
             {
                 StreamProcHold = Math.Max(0, (int)(StreamProcHold - length));
                 ZeroMemory(buffer, length);
                 return length; // StreamProcHoldの値に関係なくlengthを返す．StreamProcHoldがキリの悪い値になっていてもこれなら大丈夫
             }
-            if (!OutputManager.Available)
+
+            // 出力が無効なのにStreamProcがよばれた場合はとりあえずゼロフィルしたバッファを返す
+            if (!OutputManager.Available || _current == null || _current.Finished)
             {
                 ZeroMemory(buffer, length);
                 return length;
@@ -416,18 +448,42 @@ namespace Gageas.Lutea.Core
 
             // currentStreamから読み出し
             var read1 = ReadAsPossibleWithGain(_current, buffer, length);
-            if (read1 == length) return length;
 
-            // バッファの最後まで読み込めなかった時、prepareStreamからの読み込みを試す
-            var read2 = ReadAsPossibleWithGain(_prepare, IntPtr.Add(buffer, (int)read1), length - read1);
-            onFinish(_current);
-
-            var readTotal = read1 + read2;
-            if (readTotal != length)
+            // 経過時間をチェック
+            int timesec = (int)_current.PositionSec;
+            if (timesec != ElapsedTime)
             {
-                ZeroMemory(IntPtr.Add(buffer, (int)readTotal), length - readTotal);
+                ElapsedTime = timesec;
+                Controller._OnElapsedTimeChange(timesec);
             }
-            return length;
+
+            // ストリームの途中の場合，読めた部分を返す
+            if (_current.PositionSample < _current.LengthSample)
+            {
+                return read1;
+            }
+            else
+            {
+                // ストリームの終端の場合
+                var readTotal = read1;
+                if (_current.Ready && (_prepare == null || OutputManager.RebuildRequired(_prepare.Freq, _prepare.Chans, true)))
+                {
+                    // 次のストリームが接続できない場合
+                    // 現在のバッファの内容を使い切るぐらいまで再生終了を遅延させる
+                    _current.Ready = false;
+                    StreamProcHold = (int)(_current.Freq * _current.SampleBytes * 3 / 2);
+                }
+                else
+                {
+                    // 次のストリームにそのまま接続できる場合はまたは前の出力の終了遅延が終わった場合
+                    // _currentの再生を終了し
+                    onFinish(_current);
+                    // prepareStreamからの読み込みを試す
+                    var read2 = ReadAsPossibleWithGain(_prepare, IntPtr.Add(buffer, (int)read1), length - read1);
+                    readTotal += read2;
+                }
+                return readTotal;
+            }
         }
         #endregion
 
@@ -563,7 +619,7 @@ namespace Gageas.Lutea.Core
                     case QUEUE_CLEAR:
                         return true;
                     case QUEUE_STOP:
-                        PreparedStream = DecodeStream.CreateStopRequestStream();
+                        PreparedStream = new StopperInputStream();
                         return true;
                     default:
                         return PrepareNextStream(index);
@@ -585,7 +641,7 @@ namespace Gageas.Lutea.Core
                     }
                     if (CurrentStream != null)
                     {
-                        CurrentStream.Ready = false;
+                        CurrentStream.Finished = true;
                     }
                     PrepareNextStream(index);
                     PlayQueuedStream();
@@ -598,11 +654,11 @@ namespace Gageas.Lutea.Core
         /// デコードストリームに対して出力デバイスをチェックし，必要があれば初期化する
         /// </summary>
         /// <param name="stream"></param>
-        private static void EnsureOutputDevice(DecodeStream stream)
+        private static void EnsureOutputDevice(InputStream stream)
         {
             var freq = stream.Freq;
             var chans = stream.Chans;
-            var isFloat = stream.IsFloat;
+            var isFloat = true;
             if (OutputManager.RebuildRequired(freq, chans, isFloat) || Pause)
             {
                 try
@@ -641,13 +697,13 @@ namespace Gageas.Lutea.Core
                     return;
                 }
 
-                if (PreparedStream.FileName == ":STOP:")
+                if (PreparedStream is StopperInputStream)
                 {
                     Stop();
                     return;
                 }
 
-                if (IndexInPlaylist(PreparedStream.FileName) == -1)
+                if (IndexInPlaylist(PreparedStream.DatabaseFileName) == -1)
                 {
                     DisposePreparedStream();
                     PrepareNextStream(GetSuccTrackIndex());
@@ -675,6 +731,7 @@ namespace Gageas.Lutea.Core
                 OutputManager.Resume();
                 PreparedStream = null;
                 Pause = false;
+                ElapsedTime = -1;
                 Controller._OnTrackChange(Controller.Current.IndexInPlaylist);
             }
         }
@@ -688,6 +745,11 @@ namespace Gageas.Lutea.Core
             {
                 LastPreparedIndex = index;
                 if (PreparedStream != null) return false;
+                if (index == -1)
+                {
+                    PreparedStream = new StopperInputStream();
+                    return true;
+                }
                 if (index >= CurrentPlaylistRows || index < 0) return false;
 
                 object[] row = Controller.GetPlaylistRow(index);
@@ -696,17 +758,25 @@ namespace Gageas.Lutea.Core
                 {
                     int tr = 1;
                     Util.Util.tryParseInt(row[Controller.GetColumnIndexByName("tagTracknumber")].ToString(), ref tr);
-                    var nextStream = DecodeStream.CreateStream(filename, tr, true, MyCoreComponent.UsePrescan, tags);
+                    PullSoundStreamBase nextStream = DecodeStreamFactory.CreateFileStream(filename, tr, MyCoreComponent.UsePrescan, tags);
                     if (nextStream == null) return false;
-                    nextStream.meta = row;
+                    if (nextStream.Chans == 1)
+                    {
+                        nextStream = new Mono2StereoFilter(nextStream);
+                    }
+                    //if (nextStream.Freq == 96000)
+                    //{
+                    //    nextStream = new FreqConvertFilter(nextStream);
+                    //}
 
                     // prepareにsyncを設定
-                    nextStream.SetSyncSec(on80Percent, nextStream.LengthSec * 0.80);
-                    nextStream.SetSyncSec(onPreFinish, Math.Max(nextStream.LengthSec * 0.90, nextStream.LengthSec - 5));
 
-                    nextStream.Ready = !OutputManager.RebuildRequired(nextStream.Freq, nextStream.Chans, nextStream.IsFloat);
+                    var inStream = new InputStream(nextStream, row);
+                    inStream.Ready = !OutputManager.RebuildRequired(nextStream.Freq, nextStream.Chans, true);
+                    inStream.SetEvent(on80Percent, nextStream.LengthSec * 0.80);
+                    inStream.SetEvent(onPreFinish, Math.Max(nextStream.LengthSec * 0.90, nextStream.LengthSec - 5));
 
-                    PreparedStream = nextStream;
+                    PreparedStream = inStream;
                 }
                 catch (Exception e)
                 {
@@ -725,12 +795,13 @@ namespace Gageas.Lutea.Core
             OutputManager.KillOutputChannel();
             DisposeCurrentStream();
             DisposePreparedStream();
+            ElapsedTime = -1;
             Controller._OnTrackChange(-1);
         }
         #endregion
 
         #region トラック終端でのイベント
-        private static void UpdatePlaybackCount(DecodeStream strm)
+        private static void UpdatePlaybackCount(InputStream strm)
         {
             if (strm.PlaybackCounterUpdated) return;
             strm.PlaybackCounterUpdated = true;
@@ -758,16 +829,16 @@ namespace Gageas.Lutea.Core
             });
         }
 
-        private static void on80Percent(object cookie)
+        private static void on80Percent()
         {
             UpdatePlaybackCount(CurrentStream);
         }
 
-        private static void onFinish(DecodeStream _current)
+        private static void onFinish(InputStream _current)
         {
             if (_current != CurrentStream) return;
-            if (!CurrentStream.Ready) return;
-            CurrentStream.Ready = false;
+            if (CurrentStream.Finished) return;
+            CurrentStream.Finished = true;
 
             UpdatePlaybackCount(CurrentStream);
             if (PreparedStream == null)
@@ -778,7 +849,7 @@ namespace Gageas.Lutea.Core
             CoreEnqueue(() => PlayQueuedStream());
         }
 
-        private static void onPreFinish(object cookie)
+        private static void onPreFinish()
         {
             var succIndex = GetSuccTrackIndex();
             CoreEnqueue(() => PrepareNextStream(succIndex, null));

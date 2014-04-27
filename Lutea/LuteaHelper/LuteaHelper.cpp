@@ -154,16 +154,6 @@ namespace Gageas{
 				sqlite3_create_function(db, "__x_lutea_count_continuous", 1, SQLITE_UTF8, 0, __x_lutea_count_continuous, NULL, NULL);
 			};
 
-			/* オーディオサンプルデータ(floatの配列)にリプレイゲインを適用する */
-			void LuteaHelper::ApplyGain(System::IntPtr^ destBuffer, unsigned int length, double gaindB, double volume){
-				double gain_l = pow(10.0, gaindB / 20.0) * volume;
-				float*dest = (float*)(destBuffer->ToPointer());
-				for (int i = 0, l = (int)(length / sizeof(float)); i < l; i++)
-				{
-					dest[i] *= (float)gain_l;
-				}
-			};
-
 			/* 連続数カウンタを初期化 */
 			void LuteaHelper::ClearRepeatCount(int num){
 				memset(prev, 0xff, 32); // 実際のアルバム名とstrcmpして絶対に一致しないようなゴミデータを書き込み
