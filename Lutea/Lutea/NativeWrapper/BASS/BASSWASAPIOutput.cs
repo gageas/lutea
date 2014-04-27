@@ -338,32 +338,17 @@ namespace Gageas.Wrapper.BASS
         }
 
         /// <summary>
-        /// ID番目のデバイスのデバイス情報を返す
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns>BASS_WASAPI_DEVICEINFO構造体。失敗時はnull</returns>
-        public static BASS_WASAPI_DEVICEINFO? GetDeviceInfo(UInt32 id)
-        {
-            BASS_WASAPI_DEVICEINFO info;
-            if (BASS_WASAPI_GetDeviceInfo(id, out info))
-            {
-                return info;
-            }
-            return null;
-        }
-
-        /// <summary>
         /// 全てのデバイスのデバイス情報の配列を返す
         /// </summary>
         /// <returns>デバイス情報の配列</returns>
         public static BASS_WASAPI_DEVICEINFO[] GetDevices()
         {
             UInt32 id = 0;
-            BASS_WASAPI_DEVICEINFO? info = new BASS_WASAPI_DEVICEINFO();
+            BASS_WASAPI_DEVICEINFO info = new BASS_WASAPI_DEVICEINFO();
             List<BASS_WASAPI_DEVICEINFO> list = new List<BASS_WASAPI_DEVICEINFO>();
-            while ((info = GetDeviceInfo(id)) != null)
+            while (BASS_WASAPI_GetDeviceInfo(id, out info))
             {
-                list.Add(info.Value);
+                list.Add(info);
                 id++;
             }
             return list.ToArray();
