@@ -83,34 +83,6 @@ namespace Gageas.Lutea.Core
         public static event PlaylistSortOrderChangeEvent PlaylistSortOrderChanged;
         #endregion
 
-        #region elapsedTimeWatcher
-        private static Thread elapsedTimeWatcherThread;
-        private static int elapsedtime = 0;
-        public static void elapsedTimeWatcher()
-        {
-            while (true)
-            {
-                Thread.Sleep(100);
-                if (!AppCore.IsPlaying) continue;
-                if (onElapsedTimeChange != null)
-                {
-                    int t = (int)Controller.Current.Position;
-                    if (t == -1) continue; // 再生開始前
-                    if (t != elapsedtime)
-                    {
-                        elapsedtime = t;
-                        foreach (var dlg in onElapsedTimeChange.GetInvocationList())
-                        {
-                            var _dlg = (VOIDINT)dlg;
-                            _dlg.BeginInvoke(t, (_ => { _dlg.EndInvoke(_); }), null);
-                        }
-                    }
-                    if (t > 0) icache = -1;
-                }
-            }
-        }
-        #endregion
-
         #region Output Channel
         /// <summary>
         /// 出力チャンネルのFFTデータを取得する．
@@ -156,15 +128,11 @@ namespace Gageas.Lutea.Core
         {
             try
             {
-                if (elapsedTimeWatcherThread.IsAlive)
-                {
-                    elapsedTimeWatcherThread.Abort();
-                    elapsedTimeWatcherThread.Join();
-                }
-            }
-            finally
-            {
                 AppCore.Quit();
+            }
+            catch(Exception ex)
+            {
+                Logger.Error(ex);
             }
         }
 
@@ -335,14 +303,14 @@ namespace Gageas.Lutea.Core
             {
                 get
                 {
-                    return AppCore.CurrentStream != null ? AppCore.CurrentStream.LengthSec : 0;
+                    return AppCore.GetLength();
                 }
             }
             public static double Position
             {
                 get
                 {
-                    return AppCore.CurrentStream != null ? AppCore.CurrentStream.PositionSec : 0;
+                    return AppCore.GetPosition();
                 }
                 set
                 {
@@ -403,7 +371,7 @@ namespace Gageas.Lutea.Core
                 get
                 {
                     if (AppCore.CurrentStream == null) return null;
-                    return AppCore.CurrentStream.CueStreamFileName != null ? AppCore.CurrentStream.CueStreamFileName : Filename;
+                    return AppCore.CurrentStream.Location;
                 }
             }
             public static int IndexInPlaylist
@@ -411,7 +379,7 @@ namespace Gageas.Lutea.Core
                 get
                 {
                     if (AppCore.CurrentStream == null) return -1;
-                    return IndexInPlaylist(AppCore.CurrentStream.FileName);
+                    return IndexInPlaylist(AppCore.CurrentStream.DatabaseFileName);
                 }
             }
             
@@ -891,10 +859,6 @@ namespace Gageas.Lutea.Core
             if (onPlaybackOrderChange != null) onPlaybackOrderChange.Invoke();
             if (PlaylistUpdated != null) PlaylistUpdated.Invoke(AppCore.LatestPlaylistQuery);
             if (PlaylistSortOrderChanged != null) PlaylistSortOrderChanged.Invoke(AppCore.PlaylistSortColumn, AppCore.PlaylistSortOrder);
-
-            elapsedTimeWatcherThread = new Thread(elapsedTimeWatcher);
-            elapsedTimeWatcherThread.IsBackground = true;
-            elapsedTimeWatcherThread.Start();
         }
 
         #region Event invocation request by Core
@@ -904,9 +868,21 @@ namespace Gageas.Lutea.Core
             PlaylistUpdated.Invoke(sql);
         }
 
+        internal static void _OnElapsedTimeChange(int t)
+        {
+            if (t > 0) icache = -1;
+            if (onElapsedTimeChange != null)
+            {
+                foreach (var dlg in onElapsedTimeChange.GetInvocationList())
+                {
+                    var _dlg = (VOIDINT)dlg;
+                    _dlg.BeginInvoke(t, (_ => { _dlg.EndInvoke(_); }), null);
+                }
+            }
+        }
+
         internal static void _OnTrackChange(int index)
         {
-            elapsedtime = -1;
             Current.CacheIsOutdated = true;
             if (onTrackChange == null) return;
             foreach (var dlg in onTrackChange.GetInvocationList())

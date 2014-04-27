@@ -73,7 +73,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>default.ico</ApplicationIcon>
@@ -105,19 +105,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\ComponentManager.cs" />
-    <Compile Include="Core\DecodeStream.cs" />
+    <Compile Include="SoundStream\BASSDecodeStreamAdapter.cs" />
+    <Compile Include="SoundStream\DecodeStreamFactory.cs" />
     <Compile Include="Core\EnumFlagsUITypeEdotorEditControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Core\EnumFlagsUITypeEdotorEditControl.Designer.cs">
       <DependentUpon>EnumFlagsUITypeEdotorEditControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Core\Lametag.cs" />
+    <Compile Include="SoundStream\AbstractFilter.cs" />
+    <Compile Include="SoundStream\PullSoundStreamBase.cs" />
+    <Compile Include="Core\InputStream.cs" />
+    <Compile Include="SoundStream\FreqConverter.cs" />
+    <Compile Include="SoundStream\ReplayGainOverrideFilter.cs" />
+    <Compile Include="SoundStream\RangeFilter.cs" />
+    <Compile Include="Tags\Lametag.cs" />
     <Compile Include="Core\Lutea.cs" />
     <Compile Include="Core\CoreComponent.cs" />
     <Compile Include="Core\LuteaPluginInterface.cs" />
+    <Compile Include="SoundStream\Mono2StereoFilter.cs" />
     <Compile Include="Core\OutputManager.cs" />
     <Compile Include="Core\PlaylistManager.cs" />
+    <Compile Include="Core\StopperInputStream.cs" />
     <Compile Include="Core\WorkerThread.cs" />
     <Compile Include="Library\Column.cs" />
     <Compile Include="Library\CUEReader.cs" />

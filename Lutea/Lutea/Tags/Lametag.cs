@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace Gageas.Lutea.Core
+namespace Gageas.Lutea.Tags
 {
     /// <summary>
     /// LAMETagを読むクラス

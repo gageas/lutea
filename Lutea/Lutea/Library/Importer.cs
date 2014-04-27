@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Gageas.Wrapper.BASS;
 using Gageas.Wrapper.SQLite3;
 using Gageas.Lutea.Tags;
 using Gageas.Lutea.Core;
 using Gageas.Lutea.Library;
+using Gageas.Lutea.SoundStream;
 
 namespace Gageas.Lutea.Library
 {
@@ -347,11 +347,11 @@ namespace Gageas.Lutea.Library
                 {
                     try
                     {
-                        using (var strm = new BASS.FileStream(file_name, BASS.Stream.StreamFlag.BASS_STREAM_DECODE))
+                        using (var strm = DecodeStreamFactory.CreateFileStreamPrimitive(file_name))
                         {
-                            tr.duration = (int)strm.length;
-                            tr.channels = (int)strm.Info.Chans;
-                            tr.freq = (int)strm.Info.Freq;
+                            tr.duration = (int)strm.LengthSec;
+                            tr.channels = (int)strm.Chans;
+                            tr.freq = (int)strm.Freq;
                         }
                     }
                     catch (Exception ex)
@@ -418,8 +418,6 @@ namespace Gageas.Lutea.Library
         /// </summary>
         private void ConsumeToBeAnalyzeQueueProc()
         {
-            // BASSをno deviceで使用
-            BASS.BASS_SetDevice(0);
             using (var libraryDB = Controller.GetDBConnection())
             using (var selectModifySTMT = libraryDB.Prepare(SelectModifySTMT))
             {
