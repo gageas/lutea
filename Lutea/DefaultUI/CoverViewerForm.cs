@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using Gageas.Lutea.Util;
-//using System.Threading;
 
 namespace Gageas.Lutea.DefaultUI
 {
     public partial class CoverViewerForm : Form
     {
+        private const int STEPS = 16;
         private Image artworkImage;
         private System.Timers.Timer fadingTimer;
         private IEnumerator<int> fadeIn;
+        private double zoom = 0;
+
         public CoverViewerForm(Image img)
         {
             InitializeComponent();
@@ -24,41 +21,38 @@ namespace Gageas.Lutea.DefaultUI
 
         private void CoverViewer_Load(object sender, EventArgs e)
         {
-            this.Invalidate();
-            this.Opacity = 0;
-            size(0);
-            int STEPS = 16;
+            Opacity = 0;
+            ChangeSize(0);
             fadeIn = IntegerCounterIterator(0, STEPS).GetEnumerator();
             fadingTimer = new System.Timers.Timer();
-            fadingTimer.Elapsed += new System.Timers.ElapsedEventHandler((o, arg) => {
-                this.Invoke((MethodInvoker)(() =>
+            fadingTimer.Elapsed += (o, arg) =>
+            {
+                this.Invoke((Action)(() =>
                 {
-                    this.Opacity = (double) fadeIn.Current / STEPS;
+                    this.Opacity = (double)fadeIn.Current / STEPS;
                 }));
                 if (!fadeIn.MoveNext())
                 {
                     fadingTimer.Stop();
                 }
-            });
+            };
             fadingTimer.Interval = 5;
             fadingTimer.Start();
         }
 
-        double zoom = 0;
         private void CoverViewer_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-//            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
             if (artworkImage == null) return;
 
-            this.Text = String.Format("CoverView {0:00.0}%", zoom*100);
+            this.Text = String.Format("CoverView {0:00.0}%", zoom * 100);
 
             var w = this.ClientSize.Width + 2;
             var h = this.ClientSize.Height + 2;
 
             g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
             g.DrawImage(artworkImage, new Rectangle(-1, -1, w, h), 0, 0, artworkImage.Width, artworkImage.Height, GraphicsUnit.Pixel, null);
-            
+
             return;
         }
 
@@ -78,11 +72,11 @@ namespace Gageas.Lutea.DefaultUI
             {
                 if ((int)m.WParam < 0)
                 {
-                    size(-1);
+                    ChangeSize(-1);
                 }
                 else
                 {
-                    size(1);
+                    ChangeSize(1);
                 }
                 int i = (int)m.WParam;
                 Logger.Debug(i.ToString());
@@ -90,7 +84,7 @@ namespace Gageas.Lutea.DefaultUI
             base.WndProc(ref m);
         }
 
-        private void size(int d)
+        private void ChangeSize(int d)
         {
             var w = this.ClientSize.Width + 2;
             var h = this.ClientSize.Height + 2;
