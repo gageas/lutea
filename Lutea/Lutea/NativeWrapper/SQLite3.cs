@@ -105,15 +105,7 @@ namespace Gageas.Wrapper.SQLite3
         /// <param name="filename">データベースファイル名</param>
         public SQLite3DB(string filename)
         {
-            int ret;
-            try
-            {
-                ret = sqlite3_open16(filename, out dbPtr);
-            }
-            catch (Exception)
-            {
-                throw (new SQLite3Exception("db file open error."));
-            }
+            int ret = sqlite3_open16(filename, out dbPtr);
             if (ret != SQLite3.SQLITE_OK)
             {
                 throw (new SQLite3Exception("db file open error."));
