@@ -28,7 +28,7 @@ namespace Gageas.Lutea.DefaultUI
             this.Opacity = 0;
             size(0);
             int STEPS = 16;
-            fadeIn = Util.Util.IntegerCounterIterator(0, STEPS).GetEnumerator();
+            fadeIn = IntegerCounterIterator(0, STEPS).GetEnumerator();
             fadingTimer = new System.Timers.Timer();
             fadingTimer.Elapsed += new System.Timers.ElapsedEventHandler((o, arg) => {
                 this.Invoke((MethodInvoker)(() =>
@@ -114,6 +114,12 @@ namespace Gageas.Lutea.DefaultUI
         private void CoverViewer_FormClosing(object sender, FormClosingEventArgs e)
         {
             fadingTimer.Stop();
+        }
+
+        private static IEnumerable<int> IntegerCounterIterator(int start, int end, int step = 1)
+        {
+            for (int i = start; i <= end; i += 1) yield return i;
+            yield break;
         }
     }
 }

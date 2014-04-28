@@ -8,9 +8,20 @@ using System.Runtime.InteropServices;
 
 namespace Gageas.Lutea.Util
 {
+    /// <summary>
+    /// バイト配列に対するユーティリティ
+    /// </summary>
     static class ByteArrayUtil
     {
-        public static int IndexOf(this byte[] buffer, int offset, byte search){
+        /// <summary>
+        /// 値を検索し，インデックスを取得
+        /// </summary>
+        /// <param name="buffer">バイト配列</param>
+        /// <param name="offset">検索開始位置</param>
+        /// <param name="search">検索するバイト値</param>
+        /// <returns>値と一致する位置のインデックス。見つからなければ-1</returns>
+        public static int IndexOf(this byte[] buffer, int offset, byte search)
+        {
             for (int i = offset; i < buffer.Length; i++)
             {
                 if (buffer[i] == search) return i;
@@ -19,34 +30,62 @@ namespace Gageas.Lutea.Util
         }
     }
 
+    /// <summary>
+    /// ユーティリティ
+    /// </summary>
     public static class Util
     {
+        /// <summary>
+        /// 歌詞タイムタグを表す正規表現
+        /// </summary>
+        private static readonly System.Text.RegularExpressions.Regex TimetagPattern = new System.Text.RegularExpressions.Regex(@"(\[[\d-:]+\])|(\\([^_]|(_.)))");
 
+        /// <summary>
+        /// 整数を表す正規表現
+        /// </summary>
+        private static readonly System.Text.RegularExpressions.Regex intRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+");
+
+        /// <summary>
+        /// 実数を表す正規表現
+        /// </summary>
+        private static readonly System.Text.RegularExpressions.Regex doubleRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+(\.)?(\d+)?");
+
+        /// <summary>
+        /// データベースのタイムスタンプから日時(DateTime型)に変換
+        /// </summary>
+        /// <param name="timestamp">タイムスタンプ</param>
+        /// <returns></returns>
         public static DateTime timestamp2DateTime(Int64 timestamp)
         {
             return MusicLibrary.timestamp2DateTime(timestamp);
         }
 
-        public static String Repeat(this string src, int count)
-        {
-            if (count > 0)
-            {
-                return String.Join(src, new string[1 + count]);
-            }
-            return "";
-        }
+        /// <summary>
+        /// 秒数からmm:ss形式の文字列に変更
+        /// </summary>
+        /// <param name="second">秒数</param>
+        /// <returns>mm:ssの文字列</returns>
         public static String getMinSec(int second)
         {
             return String.Format("{0:00}:{1:00}", second / 60, second % 60);
         }
 
+        /// <summary>
+        /// 秒数からmm:ss形式の文字列に変更
+        /// </summary>
+        /// <param name="second">秒数</param>
+        /// <returns>mm:ssの文字列</returns>
         public static String getMinSec(double second)
         {
             int roundedsec = (int)(second + 0.5);
             return getMinSec(roundedsec);
         }
 
-        private static readonly System.Text.RegularExpressions.Regex TimetagPattern = new System.Text.RegularExpressions.Regex(@"(\[[\d-:]+\])|(\\([^_]|(_.)))");
+        /// <summary>
+        /// 歌詞文字列からタイムタグを除去
+        /// </summary>
+        /// <param name="lyrics">タイムタグを含む歌詞文字列</param>
+        /// <returns>タイムタグを除去した歌詞文字列</returns>
         public static String[] StripLyricsTimetag(string[] lyrics)
         {
             if (lyrics == null) return null;
@@ -61,34 +100,46 @@ namespace Gageas.Lutea.Util
             }).ToArray();
         }
 
-        public static IEnumerable<int> IntegerCounterIterator(int start, int end, int step = 1)
-        {
-            for (int i = start; i <= end; i += 1) yield return i;
-            yield break;
-        }
-
-        // プリペアドが使えないときはエスケープするしかないよね
+        /// <summary>
+        /// SQLのためにSingle-Quotをエスケープする
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public static String EscapeSingleQuotSQL(this string source)
         {
             return source.Replace("'", "''");
         }
 
-        public static String FormatIfExists(this string format, params string[] value) { 
-            if(value.Any((x)=>!string.IsNullOrEmpty(x))){ // 非emptyなvalueが一つでもあれば
-                return String.Format(format,value);
-            }
-            return "";
+        /// <summary>
+        /// valueがすべてnullまたは空文字列ならば空文字列を返すフォーマッタ
+        /// </summary>
+        /// <param name="format">フォーマット文字列</param>
+        /// <param name="value">値</param>
+        /// <returns></returns>
+        public static String FormatIfExists(this string format, params string[] value)
+        {
+            if (value.All((x) => string.IsNullOrEmpty(x))) return "";
+            return String.Format(format, value);
         }
-        // 全角->半角変換
+
+        /// <summary>
+        /// 全角→半角変換
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public static String LCMapZen2Han(this string source)
         {
             return LCMapString(source, MapFlags.HALFWIDTH);
         }
 
-        // FIXME?: H2k6のLCMapUpperのパラメータ調べてないので適当です
+        /// <summary>
+        /// 適当に文字列を正規化(H2k6のLCMapUpper風)
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public static String LCMapUpper(this string source)
         {
-            return LCMapString(source, MapFlags.HALFWIDTH|MapFlags.HIRAGANA|MapFlags.UPPERCASE);
+            return LCMapString(source, MapFlags.HALFWIDTH | MapFlags.HIRAGANA | MapFlags.UPPERCASE);
         }
 
         /// <summary>
@@ -101,9 +152,8 @@ namespace Gageas.Lutea.Util
         /// <returns>変換後の文字列</returns>
         public static String LCMapString(string source, MapFlags mapFlags)
         {
-            if(source == null)return null;
+            if (source == null) return null;
             char[] buffer = new char[source.Length * 2];
-            //StringBuilder buffer = new StringBuilder(source.Length*2);
             int len = _LCMapString(System.Threading.Thread.CurrentThread.CurrentCulture.LCID, (uint)mapFlags, source, source.Length, buffer, buffer.Length);
             if (len < 0)
             {
@@ -113,8 +163,12 @@ namespace Gageas.Lutea.Util
             return new String(buffer, 0, len);
         }
 
-        private static readonly System.Text.RegularExpressions.Regex intRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+");
-        private static readonly System.Text.RegularExpressions.Regex doubleRe = new System.Text.RegularExpressions.Regex(@"(\+|-)?\d+(\.)?(\d+)?");
+        /// <summary>
+        /// 入力文字列に含まれる実数をパース
+        /// </summary>
+        /// <param name="src">入力文字列</param>
+        /// <exception cref="System.FormatException"></exception>
+        /// <returns>実数値</returns>
         public static double parseDouble(string src)
         {
             var match = doubleRe.Match(src);
@@ -125,6 +179,12 @@ namespace Gageas.Lutea.Util
             throw new System.FormatException();
         }
 
+        /// <summary>
+        /// 入力文字列に含まれる整数をパース
+        /// </summary>
+        /// <param name="src">入力文字列</param>
+        /// <param name="result">結果の整数</param>
+        /// <returns>成否</returns>
         public static bool tryParseInt(string src, ref int result)
         {
             if (src == null) return false;
@@ -136,35 +196,100 @@ namespace Gageas.Lutea.Util
             return false;
         }
 
-        [DllImport("kernel32.dll",EntryPoint = "LCMapString", CharSet=CharSet.Unicode, SetLastError=true)]
+        [DllImport("kernel32.dll", EntryPoint = "LCMapString", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int _LCMapString(int locale, UInt32 dwMapFlags, string src, int srclen, [MarshalAs(UnmanagedType.LPArray)] char[] dest, int destlen);
+        /// <summary>
+        /// LCMapStringのフラグ
+        /// </summary>
         public enum MapFlags : uint
         {
 
-            LOWERCASE = 0x00000100,  // lower case letters
-            UPPERCASE = 0x00000200,  // upper case letters
-            //SORTKEY = 0x00000400,  // WC sort key (normalize)
-            BYTEREV = 0x00000800,  // byte reversal
+            /// <summary>
+            /// lower case letters
+            /// </summary>
+            LOWERCASE = 0x00000100,
 
-            HIRAGANA = 0x00100000,  // map katakana to hiragana
-            KATAKANA = 0x00200000,  // map hiragana to katakana
-            HALFWIDTH = 0x00400000,  // map double byte to single byte
-            FULLWIDTH = 0x00800000,  // map single byte to double byte
+            /// <summary>
+            /// 
+            /// </summary>upper case letters
+            UPPERCASE = 0x00000200,
 
-            LINGUISTIC_CASING = 0x01000000,  // use linguistic rules for casing
+            /// <summary>
+            /// WC sort key (normalize)
+            /// </summary>
+            SORTKEY = 0x00000400,
 
-            SIMPLIFIED_CHINESE = 0x02000000,  // map traditional chinese to simplified chinese
-            TRADITIONAL_CHINESE = 0x04000000,  // map simplified chinese to traditional chinese
+            /// <summary>
+            /// byte reversal
+            /// </summary>
+            BYTEREV = 0x00000800,
+
+            /// <summary>
+            /// map katakana to hiragana
+            /// </summary>
+            HIRAGANA = 0x00100000,
+
+            /// <summary>
+            /// map hiragana to katakana
+            /// </summary>
+            KATAKANA = 0x00200000,
 
 
-            IGNORECASE = 0x00000001,  // ignore case
-            IGNORENONSPACE = 0x00000002,  // ignore nonspacing chars
-            IGNORESYMBOLS = 0x00000004,  // ignore symbols
+            /// <summary>
+            /// map double byte to single byte
+            /// </summary>
+            HALFWIDTH = 0x00400000,
 
-            IGNOREKANATYPE = 0x00010000,  // ignore kanatype
-            IGNOREWIDTH = 0x00020000,  // ignore width
+            /// <summary>
+            /// map single byte to double byte
+            /// </summary>
+            FULLWIDTH = 0x00800000,
 
-            STRINGSORT = 0x00001000  // use string sort method
+            /// <summary>
+            /// use linguistic rules for casing
+            /// </summary>
+            LINGUISTIC_CASING = 0x01000000, 
+
+            /// <summary>
+            /// map traditional chinese to simplified chinese
+            /// </summary>
+            SIMPLIFIED_CHINESE = 0x02000000,
+
+            /// <summary>
+            /// map simplified chinese to traditional chinese
+            /// </summary>
+            TRADITIONAL_CHINESE = 0x04000000,
+
+
+            /// <summary>
+            /// ignore case
+            /// </summary>
+            IGNORECASE = 0x00000001,
+
+            /// <summary>
+            /// ignore nonspacing chars
+            /// </summary>
+            IGNORENONSPACE = 0x00000002,
+
+            /// <summary>
+            /// ignore symbols
+            /// </summary>
+            IGNORESYMBOLS = 0x00000004,
+
+            /// <summary>
+            /// ignore kanatype
+            /// </summary>
+            IGNOREKANATYPE = 0x00010000,
+
+            /// <summary>
+            /// ignore width
+            /// </summary>
+            IGNOREWIDTH = 0x00020000,
+
+            /// <summary>
+            /// use string sort method
+            /// </summary>
+            STRINGSORT = 0x00001000
         }
     }
 }
