@@ -597,16 +597,18 @@ namespace Gageas.Lutea.Core
         #region メディアファイルの再生に関する処理郡
         private static void DisposeCurrentStream()
         {
-            if (CurrentStream == null) return;
-            CurrentStream.Dispose();
+            var _stream = CurrentStream;
+            if (_stream == null) return;
             CurrentStream = null;
+            _stream.Dispose();
         }
 
         private static void DisposePreparedStream()
         {
-            if (PreparedStream == null) return;
-            PreparedStream.Dispose();
+            var _stream = PreparedStream;
+            if (_stream == null) return;
             PreparedStream = null;
+            _stream.Dispose();
         }
 
         internal static Boolean QueuePlaylistItem(int index)
