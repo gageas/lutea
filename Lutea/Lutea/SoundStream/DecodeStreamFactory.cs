@@ -41,7 +41,6 @@ namespace Gageas.Lutea.SoundStream
         /// </summary>
         /// <param name="track">CUEのTrack情報</param>
         /// <param name="preScan">preScanを行うかどうか</param>
-        /// <param name="lowLevelStream">オープン済みの低レベルストリーム(InCUE)の場合，またはNULL(.CUEファイル)</param>
         /// <returns></returns>
         private static PullSoundStreamBase CreateStreamCue(CD.Track track, bool preScan)
         {
