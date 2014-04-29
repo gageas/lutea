@@ -41,5 +41,15 @@ namespace Gageas.Lutea.Core
         {
             get { return 1; }
         }
+
+        public override double? ReplayGain
+        {
+            get { return 0; }
+        }
+
+        public override string Location
+        {
+            get { return ""; }
+        }
     }
 }
