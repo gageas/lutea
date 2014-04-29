@@ -167,7 +167,9 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// 参考ストリームを再生するために出力の再初期化が必要かどうか
         /// </summary>
-        /// <param name="reference">参考ストリーム</param>
+        /// <param name="freq">サンプリング周波数</param>
+        /// <param name="chans">チャンネル数</param>
+        /// <param name="useFloat">データ型が浮動小数点(float)かどうか</param>
         /// <returns>再構成が必要かどうか</returns>
         internal bool RebuildRequired(uint freq, uint chans, bool useFloat)
         {
@@ -181,7 +183,6 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// 再生を停止し、出力デバイスを解放する
         /// </summary>
-        /// <param name="waitsync">現在のバッファの内容を使い切る程度の時間待機してから停止</param>
         internal void KillOutputChannel()
         {
             var _outputChannel = outputChannel;
@@ -203,6 +204,8 @@ namespace Gageas.Lutea.Core
         /// <param name="freq">出力周波数</param>
         /// <param name="chans">出力チャンネル</param>
         /// <param name="useFloat">浮動小数点出力モード</param>
+        /// <param name="bufferLen">バッファ長</param>
+        /// <param name="preferredDeviceName">優先するデバイス名</param>
         internal void ResetOutputChannel(uint freq, uint chans, bool useFloat, uint bufferLen, string preferredDeviceName = null)
         {
             if (RebuildRequired(freq, chans, useFloat))
@@ -218,16 +221,20 @@ namespace Gageas.Lutea.Core
                     Logger.Debug("Rebuild output");
                     if (useFloat)
                     {
-                        foreach(var dlg in new OutputChannelBuilder[] { 
+                        foreach (var dlg in new OutputChannelBuilder[] { 
                                 BuildWASAPIExOutput, 
                                 BuildWASAPIOutput, 
                                 BuildFloatingPointOutput 
-                            }){
-                            try{
-                                outputChannel = (BASS.IPlayable)dlg.DynamicInvoke(new object[] { freq, chans, preferredDeviceName, bufferLen });
+                            })
+                        {
+                            try
+                            {
+                                outputChannel = (BASS.IPlayable)dlg.Invoke(freq, chans, preferredDeviceName, bufferLen);
                                 break;
-                            }catch(Exception){
                             }
+                            catch (NotSupportedException) { }
+                            catch (BASS.BASSException) { }
+                            catch (BASSWASAPIOutput.BASSWASAPIException) { }
                         }
                     }
                 }
@@ -239,15 +246,18 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// WASAPI排他モードで出力を初期化する
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="chans"></param>
+        /// <param name="freq">サンプリング周波数</param>
+        /// <param name="chans">チャンネル数</param>
         /// <param name="preferredDeviceName">デフォルトデバイスに優先して選択するデバイスの名前</param>
+        /// <param name="bufferLen">バッファ長</param>
+        /// <exception cref="System.NotSupportedException"></exception>
+        /// <exception cref="Gageas.Wrapper.BASS.BASSWASAPIOutput.BASSWASAPIException"></exception>
         /// <returns></returns>
         private BASS.IPlayable BuildWASAPIExOutput(uint freq, uint chans, string preferredDeviceName, uint bufferLen)
         {
             if (!BASSWASAPIOutput.IsAvailable || !AppCore.EnableWASAPIExclusive)
             {
-                throw new Exception();
+                throw new NotSupportedException();
             }
             BASS.BASS_SetDevice(0);
 
@@ -267,7 +277,6 @@ namespace Gageas.Lutea.Core
                 }
             }
             var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.InitFlags.Buffer | BASSWASAPIOutput.InitFlags.Exclusive, deviceid, bufferLen);
-            if (outputChannel == null) throw new Exception();
             outputMode = Controller.OutputModeEnum.WASAPIEx;
             Logger.Log("Use WASAPI Exclusive Output: freq=" + outputChannel.Info.Freq + ", format=" + outputChannel.Info.Format);
             return outputChannel;
@@ -276,15 +285,18 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// WASAPI共有モードで出力を初期化する
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="chans"></param>
+        /// <param name="freq">サンプリング周波数</param>
+        /// <param name="chans">チャンネル数</param>
         /// <param name="preferredDeviceName">デフォルトデバイスに優先して選択するデバイスの名前</param>
+        /// <param name="bufferLen">バッファ長</param>
+        /// <exception cref="System.NotSupportedException"></exception>
+        /// <exception cref="Gageas.Wrapper.BASS.BASSWASAPIOutput.BASSWASAPIException"></exception>
         /// <returns></returns>
         private BASS.IPlayable BuildWASAPIOutput(uint freq, uint chans, string preferredDeviceName, uint bufferLen)
         {
             if (!BASSWASAPIOutput.IsAvailable)
             {
-                throw new Exception();
+                throw new NotSupportedException();
             }
             BASS.BASS_SetDevice(0);
 
@@ -304,7 +316,6 @@ namespace Gageas.Lutea.Core
                 }
             }
             var outputChannel = new BASSWASAPIOutput(freq, chans, StreamProc, BASSWASAPIOutput.InitFlags.Buffer, deviceid, bufferLen);
-            if (outputChannel == null) throw new Exception();
             outputMode = Controller.OutputModeEnum.WASAPI;
             Logger.Log("Use WASAPI Exclusive Output: freq=" + outputChannel.Info.Freq + ", format=" + outputChannel.Info.Format);
             return outputChannel;
@@ -316,6 +327,9 @@ namespace Gageas.Lutea.Core
         /// <param name="freq"></param>
         /// <param name="chans"></param>
         /// <param name="preferredDeviceName">デフォルトデバイスに優先して選択するデバイスの名前</param>
+        /// <param name="bufferLen">バッファ長</param>
+        /// <exception cref="System.NotSupportedException"></exception>
+        /// <exception cref="Gageas.Wrapper.BASS.BASS.BASSException"></exception>
         /// <returns></returns>
         private BASS.IPlayable BuildFloatingPointOutput(uint freq, uint chans, string preferredDeviceName, uint bufferLen)
         {
@@ -339,7 +353,7 @@ namespace Gageas.Lutea.Core
             }
             BASS.BASS_SetDevice(outdev);
             var outputChannel = new BASS.UserSampleStream(freq, chans, StreamProc, (BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) | BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
-            if (outputChannel != null) outputMode = Controller.OutputModeEnum.FloatingPoint;
+            outputMode = Controller.OutputModeEnum.FloatingPoint;
             Logger.Debug("Use Float Output");
             return outputChannel;
         }
