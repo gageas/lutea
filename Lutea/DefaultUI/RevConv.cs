@@ -82,7 +82,8 @@ namespace emanual.IME
             }
         }
 
-        ~ImeLanguage(){
+        ~ImeLanguage()
+        {
             this.Dispose();
         }
 
@@ -99,13 +100,24 @@ namespace emanual.IME
         {
             if (language != null)
             {
-                language.Close();
+                try
+                {
+                    language.Close();
+                }
+                catch (InvalidCastException)
+                {
+                    // どうでもよさそうなところだが例外が出る時があるので握りつぶす
+                }
+                finally
+                {
+                    language = null;
+                    if (FInitialized)
+                    {
+                        DisposeCom();
+                    }
+                    GC.SuppressFinalize(this);
+                }
             }
-            if (FInitialized)
-            {
-                DisposeCom();
-            }
-            GC.SuppressFinalize(this);
         }
 
         public string GetYomi(string str)
