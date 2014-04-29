@@ -699,6 +699,7 @@ namespace Gageas.Lutea.Core
             }
         }
 
+        private static Dictionary<string, int> columnIndexCache = null;
         /// <summary>
         /// ライブラリのカラム名からカラム番号を取得する．
         /// カラム番号は0オリジン．
@@ -707,7 +708,6 @@ namespace Gageas.Lutea.Core
         /// </summary>
         /// <param name="Name">カラム名</param>
         /// <returns>カラム番号．0オリジン，エラー時は-1</returns>
-        private static Dictionary<string, int> columnIndexCache = null;
         public static int GetColumnIndexByName(string Name)
         {
             if (string.IsNullOrEmpty(Name)) return -1;
