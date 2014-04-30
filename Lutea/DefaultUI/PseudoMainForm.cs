@@ -48,6 +48,8 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         private Image cover;
 
+        private Image coverx;
+
         public PseudoMainForm(DefaultUIForm mainForm)
         {
             using (var bmp = new Bitmap(1,1))
@@ -89,10 +91,12 @@ namespace Gageas.Lutea.DefaultUI
                 if (img == null)
                 {
                     cover = null;
+                    coverx = null;
                 }
                 else
                 {
                     cover = Util.ImageUtil.GetResizedImageWithoutPadding(img, HEIGHT - PADDING - PADDING, HEIGHT - PADDING - PADDING);
+                    coverx = Util.ImageUtil.GetResizedImageWithoutPadding(img, WIDTH, WIDTH * 2);
                 }
                 this.mainForm.Invoke((MethodInvoker)(() =>
                 {
@@ -151,6 +155,16 @@ namespace Gageas.Lutea.DefaultUI
             }
             else
             {
+                if (coverx != null)
+                {
+                    var h = coverx.Height * (Width - PADDING - PADDING) / coverx.Width;
+                    e.Graphics.DrawImage(coverx, 0, -(h - Height) / 3);
+                    e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(192, 255, 255, 255)), ClientRectangle);
+                }
+                e.Graphics.FillRectangle(Brushes.Tan, 0, 0, 2, Height);
+                e.Graphics.FillRectangle(Brushes.Tan, 0, 0, Width, 2);
+                e.Graphics.FillRectangle(Brushes.Tan, Width - 2, 0, 2, Height);
+                e.Graphics.FillRectangle(Brushes.Tan, 0, Height - 2, Width, 2);
                 // OS側でサムネイルを縮小させると汚いので自前でオーバーサンプリング描画する
                 var left = PADDING + (cover == null ? 0 : cover.Width + BORDER);
                 using (var bg = new Bitmap((Width - left) * OVERSAMPLE, Height * OVERSAMPLE))
@@ -162,8 +176,8 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 var barHeihgt = (int)(HEIGHT * 0.08);
                 var progressRect = new Rectangle(left, Height - barHeihgt - PADDING, Width - left - PADDING - 1, barHeihgt - 1);
-                e.Graphics.DrawRectangle(Pens.Silver, progressRect);
-                e.Graphics.FillRectangle(Brushes.Silver, new Rectangle(progressRect.X, progressRect.Y, (int)((progressRect.Width) * (Controller.Current.Position / Controller.Current.Length)), progressRect.Height));
+                e.Graphics.DrawRectangle(Pens.Gray, progressRect);
+                e.Graphics.FillRectangle(Brushes.Gray, new Rectangle(progressRect.X, progressRect.Y, (int)((progressRect.Width) * (Controller.Current.Position / Controller.Current.Length)), progressRect.Height));
                 if (cover != null)
                 {
                     e.Graphics.DrawImage(cover, PADDING, PADDING + (Height - PADDING - PADDING - cover.Height) / 2);
