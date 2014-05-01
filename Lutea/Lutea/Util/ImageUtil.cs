@@ -121,6 +121,9 @@ namespace Gageas.Lutea.Util
                 resizedHeight = (int)(xZoomMax * image.Height);
             }
 
+            if (resizedHeight == 0) resizedHeight = 1;
+            if (resizedWidth == 0) resizedWidth = 1;
+
             Image dest = new Bitmap(resizedWidth, resizedHeight);
             using (var g = Graphics.FromImage(dest))
             {
