@@ -58,7 +58,6 @@ namespace Gageas.Lutea.SoundStream
 
         public override uint Chans
         {
-            // なんかタイミングによって0を返すことがあってDivBy0になるのでその場合仮に1を返す
             get { return Stream.GetChans(); }
         }
 
