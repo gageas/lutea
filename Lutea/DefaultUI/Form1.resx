@@ -127,13 +127,13 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="queryComboBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 627</value>
+    <value>0, 410</value>
   </data>
   <data name="queryComboBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="queryComboBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1335, 26</value>
+    <value>801, 20</value>
   </data>
   <data name="queryComboBox.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -157,7 +157,7 @@
     <value>Fill</value>
   </data>
   <data name="tableLayoutPanel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 31</value>
+    <value>0, 24</value>
   </data>
   <data name="tableLayoutPanel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
@@ -166,7 +166,7 @@
     <value>2</value>
   </data>
   <data name="tableLayoutPanel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1335, 653</value>
+    <value>801, 430</value>
   </data>
   <data name="tableLayoutPanel1.TabIndex" type="System.Int32, mscorlib">
     <value>25</value>
@@ -184,16 +184,16 @@
     <value>5</value>
   </data>
   <data name="tableLayoutPanel1.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="queryComboBox" Row="1" RowSpan="1" Column="0" ColumnSpan="2" /&gt;&lt;Control Name="splitContainer1" Row="0" RowSpan="1" Column="0" ColumnSpan="2" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,200,Percent,100" /&gt;&lt;Rows Styles="Percent,100,AutoSize,0,Absolute,30" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="queryComboBox" Row="1" RowSpan="1" Column="0" ColumnSpan="2" /&gt;&lt;Control Name="splitContainer1" Row="0" RowSpan="1" Column="0" ColumnSpan="2" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,120,Percent,100" /&gt;&lt;Rows Styles="Percent,100,AutoSize,0,Absolute,20" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="splitContainer1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
   <data name="splitContainer1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 2</value>
+    <value>0, 1</value>
   </data>
   <data name="splitContainer1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 2, 0, 0</value>
+    <value>0, 1, 0, 0</value>
   </data>
   <data name="splitContainer2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -202,7 +202,7 @@
     <value>0, 0</value>
   </data>
   <data name="splitContainer2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="splitContainer2.Orientation" type="System.Windows.Forms.Orientation, System.Windows.Forms">
     <value>Horizontal</value>
@@ -213,7 +213,7 @@
   <data name="クエリ作成ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAHXSURBVDhPlZDdS1NxHMb7A3oxg65CErqxm16gwnAa5FsF
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHXSURBVDhPlZDdS1NxHMb7A3oxg65CErqxm16gwnAa5FsF
         vWIlFJgizV6gEPQi88IQjClFBZnUhUNqpTIhWGmtlsmoIbm2jq+og9HOPBtisZrHc+YnzymvBM/pgQd+
         /OD5PF+eNcsKuS8w1luK32nB15HJv2/zGneXk5KHUBOdeB07zAOm+s4w2W9lyFNAat6DEm/A1Z7F3YbN
         tNSkG4MEVykpJYAq+1B+d6P+vEkidBZJKKSuaosxwO/MRp3rQI7ZkOcaUWLl/Bg9yPC7nZQUpRkDvG2b
@@ -228,7 +228,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="クエリ作成ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>217, 28</value>
+    <value>165, 22</value>
   </data>
   <data name="クエリ作成ToolStripMenuItem.Text" xml:space="preserve">
     <value>クエリ作成...</value>
@@ -236,7 +236,7 @@
   <data name="editToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAHDSURBVDhPxZFdS5NhHIf3CTrwwA8S7MQPEHhgICh6lCMx
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHDSURBVDhPxZFdS5NhHIf3CTrwwA8S7MQPEHhgICh6lCMx
         hEQ0tTpQK6iVODE0YRNNXbQ2Wzi1uQ2T6fJlTJtl5tsGi0f3bC5QSMqxrV313PMlmLOO6ge/g/uG6/rf
         L6p/nr2tVV7VXBH9Kkscbf9douGgAEOddby/mZGoOqxfaB+OibaZY9wz7nKrL8r1JxE0OplSbZiKDpk7
         Bh+TthasTh8fHjQI+LFanREY30K/O41+MkXXRJJ2W4L7L+M0m+LcNR3w1LaCy9rA3mcdm7M1aLUtAt70
@@ -251,18 +251,18 @@
     <value>Fuchsia</value>
   </data>
   <data name="editToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>217, 28</value>
+    <value>165, 22</value>
   </data>
   <data name="editToolStripMenuItem.Text" xml:space="preserve">
     <value>クエリ編集...</value>
   </data>
   <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>214, 6</value>
+    <value>162, 6</value>
   </data>
   <data name="newDirectoryToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAALdSURBVDhPlZNbSJNhGMe/i6CICKmLIJAOd14EJkRFlqOT
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAALdSURBVDhPlZNbSJNhGMe/i6CICKmLIJAOd14EJkRFlqOT
         RpmaYFhSWiqV0TnLTlqElVHTKEpBK7Gy40ysNKxP7WDKV+JwE1FSbJstl7NvTbe59evNpRLURS/8Lr7D
         //c+z8v7SP+zUO0g6/j9OLZ+/PAx5PHgcrkYGBhgcHAQj8eNz+fj1zfv0BCuwmx6H5fwfX0wjbnZWIq0
         9JpMftkXkxGl8hLyrV28fbiT9zXFmEzd2Pu+4nCo9NlsuGKC6E8PxJEzhcHY8dRn7KBOJ6pxO+28urEG
@@ -281,7 +281,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="newDirectoryToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>217, 28</value>
+    <value>165, 22</value>
   </data>
   <data name="newDirectoryToolStripMenuItem.Text" xml:space="preserve">
     <value>新しいフォルダ...</value>
@@ -289,7 +289,7 @@
   <data name="reloadToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAHySURBVDhPpZLLaxNRFMbnPxIXLtyIK0EXLsWNLlq6ERHM
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHySURBVDhPpZLLaxNRFMbnPxIXLtyIK0EXLsWNLlq6ERHM
         ooJSRKh1UWjFR8SKFlNq0aAWqy21WB9ZGIT6qJoGmyZt3o/aFpNMZiYz8/PeOwl5qCD6wceZYeb7nTn3
         jDb8oEi3h+4VOX+3QP+tPCev5egZyXL0UobDF9IcOJdmX39Kea8viQIE3qA8/spl7IWDf97m8rM6w9MW
         g0GTgSmDMwGd07ernLhZpe96WXl335IHaPfgZIGz4wVO3fA6HxnKcGggxf5Gx3bv6gmjTTwJ87dyXbAd
@@ -305,18 +305,18 @@
     <value>Fuchsia</value>
   </data>
   <data name="reloadToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>217, 28</value>
+    <value>165, 22</value>
   </data>
   <data name="reloadToolStripMenuItem.Text" xml:space="preserve">
     <value>最新の情報に更新</value>
   </data>
   <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>214, 6</value>
+    <value>162, 6</value>
   </data>
   <data name="削除ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAGFSURBVDhPY3goYPb/oY7vfwZywANZx//3GTT/H9Z0I92A
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGFSURBVDhPY3goYPb/oY7vfwZywANZx//3GTT/H9Z0I92A
         F/uO/T8jbgk2YJtbFE4D3tdPAat5duo8qprjO3fDDdieXIRhwHOH+P/3+Uz/b8mr/t/Z2fn/9u3bqGou
         Hz3x/6yEFdiAHQ1dcMlH8s7/72p4/Z9TVPW/pqbm/+bNm7G7DmbADXa9/2diCv4/4Df7f8028n9HVe3/
         1tbW/4cPH8auEQZABtzk0Ae74Ii2+/+SkpL/EydO/H/16lX8GkHgVXwlWON1Np3/11i1//ckZf2/desW
@@ -330,7 +330,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="削除ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>217, 28</value>
+    <value>165, 22</value>
   </data>
   <data name="削除ToolStripMenuItem.Text" xml:space="preserve">
     <value>削除...</value>
@@ -338,7 +338,7 @@
   <data name="名前の変更ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAABSSURBVDhPY6AY1M/d+Z9cDDeAHEAfA4DSUBYCwMRoYwBI
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABSSURBVDhPY6AY1M/d+Z9cDDeAHEAfA4DSUBYCwMRoYwBI
         EqYABGB8dDEQwDAAmyJ8YnhdAMIwPgygi9HPBch8EICxsRpACqCuAeRisAEDDBgYAHrtalYTKLH+AAAA
         AElFTkSuQmCC
 </value>
@@ -347,13 +347,13 @@
     <value>Fuchsia</value>
   </data>
   <data name="名前の変更ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>217, 28</value>
+    <value>165, 22</value>
   </data>
   <data name="名前の変更ToolStripMenuItem.Text" xml:space="preserve">
     <value>名前の変更...</value>
   </data>
   <data name="queryTreeViewContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>218, 184</value>
+    <value>166, 148</value>
   </data>
   <data name="&gt;&gt;queryTreeViewContextMenuStrip1.Name" xml:space="preserve">
     <value>queryTreeViewContextMenuStrip1</value>
@@ -371,7 +371,7 @@
     <value>0, 0</value>
   </data>
   <data name="treeView1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="treeView1.Nodes" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
@@ -426,16 +426,16 @@
     <value>FlatButtons</value>
   </data>
   <data name="tabPage1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 31</value>
+    <value>4, 25</value>
   </data>
   <data name="tabPage1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="tabPage1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>215, 395</value>
+    <value>215, 187</value>
   </data>
   <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -468,7 +468,7 @@
     <value>0, 0</value>
   </data>
   <data name="dummyFilterTab.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 430</value>
+    <value>223, 216</value>
   </data>
   <data name="dummyFilterTab.TabIndex" type="System.Int32, mscorlib">
     <value>25</value>
@@ -498,13 +498,10 @@
     <value>1</value>
   </data>
   <data name="splitContainer2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 625</value>
+    <value>223, 409</value>
   </data>
   <data name="splitContainer2.SplitterDistance" type="System.Int32, mscorlib">
     <value>189</value>
-  </data>
-  <data name="splitContainer2.SplitterWidth" type="System.Int32, mscorlib">
-    <value>6</value>
   </data>
   <data name="splitContainer2.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -543,7 +540,7 @@
     <value>0, 0</value>
   </data>
   <data name="splitContainer3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="splitContainer3.Orientation" type="System.Windows.Forms.Orientation, System.Windows.Forms">
     <value>Horizontal</value>
@@ -558,7 +555,7 @@
     <value>0, 0</value>
   </data>
   <data name="splitContainer4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="coverArtView.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -567,7 +564,7 @@
     <value>0, 0</value>
   </data>
   <data name="coverArtView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 2, 4, 2</value>
+    <value>2, 1, 2, 1</value>
   </data>
   <data name="coverArtView.Size" type="System.Drawing.Size, System.Drawing">
     <value>120, 120</value>
@@ -609,13 +606,13 @@
     <value>Fill</value>
   </data>
   <data name="visualizeView.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 47</value>
+    <value>0, 31</value>
   </data>
   <data name="visualizeView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="visualizeView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>720, 35</value>
+    <value>294, 64</value>
   </data>
   <data name="visualizeView.TabIndex" type="System.Int32, mscorlib">
     <value>100</value>
@@ -641,11 +638,8 @@
   <data name="trackInfoText.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
   </data>
-  <data name="trackInfoText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 0, 5, 0</value>
-  </data>
   <data name="trackInfoText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>720, 47</value>
+    <value>294, 31</value>
   </data>
   <data name="trackInfoText.TabIndex" type="System.Int32, mscorlib">
     <value>99</value>
@@ -669,13 +663,10 @@
     <value>Fill</value>
   </data>
   <data name="panel3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 36</value>
-  </data>
-  <data name="panel3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
+    <value>0, 24</value>
   </data>
   <data name="panel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>720, 82</value>
+    <value>294, 95</value>
   </data>
   <data name="panel3.TabIndex" type="System.Int32, mscorlib">
     <value>103</value>
@@ -699,10 +690,10 @@
     <value>0, 0</value>
   </data>
   <data name="trackInfoText2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+    <value>2, 0, 2, 0</value>
   </data>
   <data name="trackInfoText2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>720, 36</value>
+    <value>294, 24</value>
   </data>
   <data name="trackInfoText2.TabIndex" type="System.Int32, mscorlib">
     <value>102</value>
@@ -726,16 +717,13 @@
     <value>Fill</value>
   </data>
   <data name="panel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 0</value>
-  </data>
-  <data name="panel2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 5, 5, 5</value>
+    <value>3, 0</value>
   </data>
   <data name="panel2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 9, 0</value>
+    <value>0, 0, 5, 0</value>
   </data>
   <data name="panel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>729, 118</value>
+    <value>299, 119</value>
   </data>
   <data name="panel2.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -765,13 +753,13 @@
     <value>MS UI Gothic, 8.25pt</value>
   </data>
   <data name="listView2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>734, 0</value>
+    <value>302, 0</value>
   </data>
   <data name="listView2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="listView2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>236, 118</value>
+    <value>142, 119</value>
   </data>
   <data name="listView2.TabIndex" type="System.Int32, mscorlib">
     <value>101</value>
@@ -798,13 +786,13 @@
     <value>0, 0</value>
   </data>
   <data name="panel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="panel1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 0, 10, 2</value>
+    <value>3, 0, 6, 1</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>980, 120</value>
+    <value>450, 120</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
     <value>26</value>
@@ -834,13 +822,10 @@
     <value>1</value>
   </data>
   <data name="splitContainer4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1106, 120</value>
+    <value>574, 120</value>
   </data>
   <data name="splitContainer4.SplitterDistance" type="System.Int32, mscorlib">
     <value>120</value>
-  </data>
-  <data name="splitContainer4.SplitterWidth" type="System.Int32, mscorlib">
-    <value>6</value>
   </data>
   <data name="splitContainer4.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -894,18 +879,18 @@
 </value>
   </data>
   <data name="ScrollToPlayingToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 28</value>
+    <value>169, 22</value>
   </data>
   <data name="ScrollToPlayingToolStripMenuItem.Text" xml:space="preserve">
     <value>再生中にスクロール</value>
   </data>
   <data name="toolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 6</value>
+    <value>166, 6</value>
   </data>
   <data name="コピーToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAIzSURBVDhPxdJbSNNRHMDxv1pBdH0LSgoMeogio6J6MQyV
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIzSURBVDhPxdJbSNNRHMDxv1pBdH0LSgoMeogio6J6MQyV
         KEswEjUyjDKtxGJZal7IctBybpIVKTg1XWp5IcseyoLMEaQVlIImM4eXudv/P03Np2/HacFw9Bb94Lwc
         zud7/n840j+b9hY1bQ35NBsysQx8Y37b9/T1dPKkWvdnGbTHka01/LCWYeku5EpSBLoCFXc1WRQXpDNo
         7vMOzqJp5TEz7nqmZSNV91VMOirRXk+lpyOD7AuRZCTuxNp+EkdrEGkJRxYGZvGMu5Z76hN8MhWiDN1h
@@ -922,7 +907,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="コピーToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 28</value>
+    <value>169, 22</value>
   </data>
   <data name="コピーToolStripMenuItem.Text" xml:space="preserve">
     <value>この値をコピー</value>
@@ -930,7 +915,7 @@
   <data name="この値で検索ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAIdSURBVDhPlZLfT5JhGIb509rqL8gDHVPXcaYnZlMYtlJA
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIdSURBVDhPlZLfT5JhGIb509rqL8gDHVPXcaYnZlMYtlJA
         RrS1Rsn6cYBgmKxh1oYlozHUMUSwEeAHTluZjFVmSBFCV8/3YTo2tHVv99H3Xfd7P8/76s5SNKrwMJDk
         tm+Nx8FtHgU2mHuZoFQqUavVOPqtvYKvsmzu7FM8hEQVFr/Cchk8yQoTd4Lkcjmq1Wr7kHR6l4iyh6rS
         Twh/Bv8WBD5A6Bv43pYZHZ3UQo6QVs0vFkj8gOx3WBAovA+RCqz8gqgELsu3m84gHo+nfcB0eIeYAAuf
@@ -946,19 +931,19 @@
     <value>Fuchsia</value>
   </data>
   <data name="この値で検索ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 28</value>
+    <value>169, 22</value>
   </data>
   <data name="この値で検索ToolStripMenuItem.Text" xml:space="preserve">
     <value>この値で検索</value>
   </data>
   <data name="通常ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>116, 28</value>
+    <value>98, 22</value>
   </data>
   <data name="通常ToolStripMenuItem.Text" xml:space="preserve">
     <value>高速</value>
   </data>
   <data name="完全ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>116, 28</value>
+    <value>98, 22</value>
   </data>
   <data name="完全ToolStripMenuItem.Text" xml:space="preserve">
     <value>完全</value>
@@ -966,7 +951,7 @@
   <data name="reImportToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAHFSURBVDhPpZLdS9tQGIfz7+1/cLvxylsvdrXLMRTnCpNV
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHFSURBVDhPpZLdS9tQGIfz7+1/cLvxylsvdrXLMRTnCpNV
         LGLxA53bSstKK05mVSxVC26jmrYodVW62q+1Jk2a75/vOWmUagTFF345JOF53nPeRPBqdS2LlcQ+luIZ
         zMfSmItsI7SaQnB5A1ML6wiEk5iY/Y6xmRj6yGB9Tu7jbtkOYNJFN22ouo2RN0FEf/zB20/f7kuW4nt9
         zC0OW4Bu2FA0G7JiccHhSZdLXgy9HpQs0La9sog2LAcadWXwFcH/ZQuNjsFBL33UrbnIDhzqymHTQY/g
@@ -981,43 +966,43 @@
     <value>Fuchsia</value>
   </data>
   <data name="reImportToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 28</value>
+    <value>169, 22</value>
   </data>
   <data name="reImportToolStripMenuItem.Text" xml:space="preserve">
     <value>再読み込み</value>
   </data>
   <data name="toolStripMenuItem7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 28</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem7.Text" xml:space="preserve">
     <value>★★★★★</value>
   </data>
   <data name="toolStripMenuItem6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 28</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem6.Text" xml:space="preserve">
     <value>★★★★☆</value>
   </data>
   <data name="toolStripMenuItem5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 28</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem5.Text" xml:space="preserve">
     <value>★★★☆☆</value>
   </data>
   <data name="toolStripMenuItem4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 28</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem4.Text" xml:space="preserve">
     <value>★★☆☆☆</value>
   </data>
   <data name="toolStripMenuItem3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 28</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem3.Text" xml:space="preserve">
     <value>★☆☆☆☆</value>
   </data>
   <data name="toolStripMenuItem2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 28</value>
+    <value>134, 22</value>
   </data>
   <data name="toolStripMenuItem2.Text" xml:space="preserve">
     <value>☆☆☆☆☆</value>
@@ -1040,7 +1025,7 @@
 </value>
   </data>
   <data name="ratingToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 28</value>
+    <value>169, 22</value>
   </data>
   <data name="ratingToolStripMenuItem.Text" xml:space="preserve">
     <value>評価</value>
@@ -1048,7 +1033,7 @@
   <data name="deleteToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAGFSURBVDhPY3goYPb/oY7vfwZywANZx//3GTT/H9Z0I92A
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGFSURBVDhPY3goYPb/oY7vfwZywANZx//3GTT/H9Z0I92A
         F/uO/T8jbgk2YJtbFE4D3tdPAat5duo8qprjO3fDDdieXIRhwHOH+P/3+Uz/b8mr/t/Z2fn/9u3bqGou
         Hz3x/6yEFdiAHQ1dcMlH8s7/72p4/Z9TVPW/pqbm/+bNm7G7DmbADXa9/2diCv4/4Df7f8028n9HVe3/
         1tbW/4cPH8auEQZABtzk0Ae74Ii2+/+SkpL/EydO/H/16lX8GkHgVXwlWON1Np3/11i1//ckZf2/desW
@@ -1062,7 +1047,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="deleteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 28</value>
+    <value>169, 22</value>
   </data>
   <data name="deleteToolStripMenuItem.Text" xml:space="preserve">
     <value>ライブラリから削除...</value>
@@ -1070,7 +1055,7 @@
   <data name="explorerToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAjcSURBVFhHxZdZT1vbGYZzcdSbtqraXvYHtD+gUiu10qki
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAjcSURBVFhHxZdZT1vbGYZzcdSbtqraXvYHtD+gUiu10qki
         9ahSpyO1VdtEaXSa5JyEQEIYAoQpCRACCRDCEAiBQAGDmScHzBimxIzBxuDZBmzjAWxjM2Pg7buNySCV
         ctcu6dHy3hd+3u9ba+9ln/m/jw1zjWhzuQ4nYhVj4xhLbYB1Sw3WzUf4zCL4lgSq4V0UqIJ3oRJrxnKf
         R1dSENScPAQJdoeBnZGjeX/0I3jPP4xD/xAO9waDvMbBbj/pw8FODw62yZaUdGJfYLMTfrK71gq3rtQX
@@ -1115,7 +1100,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="explorerToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>243, 28</value>
+    <value>182, 22</value>
   </data>
   <data name="explorerToolStripMenuItem.Text" xml:space="preserve">
     <value>エクスプローラで表示...</value>
@@ -1123,7 +1108,7 @@
   <data name="propertyToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAIpSURBVDhPxZBPSNNhHIdHl6AuBglBRdQlvEitWxC5S4em
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIpSURBVDhPxZBPSNNhHIdHl6AuBglBRdQlvEitWxC5S4em
         m1MxRSsN0iyKmgghhYtcIElGoiZohI5ZsUyCyIz+zAynZdpWhqWOba2aujKT5Ta3p5+vzklTOvaBh/d9
         D5/n+76v7O+0m5rpaq9hZOgdD4wXaK7TcbNWR31VKdX6YnRncumzPKOhvR6juZWFWjQDlk4C422UncyB
         8VOLBJxapj8UMvwkg8taDRUNRehf62MF3vGv6E4cAO8xWq9nibLfoeX3yHGm+jPxdisJdGzD2HSYdJMC
@@ -1139,7 +1124,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="propertyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>243, 28</value>
+    <value>182, 22</value>
   </data>
   <data name="propertyToolStripMenuItem.Text" xml:space="preserve">
     <value>プロパティ...</value>
@@ -1147,7 +1132,7 @@
   <data name="ファイル操作ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAGrSURBVDhPpZFNLwNRGIX7e1iwYcuWjV8gIcSSsLJnzUJI
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGrSURBVDhPpZFNLwNRGIX7e1iwYcuWjV8gIcSSsLJnzUJI
         NGLhI03TpJJKSBG04ltRWi2lTYsaQ0s7086M+TjuHdNOop1W4iRvZnHvee4579hK8vijqDbu7RCc3gss
         rR4jcJOCcb1S9LKVNDJzrl20dPTBseqvDlnZCf/c/iWNuGVFw/SSFxv7oR+Ix1cJcW0GDYsplZplDaKk
         YmphHa2d/eUxbKYca2e6acTOomeCRdcYi/bRNFoH4+CKCj54WYeUQIbN1KLnSAdQKSogySqK5OV8QUE2
@@ -1161,13 +1146,13 @@
     <value>Fuchsia</value>
   </data>
   <data name="ファイル操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 28</value>
+    <value>169, 22</value>
   </data>
   <data name="ファイル操作ToolStripMenuItem.Text" xml:space="preserve">
     <value>ファイル操作...</value>
   </data>
   <data name="toolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 6</value>
+    <value>166, 6</value>
   </data>
   <data name="このトラックToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -1184,7 +1169,7 @@
 </value>
   </data>
   <data name="このトラックToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>210, 28</value>
+    <value>160, 22</value>
   </data>
   <data name="このトラックToolStripMenuItem.Text" xml:space="preserve">
     <value>このトラックをキュー</value>
@@ -1192,7 +1177,7 @@
   <data name="再生停止ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAFZSURBVDhP5ZE9SEJRGIZdChqirTFaWiIhKIqWCIJwcgkh
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFZSURBVDhP5ZE9SEJRGIZdChqirTFaWiIhKIqWCIJwcgkh
         oUkIghQaijIqsLr9IpQYhmJml/BSioJllP1Qg5WQCBWGuJhkUIjQTfN6i7d7pDFOe73zeZ73fN8n+2Mx
         +j+x6Cti1pOHgeMxwWYxuv6MIdsTBi0pDFtT+H76cwh8l/zA7YOI0H0RB9cC/GEB7pAAezAHuWqbLiDN
         8UcR4bhYArnzAtYCeaz4ecyxCdQpN+kC8u2bpIjDiICt0wLMEshwrxhzvEBrjKKmy0oXkJkvYyI8F1Lz
@@ -1205,7 +1190,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="再生停止ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>210, 28</value>
+    <value>160, 22</value>
   </data>
   <data name="再生停止ToolStripMenuItem.Text" xml:space="preserve">
     <value>再生停止をキュー</value>
@@ -1213,7 +1198,7 @@
   <data name="キューをクリアToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAABXSURBVDhPzY1RCsAgDEN7/0tPshERzWKFfvggoI19xjU8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABXSURBVDhPzY1RCsAgDEN7/0tPshERzWKFfvggoI19xjU8
         CPiuFvn2HTJzOWD7LkDEo7/5gpKM5xRdwpwKQM0ycyJRS2mJWiZbiVsmrksJgO1tWUnVRxENMzKIeApf
         i5oAAAAASUVORK5CYII=
 </value>
@@ -1222,7 +1207,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="キューをクリアToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>210, 28</value>
+    <value>160, 22</value>
   </data>
   <data name="キューをクリアToolStripMenuItem.Text" xml:space="preserve">
     <value>キューをクリア</value>
@@ -1230,7 +1215,7 @@
   <data name="キューToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAA/SURBVDhPYxjm4MCBA/9hGCpEPIBqgmOSDRmiBqBrwoXx
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAA/SURBVDhPYxjm4MCBA/9hGCpEPIBqgmOSDRmiBqBrwoXx
         GkbIEIpcQpRmGEA3hCTNMAAzhCzNMECRZjoABgYAY/VsRqp4Q7oAAAAASUVORK5CYII=
 </value>
   </data>
@@ -1238,13 +1223,13 @@
     <value>Fuchsia</value>
   </data>
   <data name="キューToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>223, 28</value>
+    <value>169, 22</value>
   </data>
   <data name="キューToolStripMenuItem.Text" xml:space="preserve">
     <value>キュー</value>
   </data>
   <data name="playlistViewContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>224, 240</value>
+    <value>170, 192</value>
   </data>
   <data name="&gt;&gt;playlistViewContextMenuStrip.Name" xml:space="preserve">
     <value>playlistViewContextMenuStrip</value>
@@ -1262,13 +1247,13 @@
     <value>441, 71</value>
   </metadata>
   <data name="clearSortOrderToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>158, 28</value>
+    <value>125, 22</value>
   </data>
   <data name="clearSortOrderToolStripMenuItem.Text" xml:space="preserve">
     <value>ソート解除</value>
   </data>
   <data name="playlistViewHeaderContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>159, 32</value>
+    <value>126, 26</value>
   </data>
   <data name="&gt;&gt;playlistViewHeaderContextMenuStrip.Name" xml:space="preserve">
     <value>playlistViewHeaderContextMenuStrip</value>
@@ -1280,10 +1265,10 @@
     <value>0, 0</value>
   </data>
   <data name="playlistView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 2, 4, 2</value>
+    <value>2, 1, 2, 1</value>
   </data>
   <data name="playlistView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1098, 456</value>
+    <value>566, 242</value>
   </data>
   <data name="playlistView.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1307,7 +1292,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1098, 456</value>
+    <value>566, 242</value>
   </data>
   <data name="tabPage2.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1331,13 +1316,13 @@
     <value>Top, Right</value>
   </data>
   <data name="albumArtListViewSearchTextBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>871, 0</value>
+    <value>523, 0</value>
   </data>
   <data name="albumArtListViewSearchTextBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="albumArtListViewSearchTextBox.Size" type="System.Drawing.Size, System.Drawing">
-    <value>140, 27</value>
+    <value>86, 20</value>
   </data>
   <data name="albumArtListViewSearchTextBox.TabIndex" type="System.Int32, mscorlib">
     <value>25</value>
@@ -1361,7 +1346,7 @@
     <value>False</value>
   </data>
   <data name="カバアートのサイズToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>183, 28</value>
+    <value>156, 22</value>
   </data>
   <data name="カバアートのサイズToolStripMenuItem.Text" xml:space="preserve">
     <value>カバアートのサイズ</value>
@@ -1382,10 +1367,10 @@
     <value>200</value>
   </data>
   <data name="toolStripComboBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 31</value>
+    <value>121, 23</value>
   </data>
   <data name="coverArtViewContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 67</value>
+    <value>157, 53</value>
   </data>
   <data name="&gt;&gt;coverArtViewContextMenuStrip.Name" xml:space="preserve">
     <value>coverArtViewContextMenuStrip</value>
@@ -1409,7 +1394,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="albumArtListView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1098, 456</value>
+    <value>566, 242</value>
   </data>
   <data name="albumArtListView.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1433,7 +1418,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="tabPage3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1098, 456</value>
+    <value>566, 242</value>
   </data>
   <data name="tabPage3.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1457,13 +1442,13 @@
     <value>Fill</value>
   </data>
   <data name="richTextBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 2</value>
+    <value>3, 1</value>
   </data>
   <data name="richTextBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="richTextBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1088, 452</value>
+    <value>560, 240</value>
   </data>
   <data name="richTextBox1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1487,13 +1472,13 @@
     <value>4, 39</value>
   </data>
   <data name="tabPage4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="tabPage4.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="tabPage4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1098, 456</value>
+    <value>566, 242</value>
   </data>
   <data name="tabPage4.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -1535,7 +1520,7 @@
     <value>5, 3</value>
   </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1106, 499</value>
+    <value>574, 285</value>
   </data>
   <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1568,13 +1553,10 @@
     <value>0</value>
   </data>
   <data name="splitContainer3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1106, 625</value>
+    <value>574, 409</value>
   </data>
   <data name="splitContainer3.SplitterDistance" type="System.Int32, mscorlib">
     <value>120</value>
-  </data>
-  <data name="splitContainer3.SplitterWidth" type="System.Int32, mscorlib">
-    <value>6</value>
   </data>
   <data name="splitContainer3.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1607,13 +1589,10 @@
     <value>0</value>
   </data>
   <data name="splitContainer1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1335, 625</value>
+    <value>801, 409</value>
   </data>
   <data name="splitContainer1.SplitterDistance" type="System.Int32, mscorlib">
     <value>223</value>
-  </data>
-  <data name="splitContainer1.SplitterWidth" type="System.Int32, mscorlib">
-    <value>6</value>
   </data>
   <data name="splitContainer1.TabIndex" type="System.Int32, mscorlib">
     <value>99</value>
@@ -1634,13 +1613,13 @@
     <value>136, 71</value>
   </metadata>
   <data name="notifyIconToolStripMenuItem_ShowBalloon.Size" type="System.Drawing.Size, System.Drawing">
-    <value>279, 28</value>
+    <value>206, 22</value>
   </data>
   <data name="notifyIconToolStripMenuItem_ShowBalloon.Text" xml:space="preserve">
     <value>曲名通知ポップアップを表示</value>
   </data>
   <data name="notifyIconContextMenuStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>280, 32</value>
+    <value>207, 26</value>
   </data>
   <data name="&gt;&gt;notifyIconContextMenuStrip.Name" xml:space="preserve">
     <value>notifyIconContextMenuStrip</value>
@@ -1658,16 +1637,16 @@
     <value>Consolas, 9pt</value>
   </data>
   <data name="xTrackBar1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>805, 0</value>
+    <value>483, 0</value>
   </data>
   <data name="xTrackBar1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="xTrackBar1.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>55, 22</value>
+    <value>33, 15</value>
   </data>
   <data name="xTrackBar1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>530, 34</value>
+    <value>318, 23</value>
   </data>
   <data name="xTrackBar1.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -1697,7 +1676,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="toolStripStatusLabel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>852, 29</value>
+    <value>440, 20</value>
   </data>
   <data name="toolStripStatusLabel2.Text" xml:space="preserve">
     <value>toolStripStatusLabel2</value>
@@ -1706,7 +1685,7 @@
     <value>MiddleLeft</value>
   </data>
   <data name="toolStripProgressBar1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>100, 28</value>
+    <value>60, 19</value>
   </data>
   <data name="toolStripProgressBar1.Visible" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -1715,7 +1694,7 @@
     <value>Consolas, 9pt</value>
   </data>
   <data name="toolStripStatusLabel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>227, 29</value>
+    <value>161, 20</value>
   </data>
   <data name="toolStripStatusLabel1.Text" xml:space="preserve">
     <value>toolStripStatusLabel1</value>
@@ -1727,22 +1706,22 @@
     <value>Consolas, 9pt</value>
   </data>
   <data name="toolStripXTrackbar1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>100, 32</value>
+    <value>100, 23</value>
   </data>
   <data name="toolStripXTrackbar1.Text" xml:space="preserve">
     <value>toolStripXTrackbar1</value>
   </data>
   <data name="toolStripComboBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 32</value>
+    <value>70, 23</value>
   </data>
   <data name="statusStrip1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 684</value>
+    <value>0, 454</value>
   </data>
   <data name="statusStrip1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 24, 0</value>
+    <value>2, 0, 14, 0</value>
   </data>
   <data name="statusStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1335, 34</value>
+    <value>801, 25</value>
   </data>
   <data name="statusStrip1.TabIndex" type="System.Int32, mscorlib">
     <value>19</value>
@@ -1763,31 +1742,31 @@
     <value>8</value>
   </data>
   <data name="tweetNowPlayingToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>255, 28</value>
+    <value>191, 22</value>
   </data>
   <data name="tweetNowPlayingToolStripMenuItem.Text" xml:space="preserve">
     <value>tweet NowPlaying...</value>
   </data>
   <data name="logToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>255, 28</value>
+    <value>191, 22</value>
   </data>
   <data name="logToolStripMenuItem.Text" xml:space="preserve">
     <value>ログ...</value>
   </data>
   <data name="exitToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>255, 28</value>
+    <value>191, 22</value>
   </data>
   <data name="exitToolStripMenuItem.Text" xml:space="preserve">
     <value>終了</value>
   </data>
   <data name="fileToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>99, 27</value>
+    <value>70, 22</value>
   </data>
   <data name="fileToolStripMenuItem.Text" xml:space="preserve">
     <value>ファイル(&amp;F)</value>
   </data>
   <data name="importFullToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>276, 28</value>
+    <value>203, 22</value>
   </data>
   <data name="importFullToolStripMenuItem1.Text" xml:space="preserve">
     <value>ディレクトリの追加(完全)...</value>
@@ -1795,7 +1774,7 @@
   <data name="importToolStripMenuItem1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAKBSURBVDhPldDJL9xhAMZxf4BDLz301pteHKSqi7YJDqpU
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKBSURBVDhPldDJL9xhAMZxf4BDLz301pteHKSqi7YJDqpU
         g6p0kbYRSxch1dJI21H7VlMjGFv9MFpbRYZWJ1EUQSTSLc2gQWobzGCUzDC/kW9n/BpN41Ce5Lm9z+fN
         +zqYVqdpUsl3Va+bwGEvsR82zKjZWH63XZOhnrWfChqqnqP98vH/SGN1Hju1jeqFXOoqc3hdkc2rsixU
         pRnUlKRTVZyGUJSKUJiyXe23YQmvE3LYNHb+041fbYhLjYgLAtbZQqyT2YgjMja+PmB9KIrV7lASY8Mk
@@ -1813,7 +1792,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="importToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>279, 28</value>
+    <value>208, 22</value>
   </data>
   <data name="importToolStripMenuItem1.Text" xml:space="preserve">
     <value>ディレクトリの追加(高速)...</value>
@@ -1821,7 +1800,7 @@
   <data name="removeDeadLinkToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAGqSURBVDhPrZFNKINxHMdXnCS72EV5qRUXbzMzUg6U8nKQ
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGqSURBVDhPrZFNKINxHMdXnCS72EV5qRUXbzMzUg6U8nKQ
         5qDEYl4KBwc3B5SLgwNx8LKDl7RW1NS0ybyHEOp5WE3ek+a9Z7OZx772zH8xzzMnn/reft/P4fsT/RuG
         VSt+Z8ZCQWfax+TcNvaOLkFOheEKoRjVLyOrWPO3ZHaJJud8BidNMG9QXxL6QliiXzgk53wGxuf95UBI
         JZhp4y455/POfkCrt/gTUjBh2CLnwXi9XjhdHtgfnVjePoKiqE5YoJ1ZI5Vg3jwsHl9cuH1w+AWqhg5h
@@ -1835,7 +1814,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="removeDeadLinkToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>279, 28</value>
+    <value>208, 22</value>
   </data>
   <data name="removeDeadLinkToolStripMenuItem.Text" xml:space="preserve">
     <value>存在しないファイルの削除</value>
@@ -1843,7 +1822,7 @@
   <data name="libraryDBのカスタマイズToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAIuSURBVDhPnZD/SxNhHMcv+kP6E8If+iGICPohijSisKJv
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIuSURBVDhPnZD/SxNhHMcv+kP6E8If+iGICPohijSisKJv
         YFmRYtYPK6JR0dBgZK50kvNL3tChw7WaOpxp1hBGlLlRWWmtnLbdpq7mdrt7bnfvnrttao1G9IYPfLjn
         eb/e73sYVQPsBXjsOristXjUXg2HpQrqN3W0C8U04bqB2BcLZHGiYKLBh2BNZ4pDxnurQN6Wgyy2gcTt
         EJZ6IISbwH+8CG50G1qu7SwOeMqeRHpyF5IhI/hYFxLva7Ds3oSIbQM+tW3EvdqS4gBPxwmIU6UUcEcD
@@ -1860,13 +1839,13 @@
     <value>Fuchsia</value>
   </data>
   <data name="libraryDBのカスタマイズToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>279, 28</value>
+    <value>208, 22</value>
   </data>
   <data name="libraryDBのカスタマイズToolStripMenuItem.Text" xml:space="preserve">
     <value>LibraryDBのカスタマイズ...</value>
   </data>
   <data name="importToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>113, 27</value>
+    <value>79, 22</value>
   </data>
   <data name="importToolStripMenuItem.Text" xml:space="preserve">
     <value>ライブラリ(&amp;D)</value>
@@ -1874,7 +1853,7 @@
   <data name="pluginsToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAKESURBVDhPbZHdT5JxFMf5a+rC7HUrm9l05dK5aPi0qYAK
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKESURBVDhPbZHdT5JxFMf5a+rC7HUrm9l05dK5aPi0qYAK
         bQpYWcqLGNIyAnWBovRGtMbEWiUrUxQQZxK6XlQ2brSNIraUeWN64YVJ9O08z0O6yu/Nbzs7n/P9nvMT
         7Kauzih67Yu42T6PNsM8suXdlUym4XavwN6T4BotpjlMhAD/2E+IK9xcra93DkrVc8hqB5BKbfAD19cz
         6O1bwtjoFsaDv9Da+hFaTQQBAodf/4Dh2hQuyPuhUQfgcCxDr4/gPPMwC69lIBSGMDK8ybmNBzMI+Hlw
@@ -1892,16 +1871,16 @@
     <value>Fuchsia</value>
   </data>
   <data name="pluginsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 28</value>
+    <value>208, 22</value>
   </data>
   <data name="pluginsToolStripMenuItem.Text" xml:space="preserve">
     <value>コンポーネントの詳細設定...</value>
   </data>
   <data name="toolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>278, 6</value>
+    <value>205, 6</value>
   </data>
   <data name="componentToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>146, 27</value>
+    <value>101, 22</value>
   </data>
   <data name="componentToolStripMenuItem.Text" xml:space="preserve">
     <value>コンポーネント(&amp;C)</value>
@@ -1909,7 +1888,7 @@
   <data name="toolStripMenuItem8.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAmSURBVDhPYxg84D+JAKoNAaCCROFRA0YNAGHaGUAKgGob
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAmSURBVDhPYxg84D+JAKoNAaCCROFRA0YNAGHaGUAKgGob
         cMDAAAD+qRL8B/YOvgAAAABJRU5ErkJggg==
 </value>
   </data>
@@ -1920,7 +1899,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="toolStripMenuItem8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>28, 27</value>
+    <value>28, 22</value>
   </data>
   <data name="toolStripMenuItem8.Text" xml:space="preserve">
     <value>toolStripMenuItem8</value>
@@ -1935,7 +1914,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="toolStripMenuItem9.Size" type="System.Drawing.Size, System.Drawing">
-    <value>28, 27</value>
+    <value>28, 22</value>
   </data>
   <data name="toolStripMenuItem9.Text" xml:space="preserve">
     <value>toolStripMenuItem9</value>
@@ -1946,7 +1925,7 @@
   <data name="toolStripMenuItem1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACQAAAAQCAYAAAB+690jAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAADpSURBVEhLlYwBCsNAEALz/0+3nrggNibbgcPoaq7kI2TX
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADpSURBVEhLlYwBCsNAEALz/0+3nrggNibbgcPoaq7kI2TX
         aMM3e34sON2KCu/FYHb65NazyQ+ZQTs+eC2LtvFclmQG7fw9AL7xvueyJDNoJweKHke+8a7nsiQzaCcH
         89rQ+9nxmyzJDNrJgb+7sffz7jdZkhm0k4N8+QPvP91kSWbQTg7y+Q+86/ngd1mSGbSTA3859m7eDn6X
         JZlBOzmYl0Pv5W3wjizJDNrJgaKfkffu7gfvyJLMoJ3twHubjizJDNrxQStvOgfvyZLMoJ0ZPBWno89V
@@ -1960,7 +1939,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="toolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>48, 27</value>
+    <value>48, 22</value>
   </data>
   <data name="toolStripMenuItem1.Text" xml:space="preserve">
     <value>toolStripMenuItem1</value>
@@ -1975,7 +1954,7 @@
     <value>Fuchsia</value>
   </data>
   <data name="toolStripMenuItem10.Size" type="System.Drawing.Size, System.Drawing">
-    <value>28, 27</value>
+    <value>28, 22</value>
   </data>
   <data name="toolStripMenuItem10.Text" xml:space="preserve">
     <value>toolStripMenuItem10</value>
@@ -1989,8 +1968,11 @@
   <data name="menuStrip1.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
   </data>
+  <data name="menuStrip1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 1, 0, 1</value>
+  </data>
   <data name="menuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1335, 31</value>
+    <value>801, 24</value>
   </data>
   <data name="menuStrip1.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
@@ -7169,10 +7151,10 @@
     <value>100</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>10, 18</value>
+    <value>6, 12</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>1335, 718</value>
+    <value>801, 479</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -12261,7 +12243,7 @@
 </value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>5, 2, 5, 2</value>
+    <value>3, 1, 3, 1</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Form1</value>
