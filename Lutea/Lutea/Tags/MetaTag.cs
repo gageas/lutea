@@ -84,21 +84,21 @@ namespace Gageas.Lutea.Tags
                                 tag = ApeTag.Read(fs, createImageObject);
                                 if (tag == null) tag = new List<KeyValuePair<string, object>>();
                             }
-                            catch { }
+                            catch(IOException) { }
                             try
                             {
                                 fs.Seek(0, System.IO.SeekOrigin.Begin);
                                 var tag_id3v2 = ID3ToTag(ID3V2Tag.readID3tag(fs, createImageObject));
                                 if (tag_id3v2 != null) tag.AddRange(tag_id3v2);
                             }
-                            catch (Exception ex) { Logger.Error(ex); }
+                            catch (IOException ex) { Logger.Error(ex); }
                             try
                             {
                                 fs.Seek(0, System.IO.SeekOrigin.Begin);
                                 var tag_id3v1 = ID3.Read(fs);
                                 if (tag_id3v1 != null) tag.AddRange(tag_id3v1);
                             }
-                            catch { }
+                            catch(IOException) { }
                             break;
 
                         default:

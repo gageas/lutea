@@ -64,7 +64,8 @@ namespace Gageas.Lutea.Tags
             {
                 parser.ReadRecurse(strm.Length);
             }
-            catch (Exception) { }
+            catch (ArgumentException) { }
+            catch (IOException) { }
 
             return parser.tags;
         }
@@ -140,7 +141,8 @@ namespace Gageas.Lutea.Tags
                             if (genreStr == null) break;
                             tags.Add(new KeyValuePair<string, object>("GENRE", genreStr));
                         }
-                        catch { }
+                        catch (ArgumentException) { }
+                        catch (IOException) { }
                         break;
                     case 0x6D703461: // mp4a
                         ReadMp4a((int)atom_size);
@@ -365,7 +367,7 @@ namespace Gageas.Lutea.Tags
                         {
                             tagValuePicture.Add(System.Drawing.Image.FromStream(new MemoryStream(buf, 0, buf.Length)));
                         }
-                        catch (Exception)
+                        catch (ArgumentException)
                         {
                             return;
                         }

@@ -60,7 +60,7 @@ namespace Gageas.Lutea.Tags
                             var img = Image.FromStream(memoryStream);
                             data.Add(new KeyValuePair<string, object>(key, img));
                         }
-                        catch { }
+                        catch(ArgumentException) { }
                     }
                 }
                 else

@@ -66,7 +66,8 @@ namespace Gageas.Lutea.Tags
                         {
                             tags.Add(new KeyValuePair<string, object>("COVER ART", pic));
                         }
-                    }catch{}
+                    }
+                    catch (ArgumentException) { }
                 }
                 else
                 {

@@ -444,7 +444,7 @@ namespace Gageas.Lutea.Tags
                 {
                     fr.Image = System.Drawing.Image.FromStream(ms);
                 }
-                catch { }
+                catch (ArgumentException) { }
             }
             else
             {
