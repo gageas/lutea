@@ -14,14 +14,24 @@ namespace Gageas.Wrapper.BASS
         private static List<BASSPlugin> plugins = new List<BASSPlugin>();
 
         private IntPtr HPlugin;
-
+        
+        /// <summary>
+        /// プラグインのファイル名
+        /// </summary>
         public readonly string Filename;
 
+        /// <summary>
+        /// バージョン
+        /// </summary>
         public UInt32 Version
         {
             get { return GetInfo().Version; }
         }
 
+        /// <summary>
+        /// プラグインのリストを取得
+        /// </summary>
+        /// <returns></returns>
         public static BASSPlugin[] GetPlugins()
         {
             return plugins.ToArray();
