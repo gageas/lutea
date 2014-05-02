@@ -6,12 +6,62 @@ using System.Linq;
 
 namespace Gageas.Wrapper.BASS
 {
+    /// <summary>
+    /// BASS Audio(BASS.dll)のラッパ
+    /// </summary>
     public class BASS
     {
         internal const uint BASS_UNICODE = 0x80000000;
         internal const uint BASS_POS_BYTE = 0;
 
+        /// <summary>
+        /// ストリームプロシージャのデリゲート
+        /// </summary>
+        /// <param name="bffer">バッファへのポインタ</param>
+        /// <param name="length">バッファ長</param>
+        /// <returns>バッファへ出力したデータ長</returns>
         public delegate UInt32 StreamProc(IntPtr bffer, UInt32 length);
+
+        /// <summary>
+        /// BASS内の例外
+        /// </summary>
+        public class BASSException : Exception
+        {
+            /// <summary>
+            /// BASSのエラーコード
+            /// </summary>
+            public readonly int BASSErrCode;
+
+            /// <summary>
+            /// コンストラクタ
+            /// </summary>
+            /// <param name="msg">エラーメッセージ</param>
+            /// <param name="errCode">BASSのエラーコード</param>
+            public BASSException(string msg, int errCode)
+                : base(msg)
+            {
+                this.BASSErrCode = errCode;
+            }
+
+            /// <summary>
+            /// コンストラクタ
+            /// </summary>
+            /// <param name="msg">エラーメッセージ</param>
+            public BASSException(string msg)
+                : base(msg)
+            {
+                this.BASSErrCode = BASS_ErrorGetCode();
+            }
+
+            /// <summary>
+            /// ToStringの実装
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
+            {
+                return Message + "; code = " + BASSErrCode;
+            }
+        }
 
         /// <summary>
         /// BASS_ChannelSlideAttributeで使うAttributes
@@ -22,7 +72,10 @@ namespace Gageas.Wrapper.BASS
             MUSIC_AMPLIFY = 0x100, MUSIC_PANSEP, MUSIC_PSCALER, MUSIC_BPM, MUSIC_SPEED, MUSIC_VOL_GLOBAL, MUSIC_VOL_CHAN = 0x200, MUSIC_VOL_INST = 0x300
         }
 
-        public enum BASS_CONFIG : uint
+        /// <summary>
+        /// BASS Config列挙体
+        /// </summary>
+        private enum BASS_CONFIG : uint
         {
             BASS_CONFIG_BUFFER = 0,
             BASS_CONFIG_UPDATEPERIOD = 1,
@@ -46,17 +99,55 @@ namespace Gageas.Wrapper.BASS
             BASS_CONFIG_ASYNCFILE_BUFFER = 45,
         }
 
+        /// <summary>
+        /// BASS Channnel情報構造体
+        /// </summary>
         [StructLayout(LayoutKind.Sequential)]
         public struct BASS_CHANNELINFO
         {
+            /// <summary>
+            /// サンプリング周波数
+            /// </summary>
             public UInt32 Freq;
+
+            /// <summary>
+            /// チャンネル数
+            /// </summary>
             public UInt32 Chans;
+
+            /// <summary>
+            /// StreamFlag
+            /// </summary>
             public Stream.StreamFlag Flags;
+
+            /// <summary>
+            /// Ctype
+            /// </summary>
             public UInt32 Ctype;
+
+            /// <summary>
+            /// OrigRes
+            /// </summary>
             public UInt32 OrigRes;
+
+            /// <summary>
+            /// Plugin
+            /// </summary>
             public IntPtr Plugin;
+
+            /// <summary>
+            /// Sample
+            /// </summary>
             public IntPtr Sample;
+
+            /// <summary>
+            /// ファイル名(ポインタ)
+            /// </summary>
             private IntPtr filename;
+
+            /// <summary>
+            /// ファイル名
+            /// </summary>
             public string Filename
             {
                 get
@@ -66,10 +157,13 @@ namespace Gageas.Wrapper.BASS
             }
         }
 
+        /// <summary>
+        /// BASSデバイス情報構造体
+        /// </summary>
         [StructLayout(LayoutKind.Sequential)]
         public struct BASS_DEVICEINFO {
             [Flags]
-            public enum FLAGS : uint
+            private enum FLAGS : uint
             {
                 ENABLED = 1, DEFAULT = 2, INIT = 4
             }
@@ -78,6 +172,9 @@ namespace Gageas.Wrapper.BASS
             private IntPtr driver;
             private UInt32 flags;
 
+            /// <summary>
+            /// デバイス名
+            /// </summary>
             public string Name
             {
                 get
@@ -86,6 +183,9 @@ namespace Gageas.Wrapper.BASS
                 }
             }
 
+            /// <summary>
+            /// ID
+            /// </summary>
             public string Driver
             {
                 get
@@ -94,7 +194,7 @@ namespace Gageas.Wrapper.BASS
                 }
             }
 
-            public FLAGS Flags
+            private FLAGS Flags
             {
                 get
                 {
@@ -102,21 +202,30 @@ namespace Gageas.Wrapper.BASS
                 }
             }
 
+            /// <summary>
+            /// 有効かどうか
+            /// </summary>
             public bool IsEnabled
             {
                 get { return (Flags & FLAGS.ENABLED) != 0; }
             }
 
+            /// <summary>
+            /// 既定デバイスかどうか
+            /// </summary>
             public bool IsDefault
             {
                 get { return (Flags & FLAGS.DEFAULT) != 0; }
             }
 
+            /// <summary>
+            /// このデバイスで初期化されているかどうか
+            /// </summary>
             public bool IsInit
             {
                 get { return (Flags & FLAGS.INIT) != 0; }
             }
-
+            
             public override string ToString()
             {
                 return "Name:" + Name + "ID: " + Driver + "Flags" + Flags;
@@ -149,6 +258,13 @@ namespace Gageas.Wrapper.BASS
             return list.ToArray();
         }
 
+        /// <summary>
+        /// BASSを初期化
+        /// </summary>
+        /// <param name="device">デバイス番号</param>
+        /// <param name="freq">サンプリング周波数</param>
+        /// <param name="buffer_len">バッファ長(ms)</param>
+        /// <returns>成功したかどうか</returns>
         public static bool BASS_Init(int device, uint freq = 44100, uint buffer_len = 1500)
         {
             bool success = false;
@@ -217,13 +333,23 @@ namespace Gageas.Wrapper.BASS
             }
         }
 
+        /// <summary>
+        /// BASSを解放
+        /// </summary>
+        /// <returns>成功</returns>
         public static bool BASS_Free()
         {
             return _BASS_Free();
         }
         
+        /// <summary>
+        /// BASSにおけるIPlayable
+        /// </summary>
         public abstract class IPlayable : IDisposable
         {
+            /// <summary>
+            /// FFTサイズ, フラグ
+            /// </summary>
             public enum FFT : uint
             {
                 BASS_DATA_FFT256 = 0x80000000, // 256 sample FFT 
@@ -235,11 +361,40 @@ namespace Gageas.Wrapper.BASS
                 BASS_DATA_FFT_INDIVIDUAL = 0x10, // FFT flag: FFT for each channel, else all combined
                 BASS_DATA_FFT_NOWINDOW = 0x20, // FFT flag: no Hanning window
             };
+            /// <summary>
+            /// Start
+            /// </summary>
+            /// <returns></returns>
             public abstract bool Start();
+
+            /// <summary>
+            /// Resume
+            /// </summary>
+            /// <returns></returns>
             public abstract bool Resume();
+
+            /// <summary>
+            /// Stop
+            /// </summary>
+            /// <returns></returns>
             public abstract bool Stop();
+
+            /// <summary>
+            /// Pause
+            /// </summary>
+            /// <returns></returns>
             public abstract bool Pause();
+
+            /// <summary>
+            /// CanAbort
+            /// </summary>
+            /// <returns></returns>
             public abstract bool CanAbort();
+
+            /// <summary>
+            /// Abort
+            /// </summary>
+            /// <returns></returns>
             public abstract bool Abort();
             public abstract bool SetVolume(float vol);
             public abstract bool SetVolume(float vol,uint timespan);
@@ -483,8 +638,7 @@ namespace Gageas.Wrapper.BASS
                 this.handle = _BASS_StreamCreate(freq, channels, (uint)flag, this.streamProc, (IntPtr)this.GetHashCode());
                 if (this.handle == IntPtr.Zero)
                 {
-                    int code = BASS_ErrorGetCode();
-                    throw new Exception("UserSampleStream: BASS_StreamCreate Failed." + code);
+                    throw new BASSException("UserSampleStream: BASS_StreamCreate Failed.");
                 }
             }
         }
@@ -496,7 +650,7 @@ namespace Gageas.Wrapper.BASS
                 IntPtr ret = _BASS_StreamCreateFile(false, filename, offset, length, (BASS_UNICODE | (uint)flags));
                 if (ret == IntPtr.Zero)
                 {
-                    throw (new Exception("Could not create stream.\ncode is " + BASS_ErrorGetCode()));
+                    throw (new BASSException("Could not create stream."));
                 }
                 handle = ret;
                 _BASS_ChannelSetPosition(ret, 0, BASS_POS_BYTE);
@@ -508,8 +662,13 @@ namespace Gageas.Wrapper.BASS
         private static extern Boolean BASS_Init(int device, uint freq, uint flags, IntPtr hwnd, IntPtr guid);
 
         [DllImport("bass.dll", EntryPoint = "BASS_SetConfig", CharSet = CharSet.Unicode)]
-        public static extern bool BASS_SetConfig(BASS_CONFIG option, UInt32 value);
+        private static extern bool BASS_SetConfig(BASS_CONFIG option, UInt32 value);
 
+        /// <summary>
+        /// 使用デバイスを設定
+        /// </summary>
+        /// <param name="device">デバイスID</param>
+        /// <returns>成功</returns>
         [DllImport("bass.dll", EntryPoint = "BASS_SetDevice", CharSet = CharSet.Unicode)]
         public static extern bool BASS_SetDevice(UInt32 device);
 
@@ -566,7 +725,7 @@ namespace Gageas.Wrapper.BASS
         private static extern bool _BASS_ChannelSlideAttribute(IntPtr handle, UInt32 attrib, float value, uint time);
 
         [DllImport("bass.dll", EntryPoint = "BASS_ErrorGetCode")]
-        public static extern int BASS_ErrorGetCode();
+        private static extern int BASS_ErrorGetCode();
 
         [DllImport("bass.dll", EntryPoint = "BASS_GetVersion")]
         private static extern UInt32 BASS_GetVersion();
