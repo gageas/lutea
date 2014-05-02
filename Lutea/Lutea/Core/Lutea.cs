@@ -56,6 +56,18 @@ namespace Gageas.Lutea.Core
             integer_32bit,
         }
 
+        /// <summary>
+        /// FFTポイント列挙体
+        /// </summary>
+        public enum FFTNum : uint
+        {
+            FFT256 = 256,
+            FFT512 = 512,
+            FFT1024 = 1024,
+            FFT2048 = 2048,
+            FFT4096 = 4096,
+            FFT8192 = 8192,
+        };
 
         /// <summary>
         /// 再生モード列挙体
@@ -90,7 +102,7 @@ namespace Gageas.Lutea.Core
         /// <param name="buffer">出力先</param>
         /// <param name="fftopt">FFTオプション．ポイント数他</param>
         /// <returns></returns>
-        public static uint FFTData(float[] buffer, Wrapper.BASS.BASS.IPlayable.FFT fftopt){
+        public static uint FFTData(float[] buffer, FFTNum fftopt){
             return AppCore.FFTData(buffer, fftopt);
         }
 

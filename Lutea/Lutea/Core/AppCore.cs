@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Gageas.Wrapper.BASS;
 using Gageas.Lutea.Util;
 using Gageas.Lutea.Library;
 using Gageas.Lutea.SoundStream;
+using Gageas.Lutea.OutputDevice;
+using Gageas.Wrapper.BASS;
 using KaoriYa.Migemo;
 using System.Runtime.InteropServices;
 
@@ -70,7 +71,7 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// 再生中かどうか
         /// </summary>
-        internal static bool IsPlaying { get { return OutputManager.Available; } }
+        internal static bool IsPlaying { get { return OutputDevice != null; } }
 
         /// <summary>
         /// ライブラリ
@@ -93,9 +94,9 @@ namespace Gageas.Lutea.Core
         private static InputStream PreparedStream { get; set; }
 
         /// <summary>
-        /// 出力デバイスを管理
+        /// 出力デバイス
         /// </summary>
-        private static readonly OutputManager OutputManager = new OutputManager(StreamProc);
+        private static IOutputDevice OutputDevice;
 
         /// <summary>
         /// 読み込まれたコンポーネントのリストを取得
@@ -197,7 +198,8 @@ namespace Gageas.Lutea.Core
             set
             {
                 MyCoreComponent.Volume = value;
-                OutputManager.Volume = value;
+                if (OutputDevice == null) return;
+                OutputDevice.Volume = value;
             }
         }
 
@@ -208,11 +210,13 @@ namespace Gageas.Lutea.Core
         {
             get
             {
-                return OutputManager.Pause;
+                if (OutputDevice == null) return false;
+                return OutputDevice.Pause;
             }
             set
             {
-                OutputManager.Pause = value;
+                if (OutputDevice == null) return;
+                OutputDevice.Pause = value;
             }
         }
                 
@@ -223,7 +227,8 @@ namespace Gageas.Lutea.Core
         {
             get
             {
-                return OutputManager.OutputMode;
+                if (OutputDevice == null) return Controller.OutputModeEnum.STOP;
+                return OutputDevice.OutputMode;
             }
         }
 
@@ -234,7 +239,8 @@ namespace Gageas.Lutea.Core
         {
             get
             {
-                return OutputManager.OutputResolution;
+                if (OutputDevice == null) return Controller.Resolutions.Unknown;
+                return OutputDevice.OutputResolution;
             }
         }
 
@@ -340,11 +346,11 @@ namespace Gageas.Lutea.Core
         /// <param name="buffer"></param>
         /// <param name="fftopt"></param>
         /// <returns></returns>
-        internal static uint FFTData(float[] buffer, Wrapper.BASS.BASS.IPlayable.FFT fftopt)
+        internal static uint FFTData(float[] buffer, Controller.FFTNum fftopt)
         {
-            if (OutputManager.Available)
+            if (OutputDevice != null)
             {
-                return OutputManager.GetDataFFT(buffer, fftopt);
+                return OutputDevice.GetDataFFT(buffer, fftopt);
             }
             else
             {
@@ -363,14 +369,17 @@ namespace Gageas.Lutea.Core
             if (_current == null) return;
             StreamProcHold = 8192;
             _current.PositionSec = value;
-            OutputManager.Start(); // これ非WASAPI時に必要
+            OutputDevice.Start(); // これ非WASAPI時に必要
         }
 
         internal static double GetPosition()
         {
             var _current = CurrentStream;
             if (_current == null) return 0.0;
-            return _current.PositionSec;
+            var pos = _current.PositionSample;
+            var offset = OutputDevice == null ? 0 : OutputDevice.BufferedSamples;
+            if (offset > pos) return 0;
+            return (pos - offset) / _current.Freq;
         }
 
         internal static double GetLength()
@@ -440,7 +449,7 @@ namespace Gageas.Lutea.Core
             }
 
             // 出力が無効なのにStreamProcがよばれた場合はとりあえずゼロフィルしたバッファを返す
-            if (!OutputManager.Available || _current == null || _current.Finished)
+            if (OutputDevice == null || _current == null || _current.Finished)
             {
                 ZeroMemory(buffer, length);
                 return length;
@@ -466,7 +475,7 @@ namespace Gageas.Lutea.Core
             {
                 // ストリームの終端の場合
                 var readTotal = read1;
-                if (_current.Ready && (_prepare == null || OutputManager.RebuildRequired(_prepare.Freq, _prepare.Chans, true)))
+                if (_current.Ready && (_prepare == null || OutputDeviceFactory.RebuildRequired(OutputDevice, _prepare.Freq, _prepare.Chans, true)))
                 {
                     // 次のストリームが接続できない場合
                     // 現在のバッファの内容を使い切るぐらいまで再生終了を遅延させる
@@ -584,7 +593,11 @@ namespace Gageas.Lutea.Core
         {
             if (FinalizeProcess) return;
             FinalizeProcess = true;
-            OutputManager.KillOutputChannel();
+            if (OutputDevice != null)
+            {
+                OutputDevice.Dispose();
+                OutputDevice = null;
+            }
             MyComponentManager.FinalizeComponents();
         }
         #endregion
@@ -637,10 +650,6 @@ namespace Gageas.Lutea.Core
                 lock (PrepareMutex)
                 {
                     DisposePreparedStream();
-                    if (OutputManager.CanAbort)
-                    {
-                        OutputManager.Stop();
-                    }
                     if (CurrentStream != null)
                     {
                         CurrentStream.Finished = true;
@@ -661,24 +670,42 @@ namespace Gageas.Lutea.Core
             var freq = stream.Freq;
             var chans = stream.Chans;
             var isFloat = true;
-            if (OutputManager.RebuildRequired(freq, chans, isFloat) || Pause)
+            if (OutputDeviceFactory.RebuildRequired(OutputDevice, freq, chans, isFloat) || Pause)
             {
                 try
                 {
-                    OutputManager.KillOutputChannel();
+                    if (OutputDevice != null)
+                    {
+                        var _outputManager = OutputDevice;
+                        OutputDevice = null;
+                        _outputManager.Dispose();
+                    }
                 }
                 catch (Exception e) { Logger.Error(e); }
                 DisposeCurrentStream();
                 Pause = false;
-                OutputManager.ResetOutputChannel(freq, chans, isFloat, (uint)MyCoreComponent.BufferLength, MyCoreComponent.PreferredDeviceName);
-                if (OutputManager.RebuildRequired(freq, chans, isFloat))
+                if (OutputDevice != null)
+                {
+                    var _outputManager = OutputDevice;
+                    OutputDevice = null;
+                    _outputManager.Dispose();
+                }
+                try
+                {
+                    OutputDevice = OutputDeviceFactory.CreateOutputDevice(StreamProc, freq, chans, isFloat, MyCoreComponent.BufferLength, MyCoreComponent.PreferredDeviceName);
+                }
+                catch (NotSupportedException ex)
+                {
+                    Logger.Error(ex);
+                }
+                if (OutputDeviceFactory.RebuildRequired(OutputDevice, freq, chans, isFloat))
                 {
                     Logger.Error("freq: " + freq);
                     Logger.Error("chans: " + chans);
                     Logger.Error("isFloat: " + isFloat);
                     throw new Exception("Can not initialize output device");
                 }
-                OutputManager.SetVolume(Volume, 0);
+                OutputDevice.Volume = Volume;
                 StreamProcHold = 32768;
             }
         }
@@ -730,7 +757,7 @@ namespace Gageas.Lutea.Core
                 DisposeCurrentStream();
                 PreparedStream.Ready = true;
                 CurrentStream = PreparedStream;
-                OutputManager.Resume();
+                OutputDevice.Resume();
                 PreparedStream = null;
                 Pause = false;
                 ElapsedTime = -1;
@@ -774,7 +801,7 @@ namespace Gageas.Lutea.Core
                     // prepareにsyncを設定
 
                     var inStream = new InputStream(nextStream, row);
-                    inStream.Ready = !OutputManager.RebuildRequired(nextStream.Freq, nextStream.Chans, true);
+                    inStream.Ready = !OutputDeviceFactory.RebuildRequired(OutputDevice, nextStream.Freq, nextStream.Chans, true);
                     inStream.SetEvent(on80Percent, nextStream.LengthSec * 0.80);
                     inStream.SetEvent(onPreFinish, Math.Max(nextStream.LengthSec * 0.90, nextStream.LengthSec - 5));
 
@@ -794,7 +821,12 @@ namespace Gageas.Lutea.Core
         /// </summary>
         internal static void Stop()
         {
-            OutputManager.KillOutputChannel();
+            if (OutputDevice != null)
+            {
+                var _outputManager = OutputDevice;
+                OutputDevice = null;
+                _outputManager.Dispose();
+            }
             DisposeCurrentStream();
             DisposePreparedStream();
             ElapsedTime = -1;

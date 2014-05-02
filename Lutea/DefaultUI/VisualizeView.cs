@@ -12,7 +12,7 @@ namespace Gageas.Lutea.DefaultUI
     class VisualizeView : UserControl, System.ComponentModel.ISupportInitialize
     {
         private Boolean FFTLogarithmic = false;
-        private DefaultUIPreference.FFTNum FFTNum;
+        private Controller.FFTNum FFTNum;
         private Color Color1;
         private Color Color2;
         private int SpectrumMode;
@@ -36,7 +36,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        public void Setup(Boolean FFTLogarithmic, DefaultUIPreference.FFTNum FFTNum, Color Color1, Color Color2, DefaultUIPreference.SpectrumModes SpectrumMode)
+        public void Setup(Boolean FFTLogarithmic, Controller.FFTNum FFTNum, Color Color1, Color Color2, DefaultUIPreference.SpectrumModes SpectrumMode)
         {
             this.FFTLogarithmic = FFTLogarithmic;
             this.FFTNum = FFTNum;
@@ -82,7 +82,7 @@ namespace Gageas.Lutea.DefaultUI
             float[] barWidth = null;
             Point[] points = null;
             bool isLogarithmic = FFTLogarithmic; //barPosition,barWidthがLog用で初期化されているかどうか
-            DefaultUIPreference.FFTNum fftNum = FFTNum;
+            Controller.FFTNum fftNum = FFTNum;
             int w = 0;
             int h = 0;
             Bitmap b = null;
@@ -141,18 +141,7 @@ namespace Gageas.Lutea.DefaultUI
                 }
                 if ((w * h) > 0)
                 {
-                    Wrapper.BASS.BASS.IPlayable.FFT bassFFTNum = fftNum == DefaultUIPreference.FFTNum.FFT256
-                        ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT256
-                        : fftNum == DefaultUIPreference.FFTNum.FFT512
-                        ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT512
-                        : fftNum == DefaultUIPreference.FFTNum.FFT1024
-                        ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT1024
-                        : fftNum == DefaultUIPreference.FFTNum.FFT2048
-                        ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT2048
-                        : fftNum == DefaultUIPreference.FFTNum.FFT4096
-                        ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT4096
-                        : Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT8192;
-                    Controller.FFTData(fftdata, bassFFTNum);
+                    Controller.FFTData(fftdata, fftNum);
                     int n = fftdata.Length;
                     float ww = (float)w / n;
                     using (var g = Graphics.FromImage(b))
