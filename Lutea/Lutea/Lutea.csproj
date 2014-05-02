@@ -74,6 +74,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\x86\Release\Lutea.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>default.ico</ApplicationIcon>
@@ -105,6 +106,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\ComponentManager.cs" />
+    <Compile Include="OutputDevice\BASSOutput.cs" />
+    <Compile Include="OutputDevice\BASSWASAPIOutput.cs" />
+    <Compile Include="OutputDevice\IOutputDevice.cs" />
+    <Compile Include="OutputDevice\OutputDeviceFactory.cs" />
+    <Compile Include="OutputDevice\OutputDevice.cs" />
     <Compile Include="SoundStream\BASSDecodeStreamAdapter.cs" />
     <Compile Include="SoundStream\DecodeStreamFactory.cs" />
     <Compile Include="Core\EnumFlagsUITypeEdotorEditControl.cs">
@@ -220,6 +226,7 @@
   <ItemGroup>
     <Content Include="default.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -127,11 +127,11 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private FFTNum _FFTNum = FFTNum.FFT1024;
+        private Controller.FFTNum _FFTNum = Controller.FFTNum.FFT1024;
         [Description("FFTの細かさ")]
-        [DefaultValue(FFTNum.FFT1024)]
+        [DefaultValue(Controller.FFTNum.FFT1024)]
         [Category("Spectrum Analyzer")]
-        public FFTNum FFTNumber
+        public Controller.FFTNum FFTNumber
         {
             get
             {

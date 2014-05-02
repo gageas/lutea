@@ -60,6 +60,11 @@ namespace Gageas.Lutea.DefaultUI
         CoverViewerForm coverViewForm;
 
         /// <summary>
+        /// Importerのインスタンスを保持
+        /// </summary>
+        Importer importer;
+
+        /// <summary>
         /// プレイリストのカバーアートをバックグラウンドで読み込むオブジェクト
         /// </summary>
         private BackgroundCoverartsLoader backgroundCoverartLoader;
@@ -1371,7 +1376,7 @@ namespace Gageas.Lutea.DefaultUI
             toolStripProgressBar1.Visible = true;
             toolStripProgressBar1.Value = 0;
             toolStripProgressBar1.Maximum = int.MaxValue;
-            var importer = Importer.CreateFolderImporter(paths, fastMode);
+            importer = Importer.CreateFolderImporter(paths, fastMode);
             EventHandler evt = (x, y) => { var ret = MessageBox.Show("中断しますか？", "インポート処理", MessageBoxButtons.OKCancel); if (ret == System.Windows.Forms.DialogResult.OK) { importer.Abort(); toolStripProgressBar1.Visible = false; } };
             toolStripProgressBar1.Click += evt;
             toolStripProgressBar1.Tag = evt;
@@ -1506,7 +1511,7 @@ namespace Gageas.Lutea.DefaultUI
             if (playlistView.SelectedIndices.Count > 0)
             {
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                var importer = Importer.CreateFileImporter(playlistView
+                importer = Importer.CreateFileImporter(playlistView
                         .GetSelectedObjects()
                         .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), true);
                 importer.Start();
@@ -1518,7 +1523,7 @@ namespace Gageas.Lutea.DefaultUI
             if (playlistView.SelectedIndices.Count > 0)
             {
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                var importer = Importer.CreateFileImporter(playlistView
+                importer = Importer.CreateFileImporter(playlistView
                         .GetSelectedObjects()
                         .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), false);
                 importer.Start();
@@ -2004,6 +2009,17 @@ namespace Gageas.Lutea.DefaultUI
         public void Quit()
         {
             quitFromCore = true;
+            if (importer != null)
+            {
+                try
+                {
+                    importer.Abort();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
+            }
             this.Invoke((MethodInvoker)(() =>
             {
                 if (logview != null)
