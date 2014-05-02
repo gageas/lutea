@@ -8,6 +8,14 @@ namespace Gageas.Lutea.Util
 {
     static class StreamUtil
     {
+        /// <summary>
+        /// ストリームから読み出し。要求バイト数読めなければ例外をスロー
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="count"></param>
+        /// <exception cref="System.IO.IOException">IOException</exception>
+        /// <exception cref="System.IO.EndOfStreamException">要求バイト数読めなかった</exception>
+        /// <returns></returns>
         public static byte[] ReadBytes(this Stream stream, int count)
         {
             byte[] buffer = new byte[count];
