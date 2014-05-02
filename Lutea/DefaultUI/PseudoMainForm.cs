@@ -17,7 +17,7 @@ namespace Gageas.Lutea.DefaultUI
         private const int THBN_CLICKED = 0x1800;
 
         private int WIDTH = 200;
-        private int HEIGHT { get { return WIDTH / 3; } }
+        private int HEIGHT { get { return WIDTH / 2; } }
         private int PADDING { get { return (int)(HEIGHT * 0.05); } }
         private int BORDER { get { return (int)(HEIGHT * 0.025); } }
 
@@ -44,11 +44,9 @@ namespace Gageas.Lutea.DefaultUI
         private DefaultUIForm mainForm;
 
         /// <summary>
-        /// カバーアート画像のキャッシュ
+        /// 背景画像のキャッシュ
         /// </summary>
-        private Image cover;
-
-        private Image coverx;
+        private Image back = new Bitmap(1, 1);
 
         public PseudoMainForm(DefaultUIForm mainForm)
         {
@@ -87,16 +85,46 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (TaskbarExt != null)
             {
-                var img = Controller.Current.CoverArtImage();
-                if (img == null)
+                var backCreate = new Bitmap(Width, Height);
+                using (var gg = Graphics.FromImage(backCreate))
                 {
-                    cover = null;
-                    coverx = null;
+                    var bgcolor = Color.White;
+                    var img = Controller.Current.CoverArtImage();
+                    if (img != null)
+                    {
+                        var coverx = Util.ImageUtil.GetResizedImageWithoutPadding(img, WIDTH, WIDTH * 2);
+                        if (coverx != null)
+                        {
+                            var h = coverx.Height * (Width - PADDING - PADDING) / coverx.Width;
+                            gg.DrawImage(coverx, 0, -(h - Height) / 3);
+                        }
+                        var onepx = Util.ImageUtil.GetResizedImageWithoutPadding(img, 1, 64);
+                        bgcolor = ((Bitmap)onepx).GetPixel(0, 0);
+                    }
+                    else
+                    {
+                        gg.FillRectangle(Brushes.DarkSlateBlue, ClientRectangle);
+                    }
+                    gg.FillRectangle(new SolidBrush(Color.FromArgb(64, Color.White)), new Rectangle(0,(int)(Height*0.50),Width, Height));
+
+                    gg.FillRectangle(Brushes.Tan, 0, 0, BORDER, Height);
+                    gg.FillRectangle(Brushes.Tan, 0, 0, Width, BORDER);
+                    gg.FillRectangle(Brushes.Tan, Width - BORDER, 0, BORDER, Height);
+                    gg.FillRectangle(Brushes.Tan, 0, Height - BORDER, Width, BORDER);
+                    // OS側でサムネイルを縮小させると汚いので自前でオーバーサンプリング描画する
+                    using (var bg = new Bitmap((Width - BORDER) * OVERSAMPLE, Height * OVERSAMPLE))
+                    using (var g = Graphics.FromImage(bg))
+                    {
+                        RenderContents(g, bg.Width, bg.Height, HEIGHT * OVERSAMPLE, PADDING * OVERSAMPLE / 2);
+                        gg.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        gg.DrawImage(bg, BORDER, 0, Width - BORDER, Height);
+                    }
                 }
-                else
+                var _back = back;
+                back = backCreate;
+                if (_back != null)
                 {
-                    cover = Util.ImageUtil.GetResizedImageWithoutPadding(img, HEIGHT - PADDING - PADDING, HEIGHT - PADDING - PADDING);
-                    coverx = Util.ImageUtil.GetResizedImageWithoutPadding(img, WIDTH, WIDTH * 2);
+                    _back.Dispose();
                 }
                 this.mainForm.Invoke((MethodInvoker)(() =>
                 {
@@ -124,25 +152,49 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private void RenderBorderedString(string text, Graphics g, int x, int y, int width, int height, Font font, StringFormat fmt)
+        {
+            Rectangle rect;
+            var delta = OVERSAMPLE / 2;
+            var brush1 = Brushes.White;
+            var brush2 = Brushes.Black;
+
+            rect = new Rectangle(x + delta, y + delta, width, height);
+            g.DrawString(text, font, brush1, rect, fmt);
+            rect = new Rectangle(x + delta, y - delta, width, height);
+            g.DrawString(text, font, brush1, rect, fmt);
+            rect = new Rectangle(x - delta, y + delta, width, height);
+            g.DrawString(text, font, brush1, rect, fmt);
+            rect = new Rectangle(x - delta, y - delta, width, height);
+            g.DrawString(text, font, brush1, rect, fmt);
+
+            rect = new Rectangle(x + delta * 2, y, width, height);
+            g.DrawString(text, font, brush1, rect, fmt);
+            rect = new Rectangle(x - delta * 2, y, width, height);
+            g.DrawString(text, font, brush1, rect, fmt);
+            rect = new Rectangle(x, y + delta * 2, width, height);
+            g.DrawString(text, font, brush1, rect, fmt);
+            rect = new Rectangle(x, y - delta * 2, width, height);
+            g.DrawString(text, font, brush1, rect, fmt);
+
+            rect = new Rectangle(x, y, width, height);
+            g.DrawString(text, font, brush2, rect, fmt);
+        }
+
         private void RenderContents(Graphics g, int width, int height, int size, int padding)
         {
             var fmt = new StringFormat(StringFormatFlags.FitBlackBox | StringFormatFlags.NoClip);
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixel;
-            var rsideRect = new Rectangle(0, (int)(size * 0.13) + padding, width - padding, height - padding - padding);
+            var rsideRect = new Rectangle(0, (int)(size * 0.45) + padding, width - padding, height - padding - padding);
 
-            var appRect = new Rectangle(rsideRect.X, padding, rsideRect.Width, (int)(rsideRect.Height * 0.09));
-            var appName = "Lutea audio player";
-            var appFont = new Font(this.Font.Name, appRect.Height, FontStyle.Regular, GraphicsUnit.Pixel, 0x00, false);
-            g.DrawString(appName, appFont, Brushes.Black, appRect, fmt);
+            var albumRect = new Rectangle(rsideRect.X + 3, rsideRect.Y + padding + 3, rsideRect.Width, (int)(rsideRect.Height * 0.11));
+            RenderBorderedString(Controller.Current.MetaData("tagAlbum"), g, albumRect.X, albumRect.Y, albumRect.Width, albumRect.Height, new Font(this.Font.Name, albumRect.Height, FontStyle.Bold, GraphicsUnit.Pixel, 0x00, false), fmt);
 
-            var albumRect = new Rectangle(rsideRect.X, rsideRect.Y + padding, rsideRect.Width, (int)(rsideRect.Height * 0.14));
-            g.DrawString(Controller.Current.MetaData("tagAlbum"), new Font(this.Font.Name, albumRect.Height, FontStyle.Regular, GraphicsUnit.Pixel, 0x00, false), Brushes.Black, albumRect, fmt);
+            var titleRect = new Rectangle(rsideRect.X, albumRect.Bottom + padding, rsideRect.Width, (int)(rsideRect.Height * 0.14));
+            RenderBorderedString(Controller.Current.MetaData("tagTitle"), g, titleRect.X, titleRect.Y, titleRect.Width, titleRect.Height, new Font(this.Font.Name, titleRect.Height, FontStyle.Bold, GraphicsUnit.Pixel, 0x00, false), fmt);
 
-            var titleRect = new Rectangle(rsideRect.X, albumRect.Bottom + padding, rsideRect.Width, (int)(rsideRect.Height * 0.17));
-            g.DrawString(Controller.Current.MetaData("tagTitle"), new Font(this.Font.Name, titleRect.Height, FontStyle.Bold, GraphicsUnit.Pixel, 0x00, false), Brushes.Black, titleRect, fmt);
-
-            var artistRect = new Rectangle(rsideRect.X, titleRect.Bottom + padding, rsideRect.Width, (int)(rsideRect.Height * 0.14));
-            g.DrawString(Controller.Current.MetaData("tagArtist"), new Font(this.Font.Name, artistRect.Height, FontStyle.Regular, GraphicsUnit.Pixel, 0x00, false), Brushes.Black, artistRect, fmt);
+            var artistRect = new Rectangle(rsideRect.X, titleRect.Bottom + padding, rsideRect.Width, (int)(rsideRect.Height * 0.12));
+            RenderBorderedString(Controller.Current.MetaData("tagArtist"), g, artistRect.X, artistRect.Y, artistRect.Width, artistRect.Height, new Font(this.Font.Name, artistRect.Height, FontStyle.Bold, GraphicsUnit.Pixel, 0x00, false), fmt);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -155,33 +207,12 @@ namespace Gageas.Lutea.DefaultUI
             }
             else
             {
-                if (coverx != null)
-                {
-                    var h = coverx.Height * (Width - PADDING - PADDING) / coverx.Width;
-                    e.Graphics.DrawImage(coverx, 0, -(h - Height) / 3);
-                    e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(192, 255, 255, 255)), ClientRectangle);
-                }
-                e.Graphics.FillRectangle(Brushes.Tan, 0, 0, 2, Height);
-                e.Graphics.FillRectangle(Brushes.Tan, 0, 0, Width, 2);
-                e.Graphics.FillRectangle(Brushes.Tan, Width - 2, 0, 2, Height);
-                e.Graphics.FillRectangle(Brushes.Tan, 0, Height - 2, Width, 2);
-                // OS側でサムネイルを縮小させると汚いので自前でオーバーサンプリング描画する
-                var left = PADDING + (cover == null ? 0 : cover.Width + BORDER);
-                using (var bg = new Bitmap((Width - left) * OVERSAMPLE, Height * OVERSAMPLE))
-                using (var g = Graphics.FromImage(bg))
-                {
-                    RenderContents(g, bg.Width, bg.Height, HEIGHT * OVERSAMPLE, PADDING * OVERSAMPLE);
-                    e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    e.Graphics.DrawImage(bg, left, 0, Width - left, Height);
-                }
+                e.Graphics.DrawImage(back, 0, 0);
                 var barHeihgt = (int)(HEIGHT * 0.08);
-                var progressRect = new Rectangle(left, Height - barHeihgt - PADDING, Width - left - PADDING - 1, barHeihgt - 1);
-                e.Graphics.DrawRectangle(Pens.Gray, progressRect);
-                e.Graphics.FillRectangle(Brushes.Gray, new Rectangle(progressRect.X, progressRect.Y, (int)((progressRect.Width) * (Controller.Current.Position / Controller.Current.Length)), progressRect.Height));
-                if (cover != null)
-                {
-                    e.Graphics.DrawImage(cover, PADDING, PADDING + (Height - PADDING - PADDING - cover.Height) / 2);
-                }
+                var progressRect = new Rectangle(PADDING, Height - barHeihgt - PADDING, Width - PADDING - PADDING - 1, barHeihgt - 1);
+                var x = (int)((progressRect.Width - BORDER - BORDER) * (Controller.Current.Position / Controller.Current.Length)) + BORDER;
+                e.Graphics.FillPolygon(Brushes.White, new Point[] { new Point(x - PADDING, Height), new Point(x + PADDING, Height), new Point(x, Height - PADDING) });
+                e.Graphics.DrawPolygon(Pens.Black, new Point[] { new Point(x - PADDING, Height), new Point(x + PADDING, Height), new Point(x, Height - PADDING) });
             }
         }
 
