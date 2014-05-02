@@ -556,6 +556,10 @@ namespace Gageas.Wrapper.BASS
             public override uint GetData(IntPtr buffer, uint length)
             {
                 var readlen = _BASS_ChannelGetData(handle, buffer, length);
+                if (readlen == 0xffffffff) // err
+                {
+                    readlen = 0;
+                }
                 positionCache += readlen;
                 return readlen;
             }
@@ -563,6 +567,10 @@ namespace Gageas.Wrapper.BASS
             public override uint GetDataFFT(float[] buf, IPlayable.FFT fft)
             {
                 var readlen = _BASS_ChannelGetData(handle, buf, (uint)fft);
+                if (readlen == 0xffffffff) // err
+                {
+                    readlen = 0;
+                }
                 positionCache += readlen;
                 return readlen;
             }
