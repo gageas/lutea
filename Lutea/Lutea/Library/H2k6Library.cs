@@ -11,7 +11,60 @@ using Gageas.Lutea.Core;
 
 namespace Gageas.Lutea
 {
-    public enum H2k6Codec { NA, MP1, MP2, MP3, OGG, WAV, WMA, AAC, MP4, ALAC };
+    /// <summary>
+    /// H2k6のCodecカラムの定義
+    /// </summary>
+    public enum H2k6Codec { 
+        /// <summary>
+        /// 不明
+        /// </summary>
+        NA, 
+
+        /// <summary>
+        /// MP1
+        /// </summary>
+        MP1, 
+
+        /// <summary>
+        /// MP2
+        /// </summary>
+        MP2, 
+
+        /// <summary>
+        /// MP3
+        /// </summary>
+        MP3, 
+
+        /// <summary>
+        /// OGG
+        /// </summary>
+        OGG, 
+
+        /// <summary>
+        /// WAV
+        /// </summary>
+        WAV, 
+
+        /// <summary>
+        /// WMA
+        /// </summary>
+        WMA, 
+
+        /// <summary>
+        /// AAC
+        /// </summary>
+        AAC, 
+
+        /// <summary>
+        /// MP4
+        /// </summary>
+        MP4, 
+
+        /// <summary>
+        /// ALAC
+        /// </summary>
+        ALAC 
+    };
     class LuteaAudioTrack
     {
         public int channels;
@@ -128,8 +181,16 @@ namespace Gageas.Lutea
         public List<KeyValuePair<string, object>> tag;
     }
 
+    /// <summary>
+    /// 音楽ライブラリクラス
+    /// </summary>
     public class MusicLibrary
     {
+        /// <summary>
+        /// ライブラリテーブルを生成するためのSQL文を生成
+        /// </summary>
+        /// <param name="columns">テーブルに作成するカラム</param>
+        /// <returns>CREATE文のSQL</returns>
         public static String GetCreateSchema(Column[] columns)
         {
             return "CREATE TABLE IF NOT EXISTS list(" + String.Join(" , ", columns.Select(_ =>
@@ -154,11 +215,20 @@ namespace Gageas.Lutea
             " , PRIMARY KEY(" + String.Join(",", columns.Where(_ => _.PrimaryKey).Select(_ => _.Name).ToArray()) + "));";
         }
 
+        /// <summary>
+        /// ライブラリ定義情報テーブルを生成するためのSQL文を生成
+        /// </summary>
+        /// <returns>CREATE文のSQL</returns>
         public static String GetCreateLibraryDefinitionSchema()
         {
             return "CREATE TABLE IF NOT EXISTS library_definition( column_name TEXT UNIQUE, localized_name TEXT, type INTEGER, is_primary INTEGER, mapped_tag_field TEXT, is_text_search_target TEXT, omit_on_import INTEGER);";
         }
 
+        /// <summary>
+        /// ライブラリのインデックスを生成するためのSQL文を生成
+        /// </summary>
+        /// <param name="columns">作成するカラム</param>
+        /// <returns>CREATE文のSQL</returns>
         public static String GetCreateIndexSchema(Column[] columns)
         {
             return String.Join(" ", columns.Where(_ => _.Name == LibraryDBColumnTextMinimum.rating || _.IsTextSearchTarget).SelectMany(_ => new string[]{
@@ -268,15 +338,19 @@ namespace Gageas.Lutea
                         InitializeLibraryDB(db, Columns);
                     }
                 }
-                catch (Exception e)
+                catch (SQLite3DB.SQLite3Exception e)
                 {
                     Logger.Error(e.ToString());
                 }
-            }else{
+            }
+            else
+            {
                 try
                 {
                     Columns = LoadColumnDefinitionFromDB();
-                }catch(Exception e){
+                }
+                catch (SQLite3DB.SQLite3Exception e)
+                {
                     Logger.Error(e.ToString());
                 };
 
@@ -328,7 +402,7 @@ namespace Gageas.Lutea
 
                     db.Exec("INSERT INTO list ( " + String.Join(",", cols) + ") SELECT " + String.Join(",", colsx) + " FROM __list_backup;");
                 }
-                catch (Exception e)
+                catch (SQLite3DB.SQLite3Exception e)
                 {
                     Logger.Log(e);
                 }
