@@ -106,7 +106,7 @@ namespace Gageas.Lutea.Tags
                     }
                 }
             }
-            catch { }
+            catch(IOException) { }
 
             if (tag == null) return null;
 

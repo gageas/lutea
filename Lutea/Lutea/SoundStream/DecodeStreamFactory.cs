@@ -115,6 +115,14 @@ namespace Gageas.Lutea.SoundStream
             return null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <exception cref="System.ArgumentException"></exception>
+        /// <param name="filename"></param>
+        /// <param name="preScan"></param>
+        /// <param name="tag"></param>
+        /// <returns></returns>
         public static PullSoundStreamBase CreateFileStreamPrimitive(string filename, bool preScan = false, List<KeyValuePair<string, object>> tag = null)
         {
             PullSoundStreamBase self = new BASSDecodeStreamAdapter(filename, true, preScan);

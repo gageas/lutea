@@ -31,6 +31,13 @@ namespace Gageas.Lutea.SoundStream
             return flag;
         }
 
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <exception cref="System.ArgumentException"></exception>
+        /// <param name="filename"></param>
+        /// <param name="isFloat"></param>
+        /// <param name="preScan"></param>
         public BASSDecodeStreamAdapter(string filename, bool isFloat = true, bool preScan = false)
         {
             if (!Initialized)
@@ -38,7 +45,14 @@ namespace Gageas.Lutea.SoundStream
                 BASS.BASS_SetDevice(0);
                 Initialized = true;
             }
-            this.Stream = new BASS.FileStream(filename, MakeFlag(isFloat, preScan));
+            try
+            {
+                this.Stream = new BASS.FileStream(filename, MakeFlag(isFloat, preScan));
+            }
+            catch (BASS.BASSException ex)
+            {
+                new ArgumentException("Cannot create stream", ex);
+            }
         }
 
         public override void Dispose()
