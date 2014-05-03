@@ -200,7 +200,9 @@ namespace Gageas.Lutea.DefaultUI
         protected override void OnPaint(PaintEventArgs e)
         {
             e.Graphics.FillRectangle(Brushes.White, BORDER, BORDER, Width - BORDER - BORDER, Height - BORDER - BORDER);
-            if (!Controller.IsPlaying)
+            var len = Controller.Current.Length;
+            var pos = Controller.Current.Position;
+            if (len == 0)
             {
                 e.Graphics.DrawIcon(this.Icon, (this.Width - this.Icon.Width) / 2, (this.Height - this.Icon.Height) / 2);
                 return;
@@ -210,7 +212,7 @@ namespace Gageas.Lutea.DefaultUI
                 e.Graphics.DrawImage(back, 0, 0);
                 var barHeihgt = (int)(HEIGHT * 0.08);
                 var progressRect = new Rectangle(PADDING, Height - barHeihgt - PADDING, Width - PADDING - PADDING - 1, barHeihgt - 1);
-                var x = (int)((progressRect.Width - BORDER - BORDER) * (Controller.Current.Position / Controller.Current.Length)) + BORDER;
+                var x = (int)((progressRect.Width - BORDER - BORDER) * (pos / len)) + BORDER;
                 e.Graphics.FillPolygon(Brushes.White, new Point[] { new Point(x - PADDING, Height), new Point(x + PADDING, Height), new Point(x, Height - PADDING) });
                 e.Graphics.DrawPolygon(Pens.Black, new Point[] { new Point(x - PADDING, Height), new Point(x + PADDING, Height), new Point(x, Height - PADDING) });
             }
