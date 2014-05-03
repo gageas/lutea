@@ -122,7 +122,7 @@ namespace Gageas.Lutea.Library
         /// </summary>
         public void Abort()
         {
-            ImporterThread.Abort();
+            ImporterThread.Interrupt();
             AbortWorkers();
         }
 
@@ -190,7 +190,7 @@ namespace Gageas.Lutea.Library
                     libraryDB.Exec("BEGIN;");
                     Logger.Log("library.dbへのインポートを開始しました");
                 }
-                catch
+                catch(SQLite3DB.SQLite3Exception)
                 {
                     Logger.Error("library.dbへのインポートを開始できませんでした");
                     return;
@@ -236,7 +236,7 @@ namespace Gageas.Lutea.Library
                         libraryDB.Exec("REINDEX;");
                     }
                 }
-                catch
+                catch(SQLite3DB.SQLite3Exception)
                 {
                     Logger.Error("library.dbへのインポートを完了できませんでした");
                 }
@@ -354,7 +354,7 @@ namespace Gageas.Lutea.Library
                             tr.freq = (int)strm.Freq;
                         }
                     }
-                    catch (Exception ex)
+                    catch (ArgumentException ex)
                     {
                         Logger.Error("cannot open file (by BASS)" + file_name);
                         Logger.Debug(ex);
@@ -418,32 +418,36 @@ namespace Gageas.Lutea.Library
         /// </summary>
         private void ConsumeToBeAnalyzeQueueProc()
         {
-            using (var libraryDB = Controller.GetDBConnection())
-            using (var selectModifySTMT = libraryDB.Prepare(SelectModifySTMT))
+            try
             {
-                var threadLocalResults = new List<LuteaAudioTrack>();
-                while (ToBeAnalyzeDirectories.Count > 0)
+                using (var libraryDB = Controller.GetDBConnection())
+                using (var selectModifySTMT = libraryDB.Prepare(SelectModifySTMT))
                 {
-                    string directory_name;
-                    lock (ToBeAnalyzeDirectories)
+                    var threadLocalResults = new List<LuteaAudioTrack>();
+                    while (ToBeAnalyzeDirectories.Count > 0)
                     {
-                        if (ToBeAnalyzeDirectories.Count == 0) continue;
-                        directory_name = ToBeAnalyzeDirectories[0];
-                        ToBeAnalyzeDirectories.RemoveAt(0);
-                    }
-                    Message(directory_name);
-                    Step_read();
+                        string directory_name;
+                        lock (ToBeAnalyzeDirectories)
+                        {
+                            if (ToBeAnalyzeDirectories.Count == 0) continue;
+                            directory_name = ToBeAnalyzeDirectories[0];
+                            ToBeAnalyzeDirectories.RemoveAt(0);
+                        }
+                        Message(directory_name);
+                        Step_read();
 
-                    var cuefiles = System.IO.Directory.GetFiles(directory_name, "*.CUE", System.IO.SearchOption.TopDirectoryOnly);
-                    var otherfiles = System.IO.Directory.GetFiles(directory_name, "*.*", System.IO.SearchOption.TopDirectoryOnly)
-                        .Where(e => type2ext.Where(_=>TypesToImport.HasFlag(_.Key)).Select(_=>_.Value).Distinct().Contains(System.IO.Path.GetExtension(e).ToUpper()));
-                    DoAnalyze(cuefiles, otherfiles, threadLocalResults, selectModifySTMT);
-                }
-                lock (ToBeImportTracks)
-                {
-                    ToBeImportTracks.AddRange(threadLocalResults);
+                        var cuefiles = System.IO.Directory.GetFiles(directory_name, "*.CUE", System.IO.SearchOption.TopDirectoryOnly);
+                        var otherfiles = System.IO.Directory.GetFiles(directory_name, "*.*", System.IO.SearchOption.TopDirectoryOnly)
+                            .Where(e => type2ext.Where(_ => TypesToImport.HasFlag(_.Key)).Select(_ => _.Value).Distinct().Contains(System.IO.Path.GetExtension(e).ToUpper()));
+                        DoAnalyze(cuefiles, otherfiles, threadLocalResults, selectModifySTMT);
+                    }
+                    lock (ToBeImportTracks)
+                    {
+                        ToBeImportTracks.AddRange(threadLocalResults);
+                    }
                 }
             }
+            catch (ThreadInterruptedException) { }
         }
 
         /// <summary>
@@ -454,7 +458,7 @@ namespace Gageas.Lutea.Library
             if (Workers.Count == 0) return;
             foreach (var worker in Workers)
             {
-                worker.Abort();
+                worker.Interrupt();
             }
             Workers.Clear();
         }
@@ -466,34 +470,47 @@ namespace Gageas.Lutea.Library
         {
             lock (LOCKOBJ)
             {
-                AbortWorkers();
-                AlreadyAnalyzedFiles.Clear();
-
-                Message("ディレクトリを検索しています");
-                ToBeAnalyzeDirectories = new List<string>();
-                foreach (var path in ToBeImportPath)
+                try
                 {
+                    AbortWorkers();
+                    AlreadyAnalyzedFiles.Clear();
+
+                    Message("ディレクトリを検索しています");
+                    ToBeAnalyzeDirectories = new List<string>();
+                    foreach (var path in ToBeImportPath)
+                    {
+                        try
+                        {
+                            var directories = System.IO.Directory.GetDirectories(path, "*", System.IO.SearchOption.AllDirectories);
+                            ToBeAnalyzeDirectories.AddRange(directories);
+                            ToBeAnalyzeDirectories.Add(path);
+                        }
+                        catch (ArgumentException e)
+                        {
+                            Logger.Error(e);
+                        }
+                        catch (UnauthorizedAccessException e)
+                        {
+                            Logger.Error(e);
+                        }
+                        catch (System.IO.IOException e)
+                        {
+                            Logger.Error(e);
+                        }
+
+                    }
+                    SetMaximum_read(ToBeAnalyzeDirectories.Count);
                     try
                     {
-                        var directories = System.IO.Directory.GetDirectories(path, "*", System.IO.SearchOption.AllDirectories);
-                        ToBeAnalyzeDirectories.AddRange(directories);
-                        ToBeAnalyzeDirectories.Add(path);
+                        DoAnalysisByWorkerThreads();
+                        WriteToDB(true);
                     }
-                    catch (Exception e)
+                    catch (SQLite3DB.SQLite3Exception e)
                     {
                         Logger.Log(e);
                     }
                 }
-                SetMaximum_read(ToBeAnalyzeDirectories.Count);
-                try
-                {
-                    DoAnalysisByWorkerThreads();
-                    WriteToDB(true);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e);
-                }
+                catch (ThreadInterruptedException) { }
             }
         }
 
@@ -502,24 +519,28 @@ namespace Gageas.Lutea.Library
         /// </summary>
         private void ImportMultipleFilesThreadProc()
         {
-            using (var libraryDB = Controller.GetDBConnection())
-            using (var selectModifySTMT = libraryDB.Prepare(SelectModifySTMT))
+            try
             {
-                lock (LOCKOBJ)
+                using (var libraryDB = Controller.GetDBConnection())
+                using (var selectModifySTMT = libraryDB.Prepare(SelectModifySTMT))
                 {
-                    AbortWorkers();
-                    AlreadyAnalyzedFiles.Clear();
-                    var filenames = ToBeImportFilenames
-                        .Select(_ => _.Trim())
-                        .Distinct()
-                        .Where(_ => System.IO.File.Exists(_));
-                    IEnumerable<string> filenameOfCUEs = filenames.Where(_ => System.IO.Path.GetExtension(_).ToUpper() == ".CUE");
-                    var filenameOthers = filenames.Except(filenameOfCUEs);
-                    // シングルスレッドで回すのでスレッドローカルのキューは不要（スレッドローカルキューとしてToBeImportTracksを与える）
-                    DoAnalyze(filenameOfCUEs, filenameOthers, ToBeImportTracks, selectModifySTMT);
-                    WriteToDB(false);
+                    lock (LOCKOBJ)
+                    {
+                        AbortWorkers();
+                        AlreadyAnalyzedFiles.Clear();
+                        var filenames = ToBeImportFilenames
+                            .Select(_ => _.Trim())
+                            .Distinct()
+                            .Where(_ => System.IO.File.Exists(_));
+                        IEnumerable<string> filenameOfCUEs = filenames.Where(_ => System.IO.Path.GetExtension(_).ToUpper() == ".CUE");
+                        var filenameOthers = filenames.Except(filenameOfCUEs);
+                        // シングルスレッドで回すのでスレッドローカルのキューは不要（スレッドローカルキューとしてToBeImportTracksを与える）
+                        DoAnalyze(filenameOfCUEs, filenameOthers, ToBeImportTracks, selectModifySTMT);
+                        WriteToDB(false);
+                    }
                 }
             }
+            catch (ThreadInterruptedException) { }
         }
 
         /// <summary>
@@ -649,7 +670,9 @@ namespace Gageas.Lutea.Library
                     return result1.Groups[1].Value;
                 }
             }
-            catch { };
+            catch (FormatException) { }
+            catch (ArgumentException) { }
+            catch (OverflowException) { }
             return null;
         }
     }

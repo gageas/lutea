@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using Gageas.Wrapper.BASS;
+using Gageas.Lutea.SoundStream;
 using Gageas.Lutea.Tags;
 
 namespace Gageas.Lutea.Library
@@ -140,15 +140,15 @@ namespace Gageas.Lutea.Library
             long bits = 0;
             try
             {
-                using (var strm = new BASS.FileStream(filename, BASS.Stream.StreamFlag.BASS_STREAM_DECODE))
+                using (var strm = SoundStream.DecodeStreamFactory.CreateFileStreamPrimitive(filename))
                 {
-                    sec = strm.length;
-                    info.Channels = (int)strm.Info.Chans;
-                    info.Freq = (int)strm.Info.Freq;
+                    sec = strm.LengthSec;
+                    info.Channels = (int)strm.Chans;
+                    info.Freq = (int)strm.Freq;
                     bits = (new FileInfo(filename)).Length * 8;
                 }
             }
-            catch(Exception e)
+            catch(ArgumentException e)
             {
                 Logger.Error(filename + "\n" + e);
             }
