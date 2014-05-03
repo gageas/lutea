@@ -66,6 +66,7 @@ namespace Gageas.Lutea.Tags
             }
             catch (ArgumentException) { }
             catch (IOException) { }
+            catch (FormatException) { }
 
             return parser.tags;
         }
@@ -143,6 +144,7 @@ namespace Gageas.Lutea.Tags
                         }
                         catch (ArgumentException) { }
                         catch (IOException) { }
+                        catch (FormatException) { }
                         break;
                     case 0x6D703461: // mp4a
                         ReadMp4a((int)atom_size);
