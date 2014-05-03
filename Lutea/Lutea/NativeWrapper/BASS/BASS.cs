@@ -558,6 +558,8 @@ namespace Gageas.Wrapper.BASS
                 var readlen = _BASS_ChannelGetData(handle, buffer, length);
                 if (readlen == 0xffffffff) // err
                 {
+                    // 終端してもpositionがfilesizeに到達しない場合があるので強制的にpositionCacheをfilesizeに書き換える。
+                    if (positionCache != 0) positionCache = filesize;
                     readlen = 0;
                 }
                 positionCache += readlen;
@@ -569,6 +571,8 @@ namespace Gageas.Wrapper.BASS
                 var readlen = _BASS_ChannelGetData(handle, buf, (uint)fft);
                 if (readlen == 0xffffffff) // err
                 {
+                    // 終端してもpositionがfilesizeに到達しない場合があるので強制的にpositionCacheをfilesizeに書き換える。
+                    if (positionCache != 0) positionCache = filesize;
                     readlen = 0;
                 }
                 positionCache += readlen;
