@@ -51,7 +51,7 @@ namespace Gageas.Lutea.SoundStream
             }
             catch (BASS.BASSException ex)
             {
-                new ArgumentException("Cannot create stream", ex);
+                throw new ArgumentException("Cannot create stream", ex);
             }
         }
 
