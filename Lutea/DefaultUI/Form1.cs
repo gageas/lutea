@@ -1604,6 +1604,7 @@ namespace Gageas.Lutea.DefaultUI
         #region album art list view ToolStripMenu event
         private void toolStripComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (!toolStripComboBox1.Enabled) return;
             pref.CoverArtSizeInCoverArtList = int.Parse(toolStripComboBox1.SelectedItem.ToString());
             backgroundCoverartLoader.Reset(pref.CoverArtSizeInCoverArtList);
             InitAlbumArtList();
@@ -1611,8 +1612,10 @@ namespace Gageas.Lutea.DefaultUI
 
         private void coverArtViewContextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
-            var item = (System.Windows.Forms.ToolStripComboBox)coverArtViewContextMenuStrip.Items[1];
+            var item = toolStripComboBox1;
+            toolStripComboBox1.Enabled = false;
             item.SelectedItem = pref.CoverArtSizeInCoverArtList.ToString();
+            toolStripComboBox1.Enabled = true;
         }
         #endregion
 
