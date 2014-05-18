@@ -28,12 +28,8 @@ namespace Gageas.Lutea.DefaultUI
         void VisualizeView_Paint(object sender, PaintEventArgs e)
         {
             if (this.Image == null) return;
-            using (var gdib = new GDI.GDIBitmap(new Bitmap(this.Image)))
-            {
-                var g = e.Graphics;
-                GDI.BitBlt(g.GetHdc(), 0, 0, this.Width, this.Height, gdib.HDC, 0, 0, 0xCC0020);
-                g.ReleaseHdc();
-            }
+            var g = e.Graphics;
+            g.DrawImage(this.Image, 0, 0);
         }
 
         public void Setup(Boolean FFTLogarithmic, Controller.FFTNum FFTNum, Color Color1, Color Color2, DefaultUIPreference.SpectrumModes SpectrumMode)
@@ -78,6 +74,7 @@ namespace Gageas.Lutea.DefaultUI
         private void SpectrumAnalyzerProc()
         {
             float[] fftdata = null;
+            float[] fftdata_prev = null;
             float[] barPosition = null;
             float[] barWidth = null;
             Point[] points = null;
@@ -86,51 +83,46 @@ namespace Gageas.Lutea.DefaultUI
             int w = 0;
             int h = 0;
             Bitmap b = null;
-            SolidBrush opacityBackgroundBlush = new SolidBrush(Color.FromArgb(70, this.Parent.BackColor));
+            SolidBrush opacityBackgroundBlush = new SolidBrush(Color.FromArgb(128, this.Parent.BackColor));
             while (true)
             {
-                if(Controller.IsPlaying){
-                    this.Invoke((MethodInvoker)(() =>
-                    {
-                        try
-                        {
-                            w = this.Width;
-                            h = this.Height;
+                if (Controller.IsPlaying)
+                {
+                    w = this.Width;
+                    h = this.Height;
 
-                            // 描画の条件が変わる等した場合
-                            if (b == null || this.Image == null || w != b.Width || h != b.Height)
+                    // 描画の条件が変わる等した場合
+                    if (b == null || this.Image == null || w != b.Width || h != b.Height)
+                    {
+                        if (w * h > 0)
+                        {
+                            b = new Bitmap(this.Width, this.Height);
+                            using (var g = Graphics.FromImage(b))
                             {
-                                if (w * h > 0)
-                                {
-                                    b = new Bitmap(this.Width, this.Height);
-                                    using (var g = Graphics.FromImage(b))
-                                    {
-                                        g.Clear(this.Parent.BackColor);
-                                    }
-                                    this.Image = (Bitmap)b.Clone();
-                                    barPosition = null;
-                                    isLogarithmic = FFTLogarithmic;
-                                    fftNum = FFTNum;
-                                    fftdata = new float[(int)fftNum / 2];
-                                    points = new Point[fftdata.Length];
-                                }
-                                else
-                                {
-                                    this.Image = null;
-                                    b = null;
-                                }
+                                g.Clear(BackColor);
                             }
-                            if (this.Image != null && spectrumAnalyzerThread != null)
-                            {
-                                using (var g = Graphics.FromImage(this.Image))
-                                {
-                                    g.DrawImage(b, 0, 0);
-                                }
-                                this.Refresh();
-                            }
+                            this.Image = (Bitmap)b.Clone();
+                            barPosition = null;
+                            isLogarithmic = FFTLogarithmic;
+                            fftNum = FFTNum;
+                            fftdata = new float[(int)fftNum / 2];
+                            fftdata_prev = new float[(int)fftNum / 2];
+                            points = new Point[fftdata.Length];
                         }
-                        catch (Exception) { }
-                    }));
+                        else
+                        {
+                            this.Image = null;
+                            b = null;
+                        }
+                    }
+                    if (this.Image != null && spectrumAnalyzerThread != null)
+                    {
+                        this.Invoke((MethodInvoker)(() =>
+                        {
+                            this.Image = (Bitmap)b.Clone();
+                            Refresh();
+                        }));
+                    }
                 }
 
                 Thread.Sleep(20);
@@ -142,13 +134,16 @@ namespace Gageas.Lutea.DefaultUI
                 if ((w * h) > 0)
                 {
                     Controller.FFTData(fftdata, fftNum);
+                    for (int i = 0; i < fftdata.Length; i++)
+                    {
+                        fftdata[i] = (float)Math.Max(fftdata[i], fftdata_prev[i] * 0.8);
+                    }
+                    Array.Copy(fftdata, fftdata_prev, fftdata.Length);
                     int n = fftdata.Length;
                     float ww = (float)w / n;
                     using (var g = Graphics.FromImage(b))
                     {
                         g.FillRectangle(opacityBackgroundBlush, 0, 0, w, h);
-                        var rect = new RectangleF();
-                        rect.Width = ww;
                         var brush = new SolidBrush(Color.White);
 
                         double max = Math.Log10(n);
@@ -177,6 +172,8 @@ namespace Gageas.Lutea.DefaultUI
                         // ちょっとかっこ悪いけどこのループ内で分岐書きたくないので
                         if (SpectrumMode == 0)
                         {
+                            var rect = new RectangleF();
+                            rect.Width = ww;
                             for (int j = 0; j < n; j++)
                             {
                                 float d = (float)(fftdata[j] * h * j / 8);
@@ -222,7 +219,6 @@ namespace Gageas.Lutea.DefaultUI
                         }
                     }
                 }
-                this.Invalidate();
             }
         }
 
