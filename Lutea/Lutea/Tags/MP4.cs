@@ -183,7 +183,7 @@ namespace Gageas.Lutea.Tags
                         break;
                 }
 
-                p += atom_size + 8;
+                p += atom_size + headerSize;
                 initial_pos += atom_size;
                 if (p >= length)
                 {
