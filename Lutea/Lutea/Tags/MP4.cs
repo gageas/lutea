@@ -91,6 +91,7 @@ namespace Gageas.Lutea.Tags
                 strm.Read(buffer, 0, NODE_LIST_HEADER_SIZE);
                 long atom_size = BEUInt32(buffer, 0);
                 UInt32 atom_name = BEUInt32(buffer, 4);
+                var headerSize = NODE_LIST_HEADER_SIZE;
 
                 if (atom_size == 1)
                 {
@@ -98,16 +99,14 @@ namespace Gageas.Lutea.Tags
                     strm.Read(large_size_buf, 0, sizeof(UInt64));
                     var large_size = BEUInt64(large_size_buf, 0);
                     atom_size = (long)large_size;
-                    atom_size -= (NODE_LIST_HEADER_SIZE + sizeof(UInt64));
+                    headerSize = NODE_LIST_HEADER_SIZE + sizeof(UInt64);
                 }
                 else if (atom_size == 0)
                 {
                     throw new System.IO.FileFormatException("atom_size is zero");
                 }
-                else
-                {
-                    atom_size -= NODE_LIST_HEADER_SIZE;
-                }
+
+                atom_size -= headerSize;
 
                 if ((atom_size > (length - p)) || (atom_size < 0)) return;
 
@@ -184,7 +183,7 @@ namespace Gageas.Lutea.Tags
                         break;
                 }
 
-                p += atom_size;
+                p += atom_size + 8;
                 initial_pos += atom_size;
                 if (p >= length)
                 {
