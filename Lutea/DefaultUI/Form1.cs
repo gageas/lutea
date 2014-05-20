@@ -112,7 +112,7 @@ namespace Gageas.Lutea.DefaultUI
             trackInfoText.Text = "";
             trackInfoText2.Text = "";
             queryComboBox.ForeColor = System.Drawing.SystemColors.WindowText;
-            toolStripStatusLabel1.Text = "";
+            toolStripMenuItem11.Text = "00:00/00:00";
             toolStripXTrackbar1.GetControl.ThumbWidth = TextRenderer.MeasureText("100", this.Font).Width + 10;
             toolStripXTrackbar1.GetControl.MinimumSize = new System.Drawing.Size(toolStripXTrackbar1.GetControl.ThumbWidth * 3, toolStripXTrackbar1.GetControl.Height);
             playlistView.Setup(this, Columns);
@@ -296,7 +296,7 @@ namespace Gageas.Lutea.DefaultUI
                         trackInfoText2.Text = "";
                         setFormTitle(null);
                         setStatusText("Ready ");
-                        toolStripStatusLabel1.Text = "";
+                        toolStripMenuItem11.Text = "00:00/00:00";
                         visualizeView.Abort();
                         visualizeView.Clear();
 
@@ -449,8 +449,8 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     ulong len = (ulong)Controller.Current.Length;
                     xTrackBar1.Value = second;
-                    xTrackBar1.ThumbText = Util.Util.getMinSec(second);
-                    toolStripStatusLabel1.Text = (Util.Util.getMinSec(second) + "/" + Util.Util.getMinSec(len));
+                    xTrackBar1.ThumbText = String.Format("{0:0.0}", Math.Floor(1000.0 * second / len) / 10) + "%";
+                    toolStripMenuItem11.Text = (Util.Util.getMinSec(second) + "/" + Util.Util.getMinSec(len));
 
                 }));
             }
@@ -1309,7 +1309,7 @@ namespace Gageas.Lutea.DefaultUI
         #region splitContainer3 event
         private void splitContainer3_SplitterMoved(object sender, SplitterEventArgs e)
         {
-            splitContainer4.SplitterDistance = splitContainer3.SplitterDistance;
+            splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
             ResetSpectrumRenderer();
             playlistView.Select();
         }
@@ -1860,7 +1860,7 @@ namespace Gageas.Lutea.DefaultUI
 
             // ウィンドウ表示
             this.Show();
-            coverArtView.Width = coverArtView.Height = splitContainer4.SplitterDistance = splitContainer3.SplitterDistance = pref.SplitContainer3_SplitterDistance;
+            coverArtView.Width = coverArtView.Height = splitContainer1.SplitterDistance = splitContainer2.SplitterDistance = pref.SplitContainer3_SplitterDistance;
             splitContainer3_SplitterMoved(null, null);
 
             // プレイリストビューの右クリックにColumn選択を生成
@@ -1940,7 +1940,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             this.pref.splitContainer1_SplitterDistance = splitContainer1.SplitterDistance;
             this.pref.splitContainer2_SplitterDistance = splitContainer2.SplitterDistance;
-            this.pref.SplitContainer3_SplitterDistance = splitContainer3.SplitterDistance;
+            this.pref.SplitContainer3_SplitterDistance = splitContainer1.SplitterDistance;
             this.pref.CoverArtSizeInLinesPlaylistView = playlistView.CoverArtLineNum;
             this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
             this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();

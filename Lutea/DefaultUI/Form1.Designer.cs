@@ -32,6 +32,12 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DefaultUIForm));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.coverArtView = new Gageas.Lutea.DefaultUI.CoverArtView();
+            this.tabControl2 = new System.Windows.Forms.TabControl();
+            this.フィルタtab = new System.Windows.Forms.TabPage();
+            this.dummyFilterTab = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.クエリtab = new System.Windows.Forms.TabPage();
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.queryTreeViewContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.クエリ作成ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -42,11 +48,7 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.削除ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.名前の変更ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.dummyFilterTab = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
-            this.splitContainer4 = new System.Windows.Forms.SplitContainer();
-            this.coverArtView = new Gageas.Lutea.DefaultUI.CoverArtView();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -101,7 +103,6 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
-            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripXTrackbar1 = new Gageas.Lutea.DefaultUI.ToolStripXTrackbar();
             this.toolStripComboBox2 = new Gageas.Lutea.DefaultUI.ToolStripComboBox();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -121,6 +122,7 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem10 = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new Gageas.Lutea.DefaultUI.ExtMenuStrip();
+            this.toolStripMenuItem11 = new System.Windows.Forms.ToolStripMenuItem();
             this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.TopToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.RightToolStripPanel = new System.Windows.Forms.ToolStripPanel();
@@ -137,17 +139,16 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            this.queryTreeViewContextMenuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).BeginInit();
+            this.tabControl2.SuspendLayout();
+            this.フィルタtab.SuspendLayout();
             this.dummyFilterTab.SuspendLayout();
+            this.クエリtab.SuspendLayout();
+            this.queryTreeViewContextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer4)).BeginInit();
-            this.splitContainer4.Panel1.SuspendLayout();
-            this.splitContainer4.Panel2.SuspendLayout();
-            this.splitContainer4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
@@ -180,6 +181,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer3);
             this.splitContainer1.TabStop = false;
+            this.splitContainer1.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer3_SplitterMoved);
             // 
             // splitContainer2
             // 
@@ -189,17 +191,63 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.treeView1);
+            this.splitContainer2.Panel1.Controls.Add(this.coverArtView);
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.dummyFilterTab);
+            this.splitContainer2.Panel2.Controls.Add(this.tabControl2);
             this.splitContainer2.TabStop = false;
+            // 
+            // coverArtView
+            // 
+            this.coverArtView.BackColor = System.Drawing.Color.Transparent;
+            resources.ApplyResources(this.coverArtView, "coverArtView");
+            this.coverArtView.Name = "coverArtView";
+            this.coverArtView.TabStop = false;
+            this.coverArtView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.coverArtView_MouseClick);
+            // 
+            // tabControl2
+            // 
+            this.tabControl2.Controls.Add(this.フィルタtab);
+            this.tabControl2.Controls.Add(this.クエリtab);
+            resources.ApplyResources(this.tabControl2, "tabControl2");
+            this.tabControl2.Name = "tabControl2";
+            this.tabControl2.SelectedIndex = 0;
+            // 
+            // フィルタtab
+            // 
+            this.フィルタtab.Controls.Add(this.dummyFilterTab);
+            resources.ApplyResources(this.フィルタtab, "フィルタtab");
+            this.フィルタtab.Name = "フィルタtab";
+            this.フィルタtab.UseVisualStyleBackColor = true;
+            // 
+            // dummyFilterTab
+            // 
+            resources.ApplyResources(this.dummyFilterTab, "dummyFilterTab");
+            this.dummyFilterTab.Controls.Add(this.tabPage1);
+            this.dummyFilterTab.Multiline = true;
+            this.dummyFilterTab.Name = "dummyFilterTab";
+            this.dummyFilterTab.SelectedIndex = 0;
+            this.dummyFilterTab.SelectedIndexChanged += new System.EventHandler(this.filterViewTabControl_SelectedIndexChanged);
+            // 
+            // tabPage1
+            // 
+            resources.ApplyResources(this.tabPage1, "tabPage1");
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // クエリtab
+            // 
+            this.クエリtab.Controls.Add(this.treeView1);
+            resources.ApplyResources(this.クエリtab, "クエリtab");
+            this.クエリtab.Name = "クエリtab";
+            this.クエリtab.UseVisualStyleBackColor = true;
             // 
             // treeView1
             // 
             this.treeView1.AllowDrop = true;
             this.treeView1.BackColor = System.Drawing.SystemColors.Window;
+            this.treeView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.treeView1.ContextMenuStrip = this.queryTreeViewContextMenuStrip1;
             resources.ApplyResources(this.treeView1, "treeView1");
             this.treeView1.FullRowSelect = true;
@@ -277,21 +325,6 @@
             this.名前の変更ToolStripMenuItem.Tag = "-root";
             this.名前の変更ToolStripMenuItem.Click += new System.EventHandler(this.RenameToolStripMenuItem_Click);
             // 
-            // dummyFilterTab
-            // 
-            resources.ApplyResources(this.dummyFilterTab, "dummyFilterTab");
-            this.dummyFilterTab.Controls.Add(this.tabPage1);
-            this.dummyFilterTab.Multiline = true;
-            this.dummyFilterTab.Name = "dummyFilterTab";
-            this.dummyFilterTab.SelectedIndex = 0;
-            this.dummyFilterTab.SelectedIndexChanged += new System.EventHandler(this.filterViewTabControl_SelectedIndexChanged);
-            // 
-            // tabPage1
-            // 
-            resources.ApplyResources(this.tabPage1, "tabPage1");
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.UseVisualStyleBackColor = true;
-            // 
             // splitContainer3
             // 
             resources.ApplyResources(this.splitContainer3, "splitContainer3");
@@ -300,35 +333,11 @@
             // 
             // splitContainer3.Panel1
             // 
-            this.splitContainer3.Panel1.Controls.Add(this.splitContainer4);
+            this.splitContainer3.Panel1.Controls.Add(this.panel1);
             // 
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.tabControl1);
-            this.splitContainer3.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer3_SplitterMoved);
-            // 
-            // splitContainer4
-            // 
-            resources.ApplyResources(this.splitContainer4, "splitContainer4");
-            this.splitContainer4.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.splitContainer4.Name = "splitContainer4";
-            // 
-            // splitContainer4.Panel1
-            // 
-            this.splitContainer4.Panel1.Controls.Add(this.coverArtView);
-            // 
-            // splitContainer4.Panel2
-            // 
-            this.splitContainer4.Panel2.Controls.Add(this.panel1);
-            this.splitContainer4.TabStop = false;
-            // 
-            // coverArtView
-            // 
-            this.coverArtView.BackColor = System.Drawing.Color.Transparent;
-            resources.ApplyResources(this.coverArtView, "coverArtView");
-            this.coverArtView.Name = "coverArtView";
-            this.coverArtView.TabStop = false;
-            this.coverArtView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.coverArtView_MouseClick);
             // 
             // panel1
             // 
@@ -360,7 +369,6 @@
             // trackInfoText
             // 
             this.trackInfoText.AutoEllipsis = true;
-            this.trackInfoText.BackColor = System.Drawing.SystemColors.Control;
             resources.ApplyResources(this.trackInfoText, "trackInfoText");
             this.trackInfoText.Name = "trackInfoText";
             this.trackInfoText.UseMnemonic = false;
@@ -737,7 +745,6 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel2,
             this.toolStripProgressBar1,
-            this.toolStripStatusLabel1,
             this.toolStripXTrackbar1,
             this.toolStripComboBox2});
             resources.ApplyResources(this.statusStrip1, "statusStrip1");
@@ -755,15 +762,6 @@
             this.toolStripProgressBar1.Name = "toolStripProgressBar1";
             resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
             this.toolStripProgressBar1.Step = 1;
-            // 
-            // toolStripStatusLabel1
-            // 
-            this.toolStripStatusLabel1.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
-            this.toolStripStatusLabel1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            resources.ApplyResources(this.toolStripStatusLabel1, "toolStripStatusLabel1");
-            this.toolStripStatusLabel1.Margin = new System.Windows.Forms.Padding(5, 3, 0, 2);
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Padding = new System.Windows.Forms.Padding(3, 2, 0, 0);
             // 
             // toolStripXTrackbar1
             // 
@@ -900,12 +898,18 @@
             this.toolStripMenuItem8,
             this.toolStripMenuItem9,
             this.toolStripMenuItem1,
-            this.toolStripMenuItem10});
+            this.toolStripMenuItem10,
+            this.toolStripMenuItem11});
             resources.ApplyResources(this.menuStrip1, "menuStrip1");
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
             this.menuStrip1.ShowItemToolTips = true;
             this.menuStrip1.Stretch = false;
+            // 
+            // toolStripMenuItem11
+            // 
+            resources.ApplyResources(this.toolStripMenuItem11, "toolStripMenuItem11");
+            this.toolStripMenuItem11.Name = "toolStripMenuItem11";
             // 
             // BottomToolStripPanel
             // 
@@ -985,17 +989,16 @@
             this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
-            this.queryTreeViewContextMenuStrip1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).EndInit();
+            this.tabControl2.ResumeLayout(false);
+            this.フィルタtab.ResumeLayout(false);
             this.dummyFilterTab.ResumeLayout(false);
+            this.クエリtab.ResumeLayout(false);
+            this.queryTreeViewContextMenuStrip1.ResumeLayout(false);
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
-            this.splitContainer4.Panel1.ResumeLayout(false);
-            this.splitContainer4.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer4)).EndInit();
-            this.splitContainer4.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
@@ -1024,7 +1027,6 @@
 
         private XTrackBar xTrackBar1;
         private System.Windows.Forms.StatusStrip statusStrip1;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ContextMenuStrip queryTreeViewContextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem reloadToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip playlistViewContextMenuStrip;
@@ -1075,7 +1077,6 @@
         private System.Windows.Forms.TabControl dummyFilterTab;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.SplitContainer splitContainer3;
-        private System.Windows.Forms.SplitContainer splitContainer4;
         private CoverArtView coverArtView;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ListView listView2;
@@ -1121,6 +1122,10 @@
         private System.Windows.Forms.ToolStripMenuItem reImportToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 通常ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 完全ToolStripMenuItem;
+        private System.Windows.Forms.TabControl tabControl2;
+        private System.Windows.Forms.TabPage フィルタtab;
+        private System.Windows.Forms.TabPage クエリtab;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem11;
     }
 }
 
