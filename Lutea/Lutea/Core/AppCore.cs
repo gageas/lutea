@@ -197,6 +197,8 @@ namespace Gageas.Lutea.Core
             }
             set
             {
+                if (value > 1.0F) value = 1.0F;
+                if (value < 0.0F) value = 0.0F;
                 MyCoreComponent.Volume = value;
                 if (OutputDevice == null) return;
                 OutputDevice.Volume = value;
