@@ -83,6 +83,7 @@ namespace Gageas.Lutea.DefaultUI
             int w = 0;
             int h = 0;
             Bitmap b = null;
+            Bitmap[] interThreadBuffer = new Bitmap[2]; // GC祭りにならないようにできるだけBitmapオブジェクトを使いまわす
             SolidBrush opacityBackgroundBlush = new SolidBrush(Color.FromArgb(128, this.Parent.BackColor));
             while (true)
             {
@@ -101,7 +102,12 @@ namespace Gageas.Lutea.DefaultUI
                             {
                                 g.Clear(BackColor);
                             }
-                            this.Image = (Bitmap)b.Clone();
+                            this.Image = null;
+                            if (interThreadBuffer[0] != null) interThreadBuffer[0].Dispose();
+                            if (interThreadBuffer[1] != null) interThreadBuffer[1].Dispose();
+                            interThreadBuffer[0] = (Bitmap)b.Clone();
+                            interThreadBuffer[1] = (Bitmap)b.Clone();
+                            this.Image = interThreadBuffer[0];
                             barPosition = null;
                             isLogarithmic = FFTLogarithmic;
                             fftNum = FFTNum;
@@ -119,7 +125,12 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         this.Invoke((MethodInvoker)(() =>
                         {
-                            this.Image = (Bitmap)b.Clone();
+                            var target = this.Image == interThreadBuffer[0] ? interThreadBuffer[1] : interThreadBuffer[0];
+                            using (var g = Graphics.FromImage(target))
+                            {
+                                g.DrawImage(b, 0, 0);
+                            }
+                            this.Image = target;
                             Refresh();
                         }));
                     }
