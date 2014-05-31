@@ -962,16 +962,16 @@ namespace Gageas.Lutea.DefaultUI
                 SelectGroupItems(item.Index);
                 return;
             }
+            var tag = this.Columns[item.SubItems.IndexOf(sub)].Tag;
             switch (e.Button)
             {
                 case System.Windows.Forms.MouseButtons.Right:
                     var oid = getObjectIDByViewID(item.Index);
-                    lastSelectedColumnId = (int)(this.Columns[item.SubItems.IndexOf(sub)].Tag);
-                    lastSelectedString = Controller.GetPlaylistRowColumn(oid, lastSelectedColumnId);
+                    if (tag == null) return;
+                    lastSelectedString = Controller.GetPlaylistRowColumn(oid, (int)(tag));
                     break;
                 case System.Windows.Forms.MouseButtons.Left:
                     if (isDummyRow(item.Index)) return;
-                    var tag = this.Columns[item.SubItems.IndexOf(sub)].Tag;
                     if (tag == null) return;
                     if (dbColumnsCache[(int)tag].Type != Library.LibraryColumnType.Rating) return;
                     int starwidth = ratingRenderer.EachWidth;
