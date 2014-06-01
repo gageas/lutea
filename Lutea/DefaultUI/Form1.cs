@@ -696,9 +696,9 @@ namespace Gageas.Lutea.DefaultUI
             dummyFilterTab.Enabled = false;
             int selected = dummyFilterTab.SelectedIndex;
             if (selected < 0) selected = 0;
-            while (dummyFilterTab.TabPages.Count > 0)
+            while (dummyFilterTab.TabPages.Count > 1)
             {
-                dummyFilterTab.TabPages.RemoveAt(0);
+                dummyFilterTab.TabPages.RemoveAt(1);
             }
             foreach (int colid in filterColumns.Select(_ => Controller.GetColumnIndexByName(_)))
             {
@@ -1276,6 +1276,7 @@ namespace Gageas.Lutea.DefaultUI
             if (!dummyFilterTab.Enabled) return;
             int pageIndex = dummyFilterTab.SelectedIndex;
             if (pageIndex < 0) return;
+            if (dummyFilterTab.TabPages[pageIndex].Tag == null) return;
             int colid = (int)dummyFilterTab.TabPages[pageIndex].Tag;
             ListView list = (ListView)dummyFilterTab.TabPages[pageIndex].Controls[0];
             if (list.Items.Count == 0)
