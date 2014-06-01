@@ -1281,10 +1281,7 @@ namespace Gageas.Lutea.DefaultUI
             ListView list = (ListView)dummyFilterTab.TabPages[pageIndex].Controls[0];
             if (list.Items.Count == 0)
             {
-                Thread th = new Thread(refreshFilter);
-                th.IsBackground = true;
-                th.Start(list);
-                th.Priority = ThreadPriority.Lowest;
+                ThreadPool.QueueUserWorkItem(refreshFilter, list);
             }
         }
         #endregion
