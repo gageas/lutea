@@ -96,7 +96,16 @@ namespace Gageas.Lutea.Tags
                             {
                                 fs.Seek(0, System.IO.SeekOrigin.Begin);
                                 var tag_id3v1 = ID3.Read(fs);
-                                if (tag_id3v1 != null) tag.AddRange(tag_id3v1);
+                                if (tag_id3v1 != null)
+                                {
+                                    foreach (var v1tag in tag_id3v1)
+                                    {
+                                        if (tag.Find((e) => e.Key == v1tag.Key).Key == null)
+                                        {
+                                            tag.Add(v1tag);
+                                        }
+                                    }
+                                }
                             }
                             catch(IOException) { }
                             break;
