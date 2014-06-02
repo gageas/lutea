@@ -968,6 +968,7 @@ namespace Gageas.Lutea.DefaultUI
                 case System.Windows.Forms.MouseButtons.Right:
                     var oid = getObjectIDByViewID(item.Index);
                     if (tag == null) return;
+                    lastSelectedColumnId = (int)tag; 
                     lastSelectedString = Controller.GetPlaylistRowColumn(oid, (int)(tag));
                     break;
                 case System.Windows.Forms.MouseButtons.Left:
