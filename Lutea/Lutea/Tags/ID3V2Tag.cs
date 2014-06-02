@@ -480,7 +480,7 @@ namespace Gageas.Lutea.Tags
                     else
                     {
                         fr.Extid = fr.Value.Substring(0, idx).ToUpper();
-                        fr.Value = fr.Value.Substring(idx + 1).TrimEnd(new char[] { '\0' }).Replace("\0", "\r\n"); // FIXME?: foobar2kでいうmultiple Valueの時、区切りの\0を改行で置換（暫定処置）
+                        fr.Value = fr.Value.Substring(idx + 1).TrimEnd(new char[] { '\0' });
                     }
                 }
             }
