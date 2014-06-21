@@ -72,7 +72,7 @@ namespace Gageas.Lutea.DefaultUI
         /// <summary>
         /// filter viewに表示するcolumnを定義
         /// </summary>
-        string[] filterColumns = { "tagArtist", "tagAlbum", "tagDate", "tagGenre", LibraryDBColumnTextMinimum.infoCodec_sub, LibraryDBColumnTextMinimum.rating, };
+        string[] filterColumns = { "tagDate", LibraryDBColumnTextMinimum.infoCodec_sub, LibraryDBColumnTextMinimum.rating, };
 
         /// <summary>
         /// ライブラリデータベースのカラム一覧のキャッシュ
@@ -690,43 +690,44 @@ namespace Gageas.Lutea.DefaultUI
         #endregion
 
         #region FilterView utility methods
+        private void InitFilterPage(Column col, bool metaTableMode)
+        {
+            var page = new TabPage(col.LocalText);
+            var list = new FilterViewListView(yomigana);
+            list.MetaTableMode = metaTableMode;
+
+            list.DoubleClick += (o, arg) => { Controller.CreatePlaylist(list.GetQueryString(), true); };
+            list.KeyDown += (o, arg) => { if (arg.KeyCode == Keys.Return)Controller.PlayPlaylistItem(0); };
+            list.Margin = new System.Windows.Forms.Padding(0, 0, 0, 0);
+            page.Controls.Add(list);
+            page.Padding = new System.Windows.Forms.Padding(0);
+            page.Margin = new System.Windows.Forms.Padding(0);
+            page.BorderStyle = BorderStyle.None;
+            dummyFilterTab.TabPages.Add(page);
+            page.Tag = Controller.Columns.ToList().IndexOf(col);
+        }
+
         private void InitFilterView()
         {
             // clearするとtabControl全体が真っ白になって死ぬ
-            dummyFilterTab.Enabled = false;
             int selected = dummyFilterTab.SelectedIndex;
             if (selected < 0) selected = 0;
             while (dummyFilterTab.TabPages.Count > 1)
             {
                 dummyFilterTab.TabPages.RemoveAt(1);
             }
-            foreach (int colid in filterColumns.Select(_ => Controller.GetColumnIndexByName(_)))
+            var columns = Controller.Columns.Where(_ => _.IsTextSearchTarget).Where(_ => _.Name != "tagTitle" && _.Name != "tagComment");
+            foreach (var col in columns)
             {
-                if (colid < 0) continue;
-                var col = Columns[colid];
-                var page = new TabPage(col.LocalText);
-                var list = new FilterViewListView();
-                list.SelectEvent += (c, vals) =>
-                {
-                    if (SupplessFilterViewSelectChangeEvent)
-                    {
-                        SupplessFilterViewSelectChangeEvent = false;
-                        return;
-                    }
-                    Controller.CreatePlaylist(list.getQueryString());
-                };
-                list.DoubleClick += (o, arg) => { Controller.CreatePlaylist(list.getQueryString(), true); };
-                list.KeyDown += (o, arg) => { if (arg.KeyCode == Keys.Return)Controller.PlayPlaylistItem(0); };
-                list.Margin = new System.Windows.Forms.Padding(0, 0, 0, 0);
-                page.Controls.Add(list);
-                page.Padding = new System.Windows.Forms.Padding(0);
-                page.Margin = new System.Windows.Forms.Padding(0);
-                page.BorderStyle = BorderStyle.None;
-                dummyFilterTab.TabPages.Add(page);
-                page.Tag = colid;
+                InitFilterPage(col, true);
+            }
+            foreach (var colName in filterColumns)
+            {
+                var colid = Controller.GetColumnIndexByName(colName);
+                if (colid == -1) return;
+                InitFilterPage(Controller.Columns[colid], false);
             }
             dummyFilterTab.SelectedIndex = -1;
-            dummyFilterTab.Enabled = true;
             dummyFilterTab.SelectedIndex = selected;
         }
         #endregion
@@ -1122,52 +1123,6 @@ namespace Gageas.Lutea.DefaultUI
         {
             refreshFilter(o, null);
         }
-        private void createFilterIndex(ListView list, ICollection<ListViewGroup> grps)
-        {
-            var map = new Tuple<ToolStripMenuItem, char, char>[]
-            {
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("数字"), '0', '9'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("A-Z"), 'A', 'Z'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("あ"), 'あ', 'お'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("か"), 'か', 'こ'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("さ"), 'さ', 'そ'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("た"), 'た', 'と'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("な"), 'な', 'の'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("は"), 'は', 'ほ'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("ま"), 'ま', 'も'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("や"), 'や', 'よ'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("ら"), 'ら', 'ろ'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("わ"), 'わ', 'ん'),
-                new Tuple<ToolStripMenuItem, char, char>(new ToolStripMenuItem("その他"), char.MinValue, char.MaxValue),
-            };
-            list.ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            list.ContextMenuStrip.Items.AddRange(map.Select(_ => _.Item1).ToArray());
-
-            foreach (var e in map.Select(_ => _.Item1))
-            {
-                var self = e; // ブロック内に参照コピー
-                e.Enabled = false;
-                e.Click += (x, y) => self.DropDownItems[0].PerformClick();
-            }
-
-            foreach (ListViewGroup grp in grps)
-            {
-                char c = grp.Header[0];
-                if (c == ' ') continue;
-                ToolStripMenuItem target = map.First(_ => _.Item2 <= c && _.Item3 >= c).Item1;
-                int index = grp.Items[0].Index;
-                var item = grp.Items[0];
-                var last = grps.Last().Items[grps.Last().Items.Count - 1].Index; // 最後のグループの最後の項目
-                target.Enabled = true;
-                target.DropDownItems.Add(grp.Header, null, (e, obj) =>
-                {
-                    list.ContextMenuStrip.Hide();
-                    list.EnsureVisible(last);
-                    list.EnsureVisible(index);
-                });
-            }
-        }
-
 
         private bool SupplessFilterViewSelectChangeEvent = false;
         /// <summary>
@@ -1177,86 +1132,7 @@ namespace Gageas.Lutea.DefaultUI
         public void refreshFilter(object o, string textForSelected = null)
         {
             FilterViewListView list = (FilterViewListView)(o != null ? o : dummyFilterTab.SelectedTab.Controls[0]);
-
-            list.MouseClick += (oo, e) => { if (e.Button == System.Windows.Forms.MouseButtons.Right) { SupplessFilterViewSelectChangeEvent = true; } };
-
-            list.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
-            list.ContextMenuStrip.Items.Add("読み修正", null, correctToolStripMenuItem_Click);
-
-            ListViewItem selected = null;
-            var colid = (int)list.Parent.Tag;
-            var col = Columns[colid];
-            try
-            {
-                object[][] cache_filter = null;
-                // ライブラリからfilterViewに表示する項目を取得
-                using (var db = Controller.GetDBConnection())
-                using (var stmt = db.Prepare("SELECT " + col.Name + " ,COUNT(*) FROM list GROUP BY " + col.Name + " ORDER BY COUNT(*) desc;"))
-                {
-                    cache_filter = stmt.EvaluateAll();
-                }
-
-                Dictionary<char, ListViewGroup> groups = new Dictionary<char, ListViewGroup>();
-                groups.Add('\0', new ListViewGroup(" " + col.LocalText));
-
-                int count_sum = 0;
-                List<ListViewItem> items = new List<ListViewItem>();
-                foreach (var e in cache_filter)
-                {
-                    string name = e[0].ToString();
-                    string count = e[1].ToString();
-                    char leading_letter = '\0';
-                    string header = "";
-                    if (col.MappedTagField == "DATE")
-                    {
-                        int year = 0;
-                        int.TryParse(name.Substring(0, Math.Min(4, name.Length)), out year);
-                        leading_letter = (char)year;  // .Netのcharは16bitなので、yearの数値表現をそのままつっこめる 問題ないはず
-                        header = year.ToString();
-                    }
-                    else // tagDate以外のとき
-                    {
-                        leading_letter = yomigana.GetFirst(name);
-                        header = leading_letter == '\0' ? " その他" : leading_letter.ToString();
-                    }
-                    // 新しいグループを追加
-                    if (!groups.ContainsKey(leading_letter))
-                    {
-                        groups.Add(leading_letter, new ListViewGroup(header));
-                    }
-                    var item = new ListViewItem(new string[] { name, count });
-                    item.ToolTipText = name + "\n" + count + "項目";
-                    item.Group = groups[leading_letter];
-                    item.Tag = name;
-                    if (name == textForSelected) selected = item;
-                    items.Add(item);
-                    count_sum += int.Parse(count);
-                }
-                var item_allFiles = new ListViewItem(new string[] { "すべて", count_sum.ToString() });
-                item_allFiles.Group = groups['\0'];
-                item_allFiles.Tag = null;
-                items.Add(item_allFiles);
-
-                var grpList = groups.Select((_) => _.Value).OrderBy((_) => _.Header).ToArray();
-                this.Invoke((MethodInvoker)(() =>
-                {
-                    dummyFilterTab.Enabled = false;
-                    list.BeginUpdate();
-                    list.Items.Clear();
-                    list.Groups.AddRange(grpList);
-                    list.Items.AddRange(items.ToArray());
-                    createFilterIndex(list, grpList);
-                    list.EndUpdate();
-                    if (selected != null)
-                    {
-                        selected.Selected = true;
-                        selected.EnsureVisible();
-                    }
-                    dummyFilterTab.Enabled = true;
-                }));
-            }
-            catch (Exception e) { Logger.Log(e.ToString()); }
-            yomigana.Flush();
+            list.SetupContents(textForSelected);
         }
         #endregion
 
@@ -1580,22 +1456,6 @@ namespace Gageas.Lutea.DefaultUI
         private void QueueClearCurrentQueueToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Controller.QueueClear();
-        }
-        #endregion
-
-        #region filterView ToolStripMenu event
-        private void correctToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ListView lv = (ListView)dummyFilterTab.SelectedTab.Controls[0];
-            if (lv.SelectedItems.Count > 0)
-            {
-                if (lv.SelectedItems[0].Tag == null) return;
-                string src = lv.SelectedItems[0].Tag.ToString();
-                var lead = yomigana.GetLeadingChars(src);
-                if (string.IsNullOrEmpty(lead) || lead.Length == 1) return;
-                var correctdialog = new YomiCorrect(lv.SelectedItems[0].Tag.ToString(), yomigana);
-                correctdialog.ShowDialog();
-            }
         }
         #endregion
 
