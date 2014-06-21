@@ -489,7 +489,7 @@ namespace Gageas.Lutea.DefaultUI
         [Browsable(false)]
         public int? splitContainer2_SplitterDistance { get; set; }
 
-        private int splitContainer3_SplitterDistance = 120;
+        private int splitContainer3_SplitterDistance = 300;
         [Browsable(false)]
         public int SplitContainer3_SplitterDistance {
             get { return splitContainer3_SplitterDistance; }
