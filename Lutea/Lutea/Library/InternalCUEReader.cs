@@ -53,16 +53,6 @@ namespace Gageas.Lutea.Library
                     tr.tag.Insert(0,new KeyValuePair<string, object>(key, col.Value));
                 }
 
-                // PERFORMERがないとき、ARTISTをPERFORMERとして扱う
-                if (tr.tag.Find((e) => { return e.Key == "PERFORMER"; }).Value == null)
-                {
-                    var artist = tr.tag.Find((e) => { return e.Key == "ARTIST"; });
-                    if (artist.Value != null)
-                    {
-                        tr.tag.Add(new KeyValuePair<string, object>("PERFORMER", artist.Value));
-                    }
-                }
-
                 // InCUE内のFILE名が実体と異なっている場合があるため、ビットレートを付加しなおす
                 tr.bitrate = bitrate;
             }

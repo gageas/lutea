@@ -183,8 +183,6 @@ namespace Gageas.Lutea.Library
             using (var libraryDB = AppCore.Library.Connect())
             using (var stmt_insert = GetInsertPreparedStatement(libraryDB))
             using (var stmt_update = GetUpdatePreparedStatement(libraryDB))
-            using (var stmt_delmeta = libraryDB.Prepare("DELETE FROM __meta WHERE list_rowid = ?;"))
-            using (var stmt_meta = libraryDB.Prepare("INSERT INTO __meta(list_rowid, tag, value) VALUES(?, ?, ?);"))
             using (var stmt_test = libraryDB.Prepare("SELECT rowid FROM list WHERE file_name = ?;"))
             {
                 try
@@ -217,51 +215,6 @@ namespace Gageas.Lutea.Library
                                 stmtToUse.Reset();
                                 BindTrackInfo(stmtToUse, track, colsToImport);
                                 stmtToUse.Evaluate(null);
-
-                                stmt_test.Reset();
-                                stmt_test.Bind(1, track.file_name);
-                                var rowid = stmt_test.EvaluateAll()[0][0].ToString();
-
-                                stmt_delmeta.Reset();
-                                stmt_delmeta.Bind(1, rowid);
-                                stmt_delmeta.Evaluate(null);
-
-                                track.tag.ForEach((_) =>
-                                {
-                                    if (_.Key.StartsWith("__X-LUTEA-")) return;
-                                    if (_.Key.StartsWith("ITUN")) return;
-                                    if (_.Key.StartsWith("UFIDHTTP")) return;
-                                    if (_.Key == "CUESHEET") return;
-                                    if (_.Key.StartsWith("CUE_TRACK")) return;
-                                    if (_.Key == "ALBUM GAIN") return;
-                                    if (_.Key == "ALBUM PEAK") return;
-                                    if (_.Key == "TRACK GAIN") return;
-                                    if (_.Key == "TRACK PEAK") return;
-                                    if (_.Key.StartsWith("REPLAYGAIN_")) return;
-                                    if (_.Key == "ENCODER") return;
-                                    if (_.Key == "ENCODING PARAMS") return;
-                                    if (_.Key == "ENCODING PARAMS") return;
-                                    if (_.Key == "LOG") return;
-                                    if (_.Key == "SUBTITLE") return;
-                                    if (_.Key == "DISCID") return;
-                                    if (_.Key == "ISRC") return;
-                                    if (_.Key == "DISC") return;
-                                    if (_.Key == "") return;
-                                    if (_.Value is string)
-                                    {
-
-                                        var valueEach = ((string)_.Value).Split('\0').ToList();
-
-                                        valueEach.ForEach((veach) =>
-                                        {
-                                            stmt_meta.Reset();
-                                            stmt_meta.Bind(1, rowid);
-                                            stmt_meta.Bind(2, _.Key);
-                                            stmt_meta.Bind(3, veach);
-                                            stmt_meta.Evaluate(null);
-                                        });
-                                    }
-                                });
                             }
                             catch (SQLite3DB.SQLite3Exception e)
                             {
@@ -383,15 +336,6 @@ namespace Gageas.Lutea.Library
             }
             else
             {
-                // PERFORMERがないとき、ARTISTをPERFORMERとして扱う
-                if (tag.Find((e) => { return e.Key == "PERFORMER"; }).Value == null)
-                {
-                    var artist = tag.Find((e) => { return e.Key == "ARTIST"; });
-                    if (artist.Value != null)
-                    {
-                        tag.Add(new KeyValuePair<string, object>("PERFORMER", artist.Value));
-                    }
-                }
                 var tr = new LuteaAudioTrack() { file_name = file_name, file_size = new System.IO.FileInfo(file_name).Length };
                 if (tag.Exists(_ => _.Key == "__X-LUTEA-CHANS__") && tag.Exists(_ => _.Key == "__X-LUTEA-FREQ__") && tag.Exists(_ => _.Key == "__X-LUTEA-DURATION__"))
                 {

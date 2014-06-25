@@ -381,12 +381,6 @@ namespace Gageas.Lutea
             }
             db.Exec(GetCreateSchema(columns));
             db.Exec(GetCreateIndexSchema(columns));
-            // metaテーブルを作成
-            db.Exec("CREATE TABLE __meta(tag, value, list_rowid REFERENCES list(rowid));");
-            db.Exec("CREATE INDEX metaTag ON __meta(tag);");
-            db.Exec("CREATE VIEW meta AS SELECT __meta.tag, __meta.value, list.file_name FROM __meta JOIN list ON __meta.list_rowid = list.rowid;");
-            db.Exec("CREATE TRIGGER drop_meta BEFORE DELETE ON list BEGIN DELETE FROM __meta WHERE __meta.list_rowid = old.rowid; END;");
-            db.Exec("CREATE TRIGGER drop_meta2 BEFORE UPDATE OF tagTitle ON list BEGIN DELETE FROM __meta WHERE __meta.list_rowid = old.rowid; END;");
         }
 
         internal void AlternateLibraryDB(Column[] extraColumns)
@@ -395,7 +389,7 @@ namespace Gageas.Lutea
             {
                 try
                 {
-                    db.Exec("CREATE TEMP TABLE __list_backup AS SELECT list.rowid, list.* FROM list;");
+                    db.Exec("CREATE TEMP TABLE __list_backup AS SELECT list.* FROM list;");
                     var NewColumns = LuteaMinimumColumns.Concat(extraColumns).ToArray();
 
                     db.Exec("DROP TABLE list;");
@@ -406,7 +400,7 @@ namespace Gageas.Lutea
                     string[] cols = NewColumns.Select(_ => _.Name).ToArray();
                     string[] colsx = NewColumns.Select(_ => Columns.Select((__) => __.Name).Contains(_.Name) ? _.Name : "''").ToArray();
 
-                    db.Exec("INSERT INTO list ( rowid," + String.Join(",", cols) + ") SELECT rowid," + String.Join(",", colsx) + " FROM __list_backup;");
+                    db.Exec("INSERT INTO list ( " + String.Join(",", cols) + ") SELECT " + String.Join(",", colsx) + " FROM __list_backup;");
                 }
                 catch (SQLite3DB.SQLite3Exception e)
                 {
