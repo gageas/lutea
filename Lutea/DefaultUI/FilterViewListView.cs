@@ -105,6 +105,20 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
+        private IEnumerable<KeyValuePair<string, int>> FetchColumnValueMultipleValue(string columnName)
+        {
+            // ライブラリからfilterViewに表示する項目を取得
+            var sql = "SELECT " + columnName + " ,COUNT(*) FROM list GROUP BY " + columnName + " ORDER BY " + columnName + " desc;";
+            using (var db = Controller.GetDBConnection())
+            using (var stmt = db.Prepare(sql))
+            {
+                // タグの値の文字列を改行で分割して，個別の値に分離
+                return stmt.EvaluateAll()
+                    .SelectMany(_ => ((string)_[0]).Split('\n').Select(__ => new KeyValuePair<string, int>(__, int.Parse(((string)_[1])))))
+                    .GroupBy(_ => _.Key, (_key, _values) => new KeyValuePair<string, int>(_key, _values.Select(_ => _.Value).Sum()));
+            }
+        }
+
         /// <summary>
         /// FilterViewを更新する。ごちゃごちゃしてるのでなんとかしたい
         /// </summary>
@@ -119,26 +133,18 @@ namespace Gageas.Lutea.DefaultUI
             var col = Controller.Columns[colid];
             try
             {
-                object[][] cache_filter = null;
-                // ライブラリからfilterViewに表示する項目を取得
-                var sql = MetaTableMode
-                    ? "SELECT value, COUNT(*) FROM meta WHERE tag = '" + col.MappedTagField + "' GROUP BY value ORDER BY value desc;"
-                    : "SELECT " + col.Name + " ,COUNT(*) FROM list GROUP BY " + col.Name + " ORDER BY " + col.Name + " desc;"; //COUNT(*) 
-                using (var db = Controller.GetDBConnection())
-                using (var stmt = db.Prepare(sql))
-                {
-                    cache_filter = stmt.EvaluateAll();
-                }
+                IEnumerable<KeyValuePair<string, int>> cf = FetchColumnValueMultipleValue(col.Name);
 
                 Dictionary<char, ListViewGroup> groups = new Dictionary<char, ListViewGroup>();
                 groups.Add('\0', new ListViewGroup(" " + col.LocalText));
 
                 int count_sum = 0;
                 List<ListViewItem> items = new List<ListViewItem>();
-                foreach (var e in cache_filter)
+
+                foreach (var e in cf)
                 {
-                    string name = e[0].ToString();
-                    string count = e[1].ToString();
+                    string name = e.Key;
+                    var count = e.Value;
                     char leading_letter = '\0';
                     string header = "";
                     if (col.MappedTagField == "DATE")
@@ -158,13 +164,13 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         groups.Add(leading_letter, new ListViewGroup(header));
                     }
-                    var item = new ListViewItem(new string[] { name, count });
+                    var item = new ListViewItem(new string[] { name, "" + count });
                     item.ToolTipText = name + "\n" + count + "項目";
                     item.Group = groups[leading_letter];
                     item.Tag = name;
                     if (name == textForSelected) selected = item;
                     items.Add(item);
-                    count_sum += int.Parse(count);
+                    count_sum += count;
                 }
                 var item_allFiles = new ListViewItem(new string[] { "すべて", count_sum.ToString() });
                 item_allFiles.Group = groups['\0'];
@@ -301,15 +307,8 @@ namespace Gageas.Lutea.DefaultUI
             {
                 values[i] = values[i].EscapeSingleQuotSQL();
             }
-            var items_all = "'" + String.Join("' , '", values) + "'";
-            if (MetaTableMode)
-            {
-                return "SELECT file_name FROM meta WHERE tag = '" + Controller.Columns[(int)this.Parent.Tag].MappedTagField + "' AND value IN (" + items_all + ");";
-            }
-            else
-            {
-                return "SELECT file_name FROM list WHERE " + Controller.Columns[(int)this.Parent.Tag].Name + " IN (" + items_all + ");";
-            }
+            var items_all = "'" + String.Join("', '", values) + "'";
+            return "SELECT file_name FROM list WHERE any(" + Controller.Columns[(int)this.Parent.Tag].Name + ", " + items_all + ");";
         }
     }
 }
