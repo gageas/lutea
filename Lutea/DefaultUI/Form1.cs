@@ -1385,10 +1385,9 @@ namespace Gageas.Lutea.DefaultUI
             if (playlistView.SelectedIndices.Count > 0)
             {
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                importer = Importer.CreateFileImporter(playlistView
+                DoImport(playlistView
                         .GetSelectedObjects()
                         .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), true);
-                importer.Start();
             }
         }
 
@@ -1397,10 +1396,9 @@ namespace Gageas.Lutea.DefaultUI
             if (playlistView.SelectedIndices.Count > 0)
             {
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
-                importer = Importer.CreateFileImporter(playlistView
+                DoImport(playlistView
                         .GetSelectedObjects()
-                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), false);
-                importer.Start();
+                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), true);
             }
         }
 
