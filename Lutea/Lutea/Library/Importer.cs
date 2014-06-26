@@ -336,6 +336,15 @@ namespace Gageas.Lutea.Library
             }
             else
             {
+                // PERFORMERがないとき、ARTISTをPERFORMERとして扱う
+                if (tag.Find((e) => { return e.Key == "PERFORMER"; }).Value == null)
+                {
+                    var artist = tag.Find((e) => { return e.Key == "ARTIST"; });
+                    if (artist.Value != null)
+                    {
+                        tag.Add(new KeyValuePair<string, object>("PERFORMER", artist.Value));
+                    }
+                }
                 var tr = new LuteaAudioTrack() { file_name = file_name, file_size = new System.IO.FileInfo(file_name).Length };
                 if (tag.Exists(_ => _.Key == "__X-LUTEA-CHANS__") && tag.Exists(_ => _.Key == "__X-LUTEA-FREQ__") && tag.Exists(_ => _.Key == "__X-LUTEA-DURATION__"))
                 {

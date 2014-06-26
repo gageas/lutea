@@ -30,6 +30,48 @@ namespace Gageas{
 			static int repNum; // 連続数カウンタ用：前回までの連続数 
 			static int counterIndex = 0; // 連続数カウンタ用：呼び出し回
 
+			/* Multiple Valuesのいずれかの値にマッチ */
+			void __cdecl MatchLine( sqlite3_context *ctx, int argc, sqlite3_value *argv[] )  {
+				if(argc<2){
+					sqlite3_result_int( ctx, 0 );
+					return;
+				}
+
+				string wholeStr = string("\n").append((const char*)sqlite3_value_text(argv[0])).append("\n");
+
+				while(argc-->1){
+					string line = string("\n").append((const char*)sqlite3_value_text(argv[argc])).append("\n");
+					if(wholeStr.find(line) != -1){
+						sqlite3_result_int( ctx, 1 );
+						return;
+					}
+				}
+
+				sqlite3_result_int( ctx, 0 );
+				return;
+			};
+
+			/* Multiple Valuesの全ての値にマッチ */
+			void __cdecl MatchLineAll( sqlite3_context *ctx, int argc, sqlite3_value *argv[] )  {
+				if(argc<2){
+					sqlite3_result_int( ctx, 0 );
+					return;
+				}
+
+				string wholeStr = string("\n").append((const char*)sqlite3_value_text(argv[0])).append("\n");
+
+				while(argc-->1){
+					string line = string("\n").append((const char*)sqlite3_value_text(argv[argc])).append("\n");
+					if(wholeStr.find(line) == -1){
+						sqlite3_result_int( ctx, 0 );
+						return;
+					}
+				}
+
+				sqlite3_result_int( ctx, 1 );
+				return;
+			};
+
 			/* H2k6 LCMapUpper相当のSQL関数 */
 			void __cdecl LCMapUpper( sqlite3_context *ctx, int argc, sqlite3_value *argv[] )  {
 				if((argc != 1) || (argv[0] == NULL)){
@@ -148,6 +190,8 @@ namespace Gageas{
 				if(db == NULL)return;
 
 				sqlite3_create_function(db, "current_timestamp64", 0, SQLITE_ANY, 0, current_timestamp64, NULL, NULL);
+				sqlite3_create_function(db, "any", -1, SQLITE_UTF8, 0, MatchLine, NULL, NULL);
+				sqlite3_create_function(db, "every", -1, SQLITE_UTF8, 0, MatchLineAll, NULL, NULL); // allという名前が使えなかった
 				sqlite3_create_function(db, "regexp", 2, SQLITE_UTF8, 0, regex, NULL, NULL);
 				sqlite3_create_function(db, "migemo", 2, SQLITE_UTF8, 0, migemo, NULL, NULL);
 				sqlite3_create_function(db, "LCMapUpper", 1, SQLITE_UTF16, 0, LCMapUpper, NULL, NULL);
