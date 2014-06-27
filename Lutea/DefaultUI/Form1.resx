@@ -833,17 +833,15 @@
   <data name="コピーToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIzSURBVDhPxdJbSNNRHMDxv1pBdH0LSgoMeogio6J6MQyV
-        KEswEjUyjDKtxGJZal7IctBybpIVKTg1XWp5IcseyoLMEaQVlIImM4eXudv/P03Np2/HacFw9Bb94Lwc
-        zud7/n840j+b9hY1bQ35NBsysQx8Y37b9/T1dPKkWvdnGbTHka01/LCWYeku5EpSBLoCFXc1WRQXpDNo
-        7vMOzqJp5TEz7nqmZSNV91VMOirRXk+lpyOD7AuRZCTuxNp+EkdrEGkJRxYGZvGMu5Z76hN8MhWiDN1h
-        tDsLs+kUT0ujOBsfQk1OIF06iZS4Q96B+krtXEB5hCYngTxVLFmpMVxNiUaVFMXFxEiS48PQp230BGIP
-        hngHjOUafip1TNkrmBzSMdF/DfeXMygfjiK/3Yfr5WacLWuwNSzFWutP2N5g70DVAzVTNgOTw3qBsxn/
-        mozSeQy5PVTgLTha1mJvWMZYbQAjNRJ7tm3yDpSX5DNhKWbCnCfwOdydMcjv9uN6tRXns3Xi5uWM1QUw
-        apQYeugjUFqUi9J7g/Hu87i7YpE7wnG1BeN8Hoi9cYXAixiZx4OVfgsDJbcycX6+jPtjHLIpQuDtOFvX
-        Y29a6cGjRr85XOXHgCFgYUB/Mx3be/HfpgO4Xu8QeAOOplXY6hd7Pnu4WsIisFng/nIfgdt5lzwPxPVm
-        F64XQdibVwu8BKu4+TceqPD34N4yH4Hv/b0U5Z4WLyyKxOhwDofu9hz625qn/30k6RcI56ssgBCQhwAA
-        AABJRU5ErkJggg==
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAHJSURBVDhPvZHdK4NhGMb3pzAt4dgfIPmMosgBB8pHjnbA
+        kSMhijSa2pgJ89U23jEJExpmvhq2+ZoMxVZD78vYxjsue5+NMTVK+dV18jxdv7v7eXh/Rrt8BC7UkpVE
+        OWvCoHYdoeuf4cqRKCaNqGwY/p1Es2gN1YL4X14hGZmHzmBFcXX7zxLl3A4p6mwAtQuY7Qw6FTOgVhmo
+        l2mo9DT652iIJ25JQrUwg1ojEXA8PfvB3PvgcLmJIJKm0WskVxi+SuRqPbnsMzxDNMugnrpCzYAdIws3
+        5Pwz1TIXtBsMkoomwxJpYF9u70cPi2vag3PHHQ7sN5BPO0mplfKTmE/uUCpyIrFoCgkFY4jPGwpKuH29
+        PvZjslBuQ5V0Hx2qcyJ4h3lgcXLphcFyDxm1DUFub1jAuH04PHNh59gBo/kCS1unaOgLfm/dqBtCqRMl
+        bTbkN+6RyKhNCLK7woLkrLJvqRHvEQEbWM9Fs7DYH7FoYqBZuUX3mBFxGeKvjxlJedMGEXye/J4u9Rr4
+        aaLogsJaPTxPL5BPmNCj2YZsfJNM5spS5SpiU1uiCzKEusBrq0ji8xQQ5PQgLlMCfnp7oNyKmJTm6IJ/
+        gsd7A8Wc0VfbPf1MAAAAAElFTkSuQmCC
 </value>
   </data>
   <data name="コピーToolStripMenuItem.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
