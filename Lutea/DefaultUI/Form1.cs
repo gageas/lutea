@@ -1243,7 +1243,7 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private void DoImport(IEnumerable<string> paths, bool fastMode)
+        private void DoImport(IEnumerable<string> paths, bool fastMode, bool filemode = false)
         {
             toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
             if (toolStripProgressBar1.Tag != null)
@@ -1253,7 +1253,14 @@ namespace Gageas.Lutea.DefaultUI
             toolStripProgressBar1.Visible = true;
             toolStripProgressBar1.Value = 0;
             toolStripProgressBar1.Maximum = int.MaxValue;
-            importer = Importer.CreateFolderImporter(paths, fastMode);
+            if (filemode)
+            {
+                importer = Importer.CreateFileImporter(paths, fastMode);
+            }
+            else
+            {
+                importer = Importer.CreateFolderImporter(paths, fastMode);
+            }
             EventHandler evt = (x, y) => { var ret = MessageBox.Show("中断しますか？", "インポート処理", MessageBoxButtons.OKCancel); if (ret == System.Windows.Forms.DialogResult.OK) { importer.Abort(); toolStripProgressBar1.Visible = false; } };
             toolStripProgressBar1.Click += evt;
             toolStripProgressBar1.Tag = evt;
@@ -1390,7 +1397,7 @@ namespace Gageas.Lutea.DefaultUI
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
                 DoImport(playlistView
                         .GetSelectedObjects()
-                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), true);
+                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), true, true);
             }
         }
 
@@ -1401,7 +1408,7 @@ namespace Gageas.Lutea.DefaultUI
                 int colIndexOfFilename = Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name);
                 DoImport(playlistView
                         .GetSelectedObjects()
-                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), true);
+                        .Select(_ => Controller.GetPlaylistRowColumn(_, colIndexOfFilename)).ToArray(), false, true);
             }
         }
 
