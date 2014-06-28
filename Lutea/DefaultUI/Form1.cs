@@ -1245,6 +1245,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void DoImport(IEnumerable<string> paths, bool fastMode, bool filemode = false)
         {
+            if (importer != null) return;
             toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
             if (toolStripProgressBar1.Tag != null)
             {
@@ -1261,7 +1262,14 @@ namespace Gageas.Lutea.DefaultUI
             {
                 importer = Importer.CreateFolderImporter(paths, fastMode);
             }
-            EventHandler evt = (x, y) => { var ret = MessageBox.Show("中断しますか？", "インポート処理", MessageBoxButtons.OKCancel); if (ret == System.Windows.Forms.DialogResult.OK) { importer.Abort(); toolStripProgressBar1.Visible = false; } };
+            EventHandler evt = (x, y) => { 
+                var ret = MessageBox.Show("中断しますか？", "インポート処理", MessageBoxButtons.OKCancel); 
+                if (ret == System.Windows.Forms.DialogResult.OK) { 
+                    importer.Abort(); 
+                    toolStripProgressBar1.Visible = false;
+                    importer = null;
+                } 
+            };
             toolStripProgressBar1.Click += evt;
             toolStripProgressBar1.Tag = evt;
             importer.SetMaximum_read += (_) =>
@@ -1273,7 +1281,7 @@ namespace Gageas.Lutea.DefaultUI
                 }));
             };
             importer.Step_read += () => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.PerformStep(); })); };
-            importer.Complete += () => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.Visible = false; })); };
+            importer.Complete += () => { this.Invoke((MethodInvoker)(() => { toolStripProgressBar1.Visible = false; importer = null; })); };
             importer.Message += (s) => { Logger.Debug(s); };
             importer.Start();
         }
