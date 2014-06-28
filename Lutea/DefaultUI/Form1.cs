@@ -1155,6 +1155,9 @@ namespace Gageas.Lutea.DefaultUI
             if (dummyFilterTab.TabPages[pageIndex].Tag == null) return;
             int colid = (int)dummyFilterTab.TabPages[pageIndex].Tag;
             ListView list = (ListView)dummyFilterTab.TabPages[pageIndex].Controls[0];
+            // ratingは黙って更新されている場合があるので，毎回キャッシュを破棄
+            // TODO: リアルタイムに追従するようにする
+            if (Columns[colid].Name == LibraryDBColumnTextMinimum.rating) list.Items.Clear();
             if (list.Items.Count == 0)
             {
                 ThreadPool.QueueUserWorkItem(refreshFilter, list);
