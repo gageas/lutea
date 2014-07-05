@@ -1091,7 +1091,7 @@ namespace Gageas.Lutea.DefaultUI
                 SelectItemIndirect(requestEnsureVisibleOID);
                 requestEnsureVisibleOID = -1;
             }
-            if (Columns[0].Width != CoverArtSizeWithPad)
+            if (Columns[0].Tag == null && Columns[0].Width != CoverArtSizeWithPad) // カバーアートカラムが表示されていてWidth調整中の場合
             {
                 int tmp = (int)((Columns[0].Width - CoverArtMargin * 2) / ItemHeight);
                 if (CoverArtLineNum != tmp)
