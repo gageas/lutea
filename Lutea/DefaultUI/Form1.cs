@@ -1858,9 +1858,10 @@ namespace Gageas.Lutea.DefaultUI
             this.pref.SplitContainer3_SplitterDistance = splitContainer3.SplitterDistance;
             this.pref.CoverArtSizeInLinesPlaylistView = playlistView.CoverArtLineNum;
             this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
-            this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
-            for (int i = 1; i < playlistView.Columns.Count; i++)
+            this.pref.PlaylistViewColumnWidth = new Dictionary<string, int>();
+            for (int i = 0; i < playlistView.Columns.Count; i++)
             {
+                if (PlaylistView.IsCoverArtColumn(playlistView.Columns[i])) continue;
                 this.pref.PlaylistViewColumnOrder[Columns[(int)playlistView.Columns[i].Tag].Name] = playlistView.Columns[i].DisplayIndex;
                 this.pref.PlaylistViewColumnWidth[Columns[(int)playlistView.Columns[i].Tag].Name] = Math.Max(10, playlistView.Columns[i].Width);
             }
