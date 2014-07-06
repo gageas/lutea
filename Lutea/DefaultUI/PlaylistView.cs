@@ -391,7 +391,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 foreach (ColumnHeader col in Columns)
                 {
-                    if (col.Tag == null) continue;
+                    if (IsCoverArtColumn(col)) continue;
                     var colName = dbColumnsCache[(int)col.Tag].Name;
                     columnOrder[colName] = col.DisplayIndex;
                     columnWidth[colName] = Math.Max(10, col.Width);
@@ -435,7 +435,7 @@ namespace Gageas.Lutea.DefaultUI
 
             foreach (ColumnHeader colheader in Columns)
             {
-                if (colheader.Tag == null) continue;
+                if (IsCoverArtColumn(colheader)) continue; 
                 var colName = dbColumnsCache[(int)colheader.Tag].Name;
                 if (columnOrder.ContainsKey(colName))
                 {
@@ -628,6 +628,16 @@ namespace Gageas.Lutea.DefaultUI
             {
                 Controller.PlayPlaylistItem(getObjectIDByViewID(SelectedIndices[0]));
             }
+        }
+
+        /// <summary>
+        /// カラムがカバーアート表示カラムかどうかを返す
+        /// </summary>
+        /// <param name="col"></param>
+        /// <returns></returns>
+        static public bool IsCoverArtColumn(ColumnHeader col)
+        {
+            return col.Tag == null;
         }
         #endregion
 
@@ -929,7 +939,7 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (this.Columns[item.SubItems.IndexOf(sub)].Tag == null) return;
+            if (IsCoverArtColumn(this.Columns[item.SubItems.IndexOf(sub)])) return;
             if ((!isDummyRow(item.Index)) 
                 && (dbColumnsCache[(int)(this.Columns[item.SubItems.IndexOf(sub)].Tag)].Type == Library.LibraryColumnType.Rating))
             {
@@ -967,13 +977,13 @@ namespace Gageas.Lutea.DefaultUI
             {
                 case System.Windows.Forms.MouseButtons.Right:
                     var oid = getObjectIDByViewID(item.Index);
-                    if (tag == null) return;
+                    if (IsCoverArtColumn(this.Columns[item.SubItems.IndexOf(sub)])) return;
                     lastSelectedColumnId = (int)tag; 
                     lastSelectedString = Controller.GetPlaylistRowColumn(oid, (int)(tag));
                     break;
                 case System.Windows.Forms.MouseButtons.Left:
                     if (isDummyRow(item.Index)) return;
-                    if (tag == null) return;
+                    if (IsCoverArtColumn(this.Columns[item.SubItems.IndexOf(sub)])) return;
                     if (dbColumnsCache[(int)tag].Type != Library.LibraryColumnType.Rating) return;
                     int starwidth = ratingRenderer.EachWidth;
                     var x = e.X - TextMargin;
@@ -1030,7 +1040,7 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="e"></param>
         private void playlistView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
-            if (this.Columns[e.Column].Tag == null) return;
+            if (IsCoverArtColumn(this.Columns[e.Column])) return;
             Controller.SetSortColumn(dbColumnsCache[(int)this.Columns[e.Column].Tag].Name);
         }
 
@@ -1075,7 +1085,10 @@ namespace Gageas.Lutea.DefaultUI
             if (this.ItemHeight != e.Bounds.Height)
             {
                 this.ItemHeight = e.Bounds.Height;
-                Columns[0].Width = CoverArtSizeWithPad;
+                if (IsCoverArtColumn(Columns[0]))
+                {
+                    Columns[0].Width = CoverArtSizeWithPad;
+                }
                 return;
             }
             var index = e.ItemIndex;
@@ -1091,7 +1104,7 @@ namespace Gageas.Lutea.DefaultUI
                 SelectItemIndirect(requestEnsureVisibleOID);
                 requestEnsureVisibleOID = -1;
             }
-            if (Columns[0].Tag == null && Columns[0].Width != CoverArtSizeWithPad) // カバーアートカラムが表示されていてWidth調整中の場合
+            if (IsCoverArtColumn(Columns[0]) && Columns[0].Width != CoverArtSizeWithPad) // カバーアートカラムが表示されていてWidth調整中の場合
             {
                 int tmp = (int)((Columns[0].Width - CoverArtMargin * 2) / ItemHeight);
                 if (CoverArtLineNum != tmp)
@@ -1183,7 +1196,7 @@ namespace Gageas.Lutea.DefaultUI
                         {
                             drawGridLine(hDC, offsetX, bounds.Y, bounds.Height);
                         } 
-                        if (head.Tag == null)
+                        if (IsCoverArtColumn(head))
                         {
                             if (ShowCoverArt)
                             {
