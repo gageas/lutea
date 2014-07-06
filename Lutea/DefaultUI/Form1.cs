@@ -632,7 +632,11 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     this.config_FormSize = this.ClientSize;
                 }
+
             }
+            // ウィンドウを最大化したときに再描画がかからないことがあるため強制的に再描画
+            playlistView.Invalidate();
+            splitContainer2.Invalidate();
             if (pref.HideIntoTrayOnMinimize && this.WindowState == FormWindowState.Minimized)
             {
                 if (pseudoMainForm != null)
@@ -669,13 +673,6 @@ namespace Gageas.Lutea.DefaultUI
                     Logger.Log(ex);
                 }
             }
-        }
-
-        private void DefaultUIForm_ResizeEnd(object sender, EventArgs e)
-        {
-            // ウィンドウを最大化したときに再描画がかからないことがあるため強制的に再描画
-            playlistView.Invalidate();
-            splitContainer2.Invalidate();
         }
         #endregion
 

@@ -953,7 +953,6 @@
             this.Activated += new System.EventHandler(this.DefaultUIForm_Activated);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.ResizeEnd += new System.EventHandler(this.DefaultUIForm_ResizeEnd);
             this.SizeChanged += new System.EventHandler(this.DefaultUIForm_SizeChanged);
             this.Move += new System.EventHandler(this.DefaultUIForm_Move);
             this.Resize += new System.EventHandler(this.DefaultUIForm_Resize);
