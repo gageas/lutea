@@ -670,6 +670,13 @@ namespace Gageas.Lutea.DefaultUI
                 }
             }
         }
+
+        private void DefaultUIForm_ResizeEnd(object sender, EventArgs e)
+        {
+            // ウィンドウを最大化したときに再描画がかからないことがあるため強制的に再描画
+            playlistView.Invalidate();
+            splitContainer2.Invalidate();
+        }
         #endregion
 
         #region Form utility methods
