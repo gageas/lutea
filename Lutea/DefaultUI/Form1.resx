@@ -252,6 +252,9 @@
   <data name="&gt;&gt;splitContainer2.Panel1.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="splitContainer2.Panel1MinSize" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
   <data name="dummyFilterTab.Appearance" type="System.Windows.Forms.TabAppearance, System.Windows.Forms">
     <value>FlatButtons</value>
   </data>
@@ -441,7 +444,7 @@
 </value>
   </data>
   <data name="treeView1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>292, 338</value>
+    <value>292, 332</value>
   </data>
   <data name="treeView1.TabIndex" type="System.Int32, mscorlib">
     <value>24</value>
@@ -465,7 +468,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>292, 338</value>
+    <value>292, 332</value>
   </data>
   <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -498,7 +501,7 @@
     <value>0, 0</value>
   </data>
   <data name="dummyFilterTab.Size" type="System.Drawing.Size, System.Drawing">
-    <value>300, 367</value>
+    <value>300, 361</value>
   </data>
   <data name="dummyFilterTab.TabIndex" type="System.Int32, mscorlib">
     <value>25</value>
@@ -532,6 +535,9 @@
   </data>
   <data name="splitContainer2.SplitterDistance" type="System.Int32, mscorlib">
     <value>300</value>
+  </data>
+  <data name="splitContainer2.SplitterWidth" type="System.Int32, mscorlib">
+    <value>10</value>
   </data>
   <data name="splitContainer2.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>

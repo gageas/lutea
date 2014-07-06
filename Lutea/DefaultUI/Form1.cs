@@ -519,6 +519,7 @@ namespace Gageas.Lutea.DefaultUI
 
             albumArtListViewSearchTextBox.Left = albumArtListViewSearchTextBox.Parent.ClientSize.Width - albumArtListViewSearchTextBox.Width - SystemInformation.VerticalScrollBarWidth;
 
+            splitContainer2.SplitterWidth = 10; // デザイナで設定してもなぜか反映されない
             yomigana = new Yomigana(Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "yomiCache", this);
             InitFilterView();
             queryComboBox.Select();
@@ -812,6 +813,10 @@ namespace Gageas.Lutea.DefaultUI
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
                 OpenCoverViewForm();
+            }
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                splitContainer2.SplitterDistance = 0;
             }
         }
         #endregion
@@ -1183,12 +1188,16 @@ namespace Gageas.Lutea.DefaultUI
         #region PlaylistView Tab event
         #endregion
 
-        #region splitContainer3 event
-        private void splitContainer3_SplitterMoved(object sender, SplitterEventArgs e)
+        #region splitContainer1 event
+        private void splitContainer1_SplitterMoved(object sender, SplitterEventArgs e)
         {
-            splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
-            ResetSpectrumRenderer();
-            playlistView.Select();
+            if (splitContainer2.SplitterDistance != 0)
+            {
+                splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
+                ResetSpectrumRenderer();
+                playlistView.Select();
+            }
+            splitContainer2.Invalidate(); // Paintを呼ばせるため強制的に再描画をかける
         }
         #endregion
 
@@ -1667,6 +1676,7 @@ namespace Gageas.Lutea.DefaultUI
             this.WindowState = pref.WindowState;
             this.splitContainer1.SplitterDistance = pref.splitContainer1_SplitterDistance ?? 100;
             this.splitContainer2.SplitterDistance = pref.splitContainer2_SplitterDistance ?? 100;
+            this.splitContainer3.SplitterDistance = pref.SplitContainer3_SplitterDistance;
         }
 
         private List<HotKey> hotkeys = new List<HotKey>();
@@ -1734,8 +1744,16 @@ namespace Gageas.Lutea.DefaultUI
 
             // ウィンドウ表示
             this.Show();
-            coverArtView.Width = coverArtView.Height = splitContainer1.SplitterDistance = splitContainer2.SplitterDistance = pref.SplitContainer3_SplitterDistance;
-            splitContainer3_SplitterMoved(null, null);
+            coverArtView.Width = coverArtView.Height = splitContainer1.SplitterDistance;
+            if (pref.splitContainer2_SplitterDistance == 0)
+            {
+                splitContainer2.SplitterDistance = 0;
+            }
+            else
+            {
+                splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
+                splitContainer1_SplitterMoved(null, null);
+            }
 
             // プレイリストビューの右クリックにColumn選択を生成
             var column_select = new ToolStripMenuItem("表示する項目");
@@ -1814,7 +1832,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             this.pref.splitContainer1_SplitterDistance = splitContainer1.SplitterDistance;
             this.pref.splitContainer2_SplitterDistance = splitContainer2.SplitterDistance;
-            this.pref.SplitContainer3_SplitterDistance = splitContainer1.SplitterDistance;
+            this.pref.SplitContainer3_SplitterDistance = splitContainer3.SplitterDistance;
             this.pref.CoverArtSizeInLinesPlaylistView = playlistView.CoverArtLineNum;
             this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
             this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
@@ -1998,6 +2016,27 @@ namespace Gageas.Lutea.DefaultUI
         public bool GetEnable()
         {
             return true;
+        }
+
+        private void splitContainer2_MouseClick(object sender, MouseEventArgs e)
+        {
+            var sc = (SplitContainer)sender;
+            if (sc.SplitterDistance == 0)
+            {
+                splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
+            }
+            else
+            {
+                sc.SplitterDistance = 0;
+            }
+        }
+
+        private void splitContainer2_Paint(object sender, PaintEventArgs e)
+        {
+            var sc = splitContainer2;
+            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2 - 10-e.ClipRectangle.X, sc.SplitterDistance + 4, 2, 2);
+            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2, sc.SplitterDistance + 4, 2, 2);
+            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2 + 10, sc.SplitterDistance + 4, 2, 2);
         }
     }
 }
