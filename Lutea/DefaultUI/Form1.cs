@@ -1201,6 +1201,29 @@ namespace Gageas.Lutea.DefaultUI
         }
         #endregion
 
+        #region splitContainer2 event
+        private void splitContainer2_MouseClick(object sender, MouseEventArgs e)
+        {
+            var sc = (SplitContainer)sender;
+            if (sc.SplitterDistance == 0)
+            {
+                splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
+            }
+            else
+            {
+                sc.SplitterDistance = 0;
+            }
+        }
+
+        private void splitContainer2_Paint(object sender, PaintEventArgs e)
+        {
+            var sc = splitContainer2;
+            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2 - 10 - e.ClipRectangle.X, sc.SplitterDistance + 4, 2, 2);
+            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2, sc.SplitterDistance + 4, 2, 2);
+            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2 + 10, sc.SplitterDistance + 4, 2, 2);
+        }
+        #endregion
+
         #region Form ToolStripMenu event
         private void componentToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {
@@ -2016,27 +2039,6 @@ namespace Gageas.Lutea.DefaultUI
         public bool GetEnable()
         {
             return true;
-        }
-
-        private void splitContainer2_MouseClick(object sender, MouseEventArgs e)
-        {
-            var sc = (SplitContainer)sender;
-            if (sc.SplitterDistance == 0)
-            {
-                splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
-            }
-            else
-            {
-                sc.SplitterDistance = 0;
-            }
-        }
-
-        private void splitContainer2_Paint(object sender, PaintEventArgs e)
-        {
-            var sc = splitContainer2;
-            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2 - 10-e.ClipRectangle.X, sc.SplitterDistance + 4, 2, 2);
-            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2, sc.SplitterDistance + 4, 2, 2);
-            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2 + 10, sc.SplitterDistance + 4, 2, 2);
         }
     }
 }
