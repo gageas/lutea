@@ -1964,8 +1964,13 @@ namespace Gageas.Lutea.DefaultUI
 
         private void OnPlaylistSortOrderChange(string columnText, Controller.SortOrders sortOrder)
         {
-            for (int i = 1; i < playlistView.Columns.Count; i++)
+            for (int i = 0; i < playlistView.Columns.Count; i++)
             {
+                if (PlaylistView.IsCoverArtColumn(playlistView.Columns[i]))
+                {
+                    playlistView.SetSortArrow(i, SortOrder.None);
+                    continue;
+                }
                 if ((int)playlistView.Columns[i].Tag == Controller.GetColumnIndexByName(columnText))
                 {
                     playlistView.SetSortArrow(i, sortOrder == Controller.SortOrders.Asc ? SortOrder.Ascending : SortOrder.Descending);
