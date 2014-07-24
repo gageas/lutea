@@ -16,10 +16,10 @@ namespace Gageas.Lutea.DefaultUI
 
         private readonly GDI.GDIBitmap dummyEmptyBitmapGDI = new GDI.GDIBitmap(new Bitmap(1, 1));
         private int size;
-        private Thread thread = null;
-        private List<TaskEntry> tasks = new List<TaskEntry>(); // LIFOで処理する
+        private List<Thread> threads = new List<Thread>();
+        private List<TaskEntry> tasks = new List<TaskEntry>();
         private Dictionary<string, GDI.GDIBitmap> coverArts = new Dictionary<string, GDI.GDIBitmap>();
-        private bool isInSleep = false;
+        private List<Thread> wakeMeUp = new List<Thread>();
 
         public class TaskEntry
         {
@@ -29,6 +29,7 @@ namespace Gageas.Lutea.DefaultUI
                 this.file_name = file_name;
                 this.callbackObjectIds = new List<int>() { callbackObjectId };
             }
+            public bool Consuming = false;
             public string Key;
             public string file_name;
             public List<int> callbackObjectIds;
@@ -37,9 +38,13 @@ namespace Gageas.Lutea.DefaultUI
         public BackgroundCoverartsLoader(int size)
         {
             this.size = size;
-            thread = new Thread(threadProc);
-            thread.Priority = ThreadPriority.Lowest;
-            thread.Start();
+            for (int i = 0; i < 2; i++)
+            {
+                var thread = new Thread(threadProc);
+                thread.Priority = ThreadPriority.Lowest;
+                thread.Start();
+                threads.Add(thread);
+            }
         }
 
         public void Reset(int size)
@@ -50,6 +55,7 @@ namespace Gageas.Lutea.DefaultUI
             coverArts = new Dictionary<string, GDI.GDIBitmap>();
             foreach (var bmp in oldCoverArts)
             {
+                if (bmp.Value == null) continue;
                 if (bmp.Value != dummyEmptyBitmapGDI)
                 {
                     bmp.Value.Dispose();
@@ -60,9 +66,13 @@ namespace Gageas.Lutea.DefaultUI
 
         public void Interrupt()
         {
-            if (isInSleep)
+            lock (wakeMeUp)
             {
-                thread.Interrupt();
+                foreach (var th in wakeMeUp)
+                {
+                    th.Interrupt();
+                }
+                wakeMeUp.Clear();
             }
         }
 
@@ -117,12 +127,15 @@ namespace Gageas.Lutea.DefaultUI
                 try
                 {
                     consumeAllTasks();
-                    isInSleep = true;
+                    lock (wakeMeUp)
+                    {
+                        wakeMeUp.Add(Thread.CurrentThread);
+                    }
                     Thread.Sleep(Timeout.Infinite);
                 }
                 catch (ThreadInterruptedException)
                 {
-                    isInSleep = false;
+                    // nothing
                 }
                 catch (Exception e)
                 {
@@ -133,6 +146,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void consumeAllTasks()
         {
+            bool evenOdd = false;
             while (true)
             {
                 TaskEntry task;
@@ -140,7 +154,9 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     // キューが空になったら無限ループを抜ける
                     if (tasks.Count == 0) break;
-                    task = tasks.Last();
+                    task = evenOdd ? tasks.First(_ => !_.Consuming) : tasks.Last(_ => !_.Consuming);
+                    task.Consuming = true;
+                    evenOdd = !evenOdd;
                 }
                 var resizedBitmap = consumeTask(task);
                 if (resizedBitmap != null)
@@ -151,6 +167,13 @@ namespace Gageas.Lutea.DefaultUI
                         if (Complete != null)
                         {
                             Complete.Invoke(task.callbackObjectIds.Distinct());
+                        }
+                    }
+                    else
+                    {
+                        if (resizedBitmap != dummyEmptyBitmapGDI)
+                        {
+                            resizedBitmap.Dispose();
                         }
                     }
                 }
