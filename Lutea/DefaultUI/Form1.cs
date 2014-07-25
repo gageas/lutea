@@ -139,7 +139,6 @@ namespace Gageas.Lutea.DefaultUI
             playlistView.ShowCoverArt = pref.ShowCoverArtInPlaylistView;
             playlistView.ShowGroup = pref.ShowGroup;
             playlistView.ShowVerticalGrid = pref.ShowVerticalGrid;
-//            playlistView.CoverArtSize = pref.CoverArtSizeInPlaylistView;
             playlistView.ResetColumns(pref.DisplayColumns);
 
             playlistUpdated(null);
@@ -482,20 +481,20 @@ namespace Gageas.Lutea.DefaultUI
             setStatusText("Ready ");
             NotifyPopup = new NotifyPopupForm();
             NotifyPopup.Show();
-            Controller.PlaylistUpdated += new Controller.PlaylistUpdatedEvent(playlistUpdated);
-            Controller.onElapsedTimeChange += new Controller.VOIDINT(elapsedTimeChange);
-            Controller.onTrackChange += new Controller.VOIDINT(trackChange);
+            Controller.PlaylistUpdated += playlistUpdated;
+            Controller.onElapsedTimeChange += elapsedTimeChange;
+            Controller.onTrackChange += trackChange;
             Controller.onTrackChange += changeTaskbarIcon;
             if (pref.ShowNotifyBalloon)
             {
                 Controller.onTrackChange -= TrackChangeNotifyPopup;
                 Controller.onTrackChange += TrackChangeNotifyPopup;
             }
-            Controller.onPlaybackErrorOccured += new Controller.VOIDVOID(playbackErrorOccured);
-            Controller.onVolumeChange += new Controller.VOIDVOID(changeVolume);
-            Controller.onPlaybackOrderChange += new Controller.VOIDVOID(AppCore_onPlaybackOrderChange);
-            Controller.onDatabaseUpdated += new Controller.VOIDVOID(RefreshAll);
-            Controller.PlaylistSortOrderChanged += new Controller.PlaylistSortOrderChangeEvent(OnPlaylistSortOrderChange);
+            Controller.onPlaybackErrorOccured += playbackErrorOccured;
+            Controller.onVolumeChange += changeVolume;
+            Controller.onPlaybackOrderChange += AppCore_onPlaybackOrderChange;
+            Controller.onDatabaseUpdated += RefreshAll;
+            Controller.PlaylistSortOrderChanged += OnPlaylistSortOrderChange;
             treeView1.ImageList = new ImageList();
             treeView1.ImageList.ColorDepth = ColorDepth.Depth32Bit;
             treeView1.ImageList.Images.Add(Shell32.GetShellIcon(3, false));
@@ -508,14 +507,14 @@ namespace Gageas.Lutea.DefaultUI
             tabPage3.ImageIndex = 1;
             toolStripComboBox2.GetControl.Items.AddRange(Enum.GetNames(typeof(Controller.PlaybackOrder)));
             toolStripComboBox2.GetControl.SelectedIndex = 0;
-            toolStripComboBox2.GetControl.SelectedIndexChanged += new EventHandler(playbackOrderComboBox_SelectedIndexChanged);
+            toolStripComboBox2.GetControl.SelectedIndexChanged += playbackOrderComboBox_SelectedIndexChanged;
 
             menuStrip1.SetBackgroundColorSolid(SystemColors.Control);
 
             listView2.Columns[1].Width = listView2.Width;
             ResetProgressBar();
             backgroundCoverartLoader = new BackgroundCoverartsLoader(pref.CoverArtSizeInCoverArtList);
-            backgroundCoverartLoader.Complete += new BackgroundCoverartsLoader.LoadComplete(backgroundCoverartLoader_Complete);
+            backgroundCoverartLoader.Complete += backgroundCoverartLoader_Complete;
 
             albumArtListViewSearchTextBox.Left = albumArtListViewSearchTextBox.Parent.ClientSize.Width - albumArtListViewSearchTextBox.Width - SystemInformation.VerticalScrollBarWidth;
 
@@ -1129,7 +1128,6 @@ namespace Gageas.Lutea.DefaultUI
             refreshFilter(o, null);
         }
 
-        private bool SupplessFilterViewSelectChangeEvent = false;
         /// <summary>
         /// FilterViewを更新する。ごちゃごちゃしてるのでなんとかしたい
         /// </summary>
@@ -1194,14 +1192,14 @@ namespace Gageas.Lutea.DefaultUI
             if (splitContainer2.SplitterDistance != 0)
             {
                 splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
-                ResetSpectrumRenderer();
-                playlistView.Select();
-                splitContainer2.Invalidate(); // Paintを呼ばせるため強制的に再描画をかける
+
             }
             else
             {
                 splitContainer2.BackupDistance = splitContainer1.SplitterDistance;
             }
+            ResetSpectrumRenderer();
+            playlistView.Select();
         }
         #endregion
 

@@ -921,40 +921,40 @@
   <data name="reImportToolStripMenuItem.Text" xml:space="preserve">
     <value>再読み込み</value>
   </data>
-  <data name="toolStripMenuItem7.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="toolStripMenuItemRatingStar5.Size" type="System.Drawing.Size, System.Drawing">
     <value>134, 22</value>
   </data>
-  <data name="toolStripMenuItem7.Text" xml:space="preserve">
+  <data name="toolStripMenuItemRatingStar5.Text" xml:space="preserve">
     <value>★★★★★</value>
   </data>
-  <data name="toolStripMenuItem6.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="toolStripMenuItemRatingStar4.Size" type="System.Drawing.Size, System.Drawing">
     <value>134, 22</value>
   </data>
-  <data name="toolStripMenuItem6.Text" xml:space="preserve">
+  <data name="toolStripMenuItemRatingStar4.Text" xml:space="preserve">
     <value>★★★★☆</value>
   </data>
-  <data name="toolStripMenuItem5.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="toolStripMenuItemRatingStar3.Size" type="System.Drawing.Size, System.Drawing">
     <value>134, 22</value>
   </data>
-  <data name="toolStripMenuItem5.Text" xml:space="preserve">
+  <data name="toolStripMenuItemRatingStar3.Text" xml:space="preserve">
     <value>★★★☆☆</value>
   </data>
-  <data name="toolStripMenuItem4.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="toolStripMenuItemRatingStar2.Size" type="System.Drawing.Size, System.Drawing">
     <value>134, 22</value>
   </data>
-  <data name="toolStripMenuItem4.Text" xml:space="preserve">
+  <data name="toolStripMenuItemRatingStar2.Text" xml:space="preserve">
     <value>★★☆☆☆</value>
   </data>
-  <data name="toolStripMenuItem3.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="toolStripMenuItemRatingStar1.Size" type="System.Drawing.Size, System.Drawing">
     <value>134, 22</value>
   </data>
-  <data name="toolStripMenuItem3.Text" xml:space="preserve">
+  <data name="toolStripMenuItemRatingStar1.Text" xml:space="preserve">
     <value>★☆☆☆☆</value>
   </data>
-  <data name="toolStripMenuItem2.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="toolStripMenuItemRatingStar0.Size" type="System.Drawing.Size, System.Drawing">
     <value>134, 22</value>
   </data>
-  <data name="toolStripMenuItem2.Text" xml:space="preserve">
+  <data name="toolStripMenuItemRatingStar0.Text" xml:space="preserve">
     <value>☆☆☆☆☆</value>
   </data>
   <data name="ratingToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
@@ -12309,40 +12309,40 @@
   <data name="&gt;&gt;ratingToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem7.Name" xml:space="preserve">
-    <value>toolStripMenuItem7</value>
+  <data name="&gt;&gt;toolStripMenuItemRatingStar5.Name" xml:space="preserve">
+    <value>toolStripMenuItemRatingStar5</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem7.Type" xml:space="preserve">
+  <data name="&gt;&gt;toolStripMenuItemRatingStar5.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem6.Name" xml:space="preserve">
-    <value>toolStripMenuItem6</value>
+  <data name="&gt;&gt;toolStripMenuItemRatingStar4.Name" xml:space="preserve">
+    <value>toolStripMenuItemRatingStar4</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem6.Type" xml:space="preserve">
+  <data name="&gt;&gt;toolStripMenuItemRatingStar4.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem5.Name" xml:space="preserve">
-    <value>toolStripMenuItem5</value>
+  <data name="&gt;&gt;toolStripMenuItemRatingStar3.Name" xml:space="preserve">
+    <value>toolStripMenuItemRatingStar3</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem5.Type" xml:space="preserve">
+  <data name="&gt;&gt;toolStripMenuItemRatingStar3.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem4.Name" xml:space="preserve">
-    <value>toolStripMenuItem4</value>
+  <data name="&gt;&gt;toolStripMenuItemRatingStar2.Name" xml:space="preserve">
+    <value>toolStripMenuItemRatingStar2</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem4.Type" xml:space="preserve">
+  <data name="&gt;&gt;toolStripMenuItemRatingStar2.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem3.Name" xml:space="preserve">
-    <value>toolStripMenuItem3</value>
+  <data name="&gt;&gt;toolStripMenuItemRatingStar1.Name" xml:space="preserve">
+    <value>toolStripMenuItemRatingStar1</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem3.Type" xml:space="preserve">
+  <data name="&gt;&gt;toolStripMenuItemRatingStar1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem2.Name" xml:space="preserve">
-    <value>toolStripMenuItem2</value>
+  <data name="&gt;&gt;toolStripMenuItemRatingStar0.Name" xml:space="preserve">
+    <value>toolStripMenuItemRatingStar0</value>
   </data>
-  <data name="&gt;&gt;toolStripMenuItem2.Type" xml:space="preserve">
+  <data name="&gt;&gt;toolStripMenuItemRatingStar0.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;deleteToolStripMenuItem.Name" xml:space="preserve">

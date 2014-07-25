@@ -495,40 +495,40 @@
             resources.ApplyResources(this.ratingToolStripMenuItem, "ratingToolStripMenuItem");
             this.ratingToolStripMenuItem.Name = "ratingToolStripMenuItem";
             // 
-            // toolStripMenuItem7
+            // toolStripMenuItemRatingStar5
             // 
-            this.toolStripMenuItemRatingStar5.Name = "toolStripMenuItem7";
-            resources.ApplyResources(this.toolStripMenuItemRatingStar5, "toolStripMenuItem7");
+            this.toolStripMenuItemRatingStar5.Name = "toolStripMenuItemRatingStar5";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar5, "toolStripMenuItemRatingStar5");
             this.toolStripMenuItemRatingStar5.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
-            // toolStripMenuItem6
+            // toolStripMenuItemRatingStar4
             // 
-            this.toolStripMenuItemRatingStar4.Name = "toolStripMenuItem6";
-            resources.ApplyResources(this.toolStripMenuItemRatingStar4, "toolStripMenuItem6");
+            this.toolStripMenuItemRatingStar4.Name = "toolStripMenuItemRatingStar4";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar4, "toolStripMenuItemRatingStar4");
             this.toolStripMenuItemRatingStar4.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
-            // toolStripMenuItem5
+            // toolStripMenuItemRatingStar3
             // 
-            this.toolStripMenuItemRatingStar3.Name = "toolStripMenuItem5";
-            resources.ApplyResources(this.toolStripMenuItemRatingStar3, "toolStripMenuItem5");
+            this.toolStripMenuItemRatingStar3.Name = "toolStripMenuItemRatingStar3";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar3, "toolStripMenuItemRatingStar3");
             this.toolStripMenuItemRatingStar3.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
-            // toolStripMenuItem4
+            // toolStripMenuItemRatingStar2
             // 
-            this.toolStripMenuItemRatingStar2.Name = "toolStripMenuItem4";
-            resources.ApplyResources(this.toolStripMenuItemRatingStar2, "toolStripMenuItem4");
+            this.toolStripMenuItemRatingStar2.Name = "toolStripMenuItemRatingStar2";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar2, "toolStripMenuItemRatingStar2");
             this.toolStripMenuItemRatingStar2.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
-            // toolStripMenuItem3
+            // toolStripMenuItemRatingStar1
             // 
-            this.toolStripMenuItemRatingStar1.Name = "toolStripMenuItem3";
-            resources.ApplyResources(this.toolStripMenuItemRatingStar1, "toolStripMenuItem3");
+            this.toolStripMenuItemRatingStar1.Name = "toolStripMenuItemRatingStar1";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar1, "toolStripMenuItemRatingStar1");
             this.toolStripMenuItemRatingStar1.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
-            // toolStripMenuItem2
+            // toolStripMenuItemRatingStar0
             // 
-            this.toolStripMenuItemRatingStar0.Name = "toolStripMenuItem2";
-            resources.ApplyResources(this.toolStripMenuItemRatingStar0, "toolStripMenuItem2");
+            this.toolStripMenuItemRatingStar0.Name = "toolStripMenuItemRatingStar0";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar0, "toolStripMenuItemRatingStar0");
             this.toolStripMenuItemRatingStar0.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
             // deleteToolStripMenuItem
