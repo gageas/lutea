@@ -546,7 +546,7 @@
     <value>splitContainer2</value>
   </data>
   <data name="&gt;&gt;splitContainer2.Type" xml:space="preserve">
-    <value>Gageas.Lutea.DefaultUI.HidableSplitterContainer, DefaultUI, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>Gageas.Lutea.DefaultUI.HidableSplitContainer, DefaultUI, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;splitContainer2.Parent" xml:space="preserve">
     <value>splitContainer1.Panel1</value>
@@ -1518,7 +1518,7 @@
     <value>splitContainer3</value>
   </data>
   <data name="&gt;&gt;splitContainer3.Type" xml:space="preserve">
-    <value>Gageas.Lutea.DefaultUI.HidableSplitterContainer, DefaultUI, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+    <value>Gageas.Lutea.DefaultUI.HidableSplitContainer, DefaultUI, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;splitContainer3.Parent" xml:space="preserve">
     <value>splitContainer1.Panel2</value>
