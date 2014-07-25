@@ -519,7 +519,6 @@ namespace Gageas.Lutea.DefaultUI
 
             albumArtListViewSearchTextBox.Left = albumArtListViewSearchTextBox.Parent.ClientSize.Width - albumArtListViewSearchTextBox.Width - SystemInformation.VerticalScrollBarWidth;
 
-            splitContainer2.SplitterWidth = 10; // デザイナで設定してもなぜか反映されない
             yomigana = new Yomigana(Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "yomiCache", this);
             InitFilterView();
             queryComboBox.Select();
@@ -634,9 +633,6 @@ namespace Gageas.Lutea.DefaultUI
                 }
 
             }
-            // ウィンドウを最大化したときに再描画がかからないことがあるため強制的に再描画
-            playlistView.Invalidate();
-            splitContainer2.Invalidate();
             if (pref.HideIntoTrayOnMinimize && this.WindowState == FormWindowState.Minimized)
             {
                 if (pseudoMainForm != null)
@@ -820,7 +816,7 @@ namespace Gageas.Lutea.DefaultUI
             }
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                splitContainer2.SplitterDistance = 0;
+                splitContainer2.Close();
             }
         }
         #endregion
@@ -1200,31 +1196,12 @@ namespace Gageas.Lutea.DefaultUI
                 splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
                 ResetSpectrumRenderer();
                 playlistView.Select();
-            }
-            splitContainer2.Invalidate(); // Paintを呼ばせるため強制的に再描画をかける
-        }
-        #endregion
-
-        #region splitContainer2 event
-        private void splitContainer2_MouseClick(object sender, MouseEventArgs e)
-        {
-            var sc = (SplitContainer)sender;
-            if (sc.SplitterDistance == 0)
-            {
-                splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
+                splitContainer2.Invalidate(); // Paintを呼ばせるため強制的に再描画をかける
             }
             else
             {
-                sc.SplitterDistance = 0;
+                splitContainer2.BackupDistance = splitContainer1.SplitterDistance;
             }
-        }
-
-        private void splitContainer2_Paint(object sender, PaintEventArgs e)
-        {
-            var sc = splitContainer2;
-            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2 - 10 - e.ClipRectangle.X, sc.SplitterDistance + 4, 2, 2);
-            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2, sc.SplitterDistance + 4, 2, 2);
-            e.Graphics.FillRectangle(SystemBrushes.ControlDark, sc.Width / 2 + 10, sc.SplitterDistance + 4, 2, 2);
         }
         #endregion
 
@@ -1775,6 +1752,7 @@ namespace Gageas.Lutea.DefaultUI
             if (pref.splitContainer2_SplitterDistance == 0)
             {
                 splitContainer2.SplitterDistance = 0;
+                splitContainer2.BackupDistance = splitContainer1.SplitterDistance;
             }
             else
             {

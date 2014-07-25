@@ -97,6 +97,9 @@
     </Compile>
     <Compile Include="GDI.cs" />
     <Compile Include="GlobalHotKey.cs" />
+    <Compile Include="HidableSplitContainer.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="LogViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>

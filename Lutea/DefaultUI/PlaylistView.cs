@@ -334,6 +334,9 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         public PlaylistView()
         {
+            // リサイズ時に再描画
+            ResizeRedraw = true;
+
             // レーティングの☆描画準備
             this.ratingRenderer = new RatingRenderer(@"components\rating_on.gif", @"components\rating_off.gif");
 
