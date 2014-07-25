@@ -1344,34 +1344,20 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        private void toolStripMenuItemRatingStar_Click(object sender, EventArgs e)
         {
-            playlistView.SetRatingForSelectedItems(0);
-        }
-
-        private void toolStripMenuItem3_Click(object sender, EventArgs e)
-        {
-            playlistView.SetRatingForSelectedItems(10);
-        }
-
-        private void toolStripMenuItem4_Click(object sender, EventArgs e)
-        {
-            playlistView.SetRatingForSelectedItems(20);
-        }
-
-        private void toolStripMenuItem5_Click(object sender, EventArgs e)
-        {
-            playlistView.SetRatingForSelectedItems(30);
-        }
-
-        private void toolStripMenuItem6_Click(object sender, EventArgs e)
-        {
-            playlistView.SetRatingForSelectedItems(40);
-        }
-
-        private void toolStripMenuItem7_Click(object sender, EventArgs e)
-        {
-            playlistView.SetRatingForSelectedItems(50);
+            var menuItems = new List<ToolStripMenuItem>() { 
+                toolStripMenuItemRatingStar0,
+                toolStripMenuItemRatingStar1,
+                toolStripMenuItemRatingStar2,
+                toolStripMenuItemRatingStar3,
+                toolStripMenuItemRatingStar4,
+                toolStripMenuItemRatingStar5,
+            };
+            if (!(sender is ToolStripMenuItem)) return;
+            var idx = menuItems.IndexOf((ToolStripMenuItem)sender);
+            if (idx == -1) return;
+            playlistView.SetRatingForSelectedItems(idx * 10);
         }
 
         private void removeDeadLinkToolStripMenuItem_Click(object sender, EventArgs e)

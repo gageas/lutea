@@ -67,12 +67,12 @@
             this.通常ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.完全ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ratingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemRatingStar5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemRatingStar4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemRatingStar3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemRatingStar2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemRatingStar1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemRatingStar0 = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ファイル操作ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.explorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -486,50 +486,50 @@
             // ratingToolStripMenuItem
             // 
             this.ratingToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem7,
-            this.toolStripMenuItem6,
-            this.toolStripMenuItem5,
-            this.toolStripMenuItem4,
-            this.toolStripMenuItem3,
-            this.toolStripMenuItem2});
+            this.toolStripMenuItemRatingStar5,
+            this.toolStripMenuItemRatingStar4,
+            this.toolStripMenuItemRatingStar3,
+            this.toolStripMenuItemRatingStar2,
+            this.toolStripMenuItemRatingStar1,
+            this.toolStripMenuItemRatingStar0});
             resources.ApplyResources(this.ratingToolStripMenuItem, "ratingToolStripMenuItem");
             this.ratingToolStripMenuItem.Name = "ratingToolStripMenuItem";
             // 
             // toolStripMenuItem7
             // 
-            this.toolStripMenuItem7.Name = "toolStripMenuItem7";
-            resources.ApplyResources(this.toolStripMenuItem7, "toolStripMenuItem7");
-            this.toolStripMenuItem7.Click += new System.EventHandler(this.toolStripMenuItem7_Click);
+            this.toolStripMenuItemRatingStar5.Name = "toolStripMenuItem7";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar5, "toolStripMenuItem7");
+            this.toolStripMenuItemRatingStar5.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
             // toolStripMenuItem6
             // 
-            this.toolStripMenuItem6.Name = "toolStripMenuItem6";
-            resources.ApplyResources(this.toolStripMenuItem6, "toolStripMenuItem6");
-            this.toolStripMenuItem6.Click += new System.EventHandler(this.toolStripMenuItem6_Click);
+            this.toolStripMenuItemRatingStar4.Name = "toolStripMenuItem6";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar4, "toolStripMenuItem6");
+            this.toolStripMenuItemRatingStar4.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
             // toolStripMenuItem5
             // 
-            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            resources.ApplyResources(this.toolStripMenuItem5, "toolStripMenuItem5");
-            this.toolStripMenuItem5.Click += new System.EventHandler(this.toolStripMenuItem5_Click);
+            this.toolStripMenuItemRatingStar3.Name = "toolStripMenuItem5";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar3, "toolStripMenuItem5");
+            this.toolStripMenuItemRatingStar3.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
             // toolStripMenuItem4
             // 
-            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            resources.ApplyResources(this.toolStripMenuItem4, "toolStripMenuItem4");
-            this.toolStripMenuItem4.Click += new System.EventHandler(this.toolStripMenuItem4_Click);
+            this.toolStripMenuItemRatingStar2.Name = "toolStripMenuItem4";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar2, "toolStripMenuItem4");
+            this.toolStripMenuItemRatingStar2.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
             // toolStripMenuItem3
             // 
-            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            resources.ApplyResources(this.toolStripMenuItem3, "toolStripMenuItem3");
-            this.toolStripMenuItem3.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
+            this.toolStripMenuItemRatingStar1.Name = "toolStripMenuItem3";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar1, "toolStripMenuItem3");
+            this.toolStripMenuItemRatingStar1.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
             // toolStripMenuItem2
             // 
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            resources.ApplyResources(this.toolStripMenuItem2, "toolStripMenuItem2");
-            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
+            this.toolStripMenuItemRatingStar0.Name = "toolStripMenuItem2";
+            resources.ApplyResources(this.toolStripMenuItemRatingStar0, "toolStripMenuItem2");
+            this.toolStripMenuItemRatingStar0.Click += new System.EventHandler(this.toolStripMenuItemRatingStar_Click);
             // 
             // deleteToolStripMenuItem
             // 
@@ -1007,12 +1007,12 @@
         private ToolStripComboBox toolStripComboBox2;
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ratingToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem6;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem7;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemRatingStar0;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemRatingStar1;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemRatingStar2;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemRatingStar3;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemRatingStar4;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemRatingStar5;
         private ToolStripXTrackbar toolStripXTrackbar1;
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newDirectoryToolStripMenuItem;
