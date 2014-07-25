@@ -31,7 +31,7 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DefaultUIForm));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.splitContainer2 = new Gageas.Lutea.DefaultUI.HidableSplitContainer();
             this.coverArtView = new Gageas.Lutea.DefaultUI.CoverArtView();
             this.dummyFilterTab = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -45,7 +45,7 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.削除ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.名前の変更ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.splitContainer3 = new Gageas.Lutea.DefaultUI.HidableSplitContainer();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -180,6 +180,7 @@
             // 
             // splitContainer2
             // 
+            this.splitContainer2.BackupDistance = 0;
             resources.ApplyResources(this.splitContainer2, "splitContainer2");
             this.splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.splitContainer2.Name = "splitContainer2";
@@ -192,8 +193,6 @@
             // 
             this.splitContainer2.Panel2.Controls.Add(this.dummyFilterTab);
             this.splitContainer2.TabStop = false;
-            this.splitContainer2.Paint += new System.Windows.Forms.PaintEventHandler(this.splitContainer2_Paint);
-            this.splitContainer2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.splitContainer2_MouseClick);
             // 
             // coverArtView
             // 
@@ -302,6 +301,7 @@
             // 
             // splitContainer3
             // 
+            this.splitContainer3.BackupDistance = 0;
             resources.ApplyResources(this.splitContainer3, "splitContainer3");
             this.splitContainer3.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.splitContainer3.Name = "splitContainer3";
@@ -1045,11 +1045,11 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ComboBox queryComboBox;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.SplitContainer splitContainer2;
+        private HidableSplitContainer splitContainer2;
         private System.Windows.Forms.TreeView treeView1;
         private System.Windows.Forms.TabControl dummyFilterTab;
         private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.SplitContainer splitContainer3;
+        private HidableSplitContainer splitContainer3;
         private CoverArtView coverArtView;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ListView listView2;

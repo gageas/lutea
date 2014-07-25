@@ -546,7 +546,7 @@
     <value>splitContainer2</value>
   </data>
   <data name="&gt;&gt;splitContainer2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.SplitContainer, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>Gageas.Lutea.DefaultUI.HidableSplitterContainer, DefaultUI, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;splitContainer2.Parent" xml:space="preserve">
     <value>splitContainer1.Panel1</value>
@@ -1218,7 +1218,7 @@
     <value>2, 1, 2, 1</value>
   </data>
   <data name="playlistView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>992, 504</value>
+    <value>992, 498</value>
   </data>
   <data name="playlistView.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1242,7 +1242,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>992, 504</value>
+    <value>992, 498</value>
   </data>
   <data name="tabPage2.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1344,7 +1344,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="albumArtListView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>992, 504</value>
+    <value>992, 498</value>
   </data>
   <data name="albumArtListView.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1368,7 +1368,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="tabPage3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>992, 504</value>
+    <value>992, 498</value>
   </data>
   <data name="tabPage3.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1398,7 +1398,7 @@
     <value>3, 1, 3, 1</value>
   </data>
   <data name="richTextBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>986, 502</value>
+    <value>986, 496</value>
   </data>
   <data name="richTextBox1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1428,7 +1428,7 @@
     <value>3, 1, 3, 1</value>
   </data>
   <data name="tabPage4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>992, 504</value>
+    <value>992, 498</value>
   </data>
   <data name="tabPage4.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -1470,7 +1470,7 @@
     <value>5, 3</value>
   </data>
   <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1000, 547</value>
+    <value>1000, 541</value>
   </data>
   <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1508,6 +1508,9 @@
   <data name="splitContainer3.SplitterDistance" type="System.Int32, mscorlib">
     <value>120</value>
   </data>
+  <data name="splitContainer3.SplitterWidth" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
   <data name="splitContainer3.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
@@ -1515,7 +1518,7 @@
     <value>splitContainer3</value>
   </data>
   <data name="&gt;&gt;splitContainer3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.SplitContainer, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>Gageas.Lutea.DefaultUI.HidableSplitterContainer, DefaultUI, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;splitContainer3.Parent" xml:space="preserve">
     <value>splitContainer1.Panel2</value>
