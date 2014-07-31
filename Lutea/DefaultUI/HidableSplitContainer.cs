@@ -29,11 +29,15 @@ namespace Gageas.Lutea.DefaultUI
         public void Open()
         {
             if (BackupDistance == 0) BackupDistance = 100;
+            if (SplitterDistance == BackupDistance) return;
             SplitterDistance = BackupDistance;
         }
 
         private void MouseClickHandler(object sender, MouseEventArgs e)
         {
+            // 移動できるsplitterの場合は左クリックは移動の挙動を優先
+            if (e.Button == System.Windows.Forms.MouseButtons.Left && !IsSplitterFixed) return;
+
             if (SplitterDistance == 0)
             {
                 Open();
