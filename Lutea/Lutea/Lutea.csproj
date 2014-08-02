@@ -130,7 +130,6 @@
     <Compile Include="Core\CoreComponent.cs" />
     <Compile Include="Core\LuteaPluginInterface.cs" />
     <Compile Include="SoundStream\Mono2StereoFilter.cs" />
-    <Compile Include="Core\OutputManager.cs" />
     <Compile Include="Core\PlaylistManager.cs" />
     <Compile Include="Core\StopperInputStream.cs" />
     <Compile Include="Core\WorkerThread.cs" />
