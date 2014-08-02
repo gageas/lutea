@@ -35,16 +35,7 @@
             this.coverArtView = new Gageas.Lutea.DefaultUI.CoverArtView();
             this.dummyFilterTab = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.treeView1 = new System.Windows.Forms.TreeView();
-            this.queryTreeViewContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.クエリ作成ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.newDirectoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.reloadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.削除ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.名前の変更ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.treeView1 = new Gageas.Lutea.DefaultUI.DynamicPlaylistTreeView();
             this.splitContainer3 = new Gageas.Lutea.DefaultUI.HidableSplitContainer();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -114,11 +105,11 @@
             this.componentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuStrip1 = new Gageas.Lutea.DefaultUI.ExtMenuStrip();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem9 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem10 = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuStrip1 = new Gageas.Lutea.DefaultUI.ExtMenuStrip();
             this.toolStripMenuItem11 = new System.Windows.Forms.ToolStripMenuItem();
             this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.TopToolStripPanel = new System.Windows.Forms.ToolStripPanel();
@@ -139,7 +130,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).BeginInit();
             this.dummyFilterTab.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            this.queryTreeViewContextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
@@ -222,82 +212,12 @@
             // 
             this.treeView1.AllowDrop = true;
             this.treeView1.BackColor = System.Drawing.SystemColors.Window;
-            this.treeView1.ContextMenuStrip = this.queryTreeViewContextMenuStrip1;
             resources.ApplyResources(this.treeView1, "treeView1");
             this.treeView1.FullRowSelect = true;
             this.treeView1.HotTracking = true;
             this.treeView1.Name = "treeView1";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             ((System.Windows.Forms.TreeNode)(resources.GetObject("treeView1.Nodes")))});
-            this.treeView1.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView1_ItemDrag);
-            this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.queryView1_AfterSelect);
-            this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseClick);
-            this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
-            this.treeView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView1_DragDrop);
-            this.treeView1.DragOver += new System.Windows.Forms.DragEventHandler(this.treeView1_DragOver);
-            // 
-            // queryTreeViewContextMenuStrip1
-            // 
-            this.queryTreeViewContextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.クエリ作成ToolStripMenuItem,
-            this.editToolStripMenuItem,
-            this.toolStripSeparator1,
-            this.newDirectoryToolStripMenuItem,
-            this.reloadToolStripMenuItem,
-            this.toolStripSeparator2,
-            this.削除ToolStripMenuItem,
-            this.名前の変更ToolStripMenuItem});
-            this.queryTreeViewContextMenuStrip1.Name = "queryTreeViewContextMenuStrip1";
-            resources.ApplyResources(this.queryTreeViewContextMenuStrip1, "queryTreeViewContextMenuStrip1");
-            // 
-            // クエリ作成ToolStripMenuItem
-            // 
-            resources.ApplyResources(this.クエリ作成ToolStripMenuItem, "クエリ作成ToolStripMenuItem");
-            this.クエリ作成ToolStripMenuItem.Name = "クエリ作成ToolStripMenuItem";
-            this.クエリ作成ToolStripMenuItem.Click += new System.EventHandler(this.CreateQueryToolStripMenuItem_Click);
-            // 
-            // editToolStripMenuItem
-            // 
-            resources.ApplyResources(this.editToolStripMenuItem, "editToolStripMenuItem");
-            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Tag = "-dir";
-            this.editToolStripMenuItem.Click += new System.EventHandler(this.editToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            resources.ApplyResources(this.toolStripSeparator1, "toolStripSeparator1");
-            // 
-            // newDirectoryToolStripMenuItem
-            // 
-            resources.ApplyResources(this.newDirectoryToolStripMenuItem, "newDirectoryToolStripMenuItem");
-            this.newDirectoryToolStripMenuItem.Name = "newDirectoryToolStripMenuItem";
-            this.newDirectoryToolStripMenuItem.Click += new System.EventHandler(this.newDirectoryToolStripMenuItem_Click);
-            // 
-            // reloadToolStripMenuItem
-            // 
-            resources.ApplyResources(this.reloadToolStripMenuItem, "reloadToolStripMenuItem");
-            this.reloadToolStripMenuItem.Name = "reloadToolStripMenuItem";
-            this.reloadToolStripMenuItem.Click += new System.EventHandler(this.reloadToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            resources.ApplyResources(this.toolStripSeparator2, "toolStripSeparator2");
-            // 
-            // 削除ToolStripMenuItem
-            // 
-            resources.ApplyResources(this.削除ToolStripMenuItem, "削除ToolStripMenuItem");
-            this.削除ToolStripMenuItem.Name = "削除ToolStripMenuItem";
-            this.削除ToolStripMenuItem.Tag = "-root";
-            this.削除ToolStripMenuItem.Click += new System.EventHandler(this.DeleteToolStripMenuItem_Click);
-            // 
-            // 名前の変更ToolStripMenuItem
-            // 
-            resources.ApplyResources(this.名前の変更ToolStripMenuItem, "名前の変更ToolStripMenuItem");
-            this.名前の変更ToolStripMenuItem.Name = "名前の変更ToolStripMenuItem";
-            this.名前の変更ToolStripMenuItem.Tag = "-root";
-            this.名前の変更ToolStripMenuItem.Click += new System.EventHandler(this.RenameToolStripMenuItem_Click);
             // 
             // splitContainer3
             // 
@@ -832,6 +752,25 @@
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             resources.ApplyResources(this.toolStripSeparator3, "toolStripSeparator3");
             // 
+            // menuStrip1
+            // 
+            this.menuStrip1.EnableClickThrough = true;
+            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(0);
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.importToolStripMenuItem,
+            this.componentToolStripMenuItem,
+            this.toolStripMenuItem8,
+            this.toolStripMenuItem9,
+            this.toolStripMenuItem1,
+            this.toolStripMenuItem10,
+            this.toolStripMenuItem11});
+            resources.ApplyResources(this.menuStrip1, "menuStrip1");
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
+            this.menuStrip1.ShowItemToolTips = true;
+            this.menuStrip1.Stretch = false;
+            // 
             // toolStripMenuItem8
             // 
             this.toolStripMenuItem8.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -861,25 +800,6 @@
             resources.ApplyResources(this.toolStripMenuItem10, "toolStripMenuItem10");
             this.toolStripMenuItem10.Name = "toolStripMenuItem10";
             this.toolStripMenuItem10.Click += new System.EventHandler(this.buttonNext_Click);
-            // 
-            // menuStrip1
-            // 
-            this.menuStrip1.EnableClickThrough = true;
-            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(0);
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.importToolStripMenuItem,
-            this.componentToolStripMenuItem,
-            this.toolStripMenuItem8,
-            this.toolStripMenuItem9,
-            this.toolStripMenuItem1,
-            this.toolStripMenuItem10,
-            this.toolStripMenuItem11});
-            resources.ApplyResources(this.menuStrip1, "menuStrip1");
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.menuStrip1.ShowItemToolTips = true;
-            this.menuStrip1.Stretch = false;
             // 
             // toolStripMenuItem11
             // 
@@ -967,7 +887,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).EndInit();
             this.dummyFilterTab.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            this.queryTreeViewContextMenuStrip1.ResumeLayout(false);
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
@@ -1000,8 +919,6 @@
 
         private XTrackBar xTrackBar1;
         private System.Windows.Forms.StatusStrip statusStrip1;
-        private System.Windows.Forms.ContextMenuStrip queryTreeViewContextMenuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem reloadToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip playlistViewContextMenuStrip;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
         private ToolStripComboBox toolStripComboBox2;
@@ -1014,13 +931,6 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemRatingStar4;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemRatingStar5;
         private ToolStripXTrackbar toolStripXTrackbar1;
-        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem newDirectoryToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 削除ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem クエリ作成ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripMenuItem 名前の変更ToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem logToolStripMenuItem;
@@ -1046,7 +956,7 @@
         private System.Windows.Forms.ComboBox queryComboBox;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private HidableSplitContainer splitContainer2;
-        private System.Windows.Forms.TreeView treeView1;
+        private DynamicPlaylistTreeView treeView1;
         private System.Windows.Forms.TabControl dummyFilterTab;
         private System.Windows.Forms.TabPage tabPage1;
         private HidableSplitContainer splitContainer3;

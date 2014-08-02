@@ -11,11 +11,11 @@ namespace Gageas.Lutea.DefaultUI
 {
     public partial class QueryDirectoryNew : Form
     {
-        DefaultUIForm form;
+        DynamicPlaylistTreeView form;
         PlaylistEntryDirectory parent;
-        public QueryDirectoryNew(PlaylistEntryDirectory parent, DefaultUIForm form)
+        public QueryDirectoryNew(PlaylistEntryDirectory parent, DynamicPlaylistTreeView treeView)
         {
-            this.form = form;
+            this.form = treeView;
             this.parent = parent;
             InitializeComponent();
         }

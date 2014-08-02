@@ -83,6 +83,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="DynamicPlaylist.cs" />
+    <Compile Include="DynamicPlaylistTreeView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ExtToolStrip.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -190,6 +193,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DeleteFilesDialog.resx">
       <DependentUpon>DeleteFilesDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DynamicPlaylistTreeView.resx">
+      <DependentUpon>DynamicPlaylistTreeView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
