@@ -509,17 +509,17 @@ namespace Gageas.Lutea.Tags
 
         static int ReadUInt24(byte[] buffer, int offset)
         {
-            return (buffer[offset] << 16) + (buffer[offset + 1] << 8) + buffer[offset + 2];
+            return (buffer[offset] << 16) | (buffer[offset + 1] << 8) | buffer[offset + 2];
         }
 
         static int ReadUInt32(byte[] buffer, int offset)
         {
-            return (buffer[offset] << 24) + (buffer[offset + 1] << 16) + (buffer[offset + 2] << 8) + buffer[offset + 3];
+            return (buffer[offset] << 24) | (buffer[offset + 1] << 16) | (buffer[offset + 2] << 8) | buffer[offset + 3];
         }
 
         static int ReadUInt28(byte[] buffer, int offset)
         {
-            return (buffer[offset] << 21) + (buffer[offset + 1] << 14) + (buffer[offset + 2] << 7) + buffer[offset + 3];
+            return (buffer[offset] << 21) | (buffer[offset + 1] << 14) | (buffer[offset + 2] << 7) | buffer[offset + 3];
         }
     }
 }
