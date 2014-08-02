@@ -390,7 +390,7 @@ namespace Gageas.Lutea.Tags
         /// <returns>Read UInt16 value</returns>
         private static UInt16 BEUInt16(byte[] buf, int offset)
         {
-            return (UInt16)(((UInt16)buf[0 + offset] << 8) + (UInt16)buf[1 + offset]);
+            return (UInt16)(((UInt16)buf[0 + offset] << 8) | (UInt16)buf[1 + offset]);
         }
 
         /// <summary>
@@ -401,7 +401,7 @@ namespace Gageas.Lutea.Tags
         /// <returns>Read UInt32 value</returns>
         private static UInt32 BEUInt32(byte[] buf, int offset)
         {
-            return ((UInt32)buf[0 + offset] << 24) + ((UInt32)buf[1 + offset] << 16) + ((UInt32)buf[2 + offset] << 8) + (UInt32)buf[3 + offset];
+            return ((UInt32)buf[0 + offset] << 24) | ((UInt32)buf[1 + offset] << 16) | ((UInt32)buf[2 + offset] << 8) | (UInt32)buf[3 + offset];
         }
 
         /// <summary>
@@ -412,8 +412,8 @@ namespace Gageas.Lutea.Tags
         /// <returns>Read UInt64 value</returns>
         private static UInt64 BEUInt64(byte[] buf, int offset)
         {
-            return ((UInt64)buf[0 + offset] << 56) + ((UInt64)buf[1 + offset] << 48) + ((UInt64)buf[2 + offset] << 40) + ((UInt64)buf[3 + offset] << 32) +
-                   ((UInt64)buf[4 + offset] << 24) + ((UInt64)buf[5 + offset] << 16) + ((UInt64)buf[6 + offset] << 8) + ((UInt64)buf[7 + offset]);
+            return ((UInt64)buf[0 + offset] << 56) | ((UInt64)buf[1 + offset] << 48) | ((UInt64)buf[2 + offset] << 40) | ((UInt64)buf[3 + offset] << 32) |
+                   ((UInt64)buf[4 + offset] << 24) | ((UInt64)buf[5 + offset] << 16) | ((UInt64)buf[6 + offset] <<  8) | ((UInt64)buf[7 + offset]);
         }
     }
 }
