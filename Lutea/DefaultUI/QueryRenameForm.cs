@@ -12,7 +12,7 @@ namespace Gageas.Lutea.DefaultUI
     public partial class QueryRenameForm : Form
     {
         PlaylistEntry entry;
-        public QueryRenameForm(PlaylistEntry ent, DefaultUIForm form)
+        public QueryRenameForm(PlaylistEntry ent)
         {
             this.entry = ent;
             InitializeComponent();

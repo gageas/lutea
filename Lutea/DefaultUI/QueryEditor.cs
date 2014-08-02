@@ -13,8 +13,8 @@ namespace Gageas.Lutea.DefaultUI
     {
         private PlaylistEntryFile q;
         private string directory;
-        private DefaultUIForm parent;
-        public QueryEditor(PlaylistEntryFile original, DefaultUIForm parent)
+        private DynamicPlaylistTreeView parent;
+        public QueryEditor(PlaylistEntryFile original, DynamicPlaylistTreeView parent)
         {
             if (original == null) throw new ArgumentNullException();
             this.q = original;
@@ -24,7 +24,7 @@ namespace Gageas.Lutea.DefaultUI
             this.textBox1.Text = original.Name;
             this.textBox2.Text = original.sql.Replace("\n", @"\n");
         }
-        public QueryEditor(string directory_path, DefaultUIForm parent)
+        public QueryEditor(string directory_path, DynamicPlaylistTreeView parent)
         {
             this.directory = directory_path;
             this.parent = parent;
