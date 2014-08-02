@@ -16,6 +16,7 @@ namespace Gageas.Lutea.DefaultUI
             SplitterWidth = 10;
             MouseClick += MouseClickHandler;
             Paint += PaintHandler;
+            SplitterMoved += (_, __) => { if(Created)Panel2.Controls[0].Select(); };
             ResizeRedraw = true;
         }
 
@@ -50,6 +51,8 @@ namespace Gageas.Lutea.DefaultUI
 
         private void PaintHandler(object sender, PaintEventArgs e)
         {
+            e.Graphics.DrawLine(SystemPens.ControlDark, 10, SplitterDistance + 5, Width / 2 - 20, SplitterDistance + 5);
+            e.Graphics.DrawLine(SystemPens.ControlDark, Width - 10, SplitterDistance + 5, Width / 2 + 20, SplitterDistance + 5);
             e.Graphics.FillRectangle(SystemBrushes.ControlDark, Width / 2 - 10 - e.ClipRectangle.X, SplitterDistance + 4, 2, 2);
             e.Graphics.FillRectangle(SystemBrushes.ControlDark, Width / 2, SplitterDistance + 4, 2, 2);
             e.Graphics.FillRectangle(SystemBrushes.ControlDark, Width / 2 + 10, SplitterDistance + 4, 2, 2);
