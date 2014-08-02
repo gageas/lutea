@@ -152,6 +152,17 @@ namespace Gageas.Wrapper.BASS
         {
         }
 
+        private static int[] GetThreadIdsArray()
+        {
+            var ths_before = System.Diagnostics.Process.GetCurrentProcess().Threads;
+            var ids = new int[ths_before.Count];
+            for (int i = 0; i < ths_before.Count; i++)
+            {
+                ids[i] = ths_before[i].Id;
+            }
+            return ids;
+        }
+
         public BASSWASAPIOutput(uint freq, uint chans, BASS.StreamProc proc, InitFlags flag, int device = -1, uint bufferLen = 0)
         {
 
@@ -160,25 +171,14 @@ namespace Gageas.Wrapper.BASS
             this.streamProc = WrapperStreamProc;
 
             // Init前から走っていたスレッドのIdを保持
-            var ths_before = System.Diagnostics.Process.GetCurrentProcess().Threads;
-            List<int> ids = new List<int>();
-            for (int i = 0; i < ths_before.Count; i++)
-            {
-                ids.Add(ths_before[i].Id);
-            }
+            var ids = GetThreadIdsArray();
+
+            // 初期化実行
             success = BASS_WASAPI_Init(device, freq, chans, (uint)flag, (bufferLen / 1000.0F), 0.0F, streamProc, IntPtr.Zero);
 
-            // 新しく生成されたスレッドのプライオリティを上げる
-            var ths_after = System.Diagnostics.Process.GetCurrentProcess().Threads;
-            for (int i = 0; i < ths_after.Count; i++)
-            {
-                var th = ths_after[i];
-                if (ids.Contains(th.Id)) continue;
-                if (!bassThreadIDs.Contains(th.Id))
-                {
-                    bassThreadIDs.Add(th.Id);
-                }
-            }
+            // 新しく生成されたスレッドを保持
+            bassThreadIDs.Union(ids.Except(GetThreadIdsArray()));
+
             if (!success)
             {
                 throw new BASSWASAPIException();
@@ -230,14 +230,14 @@ namespace Gageas.Wrapper.BASS
             var ths = System.Diagnostics.Process.GetCurrentProcess().Threads;
             bassThreadIDs = bassThreadIDs.FindAll((e) =>
             {
-                for (int i = 0; i < ths.Count; i++)
+                foreach (System.Diagnostics.ProcessThread th in ths)
                 {
-                    if (e == ths[i].Id)
+                    if (e == th.Id)
                     {
 #if DEBUG
-                        Gageas.Lutea.Logger.Log("スレッドID" + ths[i].Id + " のプライオリティ" + priority);
+                        Gageas.Lutea.Logger.Log("スレッドID" + th.Id + " のプライオリティ" + priority);
 #endif
-                        ths[i].PriorityLevel = priority;
+                        th.PriorityLevel = priority;
                         return true;
                     }
                 }

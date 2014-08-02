@@ -116,17 +116,16 @@ namespace Gageas.Lutea.OutputDevice
 
         public static BASS.IPlayable.FFT MapFFTEnum(Controller.FFTNum fftNum)
         {
-            return fftNum == Controller.FFTNum.FFT256
-                ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT256
-                : fftNum == Controller.FFTNum.FFT512
-                ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT512
-                : fftNum == Controller.FFTNum.FFT1024
-                ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT1024
-                : fftNum == Controller.FFTNum.FFT2048
-                ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT2048
-                : fftNum == Controller.FFTNum.FFT4096
-                ? Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT4096
-                : Wrapper.BASS.BASS.IPlayable.FFT.BASS_DATA_FFT8192;
+            switch (fftNum)
+            {
+                case Controller.FFTNum.FFT256:  return BASS.IPlayable.FFT.BASS_DATA_FFT256;
+                case Controller.FFTNum.FFT512:  return BASS.IPlayable.FFT.BASS_DATA_FFT512;
+                case Controller.FFTNum.FFT1024: return BASS.IPlayable.FFT.BASS_DATA_FFT1024;
+                case Controller.FFTNum.FFT2048: return BASS.IPlayable.FFT.BASS_DATA_FFT2048;
+                case Controller.FFTNum.FFT4096: return BASS.IPlayable.FFT.BASS_DATA_FFT4096;
+                case Controller.FFTNum.FFT8192: return BASS.IPlayable.FFT.BASS_DATA_FFT8192;
+                default: throw new ArgumentOutOfRangeException();
+            }
         }
 
         public uint GetDataFFT(float[] buffer, Controller.FFTNum fftNum)
