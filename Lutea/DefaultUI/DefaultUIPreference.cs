@@ -428,17 +428,6 @@ namespace Gageas.Lutea.DefaultUI
             get { return showNotifyBalloon; }
             set { showNotifyBalloon = value; }
         }
-        /*
-        public struct PathStruct
-        {
-            [Editor(typeof(PathSelectUITypeEditor), typeof(UITypeEditor))]
-            public string Path { get; set; }
-
-            public override string ToString()
-            {
-                return "" + Path + " ";
-            }
-        }*/
 
         [Editor(typeof(PathSelectUITypeEditor), typeof(UITypeEditor))]
         [Description("起動時にインポート処理を行うパス")]
@@ -446,6 +435,15 @@ namespace Gageas.Lutea.DefaultUI
         {
             get;
             set;
+        }
+
+        private string[] combinationFilterItems = new string[] { "tagGenre", "tagAlbumArtist", "tagAlbum" };
+        [Editor(typeof(ItemSelectUITypeEditor<DBColumnStringListProvider>), typeof(UITypeEditor))]
+        [Description("コンビネーションフィルタに表示する項目")]
+        public string[] CombinationFilterItems
+        {
+            get { return combinationFilterItems; }
+            set { combinationFilterItems = value; }
         }
 
         /// <summary>
@@ -497,6 +495,9 @@ namespace Gageas.Lutea.DefaultUI
         }
 
         [Browsable(false)]
+        public int? splitContainer4_SplitterDistance { get; set; }
+
+        [Browsable(false)]
         public string LibraryLatestDir { get; set; }
 
         public DefaultUIPreference(Dictionary<string, object> setting)
@@ -508,8 +509,38 @@ namespace Gageas.Lutea.DefaultUI
         {
         }
 
+        public class ItemSelectUITypeEditor<T> : UITypeEditor where T: StringListProvider, new()
+        {
+            public override System.Drawing.Design.UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+            {
+                return System.Drawing.Design.UITypeEditorEditStyle.Modal;
+            }
+            public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+            {
+                IWindowsFormsEditorService edSvc = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
+                if (edSvc == null) return value;
+                var ple = new ItemSelectWindow();
+                ple.Candidates = (new T()).Provide();
+                ple.InitialSelected = (string[])value;
+                edSvc.ShowDialog(ple);
+                return ple.Results;
+            }
+        }
 
-        public class PathSelectUITypeEditor : UITypeEditor
+        public interface StringListProvider
+        {
+            string[] Provide();
+        }
+
+        public class DBColumnStringListProvider : StringListProvider
+        {
+            public string[] Provide()
+            {
+                return Controller.Columns.Select(_ => _.Name).ToArray();
+            }
+        }
+
+        public class PathSelectUITypeEditor: UITypeEditor
         {
             public override System.Drawing.Design.UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
             {

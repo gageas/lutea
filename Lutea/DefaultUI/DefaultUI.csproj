@@ -51,6 +51,9 @@
   <ItemGroup>
     <Compile Include="BackgroundCoverartsLoader.cs" />
     <Compile Include="Com.cs" />
+    <Compile Include="CombinationFilterList.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ComponentManage.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -102,6 +105,12 @@
     <Compile Include="GlobalHotKey.cs" />
     <Compile Include="HidableSplitContainer.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ItemSelectWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ItemSelectWindow.Designer.cs">
+      <DependentUpon>ItemSelectWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="LogViewerForm.cs">
       <SubType>Form</SubType>
@@ -200,6 +209,9 @@
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ItemSelectWindow.resx">
+      <DependentUpon>ItemSelectWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LogViewerForm.resx">
       <DependentUpon>LogViewerForm.cs</DependentUpon>

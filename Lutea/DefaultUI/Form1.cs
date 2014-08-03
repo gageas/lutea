@@ -188,6 +188,43 @@ namespace Gageas.Lutea.DefaultUI
             xTrackBar1.Update();
         }
 
+        private void ResetCombinationFilter()
+        {
+            var FilterTags = pref.CombinationFilterItems;
+            tableLayoutPanel2.Controls.Clear();
+            tableLayoutPanel2.ColumnStyles.Clear();
+            tableLayoutPanel2.ColumnCount = FilterTags.Length;
+            tableLayoutPanel2.RowCount = 2;
+            tableLayoutPanel2.RowStyles.Clear();
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            CombinationFilterList super = null;
+            for (int i = 0; i < FilterTags.Length; i++)
+            {
+                var text = new Label();
+                text.TextAlign = ContentAlignment.MiddleCenter;
+                text.Text = Controller.Columns[Controller.GetColumnIndexByName(FilterTags[i])].LocalText;
+                text.Dock = DockStyle.Fill;
+                text.Padding = new Padding(0, 0, 2, 0);
+                tableLayoutPanel2.Controls.Add(text);
+            }
+            for (int i = 0; i < FilterTags.Length; i++)
+            {
+                tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, (float)(100.0 / FilterTags.Length)));
+                var cb = new CombinationFilterList(FilterTags[i], yomigana);
+                cb.Margin = new Padding(0, 0, 2, 0);
+                cb.Dock = DockStyle.Fill;
+                cb.Super = super;
+                cb.SelectionMode = SelectionMode.MultiExtended;
+                if (super != null)
+                {
+                    super.Child = cb;
+                }
+                super = cb;
+                tableLayoutPanel2.Controls.Add(cb);
+            }
+        }
+
         internal void OpenCoverViewForm()
         {
             try
@@ -437,6 +474,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 InitFilterView();
                 InitAlbumArtList();
+                ((CombinationFilterList)(tableLayoutPanel2.GetControlFromPosition(0, 1))).DeliveredUpdate(false);
             }));
         }
 
@@ -1414,6 +1452,11 @@ namespace Gageas.Lutea.DefaultUI
         }
         #endregion
 
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            dummyFilterTab.SelectedIndex = comboBox1.SelectedIndex;
+        }
+
         #region TaskTray Icon event
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
@@ -1446,6 +1489,7 @@ namespace Gageas.Lutea.DefaultUI
             this.splitContainer1.SplitterDistance = pref.splitContainer1_SplitterDistance ?? 100;
             this.splitContainer2.SplitterDistance = pref.splitContainer2_SplitterDistance ?? 100;
             this.splitContainer3.SplitterDistance = pref.SplitContainer3_SplitterDistance;
+            this.splitContainer4.SplitterDistance = pref.splitContainer4_SplitterDistance ?? 100;
         }
 
         private List<HotKey> hotkeys = new List<HotKey>();
@@ -1475,6 +1519,7 @@ namespace Gageas.Lutea.DefaultUI
             pref.Font_trackInfoView = pref.Font_trackInfoView ?? this.trackInfoText.Font;
             pref.splitContainer1_SplitterDistance = pref.splitContainer1_SplitterDistance ?? this.splitContainer1.SplitterDistance;
             pref.splitContainer2_SplitterDistance = pref.splitContainer2_SplitterDistance ?? this.splitContainer2.SplitterDistance;
+            pref.splitContainer4_SplitterDistance = pref.splitContainer4_SplitterDistance ?? this.splitContainer4.SplitterDistance;
             // プレファレンスを適用
             if (_setting != null && _setting is Dictionary<string, object>)
             {
@@ -1524,6 +1569,16 @@ namespace Gageas.Lutea.DefaultUI
                 splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
                 splitContainer1_SplitterMoved(null, null);
             }
+
+            // コンビネーションフィルタ初期化
+            ResetCombinationFilter();
+
+            // タブ選択コンボボックス初期化
+            for (var i = 0; i < dummyFilterTab.TabPages.Count; i++)
+            {
+                comboBox1.Items.Add(dummyFilterTab.TabPages[i].Text);
+            }
+            comboBox1.SelectedIndex = 0;
 
             // プレイリストビューの右クリックにColumn選択を生成
             var column_select = new ToolStripMenuItem("表示する項目");
@@ -1603,6 +1658,7 @@ namespace Gageas.Lutea.DefaultUI
             this.pref.splitContainer1_SplitterDistance = splitContainer1.SplitterDistance;
             this.pref.splitContainer2_SplitterDistance = splitContainer2.SplitterDistance;
             this.pref.SplitContainer3_SplitterDistance = splitContainer3.SplitterDistance;
+            this.pref.splitContainer4_SplitterDistance = splitContainer4.SplitterDistance;
             this.pref.CoverArtSizeInLinesPlaylistView = playlistView.CoverArtLineNum;
             this.pref.PlaylistViewColumnOrder = new Dictionary<string, int>();
             this.pref.PlaylistViewColumnWidth = new Dictionary<string, int>();
@@ -1647,6 +1703,7 @@ namespace Gageas.Lutea.DefaultUI
             ResetHotKeys();
             ResetPlaylistView();
             ResetTrackInfoView();
+            ResetCombinationFilter();
         }
 
         public void ActivateUI()

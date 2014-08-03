@@ -105,20 +105,6 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
 
-        private IEnumerable<KeyValuePair<string, int>> FetchColumnValueMultipleValue(string columnName)
-        {
-            // ライブラリからfilterViewに表示する項目を取得
-            var sql = "SELECT " + columnName + " ,COUNT(*) FROM list GROUP BY " + columnName + " ORDER BY " + columnName + " desc;";
-            using (var db = Controller.GetDBConnection())
-            using (var stmt = db.Prepare(sql))
-            {
-                // タグの値の文字列を改行で分割して，個別の値に分離
-                return stmt.EvaluateAll()
-                    .SelectMany(_ => ((string)_[0]).Split('\n').Select(__ => new KeyValuePair<string, int>(__, int.Parse(((string)_[1])))))
-                    .GroupBy(_ => _.Key, (_key, _values) => new KeyValuePair<string, int>(_key, _values.Select(_ => _.Value).Sum()));
-            }
-        }
-
         /// <summary>
         /// FilterViewを更新する。ごちゃごちゃしてるのでなんとかしたい
         /// </summary>
@@ -133,7 +119,7 @@ namespace Gageas.Lutea.DefaultUI
             var col = Controller.Columns[colid];
             try
             {
-                IEnumerable<KeyValuePair<string, int>> cf = FetchColumnValueMultipleValue(col.Name);
+                IEnumerable<KeyValuePair<string, int>> cf = Controller.FetchColumnValueMultipleValue(col.Name, null);
 
                 Dictionary<char, ListViewGroup> groups = new Dictionary<char, ListViewGroup>();
                 groups.Add('\0', new ListViewGroup(" " + col.LocalText));
