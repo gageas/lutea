@@ -438,7 +438,7 @@ namespace Gageas.Lutea.DefaultUI
         }
 
         private string[] combinationFilterItems = new string[] { "tagGenre", "tagAlbumArtist", "tagAlbum" };
-        [Editor(typeof(ItemSelectUITypeEditor<DBColumnStringListProvider>), typeof(UITypeEditor))]
+        [Editor(typeof(ItemSelectUITypeEditor), typeof(UITypeEditor))]
         [Description("コンビネーションフィルタに表示する項目")]
         public string[] CombinationFilterItems
         {
@@ -509,7 +509,7 @@ namespace Gageas.Lutea.DefaultUI
         {
         }
 
-        public class ItemSelectUITypeEditor<T> : UITypeEditor where T: StringListProvider, new()
+        public class ItemSelectUITypeEditor : UITypeEditor
         {
             public override System.Drawing.Design.UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
             {
@@ -520,23 +520,10 @@ namespace Gageas.Lutea.DefaultUI
                 IWindowsFormsEditorService edSvc = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
                 if (edSvc == null) return value;
                 var ple = new ItemSelectWindow();
-                ple.Candidates = (new T()).Provide();
+                ple.Candidates = Controller.Columns.Select(_ => _.Name).ToArray();
                 ple.InitialSelected = (string[])value;
                 edSvc.ShowDialog(ple);
                 return ple.Results;
-            }
-        }
-
-        public interface StringListProvider
-        {
-            string[] Provide();
-        }
-
-        public class DBColumnStringListProvider : StringListProvider
-        {
-            public string[] Provide()
-            {
-                return Controller.Columns.Select(_ => _.Name).ToArray();
             }
         }
 
