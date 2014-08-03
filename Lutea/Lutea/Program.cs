@@ -61,8 +61,11 @@ namespace Gageas.Lutea.Core
             var w = System.IO.File.CreateText(DateTime.Now.ToString().Replace("/","").Replace(":","-") + ".log");
             Logger.LogClient += new Logger.LogEventHandler(log =>
             {
-                w.Write(log.ToString() + Environment.NewLine);
-                w.Flush();
+                lock (w)
+                {
+                    w.Write(log.ToString() + Environment.NewLine);
+                    w.Flush();
+                }
             });
 #endif
             try
