@@ -739,6 +739,25 @@ namespace Gageas.Lutea.Core
         {
             return AppCore.MyMigemo;
         }
+
+        /// <summary>
+        /// MultipleValuesの値のリストを取得
+        /// </summary>
+        /// <param name="columnName">値を取得するデータベース内のカラムの名前</param>
+        /// <param name="wherePhraseBody">WHERE条件。不要の場合はnull</param>
+        /// <returns>MultipleValuesのvalue(string)、件数(int)によるKeyValuePairのリスト</returns>
+        public static IEnumerable<KeyValuePair<string, int>> FetchColumnValueMultipleValue(string columnName, string wherePhraseBody)
+        {
+            var sql = "SELECT " + columnName + " ,COUNT(*) FROM list " + (string.IsNullOrEmpty(wherePhraseBody) ? "" : ("WHERE " + wherePhraseBody)) + " GROUP BY " + columnName + " ORDER BY " + columnName + " desc;";
+            using (var db = Controller.GetDBConnection())
+            using (var stmt = db.Prepare(sql))
+            {
+                // タグの値の文字列を改行で分割して，個別の値に分離
+                return stmt.EvaluateAll()
+                    .SelectMany(_ => ((string)_[0]).Split('\n').Select(__ => new KeyValuePair<string, int>(__, int.Parse(((string)_[1])))))
+                    .GroupBy(_ => _.Key, (_key, _values) => new KeyValuePair<string, int>(_key, _values.Select(_ => _.Value).Sum()));
+            }
+        }
         #endregion
 
         #region Playlist operation

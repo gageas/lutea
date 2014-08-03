@@ -33,9 +33,11 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new Gageas.Lutea.DefaultUI.HidableSplitContainer();
             this.coverArtView = new Gageas.Lutea.DefaultUI.CoverArtView();
+            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.dummyFilterTab = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.treeView1 = new Gageas.Lutea.DefaultUI.DynamicPlaylistTreeView();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.splitContainer3 = new Gageas.Lutea.DefaultUI.HidableSplitContainer();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -46,6 +48,8 @@
             this.listView2 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.splitContainer4 = new Gageas.Lutea.DefaultUI.HidableSplitContainer();
+            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.playlistView = new Gageas.Lutea.DefaultUI.PlaylistView();
@@ -128,6 +132,7 @@
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).BeginInit();
+            this.tableLayoutPanel3.SuspendLayout();
             this.dummyFilterTab.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
@@ -138,6 +143,10 @@
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.visualizeView)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer4)).BeginInit();
+            this.splitContainer4.Panel1.SuspendLayout();
+            this.splitContainer4.Panel2.SuspendLayout();
+            this.splitContainer4.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.playlistViewContextMenuStrip.SuspendLayout();
@@ -181,7 +190,7 @@
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.dummyFilterTab);
+            this.splitContainer2.Panel2.Controls.Add(this.tableLayoutPanel3);
             this.splitContainer2.TabStop = false;
             // 
             // coverArtView
@@ -192,13 +201,21 @@
             this.coverArtView.TabStop = false;
             this.coverArtView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.coverArtView_MouseClick);
             // 
+            // tableLayoutPanel3
+            // 
+            resources.ApplyResources(this.tableLayoutPanel3, "tableLayoutPanel3");
+            this.tableLayoutPanel3.Controls.Add(this.dummyFilterTab, 0, 1);
+            this.tableLayoutPanel3.Controls.Add(this.comboBox1, 0, 0);
+            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            // 
             // dummyFilterTab
             // 
             resources.ApplyResources(this.dummyFilterTab, "dummyFilterTab");
             this.dummyFilterTab.Controls.Add(this.tabPage1);
-            this.dummyFilterTab.Multiline = true;
+            this.dummyFilterTab.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
             this.dummyFilterTab.Name = "dummyFilterTab";
             this.dummyFilterTab.SelectedIndex = 0;
+            this.dummyFilterTab.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.dummyFilterTab.SelectedIndexChanged += new System.EventHandler(this.filterViewTabControl_SelectedIndexChanged);
             // 
             // tabPage1
@@ -219,6 +236,14 @@
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             ((System.Windows.Forms.TreeNode)(resources.GetObject("treeView1.Nodes")))});
             // 
+            // comboBox1
+            // 
+            resources.ApplyResources(this.comboBox1, "comboBox1");
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            // 
             // splitContainer3
             // 
             this.splitContainer3.BackupDistance = 0;
@@ -232,7 +257,7 @@
             // 
             // splitContainer3.Panel2
             // 
-            this.splitContainer3.Panel2.Controls.Add(this.tabControl1);
+            this.splitContainer3.Panel2.Controls.Add(this.splitContainer4);
             // 
             // panel1
             // 
@@ -301,6 +326,26 @@
             // columnHeader2
             // 
             resources.ApplyResources(this.columnHeader2, "columnHeader2");
+            // 
+            // splitContainer4
+            // 
+            this.splitContainer4.BackupDistance = 123;
+            resources.ApplyResources(this.splitContainer4, "splitContainer4");
+            this.splitContainer4.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            this.splitContainer4.Name = "splitContainer4";
+            // 
+            // splitContainer4.Panel1
+            // 
+            this.splitContainer4.Panel1.Controls.Add(this.tableLayoutPanel2);
+            // 
+            // splitContainer4.Panel2
+            // 
+            this.splitContainer4.Panel2.Controls.Add(this.tabControl1);
+            // 
+            // tableLayoutPanel2
+            // 
+            resources.ApplyResources(this.tableLayoutPanel2, "tableLayoutPanel2");
+            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             // 
             // tabControl1
             // 
@@ -885,6 +930,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).EndInit();
+            this.tableLayoutPanel3.ResumeLayout(false);
             this.dummyFilterTab.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.splitContainer3.Panel1.ResumeLayout(false);
@@ -896,6 +942,10 @@
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.visualizeView)).EndInit();
+            this.splitContainer4.Panel1.ResumeLayout(false);
+            this.splitContainer4.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer4)).EndInit();
+            this.splitContainer4.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.playlistViewContextMenuStrip.ResumeLayout(false);
@@ -1006,6 +1056,10 @@
         private System.Windows.Forms.ToolStripMenuItem 通常ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 完全ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem11;
+        private HidableSplitContainer splitContainer4;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
     }
 }
 
