@@ -153,7 +153,7 @@ namespace Gageas.Lutea.DefaultUI
                 lock (tasks)
                 {
                     // キューが空になったら無限ループを抜ける
-                    if (tasks.Count == 0) break;
+                    if (tasks.Count(_ => !_.Consuming) == 0) break;
                     task = evenOdd ? tasks.First(_ => !_.Consuming) : tasks.Last(_ => !_.Consuming);
                     task.Consuming = true;
                     evenOdd = !evenOdd;
