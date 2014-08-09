@@ -329,25 +329,19 @@ namespace Gageas.Lutea.Core
                     AppCore.SetPosition(value);
                 }
             }
-            public static String MetaData(Library.Column col)
-            {
-                if (AppCore.CurrentStream == null) return null;
-                int idx = AppCore.Library.Columns.ToList().IndexOf(col);
-                if (idx < 0 || idx >= AppCore.CurrentStream.meta.Length) return null;
-                return AppCore.CurrentStream.meta[idx].ToString();
-            }
             public static String MetaData(int colidx)
             {
                 if (AppCore.CurrentStream == null) return null;
                 if (colidx < 0 || colidx >= AppCore.CurrentStream.meta.Length) return null;
                 return AppCore.CurrentStream.meta[colidx].ToString();
             }
+            public static String MetaData(Library.Column col)
+            {
+                return MetaData(GetColumnIndexByName(col.Name));
+            }
             public static String MetaData(string DBText)
             {
-                if (AppCore.CurrentStream == null) return null;
-                int idx = AppCore.Library.Columns.ToList().IndexOf(AppCore.Library.Columns.First(_ => _.Name == DBText));
-                if (idx < 0 || idx >= AppCore.CurrentStream.meta.Length) return null;
-                return AppCore.CurrentStream.meta[idx].ToString();
+                return MetaData(GetColumnIndexByName(DBText));
             }
 
             public static int Rating
