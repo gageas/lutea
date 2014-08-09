@@ -369,7 +369,7 @@ namespace Gageas.Lutea.Core
             {
                 get
                 {
-                    return MetaData(Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name));
+                    return MetaData(LibraryDBColumnTextMinimum.file_name);
                 }
             }
             public static String StreamFilename
@@ -421,7 +421,7 @@ namespace Gageas.Lutea.Core
                 var invalidChars = System.IO.Path.GetInvalidPathChars();
                 try
                 {
-                    var asTitleTxtCandidates = System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(_filename), new string(Current.MetaData(Controller.GetColumnIndexByName("tagTitle")).Select(_ => invalidChars.Contains(_) ? '?' : _).ToArray()) + "." + ext, System.IO.SearchOption.TopDirectoryOnly);
+                    var asTitleTxtCandidates = System.IO.Directory.GetFiles(System.IO.Path.GetDirectoryName(_filename), new string(Current.MetaData("tagTitle").Select(_ => invalidChars.Contains(_) ? '?' : _).ToArray()) + "." + ext, System.IO.SearchOption.TopDirectoryOnly);
                     if (asTitleTxtCandidates.Length > 0)
                     {
                         return ReadAllLinesAutoEncoding(asTitleTxtCandidates[0]);

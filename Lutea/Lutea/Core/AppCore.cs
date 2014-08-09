@@ -842,8 +842,8 @@ namespace Gageas.Lutea.Core
             if (strm.PlaybackCounterUpdated) return;
             strm.PlaybackCounterUpdated = true;
             var currentIndexInPlaylist = Controller.Current.IndexInPlaylist;
-            int count = int.Parse(Controller.Current.MetaData(Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.playcount))) + 1;
-            string file_name = Controller.Current.MetaData(Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name));
+            int count = int.Parse(Controller.Current.MetaData(LibraryDBColumnTextMinimum.playcount)) + 1;
+            string file_name = Controller.Current.MetaData(LibraryDBColumnTextMinimum.file_name);
             CoreEnqueue(() =>
             {
                 Logger.Log("再生カウントを更新しまつ" + file_name + ",  " + count);
