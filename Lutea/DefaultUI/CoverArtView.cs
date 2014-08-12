@@ -18,7 +18,7 @@ namespace Gageas.Lutea.DefaultUI
         #region 定数
         private const int TRANSITION_STEPS = 32;
         private const int TRANSITION_INTERVAL = 20;
-        private const int WAIT_BEFORE_TRANSITION = 300;
+        private const int WAIT_BEFORE_TRANSITION = 100;
         internal const string ALTERNATIVE_FILE_NAME = "default.jpg";
         #endregion
 
@@ -91,22 +91,47 @@ namespace Gageas.Lutea.DefaultUI
         #endregion
 
         #region Privateメソッド
+        /// <summary>
+        /// コンテンツを描画
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CoverArtView_Paint_Intl(object sender, PaintEventArgs e)
+        {
+            if (currentCoverArtResized == null) return;
+            if (transitionFromImage == null) return;
+            Bitmap img = (Bitmap)ImageUtil.GetAlphaComposedImage(transitionFromImage, currentCoverArtResized, (float)transitionPhase / TRANSITION_STEPS);
+            using (var gdiimg = new GDI.GDIBitmap(img))
+            {
+                GDI.BitBlt(e.Graphics.GetHdc(), 0, 0, this.Width, this.Height, gdiimg.HDC, 0, 0, 0xCC0020);
+                e.Graphics.ReleaseHdc();
+            }
+        }
+
+        /// <summary>
+        /// 画像の周りに枠を描画
+        /// 画像のエッジ部の荒れを隠す。枠自体が主張しすぎないように。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CoverArtView_Paint_Outline(object sender, PaintEventArgs e)
+        {
+            e.Graphics.DrawRectangle(SystemPens.Control, 0, 0, Width - 1, Height - 1);
+            e.Graphics.DrawLine(SystemPens.ControlDark, 2, Height - 1, Width - 1, Height - 1);
+            e.Graphics.DrawLine(SystemPens.ControlDark, Width - 1, 2, Width - 1, Height - 1);
+            e.Graphics.DrawRectangle(SystemPens.ControlDarkDark, 1, 1, Width - 3, Height - 3);
+        }
+
         #region イベントハンドラ
         /// <summary>
         /// 描画
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void CoverArtView_Paint(object sender, PaintEventArgs e)
+        private void CoverArtView_Paint(object sender, PaintEventArgs e)
         {
-            if (currentCoverArtResized == null) return;
-            if (transitionFromImage == null) return;
-            Bitmap img = (Bitmap)ImageUtil.GetAlphaComposedImage(transitionFromImage, currentCoverArtResized, (float)transitionPhase / TRANSITION_STEPS);
-            using(var gdiimg = new GDI.GDIBitmap(img)){
-                GDI.BitBlt(e.Graphics.GetHdc(), 0, 0, this.Width, this.Height, gdiimg.HDC, 0, 0, 0xCC0020);
-               e.Graphics.ReleaseHdc();
-            }
-//            e.Graphics.DrawImage(img, 0, 0);
+            CoverArtView_Paint_Intl(sender, e);
+            CoverArtView_Paint_Outline(sender, e);
         }
 
         /// <summary>
@@ -120,13 +145,18 @@ namespace Gageas.Lutea.DefaultUI
             if (!this.Created) return;
 
             // 新しいサイズを取得
-            coverArtSize = new Size(Math.Max(1, this.Width), Math.Max(1, this.Height));
+            coverArtSize = new Size(Math.Max(1, this.Width + 2), Math.Max(1, this.Height + 2));
 
             // 新しいサイズでカバーアートを描画
             if (currentCoverArt != null)
             {
                 Image newSize = ImageUtil.GetResizedImageWithPadding(currentCoverArt, coverArtSize.Width, coverArtSize.Height);
-                currentCoverArtResized = newSize;
+                Image crop = new Bitmap(newSize);
+                using (var g = Graphics.FromImage(crop))
+                {
+                    g.DrawImage(newSize, -1,-1);
+                }
+                currentCoverArtResized = crop;
             }
         }
         #endregion
@@ -185,7 +215,13 @@ namespace Gageas.Lutea.DefaultUI
                     currentCoverArt = GetCoverArtOrAlternativeImage();
 
                     // 新しい画像をリサイズ
-                    currentCoverArtResized = ImageUtil.GetResizedImageWithPadding(currentCoverArt, coverArtSize.Width, coverArtSize.Height);
+                    var newSize = ImageUtil.GetResizedImageWithPadding(currentCoverArt, coverArtSize.Width, coverArtSize.Height);
+                    var crop = new Bitmap(newSize);
+                    using (var g = Graphics.FromImage(crop))
+                    {
+                        g.DrawImage(newSize, -1, -1);
+                    }
+                    currentCoverArtResized = crop;
 
                     // トランジションを開始
                     for (int i = 0; i <= TRANSITION_STEPS; i++)
