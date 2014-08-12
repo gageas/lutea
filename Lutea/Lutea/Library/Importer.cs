@@ -477,6 +477,16 @@ namespace Gageas.Lutea.Library
             Workers.Clear();
         }
 
+        private void WalkDirectoriesRecursive(List<string> dest, string path)
+        {
+            var directories = System.IO.Directory.GetDirectories(path, "*", System.IO.SearchOption.TopDirectoryOnly);
+            foreach (var subDir in directories)
+            {
+                WalkDirectoriesRecursive(dest, subDir);
+            }
+            dest.AddRange(directories);
+        }
+
         /// <summary>
         /// ディレクトリのインポートを行う
         /// </summary>
@@ -495,8 +505,7 @@ namespace Gageas.Lutea.Library
                     {
                         try
                         {
-                            var directories = System.IO.Directory.GetDirectories(path, "*", System.IO.SearchOption.AllDirectories);
-                            ToBeAnalyzeDirectories.AddRange(directories);
+                            WalkDirectoriesRecursive(ToBeAnalyzeDirectories, path);
                             ToBeAnalyzeDirectories.Add(path);
                         }
                         catch (ArgumentException e)
