@@ -123,6 +123,7 @@ namespace Gageas.Lutea.Library
         public void Abort()
         {
             ImporterThread.Interrupt();
+            ImporterThread.Join();
             AbortWorkers();
         }
 
@@ -468,6 +469,10 @@ namespace Gageas.Lutea.Library
             foreach (var worker in Workers)
             {
                 worker.Interrupt();
+            }
+            foreach (var worker in Workers)
+            {
+                worker.Join();
             }
             Workers.Clear();
         }
