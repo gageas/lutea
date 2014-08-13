@@ -970,21 +970,29 @@ namespace Gageas.Lutea.DefaultUI
             if (item == null) return;
             var sub = item.GetSubItemAt(e.X, e.Y);
             if (sub == null) return;
-            if (isGroupHeaderRow(item.Index))
-            {
-                SelectGroupItems(item.Index);
-                return;
-            }
             var tag = this.Columns[item.SubItems.IndexOf(sub)].Tag;
             switch (e.Button)
             {
                 case System.Windows.Forms.MouseButtons.Right:
                     var oid = getObjectIDByViewID(item.Index);
-                    if (IsCoverArtColumn(this.Columns[item.SubItems.IndexOf(sub)])) return;
-                    lastSelectedColumnId = (int)tag; 
-                    lastSelectedString = Controller.GetPlaylistRowColumn(oid, (int)(tag));
+                    if (isGroupHeaderRow(item.Index))
+                    {
+                        lastSelectedColumnId = Controller.GetColumnIndexByName("tagAlbum");
+                        lastSelectedString = Controller.GetPlaylistRowColumn(oid, lastSelectedColumnId);
+                    }
+                    else
+                    {
+                        if (IsCoverArtColumn(this.Columns[item.SubItems.IndexOf(sub)])) return;
+                        lastSelectedColumnId = (int)tag;
+                        lastSelectedString = Controller.GetPlaylistRowColumn(oid, (int)(tag));
+                    }
                     break;
                 case System.Windows.Forms.MouseButtons.Left:
+                    if (isGroupHeaderRow(item.Index))
+                    {
+                        SelectGroupItems(item.Index);
+                        return;
+                    }
                     if (isDummyRow(item.Index)) return;
                     if (IsCoverArtColumn(this.Columns[item.SubItems.IndexOf(sub)])) return;
                     if (dbColumnsCache[(int)tag].Type != Library.LibraryColumnType.Rating) return;
