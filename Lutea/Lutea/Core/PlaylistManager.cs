@@ -357,15 +357,22 @@ namespace Gageas.Lutea.Core
         private SQLite3DB.STMT ExpandAndPrepareQueryText(string queryText)
         {
             SQLite3DB.STMT tmt = null;
-            foreach (var dlg in QueryTextExpanders)
+            for (int i = 0; i < RETRY_COUNT; i++)
             {
-                try
+                foreach (var dlg in QueryTextExpanders)
                 {
-                    tmt = PrepareForCreatePlaylistView(dlg(queryText));
-                    break;
-                }
-                catch (Exception) { /* nothing to do */ }
-            };
+                    try
+                    {
+                        tmt = PrepareForCreatePlaylistView(dlg(queryText));
+                        break;
+                    }
+                    catch (NotSupportedException) { /* nothin to do */ }
+                    catch (ArgumentException) { /* nothin to do */ }
+                    catch (SQLite3DB.SQLite3Exception) { /* nothin to do */ }
+                };
+                if (tmt != null) break;
+                Thread.Sleep(RETRY_DELAY);
+            }
             return tmt;
         }
 
@@ -380,15 +387,22 @@ namespace Gageas.Lutea.Core
                 DropOldPlaylist();
                 using (var tmt = ExpandAndPrepareQueryText(queryText))
                 {
-                    for (int i = 0; i < RETRY_COUNT; i++)
+                    if (tmt == null)
                     {
-                        try
+                        Logger.Error("Can't Prepare Query: " + queryText);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < RETRY_COUNT; i++)
                         {
-                            tmt.Evaluate(null);
-                            break;
+                            try
+                            {
+                                tmt.Evaluate(null);
+                                break;
+                            }
+                            catch (SQLite3DB.SQLite3Exception) { }
+                            Thread.Sleep(RETRY_DELAY);
                         }
-                        catch (SQLite3DB.SQLite3Exception) { }
-                        Thread.Sleep(RETRY_DELAY);
                     }
 
                     //createPlaylistからinterruptが連続で発行されたとき、このsleep内で捕捉する
