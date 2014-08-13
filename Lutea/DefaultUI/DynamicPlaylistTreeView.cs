@@ -130,7 +130,7 @@ namespace Gageas.Lutea.DefaultUI
                     return stmt.EvaluateAll().Select(_ => new KeyValuePair<string, string>(_[0].ToString(), _[1].ToString())).Where(_ => !string.IsNullOrEmpty(_.Key));
                 }
             }
-            return null;
+            return new KeyValuePair<string, string>[0];
         }
 
         private TreeNode CreateRelatedAlbumTree()
