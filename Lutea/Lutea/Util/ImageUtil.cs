@@ -95,7 +95,6 @@ namespace Gageas.Lutea.Util
             {
                 gg.DrawImage(to, new Rectangle(0, 0, to.Width, to.Height), 0, 0, to.Width, to.Height, GraphicsUnit.Pixel, ia);
                 gg.FillRectangle(b, 0, 0, to.Width, to.Height);
-                gg.DrawRectangle(Pens.Gray, 0, 0, to.Width - 1, to.Height - 1);
             }
             return;
         }
