@@ -131,7 +131,6 @@ namespace Gageas.Lutea.Core
         /// </summary>
         internal PlaylistManager()
         {
-            SetupConnection();
             QueryTextExpanders = new List<Func<string, string>>() {
                 (q) => q == "" ? "SELECT * FROM list" : q,
                 GetRegexpSQL,
@@ -439,6 +438,7 @@ namespace Gageas.Lutea.Core
         /// </summary>
         private void CreatePlaylistProc()
         {
+            SetupConnection();
             while (true)
             {
                 try
