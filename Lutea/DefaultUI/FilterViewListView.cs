@@ -87,7 +87,7 @@ namespace Gageas.Lutea.DefaultUI
                     {
                         values[i] = this.SelectedItems[i].Text;
                     }
-                    SelectEvent.Invoke((int)this.Parent.Tag, values);
+                    SelectEvent.Invoke((int)this.Tag, values);
                 }
             }
         }
@@ -115,7 +115,7 @@ namespace Gageas.Lutea.DefaultUI
             this.ContextMenuStrip.Items.Add("読み修正", null, correctToolStripMenuItem_Click);
 
             ListViewItem selected = null;
-            var colid = (int)this.Parent.Tag;
+            var colid = (int)this.Tag;
             var col = Controller.Columns[colid];
             try
             {
@@ -294,7 +294,7 @@ namespace Gageas.Lutea.DefaultUI
                 values[i] = values[i].EscapeSingleQuotSQL();
             }
             var items_all = "'" + String.Join("', '", values) + "'";
-            return "SELECT file_name FROM list WHERE any(" + Controller.Columns[(int)this.Parent.Tag].Name + ", " + items_all + ");";
+            return "SELECT file_name FROM list WHERE any(" + Controller.Columns[(int)this.Tag].Name + ", " + items_all + ");";
         }
     }
 }

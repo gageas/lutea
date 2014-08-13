@@ -30,14 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DefaultUIForm));
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.splitContainer2 = new Gageas.Lutea.DefaultUI.HidableSplitContainer();
-            this.coverArtView = new Gageas.Lutea.DefaultUI.CoverArtView();
-            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
-            this.dummyFilterTab = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.treeView1 = new Gageas.Lutea.DefaultUI.DynamicPlaylistTreeView();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.splitContainer3 = new Gageas.Lutea.DefaultUI.HidableSplitContainer();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -45,9 +37,6 @@
             this.visualizeView = new Gageas.Lutea.DefaultUI.VisualizeView();
             this.trackInfoText = new System.Windows.Forms.Label();
             this.trackInfoText2 = new System.Windows.Forms.Label();
-            this.listView2 = new System.Windows.Forms.ListView();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.splitContainer4 = new Gageas.Lutea.DefaultUI.HidableSplitContainer();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -89,14 +78,8 @@
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.mainTabPanelImageList = new System.Windows.Forms.ImageList(this.components);
-            this.notifyIconContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.notifyIconToolStripMenuItem_ShowBalloon = new System.Windows.Forms.ToolStripMenuItem();
             this.xTrackBar1 = new Gageas.Lutea.DefaultUI.XTrackBar();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
-            this.toolStripXTrackbar1 = new Gageas.Lutea.DefaultUI.ToolStripXTrackbar();
-            this.toolStripComboBox2 = new Gageas.Lutea.DefaultUI.ToolStripComboBox();
+            this.menuStrip1 = new Gageas.Lutea.DefaultUI.ExtMenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tweetNowPlayingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.logToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -109,12 +92,25 @@
             this.componentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuStrip1 = new Gageas.Lutea.DefaultUI.ExtMenuStrip();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem9 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem10 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem11 = new System.Windows.Forms.ToolStripMenuItem();
+            this.splitContainer2 = new Gageas.Lutea.DefaultUI.HidableSplitContainer();
+            this.coverArtView = new Gageas.Lutea.DefaultUI.CoverArtView();
+            this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.dummyFilterTab = new Gageas.Lutea.DefaultUI.SelectablePanel();
+            this.treeView1 = new Gageas.Lutea.DefaultUI.DynamicPlaylistTreeView();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.notifyIconContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.notifyIconToolStripMenuItem_ShowBalloon = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
+            this.toolStripXTrackbar1 = new Gageas.Lutea.DefaultUI.ToolStripXTrackbar();
+            this.toolStripComboBox2 = new Gageas.Lutea.DefaultUI.ToolStripComboBox();
             this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.TopToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.RightToolStripPanel = new System.Windows.Forms.ToolStripPanel();
@@ -123,18 +119,6 @@
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.queryComboBox = new System.Windows.Forms.ComboBox();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
-            this.splitContainer2.Panel1.SuspendLayout();
-            this.splitContainer2.Panel2.SuspendLayout();
-            this.splitContainer2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).BeginInit();
-            this.tableLayoutPanel3.SuspendLayout();
-            this.dummyFilterTab.SuspendLayout();
-            this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
@@ -154,95 +138,22 @@
             this.tabPage3.SuspendLayout();
             this.coverArtViewContextMenuStrip.SuspendLayout();
             this.tabPage4.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).BeginInit();
+            this.tableLayoutPanel3.SuspendLayout();
+            this.dummyFilterTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.notifyIconContextMenuStrip.SuspendLayout();
             this.statusStrip1.SuspendLayout();
-            this.menuStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // splitContainer1
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.splitContainer1, 2);
-            resources.ApplyResources(this.splitContainer1, "splitContainer1");
-            this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.splitContainer1.Name = "splitContainer1";
-            // 
-            // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this.splitContainer2);
-            // 
-            // splitContainer1.Panel2
-            // 
-            this.splitContainer1.Panel2.Controls.Add(this.splitContainer3);
-            this.splitContainer1.TabStop = false;
-            this.splitContainer1.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer1_SplitterMoved);
-            // 
-            // splitContainer2
-            // 
-            this.splitContainer2.BackupDistance = 0;
-            resources.ApplyResources(this.splitContainer2, "splitContainer2");
-            this.splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.splitContainer2.Name = "splitContainer2";
-            // 
-            // splitContainer2.Panel1
-            // 
-            this.splitContainer2.Panel1.Controls.Add(this.coverArtView);
-            // 
-            // splitContainer2.Panel2
-            // 
-            this.splitContainer2.Panel2.Controls.Add(this.tableLayoutPanel3);
-            this.splitContainer2.TabStop = false;
-            // 
-            // coverArtView
-            // 
-            this.coverArtView.BackColor = System.Drawing.Color.Transparent;
-            resources.ApplyResources(this.coverArtView, "coverArtView");
-            this.coverArtView.Name = "coverArtView";
-            this.coverArtView.TabStop = false;
-            this.coverArtView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.coverArtView_MouseClick);
-            // 
-            // tableLayoutPanel3
-            // 
-            resources.ApplyResources(this.tableLayoutPanel3, "tableLayoutPanel3");
-            this.tableLayoutPanel3.Controls.Add(this.dummyFilterTab, 0, 1);
-            this.tableLayoutPanel3.Controls.Add(this.comboBox1, 0, 0);
-            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
-            // 
-            // dummyFilterTab
-            // 
-            resources.ApplyResources(this.dummyFilterTab, "dummyFilterTab");
-            this.dummyFilterTab.Controls.Add(this.tabPage1);
-            this.dummyFilterTab.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
-            this.dummyFilterTab.Name = "dummyFilterTab";
-            this.dummyFilterTab.SelectedIndex = 0;
-            this.dummyFilterTab.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
-            this.dummyFilterTab.SelectedIndexChanged += new System.EventHandler(this.filterViewTabControl_SelectedIndexChanged);
-            // 
-            // tabPage1
-            // 
-            this.tabPage1.Controls.Add(this.treeView1);
-            resources.ApplyResources(this.tabPage1, "tabPage1");
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // treeView1
-            // 
-            this.treeView1.AllowDrop = true;
-            this.treeView1.BackColor = System.Drawing.SystemColors.Window;
-            resources.ApplyResources(this.treeView1, "treeView1");
-            this.treeView1.FullRowSelect = true;
-            this.treeView1.HotTracking = true;
-            this.treeView1.Name = "treeView1";
-            this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            ((System.Windows.Forms.TreeNode)(resources.GetObject("treeView1.Nodes")))});
-            // 
-            // comboBox1
-            // 
-            resources.ApplyResources(this.comboBox1, "comboBox1");
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
             // splitContainer3
             // 
@@ -262,7 +173,6 @@
             // panel1
             // 
             this.panel1.Controls.Add(this.panel2);
-            this.panel1.Controls.Add(this.listView2);
             resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Name = "panel1";
             // 
@@ -299,33 +209,6 @@
             resources.ApplyResources(this.trackInfoText2, "trackInfoText2");
             this.trackInfoText2.Name = "trackInfoText2";
             this.trackInfoText2.UseMnemonic = false;
-            // 
-            // listView2
-            // 
-            this.listView2.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.listView2.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.listView2.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listView2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2});
-            resources.ApplyResources(this.listView2, "listView2");
-            this.listView2.FullRowSelect = true;
-            this.listView2.GridLines = true;
-            this.listView2.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            this.listView2.MultiSelect = false;
-            this.listView2.Name = "listView2";
-            this.listView2.Scrollable = false;
-            this.listView2.UseCompatibleStateImageBehavior = false;
-            this.listView2.View = System.Windows.Forms.View.Details;
-            this.listView2.DoubleClick += new System.EventHandler(this.listView2_DoubleClick);
-            // 
-            // columnHeader1
-            // 
-            resources.ApplyResources(this.columnHeader1, "columnHeader1");
-            // 
-            // columnHeader2
-            // 
-            resources.ApplyResources(this.columnHeader2, "columnHeader2");
             // 
             // splitContainer4
             // 
@@ -652,22 +535,6 @@
             resources.ApplyResources(this.mainTabPanelImageList, "mainTabPanelImageList");
             this.mainTabPanelImageList.TransparentColor = System.Drawing.Color.Transparent;
             // 
-            // notifyIconContextMenuStrip
-            // 
-            this.notifyIconContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.notifyIconToolStripMenuItem_ShowBalloon});
-            this.notifyIconContextMenuStrip.Name = "notifyIconContextMenuStrip";
-            this.notifyIconContextMenuStrip.ShowCheckMargin = true;
-            this.notifyIconContextMenuStrip.ShowImageMargin = false;
-            resources.ApplyResources(this.notifyIconContextMenuStrip, "notifyIconContextMenuStrip");
-            this.notifyIconContextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.notifyIconContextMenuStrip_Opening);
-            // 
-            // notifyIconToolStripMenuItem_ShowBalloon
-            // 
-            this.notifyIconToolStripMenuItem_ShowBalloon.Name = "notifyIconToolStripMenuItem_ShowBalloon";
-            resources.ApplyResources(this.notifyIconToolStripMenuItem_ShowBalloon, "notifyIconToolStripMenuItem_ShowBalloon");
-            this.notifyIconToolStripMenuItem_ShowBalloon.Click += new System.EventHandler(this.notifyIconToolStripMenuItem_ShowBalloon_Click);
-            // 
             // xTrackBar1
             // 
             resources.ApplyResources(this.xTrackBar1, "xTrackBar1");
@@ -680,40 +547,24 @@
             this.xTrackBar1.Value = 0D;
             this.xTrackBar1.OnScroll += new Gageas.Lutea.Core.Controller.VOIDVOID(this.xTrackBar1_OnScroll);
             // 
-            // statusStrip1
+            // menuStrip1
             // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel2,
-            this.toolStripProgressBar1,
-            this.toolStripXTrackbar1,
-            this.toolStripComboBox2});
-            resources.ApplyResources(this.statusStrip1, "statusStrip1");
-            this.statusStrip1.Name = "statusStrip1";
-            // 
-            // toolStripStatusLabel2
-            // 
-            resources.ApplyResources(this.toolStripStatusLabel2, "toolStripStatusLabel2");
-            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            this.toolStripStatusLabel2.Spring = true;
-            // 
-            // toolStripProgressBar1
-            // 
-            this.toolStripProgressBar1.MarqueeAnimationSpeed = 50;
-            this.toolStripProgressBar1.Name = "toolStripProgressBar1";
-            resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
-            this.toolStripProgressBar1.Step = 1;
-            // 
-            // toolStripXTrackbar1
-            // 
-            resources.ApplyResources(this.toolStripXTrackbar1, "toolStripXTrackbar1");
-            this.toolStripXTrackbar1.Margin = new System.Windows.Forms.Padding(0, 2, 9, 0);
-            this.toolStripXTrackbar1.Name = "toolStripXTrackbar1";
-            this.toolStripXTrackbar1.onScroll += new Gageas.Lutea.Core.Controller.VOIDVOID(this.trackBar1_ValueChanged);
-            // 
-            // toolStripComboBox2
-            // 
-            this.toolStripComboBox2.Name = "toolStripComboBox2";
-            resources.ApplyResources(this.toolStripComboBox2, "toolStripComboBox2");
+            this.menuStrip1.EnableClickThrough = true;
+            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(0);
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.importToolStripMenuItem,
+            this.componentToolStripMenuItem,
+            this.toolStripMenuItem8,
+            this.toolStripMenuItem9,
+            this.toolStripMenuItem1,
+            this.toolStripMenuItem10,
+            this.toolStripMenuItem11});
+            resources.ApplyResources(this.menuStrip1, "menuStrip1");
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
+            this.menuStrip1.ShowItemToolTips = true;
+            this.menuStrip1.Stretch = false;
             // 
             // fileToolStripMenuItem
             // 
@@ -797,25 +648,6 @@
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             resources.ApplyResources(this.toolStripSeparator3, "toolStripSeparator3");
             // 
-            // menuStrip1
-            // 
-            this.menuStrip1.EnableClickThrough = true;
-            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(0);
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.importToolStripMenuItem,
-            this.componentToolStripMenuItem,
-            this.toolStripMenuItem8,
-            this.toolStripMenuItem9,
-            this.toolStripMenuItem1,
-            this.toolStripMenuItem10,
-            this.toolStripMenuItem11});
-            resources.ApplyResources(this.menuStrip1, "menuStrip1");
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.menuStrip1.ShowItemToolTips = true;
-            this.menuStrip1.Stretch = false;
-            // 
             // toolStripMenuItem8
             // 
             this.toolStripMenuItem8.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -850,6 +682,136 @@
             // 
             resources.ApplyResources(this.toolStripMenuItem11, "toolStripMenuItem11");
             this.toolStripMenuItem11.Name = "toolStripMenuItem11";
+            // 
+            // splitContainer2
+            // 
+            this.splitContainer2.BackupDistance = 0;
+            resources.ApplyResources(this.splitContainer2, "splitContainer2");
+            this.splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            this.splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.coverArtView);
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.tableLayoutPanel3);
+            this.splitContainer2.TabStop = false;
+            // 
+            // coverArtView
+            // 
+            this.coverArtView.BackColor = System.Drawing.Color.Transparent;
+            resources.ApplyResources(this.coverArtView, "coverArtView");
+            this.coverArtView.Name = "coverArtView";
+            this.coverArtView.TabStop = false;
+            this.coverArtView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.coverArtView_MouseClick);
+            // 
+            // tableLayoutPanel3
+            // 
+            resources.ApplyResources(this.tableLayoutPanel3, "tableLayoutPanel3");
+            this.tableLayoutPanel3.Controls.Add(this.dummyFilterTab, 0, 1);
+            this.tableLayoutPanel3.Controls.Add(this.comboBox1, 0, 0);
+            this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+            // 
+            // dummyFilterTab
+            // 
+            this.dummyFilterTab.Controls.Add(this.treeView1);
+            resources.ApplyResources(this.dummyFilterTab, "dummyFilterTab");
+            this.dummyFilterTab.Name = "dummyFilterTab";
+            this.dummyFilterTab.SelectedIndex = -1;
+            this.dummyFilterTab.SelectedIndexChanged += new System.EventHandler(this.filterViewTabControl_SelectedIndexChanged);
+            // 
+            // treeView1
+            // 
+            this.treeView1.AllowDrop = true;
+            this.treeView1.BackColor = System.Drawing.SystemColors.Window;
+            resources.ApplyResources(this.treeView1, "treeView1");
+            this.treeView1.FullRowSelect = true;
+            this.treeView1.HotTracking = true;
+            this.treeView1.ItemHeight = 16;
+            this.treeView1.Name = "treeView1";
+            this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
+            ((System.Windows.Forms.TreeNode)(resources.GetObject("treeView1.Nodes")))});
+            this.treeView1.ShowRootLines = false;
+            // 
+            // comboBox1
+            // 
+            resources.ApplyResources(this.comboBox1, "comboBox1");
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            // 
+            // splitContainer1
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.splitContainer1, 2);
+            resources.ApplyResources(this.splitContainer1, "splitContainer1");
+            this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            this.splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.splitContainer2);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.xTrackBar1);
+            this.splitContainer1.Panel2.Controls.Add(this.splitContainer3);
+            this.splitContainer1.Panel2.Controls.Add(this.menuStrip1);
+            this.splitContainer1.TabStop = false;
+            this.splitContainer1.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.splitContainer1_SplitterMoved);
+            // 
+            // notifyIconContextMenuStrip
+            // 
+            this.notifyIconContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.notifyIconToolStripMenuItem_ShowBalloon});
+            this.notifyIconContextMenuStrip.Name = "notifyIconContextMenuStrip";
+            this.notifyIconContextMenuStrip.ShowCheckMargin = true;
+            this.notifyIconContextMenuStrip.ShowImageMargin = false;
+            resources.ApplyResources(this.notifyIconContextMenuStrip, "notifyIconContextMenuStrip");
+            this.notifyIconContextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.notifyIconContextMenuStrip_Opening);
+            // 
+            // notifyIconToolStripMenuItem_ShowBalloon
+            // 
+            this.notifyIconToolStripMenuItem_ShowBalloon.Name = "notifyIconToolStripMenuItem_ShowBalloon";
+            resources.ApplyResources(this.notifyIconToolStripMenuItem_ShowBalloon, "notifyIconToolStripMenuItem_ShowBalloon");
+            this.notifyIconToolStripMenuItem_ShowBalloon.Click += new System.EventHandler(this.notifyIconToolStripMenuItem_ShowBalloon_Click);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel2,
+            this.toolStripProgressBar1,
+            this.toolStripXTrackbar1,
+            this.toolStripComboBox2});
+            resources.ApplyResources(this.statusStrip1, "statusStrip1");
+            this.statusStrip1.Name = "statusStrip1";
+            // 
+            // toolStripStatusLabel2
+            // 
+            resources.ApplyResources(this.toolStripStatusLabel2, "toolStripStatusLabel2");
+            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            this.toolStripStatusLabel2.Spring = true;
+            // 
+            // toolStripProgressBar1
+            // 
+            this.toolStripProgressBar1.MarqueeAnimationSpeed = 50;
+            this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+            resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
+            this.toolStripProgressBar1.Step = 1;
+            // 
+            // toolStripXTrackbar1
+            // 
+            resources.ApplyResources(this.toolStripXTrackbar1, "toolStripXTrackbar1");
+            this.toolStripXTrackbar1.Margin = new System.Windows.Forms.Padding(0, 2, 9, 0);
+            this.toolStripXTrackbar1.Name = "toolStripXTrackbar1";
+            this.toolStripXTrackbar1.onScroll += new Gageas.Lutea.Core.Controller.VOIDVOID(this.trackBar1_ValueChanged);
+            // 
+            // toolStripComboBox2
+            // 
+            this.toolStripComboBox2.Name = "toolStripComboBox2";
+            resources.ApplyResources(this.toolStripComboBox2, "toolStripComboBox2");
             // 
             // BottomToolStripPanel
             // 
@@ -910,8 +872,6 @@
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Controls.Add(this.xTrackBar1);
-            this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.statusStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "DefaultUIForm";
@@ -921,18 +881,6 @@
             this.SizeChanged += new System.EventHandler(this.DefaultUIForm_SizeChanged);
             this.Move += new System.EventHandler(this.DefaultUIForm_Move);
             this.Resize += new System.EventHandler(this.DefaultUIForm_Resize);
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
-            this.splitContainer2.Panel1.ResumeLayout(false);
-            this.splitContainer2.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
-            this.splitContainer2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).EndInit();
-            this.tableLayoutPanel3.ResumeLayout(false);
-            this.dummyFilterTab.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
@@ -954,11 +902,23 @@
             this.tabPage3.PerformLayout();
             this.coverArtViewContextMenuStrip.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.coverArtView)).EndInit();
+            this.tableLayoutPanel3.ResumeLayout(false);
+            this.dummyFilterTab.ResumeLayout(false);
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.notifyIconContextMenuStrip.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -1007,14 +967,10 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private HidableSplitContainer splitContainer2;
         private DynamicPlaylistTreeView treeView1;
-        private System.Windows.Forms.TabControl dummyFilterTab;
-        private System.Windows.Forms.TabPage tabPage1;
+        private SelectablePanel dummyFilterTab;
         private HidableSplitContainer splitContainer3;
         private CoverArtView coverArtView;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.ListView listView2;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.Label trackInfoText;
         private VisualizeView visualizeView;
         private System.Windows.Forms.TabControl tabControl1;

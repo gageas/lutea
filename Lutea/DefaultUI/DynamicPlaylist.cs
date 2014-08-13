@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 
 namespace Gageas.Lutea.DefaultUI
 {
@@ -19,6 +18,32 @@ namespace Gageas.Lutea.DefaultUI
                 src = src.Replace(c, '_');
             }
             return src;
+        }
+    }
+    public class VirtualPlaylistEntry : PlaylistEntry
+    {
+        public VirtualPlaylistEntry(string sql, int sortBy, int sortOrder)
+        {
+            this.sql = sql;
+            this.sortBy = sortBy;
+            this.sortOrder = sortOrder;
+        }
+        public string sql;
+        public int sortBy = 0;
+        public int sortOrder = 0;
+        public override string Path
+        {
+            get { return ""; }
+        }
+        public override void Rename(string newName)
+        {
+        }
+        public override string Name
+        {
+            get { return ""; }
+        }
+        public override void Delete()
+        {
         }
     }
     public class PlaylistEntryDirectory : PlaylistEntry
@@ -99,19 +124,18 @@ namespace Gageas.Lutea.DefaultUI
             }
         }
     }
-    class DynamicPlaylist
+    class DynamicPlaylist<T>
     {
-        // 再帰的にTreeNodeに読み込む
-        public static void Load(string appPath, TreeNode parent, ContextMenuStrip folderContextMenuStrip)
+        public delegate T AddFolderNode(T parent, string path);
+        public delegate void AddQueryNode(T parent, string path, string name, string sql, int sortBy, int sortOrder);
+
+        public static void Load(string appPath, T parent, AddFolderNode addFolderNode, AddQueryNode addQueryNode)
         {
             String[] subdirs = System.IO.Directory.GetDirectories(appPath);
             foreach (string dir in subdirs)
             {
-                TreeNode dirtree = new TreeNode(System.IO.Path.GetFileNameWithoutExtension(dir));
-                dirtree.ContextMenuStrip = folderContextMenuStrip;
-                dirtree.Tag = new PlaylistEntryDirectory(dir);
-                Load(dir, dirtree, folderContextMenuStrip);
-                parent.Nodes.Add(dirtree);
+                var dirtree = addFolderNode(parent, dir);
+                Load(dir, dirtree, addFolderNode, addQueryNode);
             }
 
             String[] qFiles = System.IO.Directory.GetFiles(appPath, "*.q");
@@ -120,17 +144,12 @@ namespace Gageas.Lutea.DefaultUI
                 try
                 {
                     string[] lines = System.IO.File.ReadAllLines(filename, Encoding.Default);
-                    string sql = lines[1].Replace("SQL=", "").Replace(@"\n", "\n");
-                    int sortBy = int.Parse(lines[2].Replace("SortBy=", ""));
-                    int sortOrder = int.Parse(lines[3].Replace("SortOrder=", ""));
                     if (lines.Length > 0)
                     {
-                        string playlistname = System.IO.Path.GetFileNameWithoutExtension(filename);
-                        TreeNode ent = new TreeNode(playlistname);
-                        ent.Tag = new PlaylistEntryFile(appPath, playlistname, sql, sortBy, sortOrder);
-                        ent.ImageIndex = 1;
-                        ent.SelectedImageIndex = 1;
-                        parent.Nodes.Add(ent);
+                        string sql = lines[1].Replace("SQL=", "").Replace(@"\n", "\n");
+                        int sortBy = int.Parse(lines[2].Replace("SortBy=", ""));
+                        int sortOrder = int.Parse(lines[3].Replace("SortOrder=", ""));
+                        addQueryNode(parent, appPath, filename, sql, sortBy, sortOrder);
                     }
                 }
                 catch { }
