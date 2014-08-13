@@ -1173,7 +1173,7 @@ namespace Gageas.Lutea.DefaultUI
                     hOldFont = GDI.SelectObject(hDC, hFont);
                     var albumArtist = row[Controller.GetColumnIndexByName("tagAlbumArtist")].ToString();
                     var artist = row[Controller.GetColumnIndexByName("tagArtist")].ToString();
-                    var groupText = album + " / " + (string.IsNullOrEmpty(albumArtist) ? artist : albumArtist);
+                    var groupText = album + " / " + ((string.IsNullOrEmpty(albumArtist) ? artist : albumArtist)).Replace("\n", "; ");
                     var textWidth = drawStringTruncate(hDC, offsetX + TextMargin * 2, bounds.Y + (bounds.Height - sizeOfTruncateStringCache.Height) / 2, bounds.Width, TextMargin, groupText, sizeOfTruncateStringCache.Width, false);
                     textWidth = offsetX + TextMargin * 6 + textWidth;
                     if (textWidth < bounds.Width)
