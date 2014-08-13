@@ -129,12 +129,9 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="libraryDB">library.dbへのコネクション</param>
-        internal PlaylistManager(SQLite3DB libraryDB)
+        internal PlaylistManager()
         {
-            LibraryDB = libraryDB;
-            LibraryDB.Exec("CREATE TEMP VIEW allTags AS SELECT *, " + String.Join("||'\n'||", Controller.Columns.Where(_ => _.IsTextSearchTarget).Select(_ => _.Name)) + " AS text FROM list;");
-
+            SetupConnection();
             QueryTextExpanders = new List<Func<string, string>>() {
                 (q) => q == "" ? "SELECT * FROM list" : q,
                 GetRegexpSQL,
@@ -146,6 +143,12 @@ namespace Gageas.Lutea.Core
             PlaylistCreateThread.IsBackground = true;
             PlaylistCreateThread.Priority = ThreadPriority.BelowNormal;
             PlaylistCreateThread.Start();
+        }
+
+        private void SetupConnection()
+        {
+            LibraryDB = AppCore.Library.Connect();
+            LibraryDB.Exec("CREATE TEMP VIEW allTags AS SELECT *, " + String.Join("||'\n'||", Controller.Columns.Where(_ => _.IsTextSearchTarget).Select(_ => _.Name)) + " AS text FROM list;");
         }
 
         /// <summary>
@@ -368,7 +371,7 @@ namespace Gageas.Lutea.Core
                     }
                     catch (NotSupportedException) { /* nothin to do */ }
                     catch (ArgumentException) { /* nothin to do */ }
-                    catch (SQLite3DB.SQLite3Exception) { /* nothin to do */ }
+                    catch (SQLite3DB.SQLite3Exception e) { Logger.Log(e); }
                 };
                 if (tmt != null) break;
                 Thread.Sleep(RETRY_DELAY);
@@ -390,6 +393,11 @@ namespace Gageas.Lutea.Core
                     if (tmt == null)
                     {
                         Logger.Error("Can't Prepare Query: " + queryText);
+                        CurrentPlaylistRows = 0;
+                        PlaylistCache = new object[0][];
+                        LibraryDB.Dispose();
+                        SetupConnection();
+                        return;
                     }
                     else
                     {
