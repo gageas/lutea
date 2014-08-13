@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
+using Gageas.Lutea.Core;
+using Gageas.Lutea.Util;
 
 namespace Gageas.Lutea.DefaultUI
 {
     public class DynamicPlaylistTreeView : TreeView
     {
+        private enum ImageIndexes { FOLDER, SINGLE_FILE, QUERY, MULTIPLE_FILE, ALBUM_DISC };
         private System.ComponentModel.IContainer components;
         private ContextMenuStrip queryTreeViewContextMenuStrip1;
         private ToolStripMenuItem クエリ作成ToolStripMenuItem;
@@ -20,22 +23,215 @@ namespace Gageas.Lutea.DefaultUI
         private ToolStripMenuItem 削除ToolStripMenuItem;
         private ToolStripMenuItem 名前の変更ToolStripMenuItem;
         private TreeNode previouslyClicked;
+        private TreeNode RelatedItemsRoot = null;
+
+        private TreeNode CreateTreeNode(string text, ImageIndexes imageIndex, IEnumerable<TreeNode> children = null, object tag = null, bool expand = false)
+        {
+            TreeNode tn;
+            if (children == null)
+            {
+                tn = new TreeNode(text, (int)imageIndex, (int)imageIndex);
+            }
+            else
+            {
+                tn = new TreeNode(text, (int)imageIndex, (int)imageIndex, children.ToArray());
+            }
+            tn.Tag = tag;
+            if (expand) tn.Expand();
+            return tn;
+        }
+
+        /// <summary>
+        /// データベースへの接続をプールするクラス
+        /// </summary>
+        private class DBConPool
+        {
+            private Gageas.Wrapper.SQLite3.SQLite3DB pooledConnection;
+            public Gageas.Wrapper.SQLite3.SQLite3DB Get()
+            {
+                if (pooledConnection != null) return pooledConnection;
+                pooledConnection = Controller.GetDBConnection();
+                return pooledConnection;
+            }
+            public void Release()
+            {
+                pooledConnection.Dispose();
+                pooledConnection = null;
+            }
+        }
+        private DBConPool ConnectionPool = new DBConPool();
 
         public DynamicPlaylistTreeView()
         {
+            ImageList = new ImageList();
+            ImageList.ColorDepth = ColorDepth.Depth32Bit;
+            ImageList.Images.Add(Shell32.GetShellIcon(  3, false)); //FOLDER
+            ImageList.Images.Add(Shell32.GetShellIcon(116, false)); //SINGLE_FILE
+            ImageList.Images.Add(Shell32.GetShellIcon( 55, false)); //QUERY
+            ImageList.Images.Add(Shell32.GetShellIcon(128, false)); //MULTIPLE_FILE
+            ImageList.Images.Add(Shell32.GetShellIcon( 40, false)); //ALBUM_DISC
+
             ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView1_ItemDrag);
             AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.queryView1_AfterSelect);
             NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseClick);
             NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView1_NodeMouseDoubleClick);
             DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView1_DragDrop);
             DragOver += new System.Windows.Forms.DragEventHandler(this.treeView1_DragOver);
+            Gageas.Lutea.Core.Controller.onTrackChange += id =>
+            {
+                this.Invoke((Action)(() =>
+                {
+                    ResetRelatedTree();
+                }));
+            };
+            Controller.onDatabaseUpdated += () =>
+            {
+                this.Invoke((Action)(() =>
+                {
+                    ResetRelatedTree();
+                }));
+            };
             InitializeComponent();
+        }
+        
+        private IEnumerable<Tuple<string, string>> FetchFromDBAsTuple2(string sql)
+        {
+            using (var stmt = ConnectionPool.Get().Prepare(sql))
+            {
+                return stmt.EvaluateAll().Select(_ => new Tuple<string, string>((string)_[0], (string)_[1]));
+            }
+        }
+
+        private IEnumerable<Tuple<string, string, string>> FetchFromDBAsTuple3(string sql)
+        {
+            using (var stmt = ConnectionPool.Get().Prepare(sql))
+            {
+                return stmt.EvaluateAll().Select(_ => new Tuple<string, string, string>((string)_[0], (string)_[1], (string)_[2]));
+            }
+        }
+
+        private IEnumerable<Tuple<string, string, string, string>> FetchFromDBAsTuple4(string sql)
+        {
+            using (var stmt = ConnectionPool.Get().Prepare(sql))
+            {
+                return stmt.EvaluateAll().Select(_ => new Tuple<string, string, string, string>((string)_[0], (string)_[1], (string)_[2], (string)_[3]));
+            }
+        }
+
+        private IEnumerable<KeyValuePair<string, string>> FetchRelatedAlbums(string artist)
+        {
+            var item_splitter = new char[] { '；', ';', '，', ',', '／', '/', '＆', '&', '・', '･', '、', '､', '（', '(', '）', ')', '\n', '\t' };
+            var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries);
+            var q = String.Join(" OR ", (from __ in from _ in subArtists select _.LCMapUpper().Trim() select String.Format(__.Length > 1 ? @" LCMapUpper(tagArtist) LIKE '%{0}%' " : @" LCMapUpper(tagArtist) = '{0}' ", __.EscapeSingleQuotSQL())).ToArray());
+            if (subArtists.Length > 0)
+            {
+                using (var stmt = ConnectionPool.Get().Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE tagAlbum IN (SELECT tagAlbum FROM list WHERE " + q + " ) GROUP BY tagAlbum ORDER BY COUNT(*) DESC;"))
+                {
+                    return stmt.EvaluateAll().Select(_ => new KeyValuePair<string, string>(_[0].ToString(), _[1].ToString())).Where(_ => !string.IsNullOrEmpty(_.Key));
+                }
+            }
+            return null;
+        }
+
+        private TreeNode CreateRelatedAlbumTree()
+        {
+            return CreateTreeNode(
+                text: "関連アルバム", 
+                imageIndex: ImageIndexes.FOLDER, 
+                expand: true,
+                children: FetchRelatedAlbums(Controller.Current.MetaData("tagArtist")).Select((_) => CreateTreeNode(
+                    text: _.Key, 
+                    imageIndex: ImageIndexes.ALBUM_DISC, 
+                    tag: new VirtualPlaylistEntry("SELECT * FROM list WHERE tagAlbum = '" + _.Key.EscapeSingleQuotSQL() + "';", -1, -0)
+                ))
+            );
+        }
+
+        private TreeNode CreateCurrentAlbumTree(string album)
+        {
+            return CreateTreeNode(
+                text: album, 
+                imageIndex: ImageIndexes.ALBUM_DISC,
+                tag: new VirtualPlaylistEntry("SELECT * FROM list WHERE tagAlbum = '" + album.EscapeSingleQuotSQL() + "';", -1, -0),
+                children: FetchFromDBAsTuple3("SELECT tagTitle, 0+tagTrackNumber, file_name FROM list WHERE tagAlbum = '" + album.EscapeSingleQuotSQL() + "' ORDER BY 0+tagTrackNumber ASC;").Select((_) => CreateTreeNode(
+                    text: _.Item2 + ". " + _.Item1, 
+                    imageIndex: ImageIndexes.SINGLE_FILE, 
+                    tag: new VirtualPlaylistEntry("SELECT * FROM list WHERE file_name = '" + _.Item3.EscapeSingleQuotSQL() + "';", -1, -0)
+                ))
+            );
+        }
+
+        /// <summary>
+        /// データベースカラムに対する関連トラックのリストを作る
+        /// </summary>
+        /// <param name="col"></param>
+        /// <returns></returns>
+        private TreeNode CreateTagBasedTree(Library.Column col)
+        {
+            // 再生中のトラックのタグの値をMultipleValuesで取得する
+            var tagValues = Controller.FetchColumnValueMultipleValue(col.Name, "file_name='" + Controller.Current.Filename.EscapeSingleQuotSQL() + "'").Where(_ => !string.IsNullOrEmpty(_.Key));
+            if (tagValues.Count() == 0) return null;
+
+            var level1Node = CreateTreeNode(
+                text: col.LocalText, 
+                imageIndex: ImageIndexes.FOLDER,
+                expand: true,
+                children: tagValues.Select(tagValue =>
+                {
+                    var tracks = FetchFromDBAsTuple4("SELECT file_name, tagTitle, tagArtist, tagAlbum FROM list WHERE any(" + col.Name + ", '" + tagValue.Key.EscapeSingleQuotSQL() + "');");
+                    return CreateTreeNode(
+                        text: tagValue.Key + " (" + tracks.Count() + ")", 
+                        imageIndex: ImageIndexes.MULTIPLE_FILE, 
+                        tag: new VirtualPlaylistEntry("SELECT * FROM list WHERE any(" + col.Name + ", '" + tagValue.Key.EscapeSingleQuotSQL() + "');", -1, -0),
+                        children: tracks.GroupBy(_ => _.Item4).Select(group => CreateTreeNode(
+                            text: group.Key + " (" + group.Count() + ")", 
+                            imageIndex: ImageIndexes.ALBUM_DISC,
+                            children: group.Select(leafItem => CreateTreeNode(
+                                text: leafItem.Item2 + " - " + leafItem.Item3, 
+                                imageIndex: ImageIndexes.SINGLE_FILE, 
+                                tag: "SELECT * FROM list WHERE file_name = '" + leafItem.Item1.EscapeSingleQuotSQL() + "');"
+                            ))
+                        ))
+                    );
+                })
+            );
+            ConnectionPool.Release();
+            return level1Node;
+        }
+
+        private void ResetRelatedTree()
+        {
+            if (!Controller.IsPlaying)
+            {
+                if (RelatedItemsRoot != null) Nodes.Remove(RelatedItemsRoot);
+                return;
+            }
+            var album = Controller.Current.MetaData("tagAlbum");
+            var newRelatedItemsRoot = new TreeNode("再生中");
+            newRelatedItemsRoot.Nodes.Add(CreateCurrentAlbumTree(album));
+            newRelatedItemsRoot.Nodes.Add(CreateRelatedAlbumTree());
+
+            var cols = Controller.Columns.Where(_ => _.IsTextSearchTarget).Where(_ => !(_.Name == "tagAlbum" || _.Name == "tagComment" || _.Name == "tagTitle"));
+            foreach (var col in cols)
+            {
+                var node = CreateTagBasedTree(col);
+                if (node != null)
+                {
+                    newRelatedItemsRoot.Nodes.Add(node);
+                }
+            }
+            newRelatedItemsRoot.Expand();
+            BeginUpdate();
+            if (RelatedItemsRoot != null) Nodes.Remove(RelatedItemsRoot);
+            RelatedItemsRoot = newRelatedItemsRoot;
+            Nodes.Add(RelatedItemsRoot);
+            EndUpdate();
         }
 
         internal void reloadDynamicPlaylist()
         {
-            TreeNode folder = new TreeNode("クエリ");
             string querydir = Gageas.Lutea.Core.Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "query";
+            TreeNode rootNode = CreateTreeNode("クエリ", ImageIndexes.FOLDER, null, new PlaylistEntryDirectory(querydir));
             if (!System.IO.Directory.Exists(querydir))
             {
                 System.IO.Directory.CreateDirectory(querydir);
@@ -49,16 +245,25 @@ namespace Gageas.Lutea.DefaultUI
                 new PlaylistEntryFile(querydir, "3日以内に追加・更新された曲", "SELECT * FROM list WHERE current_timestamp64() - modify <= 259200;", -1, 0).Save();
                 new PlaylistEntryFile(querydir, "まだ聞いていない曲", "SELECT * FROM list WHERE lastplayed = 0;", 18, 0).Save();
             }
-            folder.Tag = new PlaylistEntryDirectory(querydir);
-            folder.ImageIndex = 0;
             Nodes.Clear();
-            DynamicPlaylist.Load(querydir, folder, null);
-            Nodes.Add(folder);
+            DynamicPlaylist<TreeNode>.Load(querydir, rootNode,
+            (parent, dir) =>
+            {
+                TreeNode dirtree = CreateTreeNode(System.IO.Path.GetFileNameWithoutExtension(dir), ImageIndexes.FOLDER, null, new PlaylistEntryDirectory(dir));
+                parent.Nodes.Add(dirtree);
+                return dirtree;
+            },
+            (parent, path, name, sql, sortBy, sortOrder) => {
+                string playlistname = System.IO.Path.GetFileNameWithoutExtension(name);
+                parent.Nodes.Add(CreateTreeNode(playlistname, ImageIndexes.QUERY, null, new PlaylistEntryFile(path, playlistname, sql, sortBy, sortOrder)));
+            });
+            Nodes.Add(rootNode);
             ExpandAll();
+            ResetRelatedTree();
             previouslyClicked = null;
         }
 
-        private void ExecQueryViewQuery(TreeNode node)
+        private void ExecQueryViewQuery(TreeNode node, bool playOnCreate = false)
         {
             if (node == null) return;
             if (node.Tag == null) return;
@@ -66,12 +271,20 @@ namespace Gageas.Lutea.DefaultUI
             {
                 var ent = (PlaylistEntryFile)node.Tag;
                 Gageas.Lutea.Core.Controller.CreatePlaylist(null);
-                Gageas.Lutea.Core.Controller.CreatePlaylist(ent.sql);
+                Gageas.Lutea.Core.Controller.CreatePlaylist(ent.sql, playOnCreate);
+            }
+            if (node.Tag is VirtualPlaylistEntry)
+            {
+                var ent = (VirtualPlaylistEntry)node.Tag;
+                Gageas.Lutea.Core.Controller.CreatePlaylist(null);
+                Gageas.Lutea.Core.Controller.CreatePlaylist(ent.sql, playOnCreate);
             }
         }
 
         private void queryView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            if (e.Action == TreeViewAction.Expand) return;
+            if (e.Action == TreeViewAction.Collapse) return;
             if (e.Node != previouslyClicked)
             {
                 ExecQueryViewQuery(e.Node);
@@ -120,24 +333,36 @@ namespace Gageas.Lutea.DefaultUI
                                 }
                             }
                         }
+
+                        if (node.Tag is VirtualPlaylistEntry)
+                        {
+                            item.Enabled = false;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < ContextMenuStrip.Items.Count; i++)
+                    {
+                        // 全てのメニューアイテムを一旦enableに
+                        var item = ContextMenuStrip.Items[i];
+                        item.Enabled = false;
                     }
                 }
                 // クエリの実行を抑制する
                 previouslyClicked = e.Node;
-            }
-            else if (e.Button == System.Windows.Forms.MouseButtons.Left)
-            {
-                ExecQueryViewQuery(e.Node);
-                // クエリの実行を抑制する
-                previouslyClicked = e.Node;
-            }
-
             // クリックされたノードをSelectedNodeに設定。
             SelectedNode = e.Node;
+            }
         }
 
         private void treeView1_ItemDrag(object sender, ItemDragEventArgs e)
         {
+            if (e.Item == null) return;
+            if (!(e.Item is TreeNode)) return;
+            if (e.Item == Nodes[0]) return;
+            if (((TreeNode)e.Item).Tag == null) return;
+            if (((TreeNode)e.Item).Tag is VirtualPlaylistEntry) return;
             DragDropEffects dde = DoDragDrop(e.Item, DragDropEffects.All);
         }
 
@@ -176,11 +401,7 @@ namespace Gageas.Lutea.DefaultUI
 
         private void treeView1_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            var tn = e.Node;
-            if (tn != null && tn.Tag is PlaylistEntryFile)
-            {
-                Gageas.Lutea.Core.Controller.CreatePlaylist(((PlaylistEntryFile)tn.Tag).sql, true);
-            }
+            ExecQueryViewQuery(e.Node, true);
         }
 
         private void reloadToolStripMenuItem_Click(object sender, EventArgs e)

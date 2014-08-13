@@ -181,7 +181,7 @@ namespace Gageas.Lutea.DefaultUI
                 widthSum += items[i].Width;
             }
             xTrackBar1.Left = widthSum;
-            xTrackBar1.Width = this.ClientSize.Width - widthSum;
+            xTrackBar1.Width = menuStrip1.Width - widthSum;
             xTrackBar1.Height = menuStrip1.Height;
             xTrackBar1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             xTrackBar1.ThumbWidth = this.xTrackBar1.Font.Height * 3;
@@ -256,7 +256,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             if (this.InvokeRequired)
             {
-                this.Invoke((Action)(() => { changeTaskbarIcon(i); }));
+                this.Invoke((MethodInvoker)(() => changeTaskbarIcon(i)));
                 return;
             }
             var oldhIcon_Large = hIconForWindowIcon_Large;
@@ -296,17 +296,26 @@ namespace Gageas.Lutea.DefaultUI
 
         private void trackChange(int index)
         {
-            var album = Controller.Current.MetaData("tagAlbum");
-            var artist = Controller.Current.MetaData("tagArtist");
-            var genre = Controller.Current.MetaData("tagGenre");
-            var lyrics = Controller.Current.GetLyrics();
-            panel1.ContextMenuStrip = null;
-            ContextMenuStrip cms = null;
+            if (InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)(() => trackChange(index)));
+                return;
+            }
             try
             {
-                this.Invoke((MethodInvoker)(() =>
+                richTextBox1.Clear();
+                if (tabPage4.ImageIndex != -1)
                 {
-                    richTextBox1.Clear();
+                    tabPage4.ImageIndex = -1;
+                }
+                xTrackBar1.Value = Controller.Current.Position;
+                xTrackBar1.Max = Controller.Current.Length;
+                xTrackBar1.Enabled = Controller.IsPlaying;
+                playlistView.SelectItemIndirect(index);
+                playlistView.EmphasizeRowIndirect(index);
+                if (Controller.IsPlaying)
+                {
+                    var lyrics = Controller.Current.GetLyrics();
                     if (lyrics != null)
                     {
                         if (tabPage4.ImageIndex != 2)
@@ -316,129 +325,26 @@ namespace Gageas.Lutea.DefaultUI
                         richTextBox1.Font = pref.Font_playlistView;
                         richTextBox1.AppendText(string.Join("\n", Util.Util.StripLyricsTimetag(lyrics)));
                     }
-                    else
-                    {
-                        if (tabPage4.ImageIndex != -1)
-                        {
-                            tabPage4.ImageIndex = -1;
-                        }
-                    }
-                    xTrackBar1.Max = Controller.Current.Length;
-                    playlistView.SelectItemIndirect(index);
-                    playlistView.EmphasizeRowIndirect(index);
-                    if (index < 0)
-                    {
-                        trackInfoText.Text = "";
-                        trackInfoText2.Text = "";
-                        setFormTitle(null);
-                        setStatusText("Ready ");
-                        toolStripMenuItem11.Text = "00:00/00:00";
-                        visualizeView.Abort();
-                        visualizeView.Clear();
-
-                        var hIcon = hIconForWindowIcon_Large;
-                        User32.SendMessage(this.Handle, WM_SETICON, (IntPtr)1, this.Icon.Handle);
-                        hIconForWindowIcon_Large = IntPtr.Zero;
-                        if (hIcon != IntPtr.Zero)
-                        {
-                            User32.DestroyIcon(hIcon);
-                        }
-                        xTrackBar1.Value = 0;
-                        xTrackBar1.ThumbText = null;
-                        xTrackBar1.Enabled = false;
-                    }
-                    else
-                    {
-                        setStatusText("Playing " + Controller.Current.StreamFilename);
-                        trackInfoText2.Text = (album + Util.Util.FormatIfExists(" #{0}", Controller.Current.MetaData("tagTracknumber"))).Replace("&", "&&");
-                        trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}",
-                            Controller.Current.MetaData("tagTitle"),
-                            Util.Util.FormatIfExists(" - {0}",
-                               Controller.Current.MetaData("tagArtist").Replace("\n", "; "))
-                            );
-                        setFormTitle(Controller.Current.MetaData("tagTitle") + Util.Util.FormatIfExists(" / {0}", Controller.Current.MetaData("tagArtist").Replace("\n", "; ")));
-                        cms = new ContextMenuStrip();
-
-                        xTrackBar1.Enabled = true;
-                    }
-                    listView2.Items.Clear();
-                }));
-                if (index < 0) return;
-
-                ResetSpectrumRenderer();
-                var item_splitter = new char[] { '；', ';', '，', ',', '／', '/', '＆', '&', '・', '･', '、', '､', '（', '(', '）', ')', '\n', '\t' };
-                var subArtists = artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries);
-                var subGenre = genre.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).ToList().FindAll(e => e.Length > 1);
-                var q = String.Join(" OR ", (from __ in from _ in subArtists select _.LCMapUpper().Trim() select String.Format(__.Length > 1 ? @" LCMapUpper(tagArtist) LIKE '%{0}%' " : @" LCMapUpper(tagArtist) = '{0}' ", __.EscapeSingleQuotSQL())).ToArray());
-                object[][] related_albums = null;
-                object[][] multi_disc_albums = null;
-                using (var db = Controller.GetDBConnection())
-                {
-                    // 関連アルバムを引っ張ってくる
-                    if (subArtists.Length > 0)
-                    {
-                        using (var stmt = db.Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE tagAlbum IN (SELECT tagAlbum FROM list WHERE " + q + " ) GROUP BY tagAlbum ORDER BY COUNT(*) DESC;"))
-                        {
-                            related_albums = stmt.EvaluateAll();
-                        }
-                    }
-                    // ディスクnに分かれてる感じのアルバムを引っ張ってくる
-                    using (var stmt = db.Prepare("SELECT tagAlbum,COUNT(*) FROM list WHERE LCMapUpper(tagAlbum) LIKE '" + new Regex(@"\d").Replace(album.LCMapUpper(), "_").EscapeSingleQuotSQL() + "' GROUP BY LCMapUpper(tagAlbum);"))
-                    {
-                        multi_disc_albums = stmt.EvaluateAll();
-                    }
+                    var title = Controller.Current.MetaData("tagTitle");
+                    var artist = Controller.Current.MetaData("tagArtist").Replace("\n", "; ");
+                    var album = Controller.Current.MetaData("tagAlbum");
+                    var track = Controller.Current.MetaData("tagTrackNumber");
+                    setFormTitle(title + Util.Util.FormatIfExists(" / {0}", artist));
+                    SetStatusText("Playing " + Controller.Current.StreamFilename);
+                    trackInfoText.Text = Util.Util.FormatIfExists("{0}{1}", title, Util.Util.FormatIfExists(" - {0}", artist));
+                    trackInfoText2.Text = (album + Util.Util.FormatIfExists(" #{0}", track)).Replace("&", "&&");
+                    ResetSpectrumRenderer();
                 }
-
-                this.Invoke((MethodInvoker)(() =>
+                else
                 {
-                    var cms_album = new ToolStripMenuItem("Album: " + album.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagAlbum = '" + album.EscapeSingleQuotSQL() + "';"); });
-                    var cms_artist = new ToolStripMenuItem("Artist: " + artist.Replace("&", "&&").Replace("\n", "; "), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagArtist = '" + artist.EscapeSingleQuotSQL() + "';"); });
-                    var cms_genre = new ToolStripMenuItem("Genre: " + genre.Replace("&", "&&").Replace("\n", "; "), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagGenre = '" + genre.EscapeSingleQuotSQL() + "';"); });
-                    cms.Items.AddRange(new ToolStripItem[] { cms_album, cms_artist, cms_genre, new ToolStripSeparator() });
-
-                    // 関連アルバムを登録
-                    if (related_albums != null)
-                    {
-                        var related_albums_where_not_null = related_albums.Where(_ => !string.IsNullOrEmpty(_[0].ToString()));
-                        listView2.Items.AddRange(related_albums_where_not_null.Select(_ =>
-                        {
-                            var album_title = _[0].ToString();
-                            var query = "SELECT * FROM list WHERE tagAlbum = '" + album_title.EscapeSingleQuotSQL() + "';";
-                            var item = new ListViewItem(new string[] { "", album_title });
-                            item.Tag = query;
-                            return item;
-                        }).ToArray());
-                        cms.Items.AddRange(related_albums_where_not_null.Select(_ =>
-                        {
-                            var album_title = _[0].ToString();
-                            var query = "SELECT * FROM list WHERE tagAlbum = '" + album_title.EscapeSingleQuotSQL() + "';";
-                            var item = new ToolStripMenuItem("Album: [" + _[1].ToString() + "]" + album_title.Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist(query); });
-                            return item;
-                        }).ToArray());
-                    }
-
-                    // 複数ディスクアルバムのクエリを作る
-                    cms_album.DropDownItems.AddRange(multi_disc_albums.Where(_ => !string.IsNullOrEmpty(_[0].ToString()))
-                        .Select(_ => 
-                            new ToolStripMenuItem("Album: [" + _[1].ToString() + "]" + _[0].ToString().Replace("&", "&&"), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE tagAlbum = '" + _[0].ToString() + "';"); })
-                        ).ToArray()
-                    );
-
-                    // 各サブアーティストごとのクエリを作る
-                    cms_artist.DropDownItems.AddRange(
-                        artist.Split(item_splitter, StringSplitOptions.RemoveEmptyEntries).Select(_ =>
-                            new ToolStripMenuItem(_.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagArtist) like '%" + _.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); })
-                        ).ToArray()
-                    );
-
-                    // 各サブジャンルごとのクエリを作る
-                    cms_genre.DropDownItems.AddRange(
-                        subGenre.Select(_ =>
-                            new ToolStripMenuItem(_.Trim(), null, (e, o) => { Controller.CreatePlaylist("SELECT * FROM list WHERE LCMapUpper(tagGenre) like '%" + _.LCMapUpper().Trim().EscapeSingleQuotSQL() + "%';"); })
-                        ).ToArray()
-                    );
-                    panel1.ContextMenuStrip = cms;
-                }));
+                    setFormTitle(null);
+                    SetStatusText("Ready ");
+                    trackInfoText.Text = "";
+                    trackInfoText2.Text = "";
+                    toolStripMenuItem11.Text = "00:00/00:00";
+                    visualizeView.Abort();
+                    visualizeView.Clear();
+                }
             }
             catch (Exception e)
             {
@@ -516,7 +422,7 @@ namespace Gageas.Lutea.DefaultUI
         {
             Logger.Log("Form1 started");
             setFormTitle(null);
-            setStatusText("Ready ");
+            SetStatusText("Ready ");
             NotifyPopup = new NotifyPopupForm();
             NotifyPopup.Show();
             Controller.PlaylistUpdated += playlistUpdated;
@@ -533,10 +439,6 @@ namespace Gageas.Lutea.DefaultUI
             Controller.onPlaybackOrderChange += AppCore_onPlaybackOrderChange;
             Controller.onDatabaseUpdated += RefreshAll;
             Controller.PlaylistSortOrderChanged += OnPlaylistSortOrderChange;
-            treeView1.ImageList = new ImageList();
-            treeView1.ImageList.ColorDepth = ColorDepth.Depth32Bit;
-            treeView1.ImageList.Images.Add(Shell32.GetShellIcon(3, false));
-            treeView1.ImageList.Images.Add(Shell32.GetShellIcon(116, false)); //70
             treeView1.reloadDynamicPlaylist();
             tabControl1.ImageList.Images.Add(Shell32.GetShellIcon(116, true));
             tabControl1.ImageList.Images.Add(Shell32.GetShellIcon(40, true));
@@ -549,7 +451,6 @@ namespace Gageas.Lutea.DefaultUI
 
             menuStrip1.SetBackgroundColorSolid(SystemColors.Control);
 
-            listView2.Columns[1].Width = listView2.Width;
             ResetProgressBar();
             backgroundCoverartLoader = new BackgroundCoverartsLoader(pref.CoverArtSizeInCoverArtList);
             backgroundCoverartLoader.Complete += backgroundCoverartLoader_Complete;
@@ -557,6 +458,8 @@ namespace Gageas.Lutea.DefaultUI
             albumArtListViewSearchTextBox.Left = albumArtListViewSearchTextBox.Parent.ClientSize.Width - albumArtListViewSearchTextBox.Width - SystemInformation.VerticalScrollBarWidth;
 
             yomigana = new Yomigana(Controller.UserDirectory + System.IO.Path.DirectorySeparatorChar + "yomiCache", this);
+            treeView1.Name = "プレイリストツリー";
+            dummyFilterTab.TabPages.Add(treeView1);
             InitFilterView();
             queryComboBox.Select();
         }
@@ -721,7 +624,7 @@ namespace Gageas.Lutea.DefaultUI
                 ));
         }
 
-        private void setStatusText(String text)
+        private void SetStatusText(String text)
         {
             this.toolStripStatusLabel2.Text = text.ToString().Replace("&", "&&");
         }
@@ -730,19 +633,15 @@ namespace Gageas.Lutea.DefaultUI
         #region FilterView utility methods
         private void InitFilterPage(Column col, bool metaTableMode)
         {
-            var page = new TabPage(col.LocalText);
             var list = new FilterViewListView(yomigana);
             list.MetaTableMode = metaTableMode;
 
             list.DoubleClick += (o, arg) => { Controller.CreatePlaylist(list.GetQueryString(), true); };
             list.KeyDown += (o, arg) => { if (arg.KeyCode == Keys.Return)Controller.PlayPlaylistItem(0); };
             list.Margin = new System.Windows.Forms.Padding(0, 0, 0, 0);
-            page.Controls.Add(list);
-            page.Padding = new System.Windows.Forms.Padding(0);
-            page.Margin = new System.Windows.Forms.Padding(0);
-            page.BorderStyle = BorderStyle.None;
-            dummyFilterTab.TabPages.Add(page);
-            page.Tag = Controller.Columns.ToList().IndexOf(col);
+            dummyFilterTab.TabPages.Add(list);
+            list.Tag = Controller.Columns.ToList().IndexOf(col);
+            list.Name = col.LocalText;
         }
 
         private void InitFilterView()
@@ -781,7 +680,7 @@ namespace Gageas.Lutea.DefaultUI
                     if (itemCount > 0)
                     {
                         queryComboBox.BackColor = statusColor[(int)QueryStatus.Normal];
-                        setStatusText("Found " + itemCount + " Tracks.");
+                        SetStatusText("Found " + itemCount + " Tracks.");
                     }
                     else
                     {
@@ -825,7 +724,7 @@ namespace Gageas.Lutea.DefaultUI
             var re = new Regex("%([0-9a-z_]+)%", RegexOptions.IgnoreCase);
             try
             {
-                var text = re.Replace(pref.NowPlayingFormat, (_) => { return Controller.Current.MetaData(Controller.GetColumnIndexByName(_.Groups[1].Value)); });
+                var text = re.Replace(pref.NowPlayingFormat, (_) => { return Controller.Current.MetaData(_.Groups[1].Value); });
                 Shell32.OpenPath("https://twitter.com/intent/tweet?text=" + Uri.EscapeDataString(text));
             }
             catch (Exception ee)
@@ -953,18 +852,8 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="o"></param>
         public void refreshFilter(object o, string textForSelected = null)
         {
-            FilterViewListView list = (FilterViewListView)(o != null ? o : dummyFilterTab.SelectedTab.Controls[0]);
+            FilterViewListView list = (FilterViewListView)(o != null ? o : dummyFilterTab.Controls[0]);
             list.SetupContents(textForSelected);
-        }
-        #endregion
-
-        #region relatedAlbumListView event
-        private void listView2_DoubleClick(object sender, EventArgs e)
-        {
-            if (listView2.SelectedItems.Count > 0 && listView2.SelectedItems[0].Tag != null)
-            {
-                Controller.CreatePlaylist(listView2.SelectedItems[0].Tag.ToString());
-            }
         }
         #endregion
 
@@ -976,7 +865,7 @@ namespace Gageas.Lutea.DefaultUI
             if (pageIndex < 0) return;
             if (dummyFilterTab.TabPages[pageIndex].Tag == null) return;
             int colid = (int)dummyFilterTab.TabPages[pageIndex].Tag;
-            ListView list = (ListView)dummyFilterTab.TabPages[pageIndex].Controls[0];
+            ListView list = (ListView)dummyFilterTab.TabPages[pageIndex];
             // ratingは黙って更新されている場合があるので，毎回キャッシュを破棄
             // TODO: リアルタイムに追従するようにする
             if (Columns[colid].Name == LibraryDBColumnTextMinimum.rating) list.Items.Clear();
@@ -1576,7 +1465,7 @@ namespace Gageas.Lutea.DefaultUI
             // タブ選択コンボボックス初期化
             for (var i = 0; i < dummyFilterTab.TabPages.Count; i++)
             {
-                comboBox1.Items.Add(dummyFilterTab.TabPages[i].Text);
+                comboBox1.Items.Add(dummyFilterTab.TabPages[i].Name);
             }
             comboBox1.SelectedIndex = 0;
 

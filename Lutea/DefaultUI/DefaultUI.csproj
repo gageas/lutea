@@ -160,6 +160,9 @@
     </Compile>
     <Compile Include="RatingRenderer.cs" />
     <Compile Include="RevConv.cs" />
+    <Compile Include="SelectablePanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Shell32.cs" />
     <Compile Include="TaskbarExtension.cs" />
     <Compile Include="ToolStripComboBox.cs">
