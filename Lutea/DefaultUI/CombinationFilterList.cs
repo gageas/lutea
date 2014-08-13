@@ -33,29 +33,45 @@ namespace Gageas.Lutea.DefaultUI
 
         private void SetItems()
         {
+            string[] backup = null;
+            if (SelectedItems.Count > 0)
+            {
+                backup = new string[SelectedItems.Count];
+                SelectedItems.CopyTo(backup, 0);
+            }
             Items.Clear();
             var wherePhraseStr = (Super == null ? null : String.Join(" AND ", Super.WherePhrase));
             var values = Controller.FetchColumnValueMultipleValue(BindedTag, wherePhraseStr).Select(_ => _.Key).OrderBy(_ => Yomigana.GetFirst(_)).ToArray();
             Items.Add("全て(" + values.Count() + ")");
             Items.AddRange(values);
+            if (backup != null)
+            {
+                foreach (var str in backup)
+                {
+                    SelectedItems.Add(str);
+                }
+            }
         }
 
-        public void DeliveredUpdate(bool PlayOnCreate)
+        public void DeliveredUpdate(bool PlayOnCreate, bool silent = false)
         {
             SetItems();
-            DeliverUpdateToChild(PlayOnCreate);
+            DeliverUpdateToChild(PlayOnCreate, silent);
         }
 
-        private void DeliverUpdateToChild(bool PlayOnCreate)
+        private void DeliverUpdateToChild(bool PlayOnCreate, bool silent=false)
         {
             if (Child != null)
             {
-                Child.DeliveredUpdate(PlayOnCreate);
+                Child.DeliveredUpdate(PlayOnCreate, silent);
             }
             else
             {
-                var wherePhraseStr = String.Join(" AND ", WherePhrase);
-                Lutea.Core.Controller.CreatePlaylist("SELECT * FROM list " + (string.IsNullOrEmpty(wherePhraseStr) ? "" : ("WHERE " + wherePhraseStr)) + ";", PlayOnCreate);
+                if (!silent)
+                {
+                    var wherePhraseStr = String.Join(" AND ", WherePhrase);
+                    Lutea.Core.Controller.CreatePlaylist("SELECT * FROM list " + (string.IsNullOrEmpty(wherePhraseStr) ? "" : ("WHERE " + wherePhraseStr)) + ";", PlayOnCreate);
+                }
             }
         }
 

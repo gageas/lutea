@@ -380,7 +380,7 @@ namespace Gageas.Lutea.DefaultUI
             {
                 InitFilterView();
                 InitAlbumArtList();
-                ((CombinationFilterList)(tableLayoutPanel2.GetControlFromPosition(0, 1))).DeliveredUpdate(false);
+                ((CombinationFilterList)(tableLayoutPanel2.GetControlFromPosition(0, 1))).DeliveredUpdate(false, true);
             }));
         }
 
