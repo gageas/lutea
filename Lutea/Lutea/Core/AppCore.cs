@@ -527,7 +527,7 @@ namespace Gageas.Lutea.Core
             Library = MyUserDirectory.OpenLibrary();
 
             // プレイリスト管理の開始
-            MyPlaylistManager = new PlaylistManager(Library.Connect());
+            MyPlaylistManager = new PlaylistManager();
 
             // コンポーネントの読み込み
             MyComponentManager.Add(MyCoreComponent);
