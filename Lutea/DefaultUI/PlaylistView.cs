@@ -1512,51 +1512,51 @@ namespace Gageas.Lutea.DefaultUI
         /// <param name="albumCounts"></param>
         private void genMapTable(int[] albumCounts)
         {
-            if (ShowGroup)
-            {
-                int minNum = CoverArtLineNum - 1;
-                if ((albumCounts == null) || (albumCounts.Length == 0))
-                {
-                    v2oMap = new int[0];
-                    o2vMap = new int[0];
-                    return;
-                }
-                var v2imap = new int[albumCounts.Length * (minNum + 2)];
-                o2vMap = new int[albumCounts.Length];
-                int iv2imap = 0;
-                int ii2vmap = 0;
-                int c = 0;
-                v2imap[iv2imap++] = int.MinValue;
-                v2imap[iv2imap++] = 0;
-                c++;
-                o2vMap[ii2vmap++] = c++;
-                for (int i = 1, I = albumCounts.Length; i < I; i++)
-                {
-                    if (albumCounts[i] == 0)
-                    {
-                        for (int j = 0, J = minNum - albumCounts[i - 1]; j < J; j++)
-                        {
-                            v2imap[iv2imap++] = -j - 1;
-                            c++;
-                        }
-                        v2imap[iv2imap++] = int.MinValue;
-                        c++;
-                    }
-                    v2imap[iv2imap++] = i;
-                    o2vMap[ii2vmap++] = c++;
-                }
-                for (int j = 0, J = minNum - albumCounts[albumCounts.Length - 1]; j < J; j++)
-                {
-                    v2imap[iv2imap++] = -j - 1;
-                }
-                Array.Resize<int>(ref v2imap, iv2imap);
-                v2oMap = v2imap;
-            }
-            else
+            // グループ分け表示しない場合
+            if (!ShowGroup)
             {
                 o2vMap = null;
                 v2oMap = null;
+                return;
             }
+
+            // プレイリストが空っぽい場合
+            if ((albumCounts == null) || (albumCounts.Length == 0))
+            {
+                v2oMap = new int[0];
+                o2vMap = new int[0];
+                return;
+            }
+
+            // グループ分け表示のマッピングテーブルを作る
+            var v2imap = new int[albumCounts.Length * (CoverArtLineNum + 1)];
+            o2vMap = new int[albumCounts.Length];
+            int v2i_idx = 0;
+            int i2v_idx = 0;
+            for (int i = 0, I = albumCounts.Length; i < I; i++)
+            {
+                // アルバムの先頭の場合、まずヘッダ行を作る
+                if (albumCounts[i] == 0)
+                {
+                    v2imap[v2i_idx++] = int.MinValue;
+                }
+
+                // トラック名の行を作る
+                o2vMap[i2v_idx++] = v2i_idx;
+                v2imap[v2i_idx++] = i;
+
+                // プレースホルダ行を作る
+                // プレイリストの終端または次のトラックが別のアルバムの先頭の場合
+                if (i + 1 == I || albumCounts[i + 1] == 0)
+                {
+                    for (int j = 0, J = CoverArtLineNum - albumCounts[i] - 1; j < J; j++)
+                    {
+                        v2imap[v2i_idx++] = -j - 1;
+                    }
+                }
+            }
+            Array.Resize<int>(ref v2imap, v2i_idx);
+            v2oMap = v2imap;
         }
 
         /// <summary>
