@@ -1515,8 +1515,8 @@ namespace Gageas.Lutea.DefaultUI
             // グループ分け表示しない場合
             if (!ShowGroup)
             {
-                o2vMap = null;
                 v2oMap = null;
+                o2vMap = null;
                 return;
             }
 
@@ -1529,34 +1529,34 @@ namespace Gageas.Lutea.DefaultUI
             }
 
             // グループ分け表示のマッピングテーブルを作る
-            var v2imap = new int[albumCounts.Length * (CoverArtLineNum + 1)];
+            var v2omap = new int[albumCounts.Length * (CoverArtLineNum + 1)];
             o2vMap = new int[albumCounts.Length];
-            int v2i_idx = 0;
-            int i2v_idx = 0;
+            int v2o_idx = 0;
+            int o2v_idx = 0;
             for (int i = 0, I = albumCounts.Length; i < I; i++)
             {
                 // アルバムの先頭の場合、まずヘッダ行を作る
                 if (albumCounts[i] == 0)
                 {
-                    v2imap[v2i_idx++] = int.MinValue;
+                    v2omap[v2o_idx++] = int.MinValue;
                 }
 
                 // トラック名の行を作る
-                o2vMap[i2v_idx++] = v2i_idx;
-                v2imap[v2i_idx++] = i;
+                o2vMap[o2v_idx++] = v2o_idx;
+                v2omap[v2o_idx++] = i;
 
                 // プレースホルダ行を作る
                 // プレイリストの終端または次のトラックが別のアルバムの先頭の場合
                 if (i + 1 == I || albumCounts[i + 1] == 0)
                 {
-                    for (int j = 0, J = CoverArtLineNum - albumCounts[i] - 1; j < J; j++)
+                    for (int j = -1, J = albumCounts[i] - CoverArtLineNum; j > J; j--)
                     {
-                        v2imap[v2i_idx++] = -j - 1;
+                        v2omap[v2o_idx++] = j;
                     }
                 }
             }
-            Array.Resize<int>(ref v2imap, v2i_idx);
-            v2oMap = v2imap;
+            Array.Resize<int>(ref v2omap, v2o_idx);
+            v2oMap = v2omap;
         }
 
         /// <summary>
