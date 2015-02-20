@@ -308,8 +308,8 @@ namespace Gageas.Lutea.DefaultUI
                 {
                     tabPage4.ImageIndex = -1;
                 }
-                xTrackBar1.Value = Controller.Current.Position;
-                xTrackBar1.Max = Controller.Current.Length;
+                xTrackBar1.Value = 0;
+                xTrackBar1.Max = 1;
                 xTrackBar1.Enabled = Controller.IsPlaying;
                 playlistView.SelectItemIndirect(index);
                 playlistView.EmphasizeRowIndirect(index);
@@ -391,6 +391,10 @@ namespace Gageas.Lutea.DefaultUI
                 this.BeginInvoke((MethodInvoker)(() =>
                 {
                     ulong len = (ulong)Controller.Current.Length;
+                    if (xTrackBar1.Max != len)
+                    {
+                        xTrackBar1.Max = len;
+                    }
                     xTrackBar1.Value = second;
                     xTrackBar1.ThumbText = String.Format("{0:0.0}", Math.Floor(1000.0 * second / len) / 10) + "%";
                     toolStripMenuItem11.Text = (Util.Util.getMinSec(second) + "/" + Util.Util.getMinSec(len));

@@ -685,7 +685,7 @@
             // 
             // splitContainer2
             // 
-            this.splitContainer2.BackupDistance = 300;
+            this.splitContainer2.BackupDistance = 25;
             resources.ApplyResources(this.splitContainer2, "splitContainer2");
             this.splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.splitContainer2.Name = "splitContainer2";
