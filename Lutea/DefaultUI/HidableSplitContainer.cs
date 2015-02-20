@@ -11,6 +11,10 @@ namespace Gageas.Lutea.DefaultUI
     {
         public int BackupDistance { get; set; }
 
+        public event Action Closed;
+
+        public event Action Opened;
+
         public HidableSplitContainer()
         {
             SplitterWidth = 10;
@@ -25,6 +29,7 @@ namespace Gageas.Lutea.DefaultUI
             if (SplitterDistance == 0) return;
             BackupDistance = SplitterDistance;
             SplitterDistance = 0;
+            if (Closed != null) Closed.Invoke();
         }
 
         public void Open()
@@ -32,6 +37,7 @@ namespace Gageas.Lutea.DefaultUI
             if (BackupDistance == 0) BackupDistance = 100;
             if (SplitterDistance == BackupDistance) return;
             SplitterDistance = BackupDistance;
+            if (Opened != null) Opened.Invoke();
         }
 
         private void MouseClickHandler(object sender, MouseEventArgs e)

@@ -685,7 +685,7 @@
             // 
             // splitContainer2
             // 
-            this.splitContainer2.BackupDistance = 0;
+            this.splitContainer2.BackupDistance = 300;
             resources.ApplyResources(this.splitContainer2, "splitContainer2");
             this.splitContainer2.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.splitContainer2.Name = "splitContainer2";
@@ -698,6 +698,8 @@
             // 
             this.splitContainer2.Panel2.Controls.Add(this.tableLayoutPanel3);
             this.splitContainer2.TabStop = false;
+            this.splitContainer2.Closed += new System.Action(this.splitContainer2_Closed);
+            this.splitContainer2.Opened += new System.Action(this.splitContainer2_Opened);
             // 
             // coverArtView
             // 

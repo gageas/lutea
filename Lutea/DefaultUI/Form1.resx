@@ -1464,7 +1464,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="coverArtView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>300, 300</value>
+    <value>300, 0</value>
   </data>
   <data name="coverArtView.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1537,7 +1537,7 @@
     <value>0</value>
   </data>
   <data name="treeView1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>300, 365</value>
+    <value>300, 665</value>
   </data>
   <data name="treeView1.TabIndex" type="System.Int32, mscorlib">
     <value>24</value>
@@ -1564,7 +1564,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="dummyFilterTab.Size" type="System.Drawing.Size, System.Drawing">
-    <value>300, 365</value>
+    <value>300, 665</value>
   </data>
   <data name="dummyFilterTab.TabIndex" type="System.Int32, mscorlib">
     <value>25</value>
@@ -1624,7 +1624,7 @@
     <value>2</value>
   </data>
   <data name="tableLayoutPanel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>300, 386</value>
+    <value>300, 686</value>
   </data>
   <data name="tableLayoutPanel3.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1660,7 +1660,7 @@
     <value>300, 696</value>
   </data>
   <data name="splitContainer2.SplitterDistance" type="System.Int32, mscorlib">
-    <value>300</value>
+    <value>0</value>
   </data>
   <data name="splitContainer2.SplitterWidth" type="System.Int32, mscorlib">
     <value>10</value>

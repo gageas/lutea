@@ -628,6 +628,21 @@ namespace Gageas.Lutea.DefaultUI
         {
             this.toolStripStatusLabel2.Text = text.ToString().Replace("&", "&&");
         }
+
+        private void UpdateMinSize(bool enable)
+        {
+            if (enable)
+            {
+                this.MinimumSize = new Size(
+                    splitContainer1.SplitterDistance + this.Width - this.ClientSize.Width + 2,
+                    splitContainer1.SplitterDistance + this.Height - this.ClientSize.Height + queryComboBox.Height + statusStrip1.Height + 2
+                );
+            }
+            else
+            {
+                this.MinimumSize = DefaultMinimumSize;
+            }
+        }
         #endregion
 
         #region FilterView utility methods
@@ -900,14 +915,34 @@ namespace Gageas.Lutea.DefaultUI
             if (splitContainer2.SplitterDistance != 0)
             {
                 splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
-
+                UpdateMinSize(true);
             }
             else
             {
                 splitContainer2.BackupDistance = splitContainer1.SplitterDistance;
+                UpdateMinSize(false);
             }
             ResetSpectrumRenderer();
             playlistView.Select();
+        }
+        #endregion
+
+        #region splitContainer2 event
+        private void splitContainer2_Opened()
+        {
+            if (splitContainer1.SplitterDistance != splitContainer2.SplitterDistance)
+            {
+                splitContainer1_SplitterMoved(null, null);
+            }
+            else
+            {
+                UpdateMinSize(true);
+            }
+        }
+
+        private void splitContainer2_Closed()
+        {
+            UpdateMinSize(false);
         }
         #endregion
 
