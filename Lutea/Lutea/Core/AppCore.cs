@@ -787,8 +787,7 @@ namespace Gageas.Lutea.Core
                 string filename = (string)row[Controller.GetColumnIndexByName(LibraryDBColumnTextMinimum.file_name)];
                 try
                 {
-                    int tr = 1;
-                    Util.Util.tryParseInt(row[Controller.GetColumnIndexByName("tagTracknumber")].ToString(), ref tr);
+                    int tr = Util.Util.GetTrackNumberInt(row[Controller.GetColumnIndexByName("tagTracknumber")].ToString(), 1);
                     PullSoundStreamBase nextStream = DecodeStreamFactory.CreateFileStream(filename, tr, MyCoreComponent.UsePrescan, tags);
                     if (nextStream == null) return false;
                     if (nextStream.Chans == 1)
@@ -922,6 +921,26 @@ namespace Gageas.Lutea.Core
                         id = 0;
                     }
                     return id;
+                case Controller.PlaybackOrder.Album:
+                    id = Controller.Current.IndexInPlaylist;
+                    var albumColid = Controller.GetColumnIndexByName("tagAlbum");
+                    string album = Controller.Current.MetaData(albumColid);
+                    id++;
+                    if (id < CurrentPlaylistRows)
+                    {
+                        if (album == Controller.GetPlaylistRowColumn(id, albumColid))
+                        {
+                            return id;
+                        }
+                    }
+                    string albumPrevTr;
+                    do
+                    {
+                        if (id == 0) return 0;
+                        id--;
+                        albumPrevTr = Controller.GetPlaylistRowColumn(id, albumColid);
+                    } while (album == albumPrevTr);
+                    return id + 1;
             }
             return 0;
         }

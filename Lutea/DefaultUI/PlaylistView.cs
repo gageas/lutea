@@ -568,14 +568,15 @@ namespace Gageas.Lutea.DefaultUI
             var vid = getViewIDByObjectID(oid);
             if (vid < 0) return;
             if (vid >= VirtualListSize) return;
-            EnsureVisible(vid);
             if (getIndexInGroup(vid) == 1)
             {
                 if (vid > 0)
                 {
                     EnsureVisible(vid - 1);
+                    return;
                 }
             }
+            EnsureVisible(vid);
         }
 
         /// <summary>
@@ -678,7 +679,7 @@ namespace Gageas.Lutea.DefaultUI
                 oid = numObjects - 1;
             }
             SelectItemIndirect(oid);
-            EnsureVisible(Math.Min(getViewIDByObjectID(oid) + CoverArtLineNum, VirtualListSize - 1));
+//            EnsureVisible(Math.Min(getViewIDByObjectID(oid) + CoverArtLineNum, VirtualListSize - 1));
         }
 
         /// <summary>

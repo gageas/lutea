@@ -196,6 +196,19 @@ namespace Gageas.Lutea.Util
             return false;
         }
 
+        /// <summary>
+        /// 文字列形式のトラックナンバーをintにパースする
+        /// </summary>
+        /// <param name="src">文字列形式のトラックナンバー</param>
+        /// <param name="defaultValue">パースできなかった場合に返す値</param>
+        /// <returns></returns>
+        public static int GetTrackNumberInt(string src, int defaultValue = -1)
+        {
+            int ret = defaultValue;
+            tryParseInt(src, ref ret);
+            return ret;
+        }
+
         [DllImport("kernel32.dll", EntryPoint = "LCMapString", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int _LCMapString(int locale, UInt32 dwMapFlags, string src, int srclen, [MarshalAs(UnmanagedType.LPArray)] char[] dest, int destlen);
         /// <summary>

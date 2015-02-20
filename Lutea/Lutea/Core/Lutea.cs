@@ -72,7 +72,7 @@ namespace Gageas.Lutea.Core
         /// <summary>
         /// 再生モード列挙体
         /// </summary>
-        public enum PlaybackOrder { Default, Endless, Track, Random };
+        public enum PlaybackOrder { Default, Endless, Track, Random, Album };
         #endregion
 
         #region Event definition
@@ -252,27 +252,16 @@ namespace Gageas.Lutea.Core
         {
             Logger.Log("next Track");
             AppCore.CoreEnqueue(() => {
-                int i = (icache > 0 ? icache : icache = Current.IndexInPlaylist);
-                int id;
-                if (playbackOrder == Controller.PlaybackOrder.Random)
+                int i = (icache > 0 ? icache : Current.IndexInPlaylist);
+                if (playbackOrder == Controller.PlaybackOrder.Track)
                 {
-                    id = AppCore.GetSuccTrackIndex();
+                    icache = (i + 1 >= PlaylistRowCount) ? 0 : i + 1;
                 }
                 else
                 {
-                    id = i + 1;
-                    if (id >= PlaylistRowCount)
-                    {
-                        if (playbackOrder == PlaybackOrder.Default)
-                        {
-                            Stop();
-                            return;
-                        }
-                        id = 0;
-                    }
+                    icache = AppCore.GetSuccTrackIndex();
                 }
-                icache = id;
-                AppCore.PlayPlaylistItem(id);
+                AppCore.PlayPlaylistItem(icache);
             });
         }
 
@@ -281,29 +270,23 @@ namespace Gageas.Lutea.Core
             Logger.Log("prev Track");
             AppCore.CoreEnqueue(() =>
             {
-                int i = (icache > 0?icache:Current.IndexInPlaylist);
-                int id;
+                int i = (icache > 0 ? icache : Current.IndexInPlaylist);
                 if (i == -1)
                 {
-                    id = 0;
+                    icache = 0;
                 }
                 else
                 {
                     if (Current.Position > 5) // 現在位置が5秒以内なら現在のトラックの頭に
                     {
-                        id = i;
+                        icache = i;
                     }
                     else
                     {
-                        id = i - 1;
+                        icache = (i - 1 < 0) ? PlaylistRowCount - 1 : i - 1;
                     }
                 }
-                if (id < 0)
-                {
-                    id = PlaylistRowCount - 1;
-                }
-                icache = id;
-                AppCore.PlayPlaylistItem(id);
+                AppCore.PlayPlaylistItem(icache);
             });
         }
         #endregion
@@ -461,8 +444,7 @@ namespace Gageas.Lutea.Core
                     var cue = InternalCUEReader.Read(_filename, false);
                     if (cue != null)
                     {
-                        int track = 1;
-                        Util.Util.tryParseInt(MetaData("tagTracknumber"), ref track);
+                        int track = Util.Util.GetTrackNumberInt(MetaData("tagTracknumber"), 1);
                         if (cue.tracks.Count >= track)
                         {
                             track--;

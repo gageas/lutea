@@ -201,7 +201,7 @@ namespace Gageas.Lutea.Library
                 {
                     ToBeImportTracks
                         .Where(_ => _.duration != 0)
-                        .OrderBy(_ => "" + _.getTagValue("ALBUM") + (("" + _.getTagValue("TRACK")).PadLeft(5, '0')))
+                        .OrderBy(_ => "" + _.getTagValue("ALBUM") + (Util.Util.GetTrackNumberInt(_.getTagValue("TRACK").ToString(),1).ToString().PadLeft(5, '0')))
                         .ToList()
                         .ForEach(track =>
                         {
