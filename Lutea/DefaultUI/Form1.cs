@@ -574,6 +574,10 @@ namespace Gageas.Lutea.DefaultUI
                 if (this.ClientSize.Height > 0 && this.ClientSize.Width > 0)
                 {
                     this.config_FormSize = this.ClientSize;
+                    if (xTrackBar1.Location.X + xTrackBar1.Width > menuStrip1.Width)
+                    {
+                        ResetProgressBar();
+                    }
                 }
 
             }
