@@ -28,6 +28,8 @@ namespace Gageas.Lutea.DefaultUI
         /// </summary>
         ImageList taskbarImageList;
 
+        Bitmap[] images;
+
         /// <summary>
         /// win7タスクバーに表示するボタンの配列
         /// </summary>
@@ -63,9 +65,21 @@ namespace Gageas.Lutea.DefaultUI
             this.Icon = mainForm.Icon;
             Controller.onTrackChange += new Controller.VOIDINT(Controller_onTrackChange);
             Controller.onElapsedTimeChange += new Controller.VOIDINT(Controller_onElapsedTimeChange);
+            Controller.onPause += new Controller.VOIDVOID(Controller_onPause);
+            Controller.onResume += new Controller.VOIDVOID(Controller_onResume);
             InitializeComponent();
             this.ClientSize = new Size(WIDTH, HEIGHT);
             this.Opacity = 0;
+        }
+
+        void Controller_onPause()
+        {
+            TaskbarExt.Taskbar.SetProgressState(this.mainForm.Handle, TaskbarExtension.TbpFlag.Paused);
+        }
+
+        void Controller_onResume()
+        {
+            TaskbarExt.Taskbar.SetProgressState(this.mainForm.Handle, TaskbarExtension.TbpFlag.Normal);
         }
 
         void Controller_onElapsedTimeChange(int second)
@@ -294,7 +308,7 @@ namespace Gageas.Lutea.DefaultUI
                 taskbarImageList = new ImageList();
                 taskbarImageList.ImageSize = new System.Drawing.Size(16, 16);
                 taskbarImageList.ColorDepth = ColorDepth.Depth32Bit;
-                var images = new Bitmap[] { Properties.Resources.stop, Properties.Resources.prev, Properties.Resources.pause, Properties.Resources.next };
+                images = new Bitmap[] { Properties.Resources.stop, Properties.Resources.prev, Properties.Resources.pause, Properties.Resources.next };
                 foreach (var img in images)
                 {
                     img.MakeTransparent(Color.Magenta);
