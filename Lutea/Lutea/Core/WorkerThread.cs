@@ -62,7 +62,7 @@ namespace Gageas.Lutea.Core
                         {
                             try
                             {
-                                task.DynamicInvoke(null);
+                                task();
                             }
                             catch { }
                         }
