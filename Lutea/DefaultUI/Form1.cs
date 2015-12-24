@@ -249,7 +249,7 @@ namespace Gageas.Lutea.DefaultUI
             if (!Controller.IsPlaying) return;
             var t1 = Controller.Current.MetaData("tagTitle");
             var t2 = Controller.Current.MetaData("tagArtist") + " - " + Controller.Current.MetaData("tagAlbum");
-            NotifyPopup.DoNotify(t1, t2, Controller.Current.CoverArtImage(), pref.Font_trackInfoView);          
+            NotifyPopup.DoNotify(t1, t2, Controller.Current.CoverArtImage(), pref.Font_trackInfoView);
         }
 
         private void changeTaskbarIcon(int i)
