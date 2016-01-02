@@ -85,12 +85,12 @@ namespace Gageas.Lutea.LastfmScrobble
 
         public void OnPause()
         {
-            throw new NotImplementedException();
+            // nothing
         }
 
         public void OnResume()
         {
-            throw new NotImplementedException();
+            // nothing
         }
 
         private void UpdateNowPlaying()
