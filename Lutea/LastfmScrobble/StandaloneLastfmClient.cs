@@ -7,7 +7,7 @@ using Gageas.Lutea.Util;
 
 namespace Gageas.Lutea.LastfmScrobble
 {
-    class StandaloneLastfmClient : AbstractLastfmClient
+    class StandaloneLastfmClient : ILastfmClient
     {
         private LastfmScrobble Parent;
         private const int RETRY_COUNT = 5;
@@ -19,17 +19,17 @@ namespace Gageas.Lutea.LastfmScrobble
             this.Parent = parent;
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             // nothing
         }
 
-        public override void OnTrackChange(int i)
+        public void OnTrackChange(int i)
         {
             UpdateNowPlaying();
         }
 
-        public override void OnExceedThresh()
+        public void OnExceedThresh()
         {
             if (lastfm.session_key == null)
             {
@@ -83,12 +83,12 @@ namespace Gageas.Lutea.LastfmScrobble
             Logger.Log("last.fm scrobble " + Controller.Current.MetaData("tagTitle") + (success ? " OK." : " Fail."));
         }
 
-        public override void OnPause()
+        public void OnPause()
         {
             throw new NotImplementedException();
         }
 
-        public override void OnResume()
+        public void OnResume()
         {
             throw new NotImplementedException();
         }

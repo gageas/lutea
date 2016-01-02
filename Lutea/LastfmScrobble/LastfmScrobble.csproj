@@ -46,7 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractLastfmClient.cs" />
+    <Compile Include="ILastfmClient.cs" />
     <Compile Include="LastfmScrobble.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViaAppLastfmClient.cs" />

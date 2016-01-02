@@ -15,7 +15,7 @@ namespace Gageas.Lutea.LastfmScrobble
     public class LastfmScrobble : Lutea.Core.LuteaComponentInterface
     {
         internal Preference pref = new Preference(null);
-        private AbstractLastfmClient sva;
+        private ILastfmClient sva;
 
         private bool scrobbed = false;
         private double currentDuration;

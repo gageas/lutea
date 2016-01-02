@@ -38,23 +38,23 @@ namespace Gageas.Lutea.LastfmScrobble
     /// last.fm scrobbler(via last.fm desktop application).
     /// This class is re-implemented from ScrobSubmitter class at https://github.com/lastfm/lastfm-desktop/tree/HEAD/plugins/scrobsub .
     /// </summary>
-    class ViaAppLastfmClient : AbstractLastfmClient
+    class ViaAppLastfmClient : ILastfmClient
     {
         private const string PLUGIN_ID = "lutea";
         private const string PIPE_NAME = "lastfm_scrobsub_";
         private const int RESPONSE_BUFFER_SIZE = 1024;
         private const int PIPE_TIMEOUT = 3000; // ms
-        private NamedPipeClientStream pipe;
-        private WorkerThread wthread;
+        private NamedPipeClientStream Pipe;
+        private WorkerThread WThread;
 
         public ViaAppLastfmClient()
         {
-            wthread = new WorkerThread();
-            wthread.AddTask(() =>
+            WThread = new WorkerThread();
+            WThread.AddTask(() =>
             {
                 LaunchClient();
                 var name = PIPE_NAME + System.Security.Principal.WindowsIdentity.GetCurrent().User.ToString();
-                pipe = new NamedPipeClientStream(".", name);
+                Pipe = new NamedPipeClientStream(".", name);
                 SendToAS("INIT", new Dictionary<string, string> { 
                     { "f", Environment.CommandLine }
                 });
@@ -66,30 +66,28 @@ namespace Gageas.Lutea.LastfmScrobble
             Dispose();
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
-            if (pipe != null)
+            if (Pipe != null)
             {
                 try
                 {
                     SendToAS("STOP");
                     SendToAS("TERM");
-                    wthread.WaitDoneAllTask(PIPE_TIMEOUT);
-                    pipe.WaitForPipeDrain();
-                    pipe.Dispose();
+                    WThread.WaitDoneAllTask(PIPE_TIMEOUT);
+                    Pipe.WaitForPipeDrain();
+                    Pipe.Dispose();
                 }
                 catch { }
-                pipe = null;
+                Pipe = null;
             }
         }
 
-        public override void OnTrackChange(int i)
+        public void OnTrackChange(int i)
         {
             SendToAS("STOP");
             if (i != -1)
             {
-                var param = new Dictionary<string, string>();
-
                 SendToAS("START", new Dictionary<string, string> { 
                     { "a", Controller.Current.MetaData("tagArtist") },
                     { "d", Controller.Current.MetaData("tagAlbumArtist") },
@@ -101,40 +99,40 @@ namespace Gageas.Lutea.LastfmScrobble
             }
         }
 
-        public override void OnExceedThresh()
+        public void OnExceedThresh()
         {
             // nothing
         }
 
-        public override void OnPause()
+        public void OnPause()
         {
             SendToAS("PAUSE");
         }
 
-        public override void OnResume()
+        public void OnResume()
         {
             SendToAS("RESUME");
         }
 
-        private string SendToASIntl(byte[] fullCommand)
+        private string SendToASRawIntl(byte[] fullCommand)
         {
             lock (this)
             {
-                if (!pipe.IsConnected) pipe.Connect(PIPE_TIMEOUT);
-                if (!pipe.IsConnected) throw new Exception("");
+                if (!Pipe.IsConnected) Pipe.Connect(PIPE_TIMEOUT);
+                if (!Pipe.IsConnected) throw new Exception("");
                 var inbuffer = new byte[RESPONSE_BUFFER_SIZE];
-                pipe.Write(fullCommand, 0, fullCommand.Length);
-                pipe.Read(inbuffer, 0, inbuffer.Length);
-                return Encoding.UTF8.GetString(inbuffer);
+                Pipe.Write(fullCommand, 0, fullCommand.Length);
+                Pipe.Read(inbuffer, 0, inbuffer.Length);
+                return Encoding.UTF8.GetString(inbuffer.TakeWhile(_ => _ != '\0').ToArray()).Trim();
             }
         }
 
-        private void SendToAS(byte[] fullCommand)
+        private void SendToASRaw(byte[] fullCommand)
         {
-            wthread.AddTask(() => {
+            WThread.AddTask(() => {
                 try
                 {
-                    var ret = SendToASIntl(fullCommand);
+                    var ret = SendToASRawIntl(fullCommand);
                     if (ret != "OK")
                     {
                         Logger.Warn("Last.fm app returned other than OK: " + ret);
@@ -149,26 +147,27 @@ namespace Gageas.Lutea.LastfmScrobble
 
         private void SendToAS(string command, IDictionary<string, string> param = null)
         {
-            var commandAndPID = command + " c=" + PLUGIN_ID;
-            var fullCommand = Encoding.UTF8.GetBytes(commandAndPID
-                + ((param == null)
-                    ? ""
-                    : ("&" + param.Select(_ => _.Key + "=" + _.Value.Replace("\n", "; ").Replace("&", "&&")).Aggregate((x, y) => x + "&" + y)))
-                + "\n");
-            SendToAS(fullCommand);
+            var paramsList = new List<string>();
+            paramsList.Add("c=" + PLUGIN_ID);
+            if (param != null)
+            {
+                paramsList.AddRange(param.Select(_ => _.Key + "=" + _.Value.Replace("\n", "; ").Replace("&", "&&")));
+            }
+            var fullCommand = String.Format("{0} {1}\n", command, string.Join("&", paramsList));
+            SendToASRaw(Encoding.UTF8.GetBytes(fullCommand));
         }
 
         private void LaunchClient()
         {
-            string exePath = ReadClientAppPathFromRegistry(Registry.CurrentUser);
-            if (exePath == null)
-            {
-                exePath = ReadClientAppPathFromRegistry(Registry.LocalMachine);
-            }
+            string exePath = 
+                ReadClientAppPathFromRegistry(Registry.CurrentUser) ??
+                ReadClientAppPathFromRegistry(Registry.LocalMachine);
+
             if (exePath == null)
             {
                 throw new Exception("last.fm application not found");
             }
+
             try
             {
                 var result = System.Diagnostics.Process.Start(exePath, "--tray");
