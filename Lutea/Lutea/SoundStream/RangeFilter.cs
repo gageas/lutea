@@ -37,10 +37,14 @@ namespace Gageas.Lutea.SoundStream
         {
             get
             {
-                return Input.PositionSample - Offset;
+                var pos = Input.PositionSample;
+                if (Offset > pos) return 0;
+                if ((pos - Offset) > Input.LengthSample) return LengthSample;
+                return pos - Offset;
             }
             set
             {
+                if (value + Offset > Input.LengthSample) return; // ignore
                 Input.PositionSample = value + Offset;
             }
         }
