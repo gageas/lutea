@@ -408,14 +408,17 @@ namespace Gageas.Wrapper.BASS
 
         public abstract class Channel : IPlayable
         {
+            protected IntPtr handle;
             private UInt64 positionCache = 0;
+            private readonly int getData_retryMax;
+            private int getData_retryCount = 0;
             protected bool disposed = false;
 
             // コンストラクタ
-            protected Channel()
+            protected Channel(int getData_retryMax)
             {
+                this.getData_retryMax = getData_retryMax;
             }
-            protected IntPtr handle;
             public override void Dispose()
             {
                 if (disposed) return;
@@ -556,9 +559,20 @@ namespace Gageas.Wrapper.BASS
                 var readlen = _BASS_ChannelGetData(handle, buffer, length);
                 if (readlen == 0xffffffff) // err
                 {
-                    // 終端してもpositionがfilesizeに到達しない場合があるので強制的にpositionCacheをfilesizeに書き換える。
-                    if (positionCache != 0) positionCache = filesize;
+                    // シークの直後にはBASS_ChannelGetDataが失敗することがあるが、この場合再度試行すると正常に返ってくることから
+                    // 規定の回数連続で失敗した場合に限って本当にエラーとして扱う
+                    // ※ シーク直後にエラーとなった時にBASS_ErrorGetCode()すると37(BASS_ERROR_NOTAVAIL)が返ってくる模様。
+                    getData_retryCount++;
+                    if (getData_retryCount >= getData_retryMax)
+                    {
+                        // 終端してもpositionがfilesizeに到達しない場合があるので強制的にpositionCacheをfilesizeに書き換える。
+                        if (positionCache != 0) positionCache = filesize;
+                    }
                     readlen = 0;
+                }
+                else
+                {
+                    getData_retryCount = 0;
                 }
                 positionCache += readlen;
                 return readlen;
@@ -569,8 +583,6 @@ namespace Gageas.Wrapper.BASS
                 var readlen = _BASS_ChannelGetData(handle, buf, (uint)fft);
                 if (readlen == 0xffffffff) // err
                 {
-                    // 終端してもpositionがfilesizeに到達しない場合があるので強制的にpositionCacheをfilesizeに書き換える。
-                    if (positionCache != 0) positionCache = filesize;
                     readlen = 0;
                 }
                 positionCache += readlen;
@@ -615,6 +627,12 @@ namespace Gageas.Wrapper.BASS
 
         public abstract class Stream : Channel
         {
+            public Stream(int getData_retryMax)
+                : base(getData_retryMax)
+            {
+
+            }
+
             public enum StreamFlag : uint{
                 BASS_STREAM_DECODE = 0x200000,
                 BASS_STREAM_AUTOFREE =  0x40000,
@@ -641,7 +659,8 @@ namespace Gageas.Wrapper.BASS
         {
             private STREAMPROC streamProc;
             private StreamProc proc;
-            public UserSampleStream(uint freq, uint channels, StreamProc proc, StreamFlag flag)
+            public UserSampleStream(uint freq, uint channels, StreamProc proc, StreamFlag flag, int getData_retryMax = 0)
+                : base(getData_retryMax)
             {
                 this.streamProc = (handle, buffer, length, user) => this.disposed ? 0x80000000 : this.proc(buffer, length);
                 this.proc = proc;
@@ -655,7 +674,8 @@ namespace Gageas.Wrapper.BASS
 
         public class FileStream : Stream
         {
-            public FileStream(String filename, StreamFlag flags = 0, ulong offset = 0, ulong length = 0)
+            public FileStream(String filename, StreamFlag flags = 0, ulong offset = 0, ulong length = 0, int getData_retryMax = 0)
+                : base(getData_retryMax)
             {
                 IntPtr ret = _BASS_StreamCreateFile(false, filename, offset, length, (BASS_UNICODE | (uint)flags));
                 if (ret == IntPtr.Zero)

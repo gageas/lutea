@@ -12,6 +12,11 @@ namespace Gageas.Lutea.SoundStream
     /// </summary>
     class BASSDecodeStreamAdapter : PullSoundStreamBase
     {
+        /// <summary>
+        /// GetData関数の再試行回数の上限
+        /// </summary>
+        private const int GET_DATA_RETRY_MAX_DEFAULT = 5;
+
         private BASS.Stream Stream;
 
         [ThreadStatic]
@@ -47,7 +52,7 @@ namespace Gageas.Lutea.SoundStream
             }
             try
             {
-                this.Stream = new BASS.FileStream(filename, MakeFlag(isFloat, preScan));
+                this.Stream = new BASS.FileStream(filename, MakeFlag(isFloat, preScan), getData_retryMax: GET_DATA_RETRY_MAX_DEFAULT);
             }
             catch (BASS.BASSException ex)
             {
