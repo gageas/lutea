@@ -637,19 +637,14 @@ namespace Gageas.Lutea.DefaultUI
             this.toolStripStatusLabel2.Text = text.ToString().Replace("&", "&&");
         }
 
-        private void UpdateMinSize(bool enable)
+        private void UpdateMinSize()
         {
-            if (enable)
-            {
-                this.MinimumSize = new Size(
-                    splitContainer1.SplitterDistance + this.Width - this.ClientSize.Width + 2,
-                    splitContainer1.SplitterDistance + this.Height - this.ClientSize.Height + queryComboBox.Height + statusStrip1.Height + 2
-                );
-            }
-            else
-            {
-                this.MinimumSize = DefaultMinimumSize;
-            }
+            if (WindowState == FormWindowState.Minimized) return;
+            if (splitContainer2.SplitterDistance == 0) return;
+            this.MinimumSize = new Size(
+                splitContainer1.SplitterDistance + this.Width - this.ClientSize.Width + 2,
+                splitContainer1.SplitterDistance + this.Height - this.ClientSize.Height + queryComboBox.Height + statusStrip1.Height + splitContainer2.SplitterWidth
+            );
         }
         #endregion
 
@@ -923,12 +918,12 @@ namespace Gageas.Lutea.DefaultUI
             if (splitContainer2.SplitterDistance != 0)
             {
                 splitContainer2.SplitterDistance = splitContainer1.SplitterDistance;
-                UpdateMinSize(true);
+                UpdateMinSize();
             }
             else
             {
                 splitContainer2.BackupDistance = splitContainer1.SplitterDistance;
-                UpdateMinSize(false);
+                MinimumSize = DefaultMinimumSize;
             }
             ResetSpectrumRenderer();
             playlistView.Select();
@@ -944,13 +939,13 @@ namespace Gageas.Lutea.DefaultUI
             }
             else
             {
-                UpdateMinSize(true);
+                UpdateMinSize();
             }
         }
 
         private void splitContainer2_Closed()
         {
-            UpdateMinSize(false);
+            MinimumSize = DefaultMinimumSize;
         }
         #endregion
 
@@ -1417,11 +1412,11 @@ namespace Gageas.Lutea.DefaultUI
             playlistView.ColumnWidth = (Dictionary<string, int>)pref.PlaylistViewColumnWidth;
             config_FormLocation = pref.WindowLocation;
             config_FormSize = pref.WindowSize;
-            this.WindowState = pref.WindowState;
             this.splitContainer1.SplitterDistance = pref.splitContainer1_SplitterDistance ?? 100;
             this.splitContainer2.SplitterDistance = pref.splitContainer2_SplitterDistance ?? 100;
             this.splitContainer3.SplitterDistance = pref.SplitContainer3_SplitterDistance;
             this.splitContainer4.SplitterDistance = pref.splitContainer4_SplitterDistance ?? 100;
+            this.WindowState = pref.WindowState;
         }
 
         private List<HotKey> hotkeys = new List<HotKey>();
