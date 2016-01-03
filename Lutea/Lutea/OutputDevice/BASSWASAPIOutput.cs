@@ -14,7 +14,7 @@ namespace Gageas.Lutea.OutputDevice
         private bool Exclusive;
         private bool _pause = false;
 
-        public BASSWASAPIOutputChannel(bool exclusive, uint freq, uint chans, string preferredDeviceName, uint bufLen)
+        public BASSWASAPIOutputChannel(OutputDevice.StreamProc proc, bool exclusive, uint freq, uint chans, string preferredDeviceName, uint bufLen)
         {
             this.Exclusive = exclusive;
             BASS.BASS_SetDevice(0);
@@ -33,13 +33,9 @@ namespace Gageas.Lutea.OutputDevice
                     break;
                 }
             }
-            BassWasapiOutput = new BASSWASAPIOutput(freq, chans, (x, y) => { if (StreamProc == null)return 0; return StreamProc(x, y); }, BASSWASAPIOutput.InitFlags.Buffer | (exclusive ? BASSWASAPIOutput.InitFlags.Exclusive : 0), deviceid, bufLen);
+            StreamProc = proc;
+            BassWasapiOutput = new BASSWASAPIOutput(freq, chans, (x, y) => StreamProc(x, y), BASSWASAPIOutput.InitFlags.Buffer | (exclusive ? BASSWASAPIOutput.InitFlags.Exclusive : 0), deviceid, bufLen);
             Logger.Log("Use WASAPI Exclusive Output: freq=" + BassWasapiOutput.Info.Freq + ", format=" + BassWasapiOutput.Info.Format);
-        }
-
-        public void SetStreamProc(OutputDevice.StreamProc proc)
-        {
-            this.StreamProc = proc;
         }
 
         public bool CanAbort

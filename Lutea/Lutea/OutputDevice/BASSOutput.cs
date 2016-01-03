@@ -13,7 +13,7 @@ namespace Gageas.Lutea.OutputDevice
         private OutputDevice.StreamProc StreamProc;
         private bool _pause = false;
 
-        public BASSOutput(uint freq, uint chans, string preferredDeviceName, int buflen)
+        public BASSOutput(OutputDevice.StreamProc proc, uint freq, uint chans, string preferredDeviceName, int buflen)
         {
             var outdev = GetInitializedBassRealOutputDevice();
             if (outdev == 0)
@@ -34,13 +34,9 @@ namespace Gageas.Lutea.OutputDevice
                 outdev = GetInitializedBassRealOutputDevice();
             }
             BASS.BASS_SetDevice(outdev);
-            Bassout = new BASS.UserSampleStream(freq, chans, (x, y) => { if (StreamProc == null)return 0; return StreamProc(x, y); }, (BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) | BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
+            StreamProc = proc;
+            Bassout = new BASS.UserSampleStream(freq, chans, (x, y) => StreamProc(x, y), (BASS.Stream.StreamFlag.BASS_STREAM_FLOAT) | BASS.Stream.StreamFlag.BASS_STREAM_AUTOFREE);
             Logger.Debug("Use Float Output");
-        }
-
-        public void SetStreamProc(OutputDevice.StreamProc proc)
-        {
-            this.StreamProc = proc;
         }
 
         public int Freq

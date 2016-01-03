@@ -19,8 +19,7 @@ namespace Gageas.Lutea.OutputDevice
                 {
                     try
                     {
-                        var ret = new BASSWASAPIOutputChannel(true, freq, chans, preferredDeviceName, (uint)bufferLen);
-                        ret.SetStreamProc(streamProc);
+                        var ret = new BASSWASAPIOutputChannel(streamProc, true, freq, chans, preferredDeviceName, (uint)bufferLen);
                         BASS.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
                         BASSWASAPIOutput.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
                         return ret;
@@ -30,8 +29,7 @@ namespace Gageas.Lutea.OutputDevice
 
                 try
                 {
-                    var ret = new BASSWASAPIOutputChannel(false, freq, chans, preferredDeviceName, (uint)bufferLen);
-                    ret.SetStreamProc(streamProc);
+                    var ret = new BASSWASAPIOutputChannel(streamProc, false, freq, chans, preferredDeviceName, (uint)bufferLen);
                     BASS.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
                     BASSWASAPIOutput.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
                     return ret;
@@ -40,8 +38,7 @@ namespace Gageas.Lutea.OutputDevice
 
                 try
                 {
-                    var ret = new BASSOutput(freq, chans, preferredDeviceName, bufferLen);
-                    ret.SetStreamProc(streamProc);
+                    var ret = new BASSOutput(streamProc, freq, chans, preferredDeviceName, bufferLen);
                     BASS.SetPriority(System.Diagnostics.ThreadPriorityLevel.TimeCritical);
                     return ret;
                 }

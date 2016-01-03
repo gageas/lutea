@@ -13,7 +13,6 @@ namespace Gageas.Lutea.OutputDevice
         ulong BufferedSamples { get; }
         Controller.OutputModeEnum OutputMode { get; }
         Controller.Resolutions OutputResolution { get; }
-        void SetStreamProc(OutputDevice.StreamProc proc);
         void Start();
         void Stop();
         void Resume();
