@@ -90,7 +90,7 @@ NYSLまたはMITを適用します。[詳しく](https://github.com/gageas/lutea
 ### [バージョン履歴](https://github.com/gageas/lutea/wiki/VersionHistory)
 
 ## ダウンロード
-[ダウンロードページ(旧バージョン)](http://lutea.gageas.com/lutea/wiki/Downloads)
+[ダウンロードページ](https://github.com/gageas/lutea/releases)
 
 ----
 # コンタクト
