@@ -2,8 +2,8 @@
 Latest Version: 1.11 (2014/08/14)
 
 ## スクリーンショット
-![SS1](/gageas/lutea/wiki/images/v1.11-main.png)  
-![SS2](/gageas/lutea/wiki/images/v1.00-taskbar.png) 
+![SS1](https://github.com/gageas/lutea/wiki/images/v1.11-main.png)  
+![SS2](https://github.com/gageas/lutea/wiki/images/v1.00-taskbar.png) 
 
  * [他のスクリーンショットをもっと見る](/gageas/lutea/wiki/Screenshots) 
 
