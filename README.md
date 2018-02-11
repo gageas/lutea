@@ -5,7 +5,7 @@ Latest Version: 1.11 (2014/08/14)
 ![SS1](https://github.com/gageas/lutea/wiki/images/v1.11-main.png)  
 ![SS2](https://github.com/gageas/lutea/wiki/images/v1.00-taskbar.png) 
 
- * [他のスクリーンショットをもっと見る](/gageas/lutea/wiki/Screenshots) 
+ * [他のスクリーンショットをもっと見る](https://github.com/gageas/lutea/wiki/Screenshots) 
 
 ## 説明
 
@@ -78,7 +78,7 @@ Luteaを展開したフォルダを削除してください。
 レジストリは使用していません。
 
 ### ライセンスについて
-NYSLまたはMITを適用します。[詳しく](/gageas/lutea/wiki/License)
+NYSLまたはMITを適用します。[詳しく](https://github.com/gageas/lutea/wiki/License)
 
 ### 使用ライブラリ等一覧
   * データベースエンジンに[SQLite](http://www.sqlite.org/)を使用しています。
