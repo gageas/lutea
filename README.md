@@ -2,10 +2,10 @@
 Latest Version: 1.11 (2014/08/14)
 
 ## スクリーンショット
-![SS1](http://lutea.gageas.com/lutea/raw-attachment/wiki/moreScreenshots/v1.11-main.png)  
-![SS2](http://lutea.gageas.com/lutea/raw-attachment/wiki/moreScreenshots/v1.00-taskbar.png) 
+![SS1](/gageas/lutea/wiki/images/v1.11-main.png)  
+![SS2](/gageas/lutea/wiki/images/v1.00-taskbar.png) 
 
- * [wiki:moreScreenshots 他のスクリーンショットをもっと見る]
+ * [他のスクリーンショットをもっと見る](/gageas/lutea/wiki/Screenshots) 
 
 ## 説明
 
@@ -13,8 +13,8 @@ Luteaは、 __「一万曲でもサクサク気持ちよく検索できること
 をテーマに開発しているWindows PC向けオーディオプレーヤです。
 
 ### 動作環境
-    * Windows xp 以降
-    * .Net Framework 4
+  * Windows xp 以降
+  * .Net Framework 4
 
 ### 主な機能
   * H2k6形式の __ライブラリ機能__
@@ -48,7 +48,7 @@ Luteaは、 __「一万曲でもサクサク気持ちよく検索できること
   * クエリ入力欄  
     画面下の長いテキストボックスがクエリ入力欄です。  
     この内容からプレイリストが生成されます。  
-    [wiki:QueryStringDetail クエリ文字列詳細]
+    [クエリ文字列詳細](https://github.com/gageas/lutea/wiki/QueryString)
   * ショートカットキー
     * プレイリストビュー
       * H,J,K,L = カーソルの移動
@@ -65,8 +65,6 @@ Luteaは、 __「一万曲でもサクサク気持ちよく検索できること
     * クエリ入力欄
       * EnterまたはEsc = プレイリストビューに移動
 
-### [wiki:FAQ FAQ(ありがちな質問)]
-
 ### 出力について
    * 出力デバイスは，コンポーネント → コンポーネントの詳細設定 → Core で設定することができます。
    * 現在の出力モードはタイトルバーの末尾に表示されます。各モードの意味は下記の通りです。
@@ -80,7 +78,7 @@ Luteaを展開したフォルダを削除してください。
 レジストリは使用していません。
 
 ### ライセンスについて
-NYSLまたはMITを適用します。[wiki:license 詳しく]
+NYSLまたはMITを適用します。[詳しく](/gageas/lutea/wiki/License)
 
 ### 使用ライブラリ等一覧
   * データベースエンジンに[SQLite](http://www.sqlite.org/)を使用しています。
@@ -89,10 +87,10 @@ NYSLまたはMITを適用します。[wiki:license 詳しく]
   * 正規表現エンジンに[re2](http://code.google.com/p/re2/)を使用しています。
   * アイコンは[奥野アイコンメーカー](http://gyu.que.jp/oqunomaker/oqunomaker.html)で作成しました。
 
-### [wiki:VersionHistory バージョン履歴]
+### [バージョン履歴](https://github.com/gageas/lutea/wiki/VersionHistory)
 
 ## ダウンロード
-[wiki:Downloads ダウンロードページ]
+[ダウンロードページ(旧バージョン)](http://lutea.gageas.com/lutea/wiki/Downloads)
 
 ----
 # コンタクト
