@@ -204,7 +204,7 @@ namespace Gageas{
 				prev[32] = 0x00; // NULLI’[
 				counterIndex = 0;
 				if(LuteaHelper::counter != nullptr) delete LuteaHelper::counter;
-				LuteaHelper::counter = gcnew array<int>(num);
+				LuteaHelper::counter = gcnew cli::array<int>(num);
 				ClearMigemoCache();
 				ClearRegexCache();
 			};
