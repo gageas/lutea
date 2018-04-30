@@ -13,7 +13,7 @@
 #include "LuteaHelper.h"
 #include "bass.h"
 #include "sqlite3.h"
-#include "re2.h"
+#include "re2/re2.h"
 
 typedef unsigned int uint;
 
