@@ -92,6 +92,7 @@
   <ItemGroup>
     <ClInclude Include="LuteaHelper.h" />
     <ClInclude Include="re2.h" />
+    <ClInclude Include="regexp.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="sqlite3.h" />
     <ClInclude Include="Stdafx.h" />
@@ -100,6 +101,9 @@
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="LuteaHelper.cpp" />
+    <ClCompile Include="regexp.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+    </ClCompile>
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
