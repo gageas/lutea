@@ -1,8 +1,6 @@
 // LuteaHelper.h
 #pragma once
 
-#include "sqlite3.h"
-
 namespace Gageas {
 	namespace Lutea{
 		namespace Core{

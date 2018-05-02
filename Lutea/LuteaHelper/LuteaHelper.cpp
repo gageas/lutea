@@ -9,9 +9,9 @@
 #include <string>
 #include <map>
 #include "stdafx.h"
+#include "windows.h"
 
 #include "LuteaHelper.h"
-#include "bass.h"
 #include "sqlite3.h"
 #include "regexp.h"
 

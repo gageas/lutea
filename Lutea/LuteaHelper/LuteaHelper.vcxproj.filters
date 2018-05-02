@@ -27,12 +27,6 @@
     <ClInclude Include="sqlite3.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="re2.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="stdint.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="regexp.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

@@ -93,12 +93,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LuteaHelper.h" />
-    <ClInclude Include="re2.h" />
     <ClInclude Include="regexp.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="sqlite3.h" />
     <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="stdint.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
