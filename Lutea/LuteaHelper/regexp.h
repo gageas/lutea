@@ -10,7 +10,7 @@ namespace gageas {
 	class regexp {
 	public:
 		std::unique_ptr<re2::RE2> inst;
-		regexp(std::string pattern, bool case_sensitive);
+		regexp(const std::string& pattern, bool case_sensitive);
 		~regexp();
 		bool PartialMatch(const char* match);
 
