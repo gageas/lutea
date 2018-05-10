@@ -9,11 +9,11 @@
 #include <string>
 #include <map>
 #include "stdafx.h"
+#include "windows.h"
 
 #include "LuteaHelper.h"
-#include "bass.h"
 #include "sqlite3.h"
-#include "re2.h"
+#include "regexp.h"
 
 typedef unsigned int uint;
 
@@ -23,8 +23,8 @@ using namespace std;
 namespace Gageas{
 	namespace Lutea{
 		namespace Core {
-			static map<string, re2::RE2*> regex_cache; // コンパイル済み正規表現のキャッシュ(regex関数用)
-			static map<string, re2::RE2*> migemo_cache; // コンパイル済み正規表現のキャッシュ(migemo関数用)
+			static map<string, std::unique_ptr<gageas::regexp>> regex_cache; // コンパイル済み正規表現のキャッシュ(regex関数用)
+			static map<string, std::unique_ptr<gageas::regexp>> migemo_cache; // コンパイル済み正規表現のキャッシュ(migemo関数用)
 
 			static char prev[2048]; // 連続数カウンタ用：前回のデータ
 			static int repNum; // 連続数カウンタ用：前回までの連続数 
@@ -127,23 +127,17 @@ namespace Gageas{
 						return;
 					}
 					if((pattern.size() >= 2) && (pattern[pattern.size()-1] == '/')){
-						re2::RE2::Options ops;
-						ops.set_case_sensitive(true);
-						re2::RE2* re = new re2::RE2("(?m)" + pattern.substr(1, pattern.size()-2), ops);
-						regex_cache[pattern] = re;
+						regex_cache[pattern] = std::make_unique<gageas::regexp>("(?m)" + pattern.substr(1, pattern.size() - 2), true);
 					}else if((pattern.size() >= 3) && (pattern[pattern.size()-2] == '/') && (pattern[pattern.size()-1] == 'i')) {
-						re2::RE2::Options ops;
-						ops.set_case_sensitive(false);
-						re2::RE2* re = new re2::RE2("(?m)" + pattern.substr(1, pattern.size()-3), ops);
-						regex_cache[pattern] = re;
+						regex_cache[pattern] = std::make_unique<gageas::regexp>("(?m)" + pattern.substr(1, pattern.size() - 3), false);
 					}else{
 						sqlite3_result_int( ctx, 0 );
 						return;
 					}
 				}
-				re2::RE2* reppatern = regex_cache[pattern];
+				auto& reppatern = regex_cache[pattern];
 				const char* match = (const char*)sqlite3_value_text(argv[1]);
-				sqlite3_result_int( ctx, (re2::RE2::PartialMatch(match, *reppatern)?1:0) );
+				sqlite3_result_int( ctx, reppatern->PartialMatch(match) ? 1 : 0);
 			};
 
 			/* migemoマッチのSQL関数 */
@@ -173,14 +167,11 @@ namespace Gageas{
 						return;
 					}
 					string migemore((const char*)(result->ToPointer()));
-					re2::RE2::Options ops;
-					ops.set_case_sensitive(false);
-					re2::RE2* re = new re2::RE2(migemore, ops);
-					migemo_cache[pattern] = re;
+					migemo_cache[pattern] = std::make_unique<gageas::regexp>(migemore, false);
 					System::Runtime::InteropServices::Marshal::FreeHGlobal(*result);
 				}
-				re2::RE2* reppatern = migemo_cache[pattern];
-				sqlite3_result_int( ctx, (re2::RE2::PartialMatch(p_match, *reppatern)?1:0) );
+				auto& reppatern = migemo_cache[pattern];
+				sqlite3_result_int( ctx, reppatern->PartialMatch(p_match)?1:0);
 			};
 
 			/* SQLiteデータベースにSQL関数を登録する */
@@ -204,26 +195,16 @@ namespace Gageas{
 				prev[32] = 0x00; // NULL終端
 				counterIndex = 0;
 				if(LuteaHelper::counter != nullptr) delete LuteaHelper::counter;
-				LuteaHelper::counter = gcnew array<int>(num);
+				LuteaHelper::counter = gcnew cli::array<int>(num);
 				ClearMigemoCache();
 				ClearRegexCache();
 			};
 
 			void LuteaHelper::ClearMigemoCache(void){
-				map<string, re2::RE2*>::iterator p;
-				for(p=migemo_cache.begin(); p!=migemo_cache.end(); p++)
-				{
-					delete(p->second);
-				}
-				migemo_cache.clear();
+				regex_cache.clear();
 			};
 
 			void LuteaHelper::ClearRegexCache(void){
-				map<string, re2::RE2*>::iterator p;
-				for(p=regex_cache.begin(); p!=regex_cache.end(); p++)
-				{
-					delete(p->second);
-				}
 				regex_cache.clear();
 			};
 		};

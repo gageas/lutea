@@ -1,8 +1,6 @@
 // LuteaHelper.h
 #pragma once
 
-#include "sqlite3.h"
-
 namespace Gageas {
 	namespace Lutea{
 		namespace Core{
@@ -13,7 +11,7 @@ namespace Gageas {
 				static void RegisterSQLiteUserFunctions(System::IntPtr^ _db, MigemoGenerator^ migemoGenerator);
 				static void ClearRepeatCount(int);
 				static LuteaHelper::MigemoGenerator^ migemo_generator;
-				static array<int>^counter = nullptr;
+				static cli::array<int>^counter = nullptr;
 				static void ClearMigemoCache(void);
 				static void ClearRegexCache(void);
 			};
